@@ -1,0 +1,38 @@
+name: Deploy Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            cd "${{ secrets.PROD_APP_DIR }}"
+            git fetch origin main
+            git checkout main
+            git pull --ff-only origin main
+
+            docker compose --env-file .env.docker pull mysql clickhouse redis
+            docker compose --env-file .env.docker up -d --build --remove-orphans
+            docker compose --env-file .env.docker ps
+            docker compose --env-file .env.docker exec -T cronus bun -e "fetch('http://127.0.0.1:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+

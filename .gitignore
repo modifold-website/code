@@ -1,0 +1,82 @@
+# Environment files and secrets.
+.env
+.env.*
+.env.docker
+!.env.example
+!.env.docker.example
+!**/.env.example
+DOCKER.md
+
+# Docker runtime data and uploads.
+data/
+media/
+uploads/
+cronus/tmp/
+cronus/media/
+cronus/uploads/
+
+# Database dumps and local backups.
+*.sql
+*.sql.gz
+*.dump
+*.backup
+*.bak
+*.sqlite
+*.sqlite3
+*.db
+*.rdb
+*.aof
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+*.zst
+*.csv
+*.parquet
+
+# Dependencies and build artifacts.
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.cache/
+*.tsbuildinfo
+
+# Logs and process files.
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+bun-debug.log*
+*.pid
+
+# Local tools and editor files.
+.DS_Store
+.idea/
+.vscode/
+.vercel/
+.turbo/
+
+# Local reference repositories.
+modrinth-code/
+
+# Private services checked out separately on production.
+argus/
+
+# Local Codex/agent state.
+AGENTS.md
+skills-lock.json
+.agents/
+
+# Private keys and certificates.
+*.pem
+*.key
+*.crt
+*.p12
+id_rsa
+id_ed25519

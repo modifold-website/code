@@ -1,0 +1,13 @@
+:root {
+    --safe-tabbar-height: calc(var(--layout-tabbar-height) + env(safe-area-inset-bottom));
+}
+.account {
+    min-height: 100%;
+    padding: var(--layout-content-offset-x);
+    color: var(--theme-color-text-primary);
+    background-color: var(--theme-color-background-content);
+    border-radius: var(--layout-island-border-radius);
+}
+.account .user-card {
+    margin-bottom: 16px;
+}

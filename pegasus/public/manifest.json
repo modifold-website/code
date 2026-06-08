@@ -1,0 +1,16 @@
+{
+    "name": "Modifold",
+    "short_name": "Modifold",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#151824",
+    "theme_color": "#151824",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/images/Modifold icon.png",
+            "type": "image/png",
+            "sizes": "64x64"
+        }
+    ]
+}

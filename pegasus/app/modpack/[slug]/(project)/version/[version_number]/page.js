@@ -1,0 +1,1 @@
+export { default, generateMetadata } from "@/app/mod/[slug]/(project)/version/[version_number]/page";

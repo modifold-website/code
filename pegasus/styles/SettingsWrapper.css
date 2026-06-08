@@ -1,0 +1,5 @@
+.settings-wrapper {
+    background: var(--theme-color-background-content);
+    border-radius: var(--layout-island-border-radius);
+    padding-bottom: 20px;
+}

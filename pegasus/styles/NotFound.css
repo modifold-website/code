@@ -1,0 +1,29 @@
+.not-found {
+    min-height: min(90vh,30rem);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+.not-found__code {
+    margin: 0 0 30px;
+    font-size: clamp(44px, 9vw, 96px);
+    line-height: 1;
+    font-family: Dela Gothic One, sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.not-found__title {
+    font-weight: 600 !important;
+    font-size: 24px !important;
+}
+.not-found__text {
+    font-weight: 600;
+    font-size: 18px;
+}
+.not-found__joke {
+    max-width: 600px;
+    margin: 12px auto 0;
+    font-weight: 500;
+}

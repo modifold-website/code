@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      pegasus: ${{ steps.filter.outputs.pegasus }}
+      cronus: ${{ steps.filter.outputs.cronus }}
+      deploy: ${{ steps.filter.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            pegasus:
+              - 'pegasus/**'
+              - 'docker-compose*.yml'
+            cronus:
+              - 'cronus/**'
+              - 'docker-compose*.yml'
+            deploy:
+              - '.github/workflows/**'
+              - 'deploy/**'
+              - 'docker-compose*.yml'
+              - '.env.docker.example'
+
+  pegasus:
+    needs: changes
+    if: needs.changes.outputs.pegasus == 'true' || needs.changes.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pegasus
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+        env:
+          NEXT_PUBLIC_API_BASE: https://api.modifold.com
+          NEXT_PUBLIC_GITHUB_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GITHUB_CLIENT_ID }}
+          NEXT_PUBLIC_DISCORD_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_DISCORD_CLIENT_ID }}
+          NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ${{ secrets.NEXT_PUBLIC_HCAPTCHA_SITE_KEY }}
+          STAGING: "false"
+
+  cronus:
+    needs: changes
+    if: needs.changes.outputs.cronus == 'true' || needs.changes.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cronus
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.11
+
+      - run: bun install --frozen-lockfile
+      - run: node --check index.js
+
+  docker-config:
+    needs: changes
+    if: needs.changes.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: docker compose --env-file .env.docker.example config --quiet

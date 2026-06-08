@@ -1,0 +1,198 @@
+.notifications-day-group__items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.notification-item {
+    display: flex;
+    --color-notification-hover: var(--theme-color-popover-item-bg-active);
+    background: var(--theme-color-background-content);
+    padding: 18px;
+    border-radius: 26px;
+    align-items: center;
+    transition: transform .05s ease-in-out;
+}
+.notification-item:active {
+    transform: scale(.95);
+}
+.notification-item b {
+    font-weight: 500;
+}
+.notification-item__actor-link {
+	text-decoration: none;
+}
+.notification-item__project-link {
+	text-decoration: none;
+}
+@media (hover: hover) {
+	.notification-item__actor-link:hover b > span > span {
+		text-decoration: underline;
+	}
+	.notification-item__project-link:hover b {
+		text-decoration: underline;
+	}
+}
+.notification-item__image {
+    width: auto;
+    min-width: 36px;
+    height: 36px;
+    margin-right: 10px;
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+.notification-item__icon {
+    color: var(--color-white);
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+}
+.notification-item__body {
+    flex: 1;
+}
+.notification-item__text {
+    font-size: 15px;
+    line-height: 20px;
+}
+.notification-item__date {
+    font-size: 13px;
+    line-height: 16px;
+    color: var(--theme-color-text-secondary);
+    margin-top: 2px;
+}
+.notification-item__etc {
+    align-self: flex-start;
+    height: 36px;
+}
+.notification-item__actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+@media (hover: hover) {
+    .notification-item:hover {
+        cursor: pointer;
+        background: var(--color-notification-hover);
+    }
+}
+.notifications {
+    position: relative;
+}
+.notifications__header {
+    display: flex;
+    align-items: center;
+    z-index: 2;
+    position: relative;
+}
+.notifications__header-text {
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 500;
+}
+.notifications-feed {
+    padding-bottom: 10px;
+}
+.notifications-day-group + .notifications-day-group {
+    margin-top: 10px;
+}
+.notifications-day-group__title {
+    font-size: 14px;
+    color: var(--theme-color-text-secondary);
+    font-weight: 500;
+    margin-top: 8px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+.notification-avatars-stack {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.notification-avatars-stack__item {
+    display: inline-flex;
+}
+.notification-avatars-stack__item + .notification-avatars-stack__item {
+    margin-left: -18px;
+}
+.notification-avatars-stack__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    object-fit: cover;
+    background: var(--theme-color-background-active);
+}
+@media (hover: hover) {
+	.notification-avatars-stack__item:hover .notification-avatars-stack__avatar {
+		opacity: .85;
+	}
+}
+.notification-item__icon--green {
+    color: var(--theme-color-signal-positive-default);
+}
+.notification-item__icon--blue {
+    color: var(--theme-color-signal-active-default);
+}
+.notification-item__icon--red {
+    color: var(--theme-color-signal-negative-default);
+}
+.notification-project-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--theme-color-background-active);
+}
+.notifications-feed__load-more {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0 4px;
+}
+@media (hover: hover) {
+    .bell__button-icon:hover {
+        opacity: 0.72;
+    }
+}
+@-webkit-keyframes skeleton-loading {
+    0% {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+@keyframes skeleton-loading {
+    0% {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+:root {
+    --safe-tabbar-height: calc(var(--layout-tabbar-height) + env(safe-area-inset-bottom));
+}
+@-webkit-keyframes underlay-in {
+    0% {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@-webkit-keyframes modal-enter {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+.notifications-settings .checkbox {
+    display: block;
+}
+.notifications-settings .checkbox:not(:last-child) {
+    margin-bottom: 8px;
+}

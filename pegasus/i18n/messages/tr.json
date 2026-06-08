@@ -1,0 +1,2370 @@
+{
+  "pageTitle": {
+    "mods": "Modlar - Modifold"
+  },
+  "Header": {
+    "home": "Ana sayfa",
+    "mods": "Modlar",
+    "modpacks": "Modpackler",
+    "modJams": "Mod jamleri",
+    "login": "Giriş yap",
+    "logout": "Çıkış yap",
+    "settings": "Ayarlar",
+    "createProject": "Proje oluştur",
+    "theme": {
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    },
+    "loginToCreate": "Proje oluşturmak için lütfen giriş yapın",
+    "beta": "beta",
+    "browse": "İçeriğe göz at",
+    "discoverContent": "İçeriği keşfet",
+    "myProfile": "Profilim",
+    "moderation": "Moderasyon",
+    "projects": "Projeler",
+    "organizations": "Organizasyonlar",
+    "likes": "Beğenilenler",
+    "notifications": "Bildirimler",
+    "appearance": "Tema"
+  },
+  "ModJamsPage": {
+    "metadata": {
+      "title": "Mod jamleri — Modifold",
+      "description": "Topluluk mod jamlerini keşfedin, yaratıcı etkinliklere katılın, oy verin ve sonuçları Modifold'da görün."
+    },
+    "eyebrow": "Topluluk etkinlikleri",
+    "title": "Topluluk mod jamleri",
+    "description": "Yaratıcı etkinliklere katılın, topluluğun neler yaptığını keşfedin, favorilerinize oy verin ve biten etkinliklere geri dönün.",
+    "create": "Mod jam oluştur",
+    "createFirst": "Mod jam oluştur",
+    "loginToCreate": "Mod jam oluşturmak için giriş yapın",
+    "statsLabel": "Mod jam istatistikleri",
+    "stats": {
+      "active": "Aktif jamler",
+      "voting": "Oylama açık",
+      "submissions": "Gönderiler"
+    },
+    "catalogTitle": "Tüm mod jamleri",
+    "catalogDescription": "Topluluğun onaylanmış aktif ve tamamlanmış etkinlikleri.",
+    "filtersLabel": "Mod jam filtreleri",
+    "sidebar": {
+      "status": "Filtreler"
+    },
+    "links": {
+      "title": "Bağlantılar",
+      "website": "Web sitesi",
+      "discord": "Discord sunucusu"
+    },
+    "jury": {
+      "title": "Jüri",
+      "organizer": "Organizatör",
+      "organizerTooltip": "Mod jam sahibi",
+      "member": "Jüri",
+      "memberTooltip": "Jüri oyu 3 puan verir"
+    },
+    "detail": {
+      "description": "Açıklama",
+      "rules": "Kurallar",
+      "emptySubmissions": "Henüz gönderi yok.",
+      "editSettings": "Ayarları düzenle",
+      "creatorProfile": "{username} profilini aç",
+      "bestByNomination": "“{title}” adaylığındaki en iyi projeler",
+      "bestByPoints": "Puana göre en iyi projeler",
+      "otherProjects": "Diğer projeler"
+    },
+    "timeline": {
+      "ariaLabel": "Mod jam zaman çizelgesi",
+      "dateTimeSeparator": " saat ",
+      "countdown": {
+        "upcoming": "Başlamasına",
+        "submissionsOpen": "Gönderiler şu tarihe kadar kabul edilir",
+        "votingOpen": "Oylama",
+        "completed": "Tamamlandı"
+      },
+      "units": {
+        "hours": "sa",
+        "minutes": "dk",
+        "seconds": "sn"
+      },
+      "steps": {
+        "start": "Başlangıç",
+        "submissions": "Gönderiler kapanır",
+        "voting": "Topluluk oylaması açılır",
+        "finish": "Bitiş",
+        "submissionsOpen": "Gönderiler açılır",
+        "submissionsClose": "Gönderiler kapanır",
+        "votingOpen": "Oylama",
+        "winnersAnnounced": "Sonuçlar"
+      },
+      "afterSubmissions": "Gönderilerden sonra"
+    },
+    "vote": {
+      "action": "Oy ver",
+      "voted": "Oy verildi",
+      "success": "Oy kaydedildi",
+      "error": "Oy verilemedi",
+      "nominationTitle": "Bir adaylık seçin",
+      "nominationHint": "Oylar her adaylıkta ayrı sayılır.",
+      "nominationAlreadyVoted": "Bu adaylıkta zaten oy verdiniz"
+    },
+    "submit": {
+      "title": "Mod gönder",
+      "loginHint": "Yayımlanmış modlarınızdan birini bu jam'e eklemek için giriş yapın.",
+      "alreadySubmitted": "Bu mod jam'e zaten bir proje gönderdiniz.",
+      "chooseHint": "Bu mod jam'e katılması için göndermek istediğiniz projeyi seçin.",
+      "placeholder": "Yayımlanmış bir mod seçin",
+      "loading": "Yükleniyor...",
+      "emptyProjects": "Yayımlanmış mod bulunamadı",
+      "action": "Projeyi gönder",
+      "selectFirst": "Önce bir mod seçin",
+      "loadError": "Projeleriniz yüklenemedi",
+      "submitError": "Proje gönderilemedi",
+      "success": "Proje gönderildi"
+    },
+    "creation": {
+      "title": "Mod jam oluştur",
+      "close": "Kapat",
+      "name": "Ad",
+      "namePlaceholder": "Yaz inşa jam'i",
+      "summary": "Kısa açıklama",
+      "summaryHint": "Mod jam'inizi anlatan bir veya iki cümle.",
+      "summaryPlaceholder": "Ortak bir tema etrafında mod oluşturun ve en iyi gönderilere oy verin.",
+      "cancel": "İptal",
+      "creating": "Oluşturuluyor...",
+      "submit": "Taslak oluştur",
+      "success": "Mod jam taslağı oluşturuldu",
+      "error": "Mod jam oluşturulamadı"
+    },
+    "participate": "Katıl",
+    "join": {
+      "joined": "Katıldınız",
+      "success": "Mod jam'e katıldınız",
+      "error": "Katılınamadı",
+      "loginRequired": "Katılmak için giriş yapın"
+    },
+    "settings": {
+      "sidebar": {
+        "general": "Genel",
+        "description": "Açıklama",
+        "rules": "Kurallar",
+        "links": "Bağlantılar",
+        "nominations": "Adaylıklar",
+        "jury": "Jüri",
+        "moderation": "Moderasyon"
+      },
+      "unsaved": {
+        "save": "Değişiklikleri kaydet",
+        "reset": "Sıfırla",
+        "message": "Kaydedilmemiş değişiklikleriniz var."
+      },
+      "general": {
+        "imageTooLarge": "Görsel 20 MB'tan küçük olmalı",
+        "saveError": "Ayarlar kaydedilemedi",
+        "saved": "Mod jam ayarları kaydedildi",
+        "avatar": "Avatar",
+        "avatarPreviewAlt": "Mod jam avatar önizlemesi",
+        "uploadAvatar": "Avatar yükle",
+        "cover": "Kapak",
+        "coverPreviewAlt": "Mod jam kapak önizlemesi",
+        "uploadCover": "Kapak görseli yükle",
+        "name": "Ad",
+        "slug": "URL",
+        "shortDescription": "Kısa açıklama",
+        "shortDescriptionHint": "Katalogda ve jam kartlarında gösterilir.",
+        "slugPlaceholder": "jam-iniz",
+        "publicPage": "Herkese açık sayfa: /jams/{slug}",
+        "schedule": "Takvim",
+        "starts": "Mod jam başlar",
+        "submissionsStart": "Gönderiler açılır",
+        "submissionsEnd": "Gönderiler kapanır",
+        "votingEnds": "Bitiş",
+        "votingStarts": "Oylama",
+        "winnersAnnounced": "Sonuçlar"
+      },
+      "links": {
+        "discord": "Discord URL'si",
+        "website": "Web sitesi URL'si",
+        "discordPlaceholder": "https://discord.gg/ornek",
+        "websitePlaceholder": "https://example.com",
+        "saveError": "Bağlantılar kaydedilemedi",
+        "saved": "Bağlantılar kaydedildi"
+      },
+      "jury": {
+        "title": "Jüri",
+        "hint": "Bir kullanıcı slug'ı girin. Atanan jüri üyelerinin oyları 1 yerine 3 puan sayılır.",
+        "placeholder": "user-slug",
+        "add": "Ekle",
+        "remove": "Kaldır",
+        "empty": "Henüz jüri üyesi atanmadı.",
+        "added": "Jüri üyesi eklendi",
+        "removed": "Jüri üyesi kaldırıldı",
+        "addError": "Jüri üyesi eklenemedi",
+        "removeError": "Jüri üyesi kaldırılamadı"
+      },
+      "nominations": {
+        "title": "Adaylıklar",
+        "hint": "“En iyi oynanış” veya “Jüri seçimi” gibi kategoriler oluşturun. Kullanıcılar her adaylıkta ayrı oy verebilir.",
+        "name": "Ad",
+        "placeholder": "En iyi oynanış",
+        "description": "Açıklama",
+        "descriptionPlaceholder": "Bu adaylıkta neye oy verileceğini kısaca açıklayın.",
+        "add": "Adaylık ekle",
+        "saveEdit": "Kaydet",
+        "cancelEdit": "İptal",
+        "edit": "Düzenle",
+        "delete": "Sil",
+        "empty": "Henüz adaylık yok. Adaylık yoksa oylama tek genel oy olarak çalışır.",
+        "added": "Adaylık eklendi",
+        "updated": "Adaylık güncellendi",
+        "deleted": "Adaylık silindi",
+        "saveError": "Adaylık kaydedilemedi",
+        "deleteError": "Adaylık silinemedi"
+      },
+      "moderation": {
+        "title": "Moderasyon",
+        "hint": "Jam sayfasını kontrol edin ve sunum hazır olduğunda Modifold incelemesine gönderin.",
+        "currentStatus": "Mevcut durum",
+        "rejectionReason": "Reddetme nedeni",
+        "preview": "Önizlemeyi aç",
+        "submitForReview": "İncelemeye gönder",
+        "pendingReview": "İncelemede",
+        "approved": "Zaten onaylandı",
+        "submitReviewError": "İncelemeye gönderilemedi",
+        "sentToModeration": "Moderasyona gönderildi",
+        "status": {
+          "draft": "Taslak",
+          "pending_review": "İncelemede",
+          "approved": "Onaylandı",
+          "rejected": "Reddedildi",
+          "archived": "Arşivlendi"
+        }
+      },
+      "description": {
+        "title": "Tam açıklama",
+        "hint": "Jam sayfasındaki ana metni oluşturmak için Markdown kullanın.",
+        "placeholder": "Katılımcılara bu jam'in ne hakkında olduğunu, neler yapabileceklerini ve neden ilginç olduğunu anlatın.",
+        "saved": "Açıklama kaydedildi",
+        "saveError": "Açıklama kaydedilemedi"
+      },
+      "rules": {
+        "title": "Kurallar",
+        "hint": "Nelerin gönderilebileceğini ve oylamanın nasıl çalıştığını açıklamak için Markdown kullanın.",
+        "placeholder": "Gönderi gereksinimlerini, oylama kurallarını, son tarihleri ve yasaklı içerikleri açıklayın.",
+        "saved": "Kurallar kaydedildi",
+        "saveError": "Kurallar kaydedilemedi"
+      },
+      "markdown": {
+        "toolbarLabel": "Markdown düzenleyici araç çubuğu",
+        "heading1": "Başlık 1",
+        "heading2": "Başlık 2",
+        "heading3": "Başlık 3",
+        "bold": "Kalın",
+        "italic": "İtalik",
+        "strikethrough": "Üstü çizili",
+        "code": "Kod",
+        "bulletedList": "Madde işaretli liste",
+        "orderedList": "Numaralı liste",
+        "link": "Bağlantı",
+        "image": "Görsel",
+        "linkTemplate": "[bağlantı metni](https://)",
+        "imageTemplate": "![alternatif metin](https://)",
+        "preview": "Önizleme",
+        "submitForReview": "İncelemeye gönder",
+        "pendingReview": "İncelemede",
+        "saveBeforeReview": "İncelemeye göndermeden önce değişiklikleri kaydedin",
+        "submitReviewError": "İncelemeye gönderilemedi",
+        "sentToModeration": "Moderasyona gönderildi"
+      }
+    },
+    "moderation": {
+      "rejectionReason": "Reddetme nedeni",
+      "approvedReason": "Moderatör tarafından onaylandı",
+      "error": "Mod jam denetlenemedi",
+      "approved": "Mod jam onaylandı",
+      "rejected": "Mod jam reddedildi",
+      "empty": "İnceleme bekleyen mod jam yok.",
+      "approve": "Onayla",
+      "reject": "Reddet"
+    },
+    "filters": {
+      "active": "Aktif",
+      "completed": "Tamamlandı"
+    },
+    "status": {
+      "upcoming": "Yakında",
+      "running": "Yapım aşaması",
+      "submissionsOpen": "Gönderiler açık",
+      "votingOpen": "Oylama açık",
+      "completed": "Tamamlandı",
+      "draft": "Taslak",
+      "votingPending": "Oylama bekleniyor"
+    },
+    "submissionsCount": "{count} gönderi",
+    "votesCount": "{count} puan",
+    "emptyTitle": "Henüz mod jam yok",
+    "emptyDescription": "Onaylanan mod jamleri burada görünecek. İlkini oluşturup moderasyona gönderebilirsiniz.",
+    "emptyFilteredTitle": "Bu bölüm boş",
+    "emptyFilteredDescription": "Başka bir filtre deneyin veya bir sonraki etkinlik başladığında tekrar bakın."
+  },
+  "ModJamsDashboard": {
+    "title": "Mod jamleriniz",
+    "create": "Mod jam oluştur",
+    "empty": "Henüz hiç mod jam oluşturmadınız.",
+    "settings": "Ayarlar",
+    "submissions": "{count} gönderi",
+    "votes": "{count} puan",
+    "status": {
+      "draft": "Taslak",
+      "pendingReview": "İncelemede",
+      "upcoming": "Yakında",
+      "running": "Yapım aşaması",
+      "submissionsOpen": "Gönderiler açık",
+      "votingOpen": "Oylama açık",
+      "completed": "Tamamlandı",
+      "rejected": "Reddedildi",
+      "archived": "Arşivlendi",
+      "votingPending": "Oylama bekleniyor"
+    }
+  },
+  "CookieBanner": {
+    "message": "Deneyiminizi geliştirmek için çerezleri kullanıyoruz. Gerekli çerezler sitenin çalışması için zorunludur; analiz çerezleri ise siteyi nasıl kullandığınızı anlamamıza yardımcı olur.",
+    "learnMore": "Daha fazla bilgi",
+    "acceptAll": "Hepsini kabul et",
+    "customize": "Özelleştir",
+    "essentialCookies": "Gerekli çerezler (zorunlu)",
+    "analyticsCookies": "Analiz çerezleri",
+    "savePreferences": "Tercihleri kaydet"
+  },
+  "Footer": {
+    "copyright": "© 2026 modifold.com",
+    "sections": "Bölümler",
+    "community": "Topluluk",
+    "legal": "Yasal",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfUse": "Kullanım Şartları",
+    "contentRules": "İçerik Kuralları",
+    "copyrightPolicy": "Telif Hakkı ve DMCA Politikası",
+    "notOfficial": "RESMİ HYTALE HİZMETİ DEĞİLDİR. HYPIXEL STUDIOS CANADA INC. TARAFINDAN ONAYLANMAMIŞTIR VE HYTALE İLE BAĞLANTILI DEĞİLDİR.",
+    "mods": "Modlar",
+    "news": "Haberler",
+    "openSourceSoon": "Modifold açık kaynaklıdır.",
+    "apiDocs": "API Dokümantasyonu",
+    "inspiredBy": "Şundan ilham alınmıştır:",
+    "modrinthModal": {
+      "openAriaLabel": "Modrinth açıklamasını aç",
+      "closeAriaLabel": "Kapat",
+      "title": "Modrinth ilhamı hakkında",
+      "paragraph1": "Modifold, Modrinth kodunu kopyalamaz veya kullanmaz. Kod tabanımız bağımsız olarak yazılmıştır.",
+      "paragraph2Prefix": "Modrinth ekibinin izniyle",
+      "paragraph2Suffix": "yalnızca görsel blok yerleşiminden ilham alıyoruz (örneğin, bir mod sayfasındaki düzen kalıpları).",
+      "paragraph3": "Ocak 2026'da Modrinth'ten izin istedik ve atfın isteğe bağlı olduğu, kararın bize ait olduğu onayını aldık.",
+      "quote1": "Bununla birlikte internetteki neredeyse her şey başka bir şeyin yeniden yapımıdır ve bunun seni durdurmasına izin vermezdim.",
+      "quote2": "Mantıklı olduğunda ilham al, işlerin nasıl yürümesi gerektiğine dair kendi bakışını oluşturmak için zaman ayır (Modrinth'in kendisinde de geliştirilecek pek çok alan var) ve paylaşmaya değer bir şey inşa etmeye odaklan!",
+      "quote3": "Modrinth'e atıf yapıp yapmamak tamamen sana bağlı."
+    }
+  },
+  "Layout": {
+    "stagingBanner": "Staging ortamı: bazı özellikler çalışmayabilir veya kararsız olabilir."
+  },
+  "NotFound": {
+    "title": "Sayfa bulunamadı",
+    "message": "Bağlantı yok, taşınmış ya da silinmiş."
+  },
+  "HomePage": {
+    "title": "Hytale modlarınız için bir yuva - Modifold",
+    "description": "Hytale modlama sahnesini keşfedin, topluluğun ürettiklerini oynayın ve kendi çalışmalarınızı dünyayla paylaşın.",
+    "heroTitle": "{hytale} modlarınız için bir yuva",
+    "heroDescription": "Hytale modlama sahnesini keşfedin, topluluğun ürettiklerini oynayın ve kendi çalışmalarınızı dünyayla paylaşın.",
+    "exploreMods": "Modları keşfet",
+    "dashboardCta": "Kontrol paneline git",
+    "loginCta": "Giriş yap",
+    "statsTitle": "Birlikte büyüyoruz: Topluluktan {count}+ mod",
+    "searchPlaceholder": "Modları ada göre ara",
+    "noProjects": "Proje bulunamadı",
+    "creatorsSpotlightTitle": "Öne çıkan üreticiler",
+    "creatorsSpotlightDescription": "Hytale mod sahnesini şekillendiren üreticilerle tanışın.",
+    "noCreators": "Henüz üretici yok",
+    "forPlayersTitle": "Oyuncular için",
+    "forPlayersDescription": "Topluluğun ürettiği modları bulun ve indirin. En yeni haberleri ve sürümleri takip edin.",
+    "forCreatorsTitle": "Üreticiler için",
+    "forCreatorsDescription": "Modlarınızı yükleyin, dünyayla paylaşın ve Hytale için tasarlanmış bir platformda kitlenizle büyüyün.",
+    "latestNewsTitle": "Modifold’dan son haberler",
+    "viewAllNews": "Tüm haberleri görüntüle",
+    "commentsTitle": "Yorumlarla destek",
+    "commentsDescription": "Sürümleri tartışın, geri bildirim bırakın ve modları geliştirmeye yardımcı olun.",
+    "localesDescription": "Arayüz İngilizce, İspanyolca, Portekizce, Rusça, Türkçe ve Ukraynaca dillerinde.",
+    "showcase": {
+      "playersBadge": "Oyuncular için",
+      "playersTitle": "İhtiyacınızı hızlıca bulun",
+      "playersLead": "Anlık arama ve anlaşılır kartlar, oyun tarzınıza uygun modları hemen bulmanıza yardımcı olur.",
+      "searchPlaceholder": "Proje ara...",
+      "sortRelevance": "Alaka düzeyine göre"
+    },
+    "creatorSection": {
+      "badge": "Üreticiler için",
+      "title": "Üretimlerinizi toplulukla paylaşın",
+      "lead": "Modifold, üreticilere yayınlama, proje sunumu, ekip çalışması ve topluluk iletişimi için pratik araçlar sunar."
+    },
+    "creatorCards": {
+      "team": {
+        "title": "Ekipler ve organizasyonlar",
+        "description": "Üreticileri tek bir ekipte toplayın, rolleri dağıtın ve projeleri organizasyon adına yayınlayın."
+      },
+      "versions": {
+        "title": "Esnek sürümler",
+        "description": "Sürümleri kanallar, oyun sürümü desteği ve loader'larla yayınlayın; oyuncular uyumlu modları hızla bulsun."
+      },
+      "pages": {
+        "title": "Zengin proje sayfaları",
+        "description": "Projenizi Markdown açıklaması, galeri, bağlantılar, etiketler ve lisans bilgisiyle tek yerde sunun."
+      },
+      "feedback": {
+        "title": "Topluluktan geri bildirim",
+        "description": "Yorumlar, üreticilerin hızlı geri bildirim almasına ve her sürümü geliştirmesine yardımcı olur."
+      },
+      "moderation": {
+        "title": "Net moderasyon",
+        "description": "Basit gönderim adımları, karar geçmişi ve şikayet sistemi; oyuncular ve üreticiler için daha güvenli yayınlama sağlar."
+      },
+      "notifications": {
+        "title": "Takipler ve bildirimler",
+        "description": "Favori üreticilerinizi takip edin, bildirim alın ve yeni sürüm ile güncellemeleri kaçırmayın."
+      }
+    },
+    "analyticsSection": {
+      "badge": "Modifold Analytics",
+      "title": "Modunuzun gerçek kullanımını takip edin",
+      "lead": "Modunuzu kaç oyuncunun kullandığını ve kaç sunucunun aktif olduğunu zaman içinde takip edin. Modifold Analytics, üreticilere gerçek oyun içi kullanım için net ve gizliliğe saygılı bir sinyal sunar.",
+      "cta": "Projenizi yayınlayın",
+      "chartLabel": "Modifold Analytics çevrimiçi etkinlik grafiği önizlemesi",
+      "chartTitle": "Modifold Analytics",
+      "chartSubtitle": "Modunuzu kullanan çevrimiçi oyuncular ve aktif sunucular.",
+      "players": "Oyuncular",
+      "servers": "Sunucular",
+      "downloads": "İndirmeler",
+      "activeServers": "Aktif sunucular",
+      "onlineNow": "Şu an çevrimiçi",
+      "learnMore": "Daha fazla bilgi"
+    },
+    "notificationsPreview": {
+      "badge": "Oyuncular için",
+      "title": "Yeni sürümleri kaçırmayın",
+      "lead": "Favori modlarınız güncelleme yayınladığında bildirim almak için üreticileri ve projeleri takip edin.",
+      "panelTitle": "Bildirimler",
+      "releasedVersion": "{version} sürümünü yayınladı:",
+      "days": {
+        "yesterday": "Dün",
+        "previous": "20 Mayıs 2026"
+      }
+    }
+  },
+  "ProjectCreationModal": {
+    "title": "Proje olusturma",
+    "close": "Kapat",
+    "name": "Ad",
+    "summary": "Kısa açıklama",
+    "summaryHint": "Projenizi anlatan bir veya iki cümle.",
+    "projectType": "Proje türü",
+    "icon": "Simge (zorunlu)",
+    "placeholders": {
+      "name": "Proje adı",
+      "summary": "Bu proje şunu ekler..."
+    },
+    "projectTypes": {
+      "mod": "Mod",
+      "modpack": "Modpack"
+    },
+    "createProject": "Proje oluştur",
+    "creating": "Oluşturuluyor...",
+    "cancel": "İptal",
+    "errors": {
+      "noProjectType": "Lütfen bir proje türü seçin",
+      "generic": "Proje oluşturma hatası"
+    },
+    "success": "Proje oluşturuldu!"
+  },
+  "ProjectPage": {
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "backToVersions": "Sürümlere dön",
+    "loginRequired": "Bu projeyi beğenmek için lütfen giriş yapın",
+    "likeError": "Beğeni durumu değiştirilemedi. Lütfen tekrar deneyin.",
+    "links": "Bağlantılar",
+    "reportIssues": "Sorunlar",
+    "viewSource": "Kaynak kodu görüntüle",
+    "wiki": "Wiki",
+    "joinDiscord": "Discord sunucusuna katıl",
+    "iconAlt": "{title} proje simgesi",
+    "ownerAvatarAlt": "{username} kullanıcı avatarı",
+    "editSettings": "Ayarları düzenle",
+    "status": {
+      "draft": "Taslak",
+      "moderation": "İncelemede"
+    },
+    "tabs": {
+      "description": "Açıklama",
+      "gallery": "Galeri",
+      "versions": "Sürümler",
+      "gameVersion": "Oyun sürümleri",
+      "gameChannel": "Kanallar",
+      "loader": "Yükleyiciler",
+      "comments": "Yorumlar",
+      "issues": "Issues"
+    },
+    "creators": "Üreticiler",
+    "owner": "Sahip",
+    "organizationOwner": "Organizasyon",
+    "created": "Oluşturulma",
+    "updated": "Güncellendi",
+    "playersLast14dTooltip": "Son 14 gunde bu modu {count} oyuncu kullandi",
+    "id": "ID:",
+    "notFound": "Proje bulunamadı",
+    "metadata": {
+      "title": "{title} {titlePrefix} - Modifold",
+      "openGraph": {
+        "title": "{titlePrefix}: {title}"
+      },
+      "notFound": "Proje bulunamadı - Modifold",
+      "version": {
+        "title": "{version} - {project} - Modifold",
+        "description": "{project} projesinin {version} sürümü",
+        "notFound": "Sürüm bulunamadı - Modifold",
+        "unknownProject": "Proje"
+      }
+    },
+    "editVersion": "Sürümü düzenle",
+    "versionNumber": "Sürüm numarası",
+    "changelog": "Değişiklik günlüğü",
+    "releaseChannel": "Yayın kanalı",
+    "gameVersions": "Oyun sürümleri",
+    "loaders": "Yükleyiciler",
+    "file": "Dosya",
+    "selectGameVersions": "Oyun sürümlerini seçin",
+    "selectLoaders": "Yükleyicileri seçin",
+    "update": "Güncelle",
+    "updating": "Güncelleniyor...",
+    "delete": "Sil",
+    "cancel": "İptal",
+    "fillRequiredFields": "Lütfen tüm zorunlu alanları doldurun",
+    "versionUpdated": "Sürüm başarıyla güncellendi",
+    "confirmDeleteVersion": "Bu sürümü silmek istediğinize emin misiniz?",
+    "versionDeleted": "Sürüm başarıyla silindi",
+    "errorOccurred": "Bir hata oluştu. Lütfen tekrar deneyin.",
+    "detailsTitle": "Detaylar",
+    "licenseTitle": "Lisans",
+    "licensedAs": "{license} ile lisanslandı",
+    "download": "İndir",
+    "featuredVersionsTitle": "Öne çıkan sürümler",
+    "showAllVersions": "Tümü",
+    "downloadVersionAria": "{version} sürümünü indir",
+    "changesTitle": "Değişiklikler",
+    "noChanges": "Değişiklik yok",
+    "filesTitle": "Dosyalar",
+    "noFiles": "Dosya yok",
+    "close": "Kapat",
+    "versions": {
+      "headers": {
+        "version": "Sürüm",
+        "statistics": "İstatistikler"
+      },
+      "notSpecified": "Belirtilmedi",
+      "published": "Yayınlanma:",
+      "downloads": "indirme",
+      "statuses": {
+        "approved": "Yayınlandı",
+        "pending": "İncelemede",
+        "scanning": "İncelemede",
+        "needs_review": "İncelemede",
+        "blocked": "Engellendi",
+        "error": "İnceleme hatası"
+      },
+      "channels": {
+        "release": "Kararlı",
+        "beta": "Beta",
+        "alpha": "Alfa"
+      },
+      "dependencies": {
+        "title": "Bağımlılıklar",
+        "unknownDependency": "Bilinmeyen bağımlılık",
+        "types": {
+          "required": "Zorunlu",
+          "optional": "İsteğe bağlı",
+          "incompatible": "Uyumsuz",
+          "embedded": "Gömülü"
+        }
+      },
+      "downloadModal": {
+        "description": "Bu modun çalışması için ek kütüphaneler veya modlar gerekir.",
+        "anyVersion": "Uyumlu herhangi bir sürüm",
+        "openDependency": "{dependency} aç"
+      },
+      "metadata": {
+        "title": "Meta verileri",
+        "gameVersion": "Oyun sürümü",
+        "platform": "Platform",
+        "releaseChannel": "Yayın kanalı",
+        "downloads": "İndirmeler",
+        "publicationDate": "Yayın tarihi",
+        "versionId": "Sürüm kimliği"
+      }
+    },
+    "filters": {
+      "gameVersionsAria": "Oyun sürümlerine göre filtrele",
+      "channelsAria": "Kanallara göre filtrele",
+      "loadersAria": "Yükleyicilere göre filtrele"
+    },
+    "gallery": {
+      "updateSuccess": "Görsel güncellendi",
+      "updateError": "Görsel güncellenirken hata oluştu",
+      "deleteConfirm": "Bu görseli silmek istediğinize emin misiniz?",
+      "deleteSuccess": "Görsel silindi",
+      "deleteError": "Görsel silinirken hata oluştu",
+      "viewImage": "{title} görselini tam ekran görüntüle",
+      "image": "Galeri görseli",
+      "editImage": "Görseli düzenle",
+      "noImages": "Galeride görsel yok.",
+      "lightboxLabel": "Görsel lightbox",
+      "openInNewTab": "Görseli yeni sekmede aç",
+      "title": "Başlık",
+      "description": "Açıklama",
+      "orderIndex": "Sıra indeksi",
+      "featured": "Öne çıkan"
+    },
+    "versionNotFound": "Sürüm bulunamadı",
+    "projectNotFound": "Proje bulunamadı",
+    "comments": {
+      "title": "Yorumlar",
+      "loginHint": "Yorum bırakmak için giriş yapın.",
+      "placeholder": "Bir yorum yazın...",
+      "submit": "Paylaş",
+      "reply": "Yanıtla",
+      "cancel": "İptal",
+      "delete": "Sil",
+      "hide": "Gizle",
+      "show": "Göster",
+      "authorLabel": "Yazar",
+      "deleted": "Yorum silindi.",
+      "loading": "Yorumlar yükleniyor...",
+      "rateLimited": "Çok hızlı yorum yapıyorsunuz. Birkaç saniye sonra tekrar deneyin.",
+      "errors": {
+        "load": "Yorumlar yüklenemedi",
+        "submit": "Yorum gönderilemedi",
+        "moderate": "Yorum güncellenemedi"
+      },
+      "status": {
+        "hidden": "Gizli",
+        "spam": "Spam",
+        "deleted": "Silindi"
+      },
+      "emptyLoggedIn": "Henüz yorum yok. Bu mod için ilk yorumu sen bırak!",
+      "emptyGuest": "Henüz yorum yok. Bu mod için yorum bırakmak için giriş yapın."
+    },
+    "report": {
+      "moreActions": "Ek işlemler",
+      "openModal": "Projeyi şikayet et",
+      "alreadySubmitted": "Şikayet zaten gönderildi",
+      "alreadySubmittedToast": "Bu proje için zaten şikayet gönderdiniz.",
+      "loginRequired": "Bu projeyi şikayet etmek için giriş yapın.",
+      "copyLink": "Bağlantıyı kopyala",
+      "copySuccess": "Bağlantı kopyalandı",
+      "copyError": "Bağlantı kopyalanamadı"
+    },
+    "contents": "İçindekiler",
+    "poweredBy": "Destekleyen"
+  },
+  "DashboardClient": {
+    "userAvatarAlt": "{username} kullanıcı avatarı",
+    "projectIconAlt": "{title} proje simgesi",
+    "loading": "Projeler yükleniyor...",
+    "noProjects": "Henüz proje oluşturmadınız.",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "edit": "Düzenle",
+    "metadata": {
+      "title": "Kontrol paneli - Modifold",
+      "description": "Modifold’daki projelerinizi yönetin."
+    },
+    "byYou": "senin tarafından",
+    "byOrganization": "{name} tarafından"
+  },
+  "LikesDashboardClient": {
+    "projectIconAlt": "{title} proje simgesi",
+    "loading": "Beğenilen projeler yükleniyor...",
+    "noLikes": "Henüz hiçbir projeyi beğenmediniz.",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "metadata": {
+      "title": "Beğenilen Projeler - Modifold",
+      "description": "Modifold'da beğendiğiniz projeler."
+    }
+  },
+  "SettingsBlogPage": {
+    "sidebar": {
+      "profileIconAlt": "Profil simgesi",
+      "projects": "Projeler",
+      "likes": "Beğenilenler",
+      "notifications": "Bildirimler",
+      "settings": "Ayarlar",
+      "apiTokens": "API token’ları",
+      "verification": "Creator Rozeti",
+      "organizations": "Organizasyonlar",
+      "jams": "Mod jamler",
+      "profile": "Profil",
+      "appearance": "Görünüm",
+      "language": "Dil",
+      "accountSecurity": "Güvenlik",
+      "featureFlags": "Feature flags"
+    },
+    "username": "Kullanıcı adı",
+    "slug": {
+      "label": "URL",
+      "placeholder": "Enter profile URL",
+      "checking": "Checking URL availability...",
+      "available": "This URL is available.",
+      "errors": {
+        "required": "Enter a profile URL",
+        "too_short": "URL must be at least 4 characters",
+        "reserved_word": "URL cannot contain \"modifold\"",
+        "leading_hyphen": "URL cannot start with a hyphen",
+        "trailing_hyphen": "URL cannot end with a hyphen",
+        "invalid_format": "Only English letters, numbers, and hyphens between words are allowed",
+        "slug_taken": "This URL is already taken",
+        "generic": "Failed to check URL"
+      }
+    },
+    "description": "Açıklama",
+    "socialNetworks": "Sosyal ağlar",
+    "uploadAvatar": "Avatar yükle",
+    "avatarPreviewAlt": "Avatar önizlemesi",
+    "placeholders": {
+      "username": "Kullanıcı adınızı girin",
+      "description": "Kendinizden bahsedin",
+      "youtube": "YouTube URL",
+      "telegram": "Telegram URL",
+      "x": "X URL",
+      "discord": "Discord URL"
+    },
+    "language": {
+      "title": "Dil",
+      "russian": "Rusça",
+      "english": "İngilizce",
+      "spanish": "İspanyolca",
+      "portuguese": "Portekizce",
+      "ukrainian": "Ukraynaca",
+      "turkish": "Türkçe",
+      "notice": "Site dilini değiştirmek, çeviri yoksa bazı içeriklerin İngilizce görünmesine neden olabilir. Site henüz tamamen çevrilmediği için bazı içerikler İngilizce kalabilir.",
+      "description": "Site için tercih ettiğiniz dili seçin.",
+      "standard": "Standart diller"
+    },
+    "save": "Kaydet",
+    "errors": {
+      "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB",
+      "generic": "Ayarlar kaydedilirken hata oluştu"
+    },
+    "success": "Ayarlar başarıyla kaydedildi!",
+    "metadata": {
+      "title": "Hesap ayarları - Modifold"
+    },
+    "unsavedBar": {
+      "message": "Kaydedilmemis profil degisiklikleriniz var.",
+      "reset": "Sifirla"
+    },
+    "tabs": {
+      "profile": "Profil",
+      "language": "Dil"
+    },
+    "appearance": {
+      "title": "Görünüm",
+      "description": "Modifold’un bu cihazda nasıl görüneceğini seçin."
+    },
+    "flags": {
+      "title": "Feature flags",
+      "metadata": {
+        "title": "Feature flags — Modifold"
+      },
+      "defaultLabel": "Default:",
+      "defaultValue": "false",
+      "ariaLabelToggle": "Toggle"
+    },
+    "accountSecurity": {
+      "title": "Güvenlik",
+      "description": "Hassas hesap işlemlerini yönetin."
+    },
+    "passwordChange": {
+      "title": "Parolayı değiştir",
+      "description": "E-posta ile giriş için mevcut parolanızı ve yeni parolanızı girin.",
+      "currentPlaceholder": "Mevcut parola",
+      "newPlaceholder": "Yeni parola",
+      "showPassword": "Parolayı göster",
+      "hidePassword": "Parolayı gizle",
+      "submit": "Parolayı değiştir",
+      "submitting": "Kaydediliyor...",
+      "success": "Parola başarıyla değiştirildi",
+      "errors": {
+        "generic": "Parola değiştirilemedi",
+        "missing_fields": "Mevcut parolayı ve yeni parolayı girin",
+        "password_too_short": "Yeni parola en az 8 karakter olmalıdır",
+        "user_not_found": "Kullanıcı bulunamadı",
+        "password_login_disabled": "Bu hesap için parola ile giriş etkin değil",
+        "current_password_incorrect": "Mevcut parola yanlış",
+        "password_unchanged": "Yeni parola mevcut paroladan farklı olmalıdır"
+      }
+    },
+    "twoFactor": {
+      "title": "İki faktörlü doğrulama",
+      "description": "Girişte ekstra bir güvenlik katmanı ekleyin.",
+      "enable": "Doğrulayıcı bağla",
+      "disable": "2FA’yı devre dışı bırak",
+      "modalTitle": "Doğrulayıcı bağla",
+      "step1": "QR kodunu Google Authenticator, Authy veya Microsoft Authenticator ile tarayın.",
+      "manualKey": "QR okunmazsa anahtarı manuel girin",
+      "continue": "Devam",
+      "back": "Geri",
+      "cancel": "İptal",
+      "step2Title": "Doğrulama kodu",
+      "step2Description": "Uygulamadan tek kullanımlık kodu girin.",
+      "codePlaceholder": "Kodu girin...",
+      "confirm": "Onayla",
+      "submitting": "Kaydediliyor...",
+      "success": "İki faktörlü doğrulama etkinleştirildi",
+      "disabled": "İki faktörlü doğrulama devre dışı bırakıldı",
+      "disableTitle": "İki faktörlü doğrulamayı kapat",
+      "disableDescription": "2FA’yı kapatmak için uygulama kodunu girin.",
+      "close": "Kapat",
+      "errors": {
+        "setup": "2FA kurulumu başlatılamadı",
+        "missingCode": "Kodu girin",
+        "invalidCode": "Geçersiz kod"
+      }
+    }
+  },
+  "BrowsePage": {
+    "gameVersion": "Oyun sürümü",
+    "gameVersions": "Oyun sürümleri",
+    "showAllVersions": "Tüm sürümleri göster",
+    "loader": "Yükleyici",
+    "categories": "Kategoriler",
+    "clearFilters": "Filtreleri temizle",
+    "clearAllFilters": "Tüm filtreleri temizle",
+    "clearSearch": "Aramayı temizle",
+    "placeholders": {
+      "search": "Projeleri ara...",
+      "versionSearch": "Ara..."
+    },
+    "sort": {
+      "downloads": "En çok indirilen",
+      "recent": "En yeni eklenen",
+      "updated": "Son güncellenen"
+    },
+    "loading": "Projeler yükleniyor...",
+    "noProjects": "Henüz proje yok",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "view": {
+      "grid": "Izgara",
+      "list": "Liste"
+    },
+    "recommended": {
+      "ariaLabel": "Önerilen modlar",
+      "noSummary": "Henüz açıklama yok",
+      "downloadsTitle": "{count} indirme",
+      "openProject": "Aç",
+      "participate": "Katıl",
+      "collapse": "Önerileri daralt",
+      "expand": "Önerileri genişlet"
+    },
+    "mods": "Modlar",
+    "modpacks": "Mod paketleri"
+  },
+  "CategoryLabels": {
+    "adventure": "Macera",
+    "challenging": "Zorlu",
+    "combat": "Savaş",
+    "cursed": "Lanetli",
+    "decoration": "Dekorasyon",
+    "economy": "Ekonomi",
+    "equipment": "Ekipman",
+    "food": "Yiyecek",
+    "game_mechanics": "Oyun mekaniği",
+    "kitchen_sink": "Her Şey",
+    "library": "Kütüphane",
+    "lightweight": "Hafif",
+    "magic": "Büyü",
+    "management": "Yönetim",
+    "minigame": "Mini oyun",
+    "mobs": "Yaratıklar",
+    "multiplayer": "Çok oyunculu",
+    "optimization": "Optimizasyon",
+    "quests": "Görevler",
+    "social": "Sosyal",
+    "storage": "Depolama",
+    "technology": "Teknoloji",
+    "transportation": "Ulaşım",
+    "utility": "Araçlar",
+    "world_generation": "Dünya oluşturma",
+    "texture_packs": "Doku paketleri"
+  },
+  "ProfilePage": {
+    "userAvatarAlt": "{username} kullanıcı avatarı",
+    "loading": "Projeler yükleniyor...",
+    "noProjects": "Henüz proje yok",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "errors": {
+      "subscriptionChange": "Abonelik değiştirilemedi",
+      "loadingFollowList": "Takip listesi yüklenemedi"
+    },
+    "loginToSubscribe": "Abone olmak için giriş yapın",
+    "edit": "Düzenle",
+    "subscribe": "Abone ol",
+    "subscribed": "Abone olundu",
+    "accountFrozen": "Hesap donduruldu",
+    "defaultDescription": "Modifold'da yazar.",
+    "role": {
+      "developer": "Geliştirici",
+      "team": "Modifold Ekibi"
+    },
+    "joined": "Katılma:",
+    "subscribersLabel": "{count, plural, one {Abone} other {Aboneler}}",
+    "subscriptionsLabel": "{count, plural, one {Abonelik} other {Abonelikler}}",
+    "followersModal": {
+      "subscribersTitle": "Takipçiler",
+      "subscriptionsTitle": "Takip edilenler",
+      "loading": "Yükleniyor...",
+      "loadingMore": "Daha fazla yükleniyor...",
+      "empty": "Liste boş"
+    },
+    "moreActionsPlaceholder": "Daha fazla işlem yakında",
+    "moreActionsAria": "Daha fazla işlem",
+    "openAvatar": "Avatarı aç",
+    "lightboxLabel": "Profil avatarı önizlemesi",
+    "openInNewTab": "Görseli yeni sekmede aç",
+    "close": "Kapat",
+    "metadata": {
+      "title": "{username} - Modifold",
+      "notFound": "Kullanıcı bulunamadı - Modifold",
+      "frozen": "Hesap donduruldu - Modifold"
+    },
+    "remove": "Kaldır",
+    "organizationsTitle": "Organizasyonlar",
+    "linksTitle": "Bağlantılar",
+    "verifiedModal": {
+      "creatorBadgeAlt": "Creator rozeti",
+      "creatorBadgeText": "Bu üretici Modifold’da Creator Rozeti aldı.",
+      "officialBadgeText": "Bu hesap, Modifold temsilcileri tarafından resmi olarak doğrulanmıştır.",
+      "learnMore": "Daha fazla bilgi"
+    }
+  },
+  "SettingsProjectPage": {
+    "sidebar": {
+      "general": "Genel",
+      "description": "Açıklama",
+      "links": "Bağlantılar",
+      "versions": "Sürümler",
+      "gallery": "Galeri",
+      "tags": "Etiketler",
+      "analytics": "Analitik",
+      "issues": "Issues",
+      "moderation": "Moderasyon",
+      "members": "Üyeler",
+      "license": "Lisans"
+    },
+    "save": "Kaydet",
+    "unsavedBar": {
+      "message": "Kaydedilmemiş değişiklikleriniz var.",
+      "reset": "Sıfırla"
+    },
+    "metadata": {
+      "title": "Ayarlar - {title} - Modifold"
+    },
+    "analytics": {
+      "metadataTitle": "Analitik - {title} - Modifold",
+      "title": "Analitik",
+      "ranges": {
+        "3d": "3 gün",
+        "7d": "7 gün",
+        "30d": "30 gün",
+        "90d": "3 ay"
+      },
+      "chartTypes": {
+        "label": "Grafik türü",
+        "line": "Çizgi",
+        "bar": "Sütun",
+        "lineAria": "Çizgi grafik olarak göster",
+        "barAria": "Sütun grafik olarak göster"
+      },
+      "stats": {
+        "downloads": "İndirmeler",
+        "views": "Görüntülenmeler",
+        "countries": "Ülkeler",
+        "onlineNow": "Şu an çevrimiçi"
+      },
+      "live": {
+        "activeServers": "Aktif sunucular"
+      },
+      "online": {
+        "title": "Çevrimiçi sunucular ve oyuncular",
+        "legendServers": "Servers",
+        "legendPlayers": "Players",
+        "tooltipServers": "{count, plural, one {# sunucu} other {# sunucu}}",
+        "tooltipPlayers": "{count, plural, one {# oyuncu} other {# oyuncu}}"
+      },
+      "onlineInfo": {
+        "closeAriaLabel": "Modalı kapat",
+        "paragraph1Prefix": "Her mod geliştiricisi analytics modunu",
+        "paragraph1Suffix": "projesine entegre edip Modifold üzerinde detaylı istatistikleri görebilir.",
+        "paragraph2": "Örneğin: şu anda kaç oyuncunun çevrimiçi olduğu, çevrimiçi sayısının zamanla nasıl değiştiği ve kaç aktif sunucu olduğu.",
+        "installationLabel": "Kurulum hakkında daha fazla bilgi:"
+      },
+      "downloads": {
+        "title": "Sürüm indirmeleri",
+        "tooltip": "{count, plural, one {# indirme} other {# indirme}}"
+      },
+      "views": {
+        "title": "Proje sayfası görüntülenmeleri",
+        "tooltip": "{count, plural, one {# görüntülenme} other {# görüntülenme}}"
+      },
+      "countries": {
+        "eyebrow": "En iyi bölgeler",
+        "title": "Ülkeye göre indirmeler",
+        "empty": "Seçilen dönemde indirmeler için henüz ülke verisi yok."
+      }
+    },
+    "general": {
+      "iconAlt": "Proje simgesi",
+      "errors": {
+        "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB",
+        "save": "Proje ayarları kaydedilemedi",
+        "delete": "Proje silinemedi"
+      },
+      "success": {
+        "saved": "Proje ayarları kaydedildi",
+        "deleted": "Proje başarıyla silindi"
+      },
+      "confirmDelete": "\"{title}\" projesini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      "fields": {
+        "icon": "Simge",
+        "name": "Ad",
+        "summary": "Kısa açıklama",
+        "url": "URL",
+        "visibility": "Görünürlük",
+        "issues": "Issues",
+        "playersCount": "Oyuncu sayisini goster"
+      },
+      "placeholders": {
+        "name": "Proje adı",
+        "summary": "Bu proje şunu ekler...",
+        "url": "URL girin"
+      },
+      "hints": {
+        "summary": "En az 30 karakter.",
+        "url": "URL küçük harf olmalı, yalnızca harf ve rakam içermeli ve tire içerebilir. Maksimum 30 karakter.",
+        "visibility": "Herkese açık: aramada ve profillerde görünür. Liste dışı: yayınlı ama aramada görünmez. Özel: yalnızca üyelere açık.",
+        "issues": "Controls whether the Issues tab and issue pages are available for this project.",
+        "playersCount": "Proje kartinda, modunuzla son 2 haftadaki toplam oyun giris sayisini gostermeyi saglar."
+      },
+      "playersCount": {
+        "enabled": "Evet",
+        "disabled": "Hayir"
+      },
+      "issues": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "visibility": {
+        "public": "Herkese açık",
+        "unlisted": "Liste dışı",
+        "private": "Özel"
+      },
+      "actions": {
+        "save": "Kaydet",
+        "delete": "Projeyi sil"
+      },
+      "organization": {
+        "title": "Organizasyon",
+        "successUpdated": "Proje organizasyonu güncellendi",
+        "errors": {
+          "update": "Organizasyon güncellenemedi"
+        },
+        "noOrganization": "Organizasyon yok",
+        "hint": "Bu projeyi bir organizasyona bağlayarak organizasyon sahipliğinde gösterin.",
+        "transfer": "Yönetimi devret",
+        "transferring": "Devrediliyor..."
+      }
+    },
+    "description": {
+      "success": "Açıklama güncellendi",
+      "errors": {
+        "save": "Açıklama güncellenemedi"
+      },
+      "title": "Açıklama",
+      "placeholder": "Proje açıklamasını girin (Markdown desteklenir)",
+      "hint": "En az 50 karakter.",
+      "preview": "Önizleme",
+      "actions": {
+        "save": "Kaydet"
+      }
+    },
+    "links": {
+      "success": "Bağlantılar güncellendi",
+      "errors": {
+        "save": "Bağlantılar güncellenemedi"
+      },
+      "fields": {
+        "issueTracker": "Hata/İş takip sistemi",
+        "sourceCode": "Kaynak kodu",
+        "wiki": "Wiki",
+        "hytaleModdingWiki": "HytaleModding Wiki",
+        "discord": "Discord"
+      },
+      "placeholders": {
+        "issueTracker": "Takip sistemi URL",
+        "sourceCode": "Kaynak kodu URL",
+        "wiki": "Wiki URL",
+        "hytaleModdingWiki": "https://wiki.hytalemodding.dev/mod/voile",
+        "discord": "Discord URL"
+      },
+      "actions": {
+        "save": "Kaydet"
+      }
+    },
+    "license": {
+      "success": "Lisans başarıyla güncellendi",
+      "errors": {
+        "save": "Lisans güncellenemedi"
+      },
+      "title": "Proje lisansı",
+      "actions": {
+        "save": "Lisansı kaydet",
+        "clear": "Lisansı temizle"
+      },
+      "current": "Mevcut lisans",
+      "noSelection": "Lisans seçilmedi"
+    },
+    "tags": {
+      "success": "Etiketler güncellendi",
+      "errors": {
+        "save": "Etiketler güncellenemedi"
+      },
+      "title": "Proje etiketleri",
+      "selected": "{count, plural, one {# seçildi} other {# seçildi}}",
+      "select": "Etiket seç",
+      "actions": {
+        "save": "Etiketleri kaydet",
+        "clear": "Etiketleri temizle"
+      },
+      "current": "Mevcut etiketler",
+      "none": "Etiket seçilmedi."
+    },
+    "versions": {
+      "errors": {
+        "selectVersionsAndLoaders": "Lütfen en az bir oyun sürümü ve bir yükleyici seçin",
+        "upload": "Sürüm yüklenemedi",
+        "fileTooLarge": "Dosya çok büyük. Maksimum boyut 100 MB"
+      },
+      "success": "Sürüm yüklendi",
+      "successModeration": "Sürüm moderasyona gönderildi",
+      "title": "Yeni sürüm yükle",
+      "dependenciesEditor": {
+        "title": "Bağımlılık ekle",
+        "description": "Bir proje seçin, isteğe bağlı bir sürüm ve ilişki türü belirleyin, ardından listeye ekleyin.",
+        "fields": {
+          "project": "Proje",
+          "version": "Sürüm",
+          "dependencyRelation": "Bağımlılık ilişkisi"
+        },
+        "dependencyTypes": {
+          "required": "Zorunlu",
+          "optional": "İsteğe bağlı",
+          "incompatible": "Uyumsuz",
+          "embedded": "Gömülü"
+        },
+        "placeholders": {
+          "searchProject": "Ada göre ara veya ID yapıştır...",
+          "selectOrPasteVersionId": "Sürüm seçin veya sürüm ID'si yapıştırın...",
+          "pasteVersionIdOptional": "Sürüm ID'si yapıştırın (isteğe bağlı)"
+        },
+        "popover": {
+          "typeAtLeast": "Aramak için en az {count} karakter yazın.",
+          "searching": "Aranıyor...",
+          "noProjectsFound": "Proje bulunamadı. Yine de tam proje ID'sini yapıştırabilirsiniz.",
+          "unableToLoadProjects": "Projeler yüklenemedi",
+          "anyVersion": "Herhangi bir sürüm",
+          "selectProjectToChooseVersions": "Sürümlerden seçim yapmak için bir proje seçin.",
+          "loadingVersions": "Sürümler yükleniyor...",
+          "noMatchingVersions": "Eşleşen sürüm yok. Yine de tam sürüm ID'sini yapıştırabilirsiniz.",
+          "unableToLoadVersions": "Sürümler yüklenemedi"
+        },
+        "actions": {
+          "add": "Ekle",
+          "remove": "Kaldır"
+        },
+        "list": {
+          "addedDependencies": "Eklenen bağımlılıklar",
+          "unknownProject": "bilinmeyen proje"
+        }
+      },
+      "fields": {
+        "versionNumber": "Sürüm numarası",
+        "changelog": "Değişiklik günlüğü",
+        "releaseChannel": "Yayın kanalı",
+        "gameVersions": "Oyun sürümleri",
+        "loaders": "Yükleyiciler"
+      },
+      "placeholders": {
+        "versionNumber": "ör. 1.0",
+        "changelog": "Bu sürümdeki değişiklikleri açıklayın"
+      },
+      "releaseChannels": {
+        "release": "Yayın",
+        "beta": "Beta",
+        "alpha": "Alfa"
+      },
+      "gameVersionGroups": {
+        "releases": "Yayınlar",
+        "preReleases": "Ön yayınlar"
+      },
+      "selectGameVersions": "Oyun sürümlerini seç",
+      "selectedGameVersions": "{count, plural, one {# seçildi} other {# seçildi}}",
+      "selectLoaders": "Yükleyicileri seç",
+      "selectedLoaders": "{count, plural, one {# seçildi} other {# seçildi}}",
+      "actions": {
+        "upload": "Sürümü yükle"
+      },
+      "modal": {
+        "editMetadataTitle": "Meta verileri düzenle",
+        "editDetailsTitle": "Detayları düzenle",
+        "editFilesTitle": "Dosyaları düzenle",
+        "steps": {
+          "files": "Dosyalar",
+          "metadata": "Meta veriler",
+          "compatibility": "Uyumluluk",
+          "dependencies": "Bağımlılıklar"
+        },
+        "dropzone": {
+          "uploadTitle": "Sürüm dosyası yükle",
+          "uploadHint": "Bir dosyayı sürükleyip bırakın veya göz atmak için tıklayın",
+          "replaceTitle": "Sürüm dosyasını değiştir (isteğe bağlı)",
+          "replaceHint": "Yeni bir dosyayı sürükleyip bırakın veya göz atmak için tıklayın"
+        },
+        "actions": {
+          "continue": "Devam",
+          "back": "Geri",
+          "uploading": "Yükleniyor..."
+        }
+      }
+    },
+    "gallerySettings": {
+      "success": "Görsel yüklendi",
+      "errors": {
+        "upload": "Görsel yüklenemedi"
+      },
+      "title": "Yeni görsel ekle",
+      "fields": {
+        "title": "Başlık",
+        "description": "Açıklama",
+        "order": "Sıra",
+        "featured": "Öne çıkan"
+      },
+      "placeholders": {
+        "title": "Görsel adı",
+        "description": "Görsel açıklaması",
+        "order": "Sıra numarası"
+      },
+      "featuredHint": "Öne çıkan galeri görseli arama sonuçlarında ve proje kartınızda görünür. Galeride yalnızca bir görsel öne çıkarılabilir.",
+      "actions": {
+        "add": "Görsel ekle"
+      },
+      "modal": {
+        "steps": {
+          "files": "Dosyalar",
+          "metadata": "Meta veriler"
+        },
+        "dropzone": {
+          "uploadTitle": "Görsel yükle",
+          "uploadHint": "Bir görseli sürükleyip bırakın veya seçmek için tıklayın",
+          "replaceTitle": "Görseli değiştir (isteğe bağlı)",
+          "replaceHint": "Yeni bir görseli sürükleyip bırakın veya seçmek için tıklayın"
+        },
+        "actions": {
+          "continue": "Devam",
+          "back": "Geri",
+          "uploading": "Yükleniyor..."
+        }
+      },
+      "states": {
+        "enabled": "Açık",
+        "disabled": "Kapalı"
+      }
+    },
+    "moderation": {
+      "errors": {
+        "icon": "Lütfen proje için bir simge yükleyin",
+        "description": "Lütfen proje için bir açıklama ekleyin",
+        "summary": "Lütfen proje için kısa bir açıklama ekleyin",
+        "versions": "Lütfen proje için en az bir sürüm yükleyin",
+        "alreadySubmitted": "Proje zaten moderasyona gönderildi",
+        "submit": "Proje moderasyona gönderilemedi"
+      },
+      "title": "Projeyi moderasyona gönder",
+      "description": "İncelemeye göndermeden önce tüm zorunlu alanların doldurulduğundan emin olun",
+      "cards": {
+        "icon": {
+          "title": "Proje simgesi",
+          "done": "Başarıyla yüklendi",
+          "required": "Zorunlu (önerilen 512x512 px)"
+        },
+        "summary": {
+          "title": "Kısa açıklama",
+          "done": "İyi görünüyor!",
+          "required": "Kısa açıklama (1-2 cümle)"
+        },
+        "description": {
+          "title": "Açıklama",
+          "done": "Detaylı ve hazır",
+          "required": "Tam proje açıklaması (önerilen 300+ karakter)"
+        },
+        "versions": {
+          "title": "Sürümler",
+          "done": "En az bir sürüm yüklendi",
+          "required": "En az bir sürüm yükleyin"
+        }
+      },
+      "status": {
+        "queued": "Proje zaten moderasyona gönderildi",
+        "approved": "Proje onaylandı"
+      },
+      "history": {
+        "title": "Moderasyon geçmişi",
+        "empty": "Henüz moderasyon olayı yok",
+        "actions": {
+          "queued": "İncelemeye gönderildi",
+          "approved": "Onaylandı",
+          "rejected": "Reddedildi",
+          "changesRequested": "Değişiklik istendi"
+        },
+        "reason": "Gerekçe",
+        "moderator": "Moderatör"
+      },
+      "actions": {
+        "submitting": "Gönderiliyor...",
+        "alreadySubmitted": "Zaten gönderildi",
+        "approved": "Proje onaylandı",
+        "submit": "Moderasyona gönder"
+      },
+      "success": {
+        "submit": "Proje moderasyona gönderildi"
+      }
+    },
+    "members": {
+      "errors": {
+        "fetch": "Proje üyeleri yüklenemedi",
+        "enterUsername": "Lütfen bir kullanıcı adı girin",
+        "invite": "Üye davet edilemedi",
+        "roleEmpty": "Rol boş olamaz",
+        "roleTooLong": "Rol çok uzun (maks. 50)",
+        "updateRole": "Rol güncellenemedi",
+        "remove": "Üye kaldırılamadı",
+        "leave": "Projeden ayrılınamadı"
+      },
+      "success": {
+        "inviteSent": "Davet gönderildi",
+        "roleUpdated": "Rol güncellendi",
+        "removed": "Üye kaldırıldı",
+        "left": "Projeden ayrıldınız"
+      },
+      "confirmRemove": "{username} projeden kaldırılsın mı?",
+      "confirmLeave": "\"{title}\" projesinden ayrılmak istiyor musunuz?",
+      "inviteTitle": "Üye davet et",
+      "inviteDescription": "Bu projede birlikte çalışmaları için insanları davet edin.",
+      "placeholders": {
+        "username": "Kullanıcı adını girin",
+        "role": "Rol"
+      },
+      "actions": {
+        "invite": "Davet et",
+        "leave": "Projeden ayrıl",
+        "remove": "Kaldır",
+        "saveRole": "Kaydet"
+      },
+      "leaveTitle": "Projeden ayrıl",
+      "leaveDescription": "Bu projeye erişiminizi kaybedeceksiniz.",
+      "none": "Henüz üye yok.",
+      "avatarAlt": "{username} üye avatarı",
+      "roleLabel": "Rol",
+      "status": {
+        "pending": "Beklemede",
+        "accepted": "Kabul edildi",
+        "member": "Üye"
+      }
+    }
+  },
+  "NewsPage": {
+    "title": "Haberler",
+    "featuredArticle": {
+      "label": "Öne çıkan makale"
+    },
+    "moreTitle": "Daha fazla makale",
+    "notFound": "Makale bulunamadı",
+    "byline": {
+      "and": "ve",
+      "team": "Modifold Ekibi",
+      "separator": "•"
+    }
+  },
+  "LoginModal": {
+    "close": "Kapat",
+    "continueWith": "{provider} ile devam et",
+    "continueWithEmail": "E-posta ile devam et",
+    "errors": {
+      "telegram": "Telegram ile giriş hatası",
+      "github": "GitHub ile giriş hatası",
+      "discord": "Discord ile giriş hatası",
+      "telegramProcessing": "Telegram mesajı işlenirken hata oluştu",
+      "githubProcessing": "GitHub mesajı işlenirken hata oluştu",
+      "discordProcessing": "Discord mesajı işlenirken hata oluştu"
+    },
+    "emailAuth": {
+      "close": "Kapat",
+      "back": "Geri",
+      "loginTitle": "E-posta ile giriş",
+      "registerTitle": "Hesap oluştur",
+      "verifyTitle": "E-postanızı doğrulayın",
+      "emailPlaceholder": "E-posta",
+      "usernamePlaceholder": "Ad veya başlık",
+      "passwordPlaceholder": "Parola",
+      "codePlaceholder": "E-posta kodu",
+      "showPassword": "Parolayı göster",
+      "hidePassword": "Parolayı gizle",
+      "loginButton": "Giriş yap",
+      "registerButton": "Hesap oluştur",
+      "verifyButton": "Doğrula",
+      "submitting": "Lütfen bekleyin...",
+      "createAccount": "Hesap oluştur",
+      "backToLogin": "E-posta ile giriş",
+      "codeSent": "E-postanıza bir kod gönderdik.",
+      "verifyDescription": "{email} adresine gönderilen 6 haneli kodu girin. Kod 5 dakika geçerlidir.",
+      "captchaMissing": "hCaptcha site key yapılandırılmadı.",
+      "errors": {
+        "invalidCredentials": "E-posta veya şifre hatalı",
+        "login": "E-posta ile giriş yapılamadı",
+        "register": "Kayıt başlatılamadı",
+        "verify": "Kod doğrulanamadı"
+      }
+    },
+    "dataModal": {
+      "title": "Hangi verileri topluyoruz?",
+      "intro": "Gizliliğinize önem veriyoruz ve Modifold’da güvenli kimlik doğrulama için sosyal girişleri (Telegram, GitHub, Discord) kullanıyoruz. Yalnızca çalışması için gereken minimum veriyi toplarız:",
+      "items": {
+        "usernameAvatar": "Profilinizi tanımlamak için kullanıcı adı ve avatar.",
+        "email": "İletişim ve kişiselleştirme için e-posta adresi (sosyal ağ sağlıyorsa)."
+      },
+      "outro": "Parola toplamıyoruz ve sosyal ağlardan parola almıyoruz. Tüm veriler yalnızca Modifold’un güvenli sunucularında saklanır ve asla üçüncü taraflarla paylaşılmaz. Ayrıntılar için Gizlilik Politikamıza bakın."
+    }
+  },
+  "DeleteAccountSection": {
+    "title": "Tehlikeli bölge",
+    "description": "Tüm projeleriniz, sürümleriniz, yüklediğiniz dosyalar, görseller, abonelikler ve diğer ilgili bilgiler kalıcı olarak silinecektir.",
+    "deleteButton": "Hesabımı kalıcı olarak sil",
+    "confirmTitle": "Kesinlikle emin misiniz?",
+    "confirmDescription": "Bu işlem geri alınamaz. Tüm projeleriniz, dosyalarınız, görselleriniz, aboneleriniz ve hesap verileriniz kalıcı olarak silinecektir.",
+    "cancel": "İptal",
+    "confirmDelete": "Evet, hesabımı sil",
+    "deleting": "Siliniyor...",
+    "success": "Hesap ve ilgili tüm veriler başarıyla silindi",
+    "errors": {
+      "generic": "Hesap silinemedi"
+    }
+  },
+  "SettingsAPIPage": {
+    "sidebar": {
+      "profileIconAlt": "Profil simgesi"
+    },
+    "title": "API token’ları",
+    "description": "API token’ları, harici uygulamaların ve betiklerin sizin adınıza Modifold’a erişmesini sağlar. Güvende tutun ve asla paylaşmayın.",
+    "tokenName": "Token adı",
+    "placeholders": {
+      "tokenName": "Betiğim için token"
+    },
+    "expiration": "Geçerlilik süresi",
+    "createToken": "Token oluştur",
+    "close": "Kapat",
+    "cancel": "İptal",
+    "creating": "Oluşturuluyor...",
+    "newTokenTitle": "Yeni API token’ı oluşturuldu!",
+    "copy": "Kopyala",
+    "importantLabel": "Önemli:",
+    "importantBody": "Bu token bir daha gösterilmeyecek. Güvenli bir yerde saklayın.",
+    "expiresLabel": "Bitiş tarihi:",
+    "never": "Asla",
+    "tokensTitle": "API token’larınız",
+    "loadingTokens": "Token’lar yükleniyor...",
+    "noTokens": "Henüz API token’ınız yok.",
+    "revoke": "İptal et",
+    "confirmRevoke": "Bu token’ı iptal etmek istediğinize emin misiniz?",
+    "docsPrompt": "Yardım mı lazım? Şuraya göz atın:",
+    "docsLink": "API Dokümantasyonu",
+    "durations": {
+      "week": "1 hafta",
+      "month": "1 ay",
+      "quarter": "3 ay",
+      "year": "1 yıl",
+      "forever": "Süresiz"
+    },
+    "success": {
+      "created": "Token oluşturuldu! Şimdi kopyalayın - bir daha görünmeyecek.",
+      "copied": "Token panoya kopyalandı!",
+      "revoked": "Token iptal edildi"
+    },
+    "errors": {
+      "loadTokens": "API token’ları yüklenemedi",
+      "tokenNameRequired": "Lütfen token adı girin",
+      "createToken": "Token oluşturulamadı",
+      "revokeToken": "Token iptal edilemedi"
+    },
+    "table": {
+      "name": "Ad",
+      "token": "Token (gizli)",
+      "created": "Oluşturulma",
+      "expires": "Bitiş"
+    },
+    "metadata": {
+      "title": "API token’ları - Modifold"
+    }
+  },
+  "AccessDenied": {
+    "metadata": {
+      "title": "Erişim reddedildi - Modifold"
+    },
+    "message": "Erişim reddedildi"
+  },
+  "ShareButtons": {
+    "copiedToast": "Bağlantı kopyalandı",
+    "shareOnX": "X’te paylaş",
+    "shareByEmail": "E-posta ile paylaş",
+    "copiedAria": "Kopyalandı!",
+    "copyLinkAria": "Bağlantıyı kopyala"
+  },
+  "LicenseModal": {
+    "close": "Kapat",
+    "unknown": "Bilinmeyen lisans",
+    "empty": "Boş",
+    "failed": "Başarısız"
+  },
+  "ProjectCard": {
+    "by": "tarafından",
+    "downloads": "indirme",
+    "followers": "takipçi",
+    "updated": "Güncellendi",
+    "playersLast14dTooltip": "Son 14 gunde bu modu {count} oyuncu kullandi",
+    "projectIconAlt": "{title} proje simgesi"
+  },
+  "ModerationPage": {
+    "metadata": {
+      "title": "Moderasyon - Modifold"
+    },
+    "title": "Moderasyon",
+    "tabs": {
+      "projects": "Projeler",
+      "users": "Kullanıcılar",
+      "verification": "Doğrulama",
+      "statistics": "Istatistikler",
+      "reports": "Reports",
+      "technicalReview": "Technical review"
+    },
+    "charts": {
+      "approvedProjects": "Onaylanan proje grafiği",
+      "userRegistrations": "Kullanıcı kayıt grafiği",
+      "projects": "Projeler",
+      "registrations": "Kayıtlar",
+      "date": "Tarih: {date}"
+    },
+    "stats": {
+      "totalApproved": "Toplam onaylanan projeler",
+      "totalUsers": "Toplam kullanıcılar",
+      "pending": "Bekleyen projeler",
+      "totalProjectVersions": "Toplam proje sürümleri",
+      "totalProjectDownloads": "Toplam proje indirmeleri",
+      "totalUnpublishedProjects": "Yayimlanmamis projeler",
+      "modsPlayersOnlineNow": "Mod oyunculari su an cevrimici",
+      "modServersOnlineNow": "Su an aktif sunucular"
+    },
+    "filters": {
+      "searchPlaceholder": "Proje adına göre ara...",
+      "types": {
+        "all": "Tüm projeler",
+        "mod": "Modlar"
+      },
+      "sort": {
+        "oldest": "En eski",
+        "newest": "En yeni"
+      }
+    },
+    "actions": {
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "rejectPrompt": "Reddetme nedenini girin:"
+    },
+    "errors": {
+      "fetchProjects": "Moderasyon projeleri alınamadı",
+      "fetchAnalytics": "Analitik veriler alınamadı",
+      "approve": "Proje onaylanamadı",
+      "reject": "Proje reddedilemedi"
+    },
+    "success": {
+      "approved": "Proje onaylandı",
+      "rejected": "Proje reddedildi"
+    },
+    "pagination": {
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "pageOf": "{totalPages} içinde {page}. sayfa"
+    },
+    "empty": "Bekleyen proje yok."
+  },
+  "TechnicalReviewPage": {
+    "metadata": {
+      "title": "Technical review — Modifold"
+    },
+    "filters": {
+      "searchPlaceholder": "Search versions, projects, or IDs...",
+      "sort": {
+        "oldest": "Oldest",
+        "newest": "Newest"
+      }
+    },
+    "statuses": {
+      "needs_review": "Needs review",
+      "pending": "Pending",
+      "scanning": "Scanning",
+      "error": "Scan error",
+      "blocked": "Blocked",
+      "approved": "Approved",
+      "all": "All statuses"
+    },
+    "fields": {
+      "version": "Version",
+      "fileSize": "File size",
+      "status": "Status",
+      "scanRequested": "Scan requested",
+      "reason": "Reason",
+      "argusReasons": "Argus signals",
+      "noFlags": "No suspicious flags for this file.",
+      "argusNotice": "Argus noticed: {message}",
+      "noArgusSummary": "no additional details"
+    },
+    "tabs": {
+      "thread": "Thread",
+      "files": "Files"
+    },
+    "severity": {
+      "critical": "Critical",
+      "severe": "Severe",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "info": "Info"
+    },
+    "actions": {
+      "download": "Download",
+      "approve": "Approve",
+      "publish": "Publish",
+      "block": "Block",
+      "copyCode": "Copy code"
+    },
+    "modal": {
+      "title": "Block version",
+      "close": "Close",
+      "reason": "Reason",
+      "reasonPlaceholder": "Explain why this version is blocked.",
+      "cancel": "Cancel",
+      "confirm": "Block version"
+    },
+    "success": {
+      "approved": "Version published",
+      "blocked": "Version blocked"
+    },
+    "errors": {
+      "fetch": "Failed to load technical review queue.",
+      "decision": "Failed to update version."
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "pageOf": "Page {page} of {totalPages}"
+    },
+    "empty": "No versions in this technical review queue."
+  },
+  "UsersModerationPage": {
+    "metadata": {
+      "title": "Kullanıcı moderasyonu - Modifold"
+    },
+    "tabs": {
+      "projects": "Projeler",
+      "users": "Kullanıcılar",
+      "verification": "Doğrulama",
+      "statistics": "Istatistikler",
+      "reports": "Reports"
+    },
+    "errors": {
+      "fetch": "Kullanıcılar alınamadı",
+      "updateRole": "Rol güncellenemedi",
+      "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB",
+      "updateUser": "Kullanıcı güncellenemedi"
+    },
+    "success": {
+      "roleUpdated": "Kullanıcı rolü güncellendi",
+      "userUpdated": "Kullanıcı güncellendi"
+    },
+    "roles": {
+      "admin": "Yönetici",
+      "moderator": "Moderatör",
+      "user": "Kullanıcı"
+    },
+    "actions": {
+      "editAria": "Rolü değiştir veya kullanıcıyı düzenle",
+      "edit": "Düzenle",
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "close": "Kapat"
+    },
+    "pagination": {
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "pageOf": "{totalPages} içinde {page}. sayfa"
+    },
+    "empty": "Gösterilecek kullanıcı yok.",
+    "modal": {
+      "title": "{username} kullanıcısını düzenle"
+    },
+    "fields": {
+      "avatar": "Avatar",
+      "avatarAlt": "Avatar önizlemesi",
+      "username": "Kullanıcı adı",
+      "email": "E-posta",
+      "slug": "URL",
+      "description": "Açıklama",
+      "role": "Rol"
+    },
+    "placeholders": {
+      "username": "Kullanıcı adını girin",
+      "email": "E-posta girin",
+      "slug": "Slug girin",
+      "description": "Açıklama girin"
+    }
+  },
+  "NotificationsPage": {
+    "title": "Bildirimler",
+    "loading": "Bildirimler yükleniyor...",
+    "loadingMore": "Yükleniyor...",
+    "loadMore": "Daha fazla yükle",
+    "empty": "Henüz bildirim yok",
+    "sidebarAvatarAlt": "{username} kullanıcı avatarı",
+    "unknownUser": "Bilinmeyen kullanıcı",
+    "sections": {
+      "today": "Bugün",
+      "yesterday": "Dün"
+    },
+    "messages": {
+      "followOne": "{username} seni takip etmeye başladı",
+      "followMany": "{username} ve {count} kişi daha seni takip etmeye başladı",
+      "followOneTail": "seni takip etmeye başladı",
+      "followManyTail": "ve {count} kişi daha seni takip etmeye başladı",
+      "projectLikeOne": "{username} {project} projenizi beğendi",
+      "projectLikeMany": "{username} ve {count} kişi daha {project} projenizi beğendi",
+      "projectLikeOneMiddle": "projenizi beğendi",
+      "projectLikeManyMiddle": "ve {count} kişi daha projenizi beğendi",
+      "projectVersionReleaseMiddle": "{version} sürümünü şu proje için yayınladı",
+      "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
+      "projectFallback": "projenizi",
+      "versionFallback": "yeni",
+      "unknown": "Yeni bildirim",
+      "organizationFallback": "organizasyon",
+      "organizationInviteTail": "seni şuraya davet etti",
+      "organizationRemovedTail": "seni şuradan çıkardı"
+    },
+    "errors": {
+      "fetch": "Bildirimler yüklenemedi",
+      "noToken": "Yetkilendirme belirteci bulunamadı"
+    },
+    "actions": {
+      "accept": "Kabul et",
+      "decline": "Reddet"
+    }
+  },
+  "VerificationRequestModal": {
+    "title": "Creator Rozeti başvurusu",
+    "close": "Kapat",
+    "description": "Uygunluk, yayınlanmış projelerinizden otomatik hesaplanır.",
+    "platform": "Platform",
+    "followers": "Takipçiler",
+    "downloads": "İndirmeler",
+    "note": "Moderatör notu",
+    "confirm": "Bu başvuruyu iyi niyetle gönderdiğimi onaylıyorum.",
+    "submit": "Başvuru gönder",
+    "submitting": "Gönderiliyor...",
+    "cancel": "İptal",
+    "placeholders": {
+      "note": "Moderatörler için ek bağlam (isteğe bağlı).",
+      "xUrl": "https://x.com/yourprofile",
+      "youtubeUrl": "https://youtube.com/@yourchannel",
+      "curseforgeUrl": "https://curseforge.com/members/you"
+    },
+    "errors": {
+      "missingLinks": "X, YouTube veya CurseForge için en az bir bağlantı ekleyin.",
+      "confirmRequired": "Lütfen göndermeden önce onaylayın.",
+      "pending": "Zaten bekleyen bir başvurunuz var.",
+      "generic": "Başvuru gönderme hatası",
+      "cooldown": "Reddedildikten sonra 7 gün içinde yeniden başvurabilirsiniz.",
+      "notEligible": "Gereksinimler henüz karşılanmadı."
+    },
+    "success": "Başvuru gönderildi",
+    "checklist": {
+      "downloads": "Toplam indirme: {current} / {required}",
+      "players": "Son 14 gündeki oyuncu: {current} / {required}"
+    }
+  },
+  "VerificationModerationPage": {
+    "metadata": {
+      "title": "Doğrulama Başvuruları — Modifold"
+    },
+    "tabs": {
+      "projects": "Projeler",
+      "users": "Kullanıcılar",
+      "verification": "Doğrulama",
+      "statistics": "Istatistikler",
+      "reports": "Reports"
+    },
+    "filters": {
+      "pending": "Beklemede",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi",
+      "all": "Tümü"
+    },
+    "statuses": {
+      "pending": "Beklemede",
+      "approved": "Onaylandı",
+      "rejected": "Reddedildi"
+    },
+    "fields": {
+      "createdAt": "Gönderim tarihi",
+      "note": "Not",
+      "xUrl": "X bağlantısı",
+      "youtubeUrl": "YouTube bağlantısı",
+      "curseforgeUrl": "CurseForge bağlantısı"
+    },
+    "actions": {
+      "approve": "Onayla",
+      "reject": "Reddet",
+      "notePrompt": "Moderatör notu (isteğe bağlı):"
+    },
+    "errors": {
+      "fetch": "Doğrulama başvuruları alınırken hata oluştu",
+      "update": "Başvuru güncellenirken hata oluştu"
+    },
+    "success": {
+      "approved": "Başvuru onaylandı",
+      "rejected": "Başvuru reddedildi"
+    },
+    "pagination": {
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "pageOf": "Sayfa {page} / {totalPages}"
+    },
+    "empty": "Doğrulama başvurusu yok."
+  },
+  "SettingsVerificationPage": {
+    "metadata": {
+      "title": "Creator Rozeti — Modifold"
+    },
+    "title": "Creator Rozeti",
+    "subtitle": "Aktif ve güvenilir mod üreticileri için resmi statü.",
+    "badgeAlt": "Creator rozeti",
+    "benefitsNote": "Creator Rozeti profilinizi öne çıkarır, oyuncuların güvenilir üreticileri daha hızlı bulmasına yardımcı olur ve Modifold ekibinden öncelikli tanıtım fırsatları sağlar.",
+    "statusLabel": "Durum",
+    "status": {
+      "verified": "Creator rozeti aktif",
+      "notVerified": "Rozet henüz aktif değil"
+    },
+    "promoCard": {
+      "avatarAlt": "Kullanıcı avatarı",
+      "usernameFallback": "Kullanıcı"
+    },
+    "whatYouGetTitle": "Kazandıklarınız",
+    "whatYouGet": {
+      "list1": "Profil ve yorumlarda adınızın yanında creator rozeti.",
+      "list2": "Öne çıkanlar ve ana sayfa bloklarında görünme şansının artması.",
+      "list3": "Üretici destek kampanyalarında ve programlarında öncelik."
+    },
+    "requirementsTitle": "Rozet gereksinimleri",
+    "requirementsList": {
+      "projects": "{required} proje yayınla",
+      "downloads": "{required} indirmeye ulaş"
+    },
+    "claim": "Creator Rozetini Al",
+    "claiming": "Uygulanıyor...",
+    "success": {
+      "claimed": "Rozet verildi."
+    },
+    "errors": {
+      "fetch": "Doğrulama durumu yüklenemedi",
+      "claim": "Rozet verilemedi",
+      "notEligible": "Gereksinimler henüz karşılanmadı.",
+      "alreadyVerified": "Rozet zaten aktif."
+    }
+  },
+  "ProjectReportModal": {
+    "title": "Proje şikayeti",
+    "close": "Kapat",
+    "description": "Şikayet nedenini seçin. İsterseniz moderatörler için yorum ekleyebilirsiniz.",
+    "reason": "Neden",
+    "comment": "Yorum (isteğe bağlı)",
+    "commentCounter": "{count}/{max}",
+    "submit": "Şikayeti gönder",
+    "submitting": "Gönderiliyor...",
+    "cancel": "İptal",
+    "success": "Şikayet başarıyla gönderildi.",
+    "placeholders": {
+      "comment": "Sorunu daha detaylı açıklayın (isteğe bağlı)."
+    },
+    "reasons": {
+      "spam": "Spam / gereksiz içerik",
+      "malware": "Zararlı yazılım / tehlikeli dosyalar",
+      "copyright": "Telif hakkı ihlali",
+      "nsfw": "Yetişkin / uygunsuz içerik",
+      "fraud": "Dolandırıcılık / yanıltıcı içerik",
+      "rules_violation": "Kural ihlali",
+      "other": "Diğer"
+    },
+    "errors": {
+      "reasonRequired": "Bir şikayet nedeni seçin.",
+      "commentTooLong": "Yorum çok uzun (en fazla {max} karakter).",
+      "duplicate": "Bu proje için zaten şikayet gönderdiniz.",
+      "generic": "Şikayet gönderilemedi. Daha sonra tekrar deneyin."
+    }
+  },
+  "ReportsModerationPage": {
+    "metadata": {
+      "title": "Proje şikayetleri moderasyonu — Modifold"
+    },
+    "tabs": {
+      "projects": "Projeler",
+      "reports": "Şikayetler",
+      "statistics": "İstatistikler",
+      "users": "Kullanıcılar",
+      "verification": "Doğrulama"
+    },
+    "filters": {
+      "searchPlaceholder": "Proje, slug, şikayet eden veya yorumda ara",
+      "status": {
+        "open": "Aktif",
+        "resolved": "Çözüldü",
+        "dismissed": "Reddedildi",
+        "all": "Tüm durumlar"
+      },
+      "sort": {
+        "newest": "Önce en yeni",
+        "oldest": "Önce en eski"
+      },
+      "reasons": {
+        "all": "Tüm nedenler",
+        "spam": "Spam",
+        "malware": "Zararlı yazılım",
+        "copyright": "Telif hakkı",
+        "nsfw": "NSFW",
+        "fraud": "Dolandırıcılık",
+        "rules_violation": "Kural ihlali",
+        "other": "Diğer"
+      }
+    },
+    "statuses": {
+      "open": "Aktif",
+      "resolved": "Çözüldü",
+      "dismissed": "Reddedildi"
+    },
+    "fields": {
+      "reason": "Neden",
+      "reporter": "Şikayet eden",
+      "comment": "Yorum",
+      "moderationResult": "Moderatör kararı",
+      "resolvedBy": "{username} tarafından işlendi",
+      "noResolver": "Moderatör belirtilmedi"
+    },
+    "actions": {
+      "resolve": "Çöz",
+      "dismiss": "Reddet",
+      "notePrompt": "Moderatör notu (isteğe bağlı)"
+    },
+    "pagination": {
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "pageOf": "Sayfa {page} / {totalPages}"
+    },
+    "success": {
+      "resolved": "Şikayet çözüldü olarak işaretlendi.",
+      "dismissed": "Şikayet reddedildi."
+    },
+    "errors": {
+      "fetch": "Şikayetler yüklenemedi.",
+      "decision": "Şikayet güncellenemedi."
+    },
+    "empty": "Geçerli filtreler için şikayet bulunamadı."
+  },
+  "Organizations": {
+    "dashboard": {
+      "title": "Organizasyonlar",
+      "create": "Organizasyon oluştur",
+      "empty": "Henüz hiçbir organizasyona üye değilsin.",
+      "noSummary": "Özet yok",
+      "members": "{count, plural, one {# üye} other {# üye}}"
+    },
+    "create": {
+      "title": "Organizasyon oluşturma",
+      "close": "Kapat",
+      "success": "Organizasyon oluşturuldu",
+      "fields": {
+        "name": "Ad",
+        "url": "URL",
+        "summary": "Özet"
+      },
+      "placeholders": {
+        "name": "Organizasyon adını girin...",
+        "summary": "Bir organizasyon..."
+      },
+      "actions": {
+        "cancel": "İptal",
+        "create": "Organizasyon oluştur",
+        "creating": "Oluşturuluyor..."
+      },
+      "errors": {
+        "generic": "Organizasyon oluşturulamadı"
+      }
+    },
+    "page": {
+      "edit": "Düzenle",
+      "organizationBadge": "Organizasyon",
+      "organizationOwnerTooltip": "Organizasyon sahibi",
+      "openAvatar": "Avatarı aç",
+      "lightboxLabel": "Organizasyon görsel görüntüleyicisi",
+      "openInNewTab": "Görseli yeni sekmede aç",
+      "close": "Kapat",
+      "membersTitle": "Üyeler",
+      "dateCreated": "Kayıt tarihi: {date}",
+      "membersCount": "{count, plural, one {üye} other {üye}}",
+      "projectsCount": "{count, plural, one {proje} other {proje}}",
+      "emptyProjects": "Bu organizasyonun henüz projesi yok."
+    },
+    "settings": {
+      "title": "Organizasyon bilgileri",
+      "membersTitle": "Üyeleri yönet",
+      "projectsTitle": "Organizasyon projeleri",
+      "navOverview": "Genel bakış",
+      "navMembers": "Üyeler",
+      "navProjects": "Projeler",
+      "inviteTitle": "Üye davet et",
+      "invitePlaceholder": "Kullanıcı slug'ı",
+      "projectPermissions": "Proje izinleri",
+      "organizationPermissions": "Organizasyon izinleri",
+      "publicPage": "Herkese açık sayfa",
+      "iconAlt": "Organizasyon simgesi {name}",
+      "fields": {
+        "icon": "Simge",
+        "name": "Ad",
+        "url": "URL",
+        "slug": "Slug",
+        "summary": "Özet"
+      },
+      "slug": {
+        "checking": "Checking URL availability...",
+        "available": "This URL is available.",
+        "errors": {
+          "required": "Enter an organization URL",
+          "too_short": "URL must be at least 4 characters",
+          "reserved_word": "URL cannot contain \"modifold\"",
+          "leading_hyphen": "URL cannot start with a hyphen",
+          "trailing_hyphen": "URL cannot end with a hyphen",
+          "invalid_format": "Only English letters, numbers, and hyphens between words are allowed",
+          "slug_taken": "This URL is already taken",
+          "generic": "Failed to check URL"
+        }
+      },
+      "actions": {
+        "uploadIcon": "Simge yükle",
+        "uploading": "Yükleniyor...",
+        "save": "Organizasyonu kaydet",
+        "saving": "Kaydediliyor...",
+        "invite": "Davet et",
+        "inviting": "Davet ediliyor...",
+        "expand": "Genişlet",
+        "collapse": "Daralt",
+        "openProjectSettings": "Proje ayarları",
+        "detachProject": "Projeyi ayır",
+        "detachingProject": "Ayrılıyor...",
+        "saveMember": "Değişiklikleri kaydet",
+        "removeMember": "Üyeyi kaldır",
+        "removingMember": "Kaldırılıyor..."
+      },
+      "status": {
+        "accepted": "Kabul edildi",
+        "pending": "Beklemede",
+        "invited": "Davet edildi",
+        "declined": "Reddedildi"
+      },
+      "delete": {
+        "title": "Organizasyonu sil",
+        "description": "Organizasyonu silmek üyeleri, davetleri ve proje bağlantılarını kalıcı olarak kaldırır.",
+        "action": "Organizasyonu sil",
+        "confirmTitle": "Kesinlikle emin misiniz?",
+        "confirmAction": "Evet, organizasyonu sil",
+        "cancel": "İptal",
+        "close": "Kapat",
+        "deleting": "Siliniyor...",
+        "confirm": "Bu organizasyon silinsin mi?",
+        "success": "Organizasyon silindi",
+        "error": "Organizasyon silinemedi"
+      },
+      "successSaved": "Organizasyon kaydedildi",
+      "successIconUploaded": "Organizasyon simgesi yüklendi",
+      "successInviteSent": "Davet gönderildi",
+      "successMemberUpdated": "{username} güncellendi",
+      "successMemberRemoved": "{username} kaldırıldı",
+      "successProjectDetached": "{title} projesi ayrıldı",
+      "confirmDetachProject": "{title} projesi organizasyondan ayrılsın mı?",
+      "confirmRemoveMember": "{username} organizasyondan kaldırılsın mı?",
+      "emptyProjects": "Bu organizasyona henüz proje bağlı değil.",
+      "errors": {
+        "save": "Organizasyon kaydedilemedi",
+        "iconUpload": "Organizasyon simgesi yüklenemedi",
+        "invite": "Kullanıcı davet edilemedi",
+        "inviteSlugRequired": "Kullanıcı slug'ını girin",
+        "memberUpdate": "Üye güncellenemedi",
+        "memberRemove": "Üye kaldırılamadı",
+        "projectDetach": "Proje ayrılamadı",
+        "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB"
+      },
+      "navLinks": "Bağlantılar",
+      "links": {
+        "fields": {
+          "discord": "Discord",
+          "website": "Web sitesi",
+          "twitter": "X (Twitter)",
+          "bluesky": "Bluesky",
+          "telegram": "Telegram",
+          "youtube": "YouTube"
+        },
+        "placeholders": {
+          "discord": "Discord URL'si",
+          "website": "Web sitesi URL'si",
+          "twitter": "Twitter URL'si",
+          "bluesky": "Bluesky URL'si",
+          "telegram": "Telegram URL'si",
+          "youtube": "YouTube URL'si"
+        },
+        "actions": {
+          "save": "Bağlantıları kaydet"
+        },
+        "success": "Bağlantılar güncellendi",
+        "errors": {
+          "save": "Bağlantılar güncellenemedi"
+        }
+      }
+    },
+    "permissions": {
+      "project": {
+        "project_edit_details": "Detayları düzenle",
+        "project_edit_body": "İçeriği düzenle",
+        "project_edit_gallery": "Galeriyi düzenle",
+        "project_manage_versions": "Sürümleri yönet",
+        "project_delete": "Projeyi sil"
+      },
+      "organization": {
+        "organization_edit_details": "Detayları düzenle",
+        "organization_manage_invites": "Davetleri yönet",
+        "organization_manage_members": "Üyeleri yönet",
+        "organization_add_project": "Proje ekle",
+        "organization_remove_project": "Projeyi kaldır"
+      }
+    }
+  },
+  "Issues": {
+    "title": "Sorunlar",
+    "status": {
+      "open": "Açık",
+      "closed": "Kapalı"
+    },
+    "filters": {
+      "open": "Açık",
+      "closed": "Kapalı",
+      "newest": "En yeni",
+      "oldest": "En eski"
+    },
+    "pagination": {
+      "prev": "Önceki",
+      "next": "Sonraki"
+    },
+    "empty": "Henüz issue yok. Tartışmayı başlatan ilk kişi olun.",
+    "newIssue": {
+      "button": "Yeni sorun",
+      "loginRequired": "Sorun oluşturmak için giriş yapın.",
+      "selectTitle": "Yeni sorun oluştur",
+      "blankTitle": "Özel sorun",
+      "blankDesc": "Boş bir şablondan başla",
+      "noDescription": "Açıklama yok",
+      "createTitle": "Yeni sorun oluştur",
+      "createWith": "Yeni sorun oluştur: {name}",
+      "titleLabel": "Başlık",
+      "titlePlaceholder": "Kısa özet",
+      "labelsTitle": "Etiketler",
+      "bodyLabel": "Ayrıntılar",
+      "bodyPlaceholder": "Hatanızı veya fikrinizi ayrıntılı açıklayın.",
+      "markdownHint": "Markdown desteklenir.",
+      "createButton": "Sorun oluştur",
+      "titleRequired": "Sorun başlığı gerekli.",
+      "createError": "Sorun oluşturulamadı."
+    },
+    "meta": {
+      "by": "by"
+    },
+    "actions": {
+      "close": "Sorunu kapat",
+      "reopen": "Sorunu yeniden aç",
+      "pin": "Sorunu sabitle",
+      "unpin": "Sabitliği kaldır",
+      "edit": "Düzenle",
+      "delete": "Sorunu sil",
+      "deleteConfirm": "Bu sorun silinsin mi?",
+      "deleteSuccess": "Sorun silindi."
+    },
+    "history": {
+      "opened": "{name} bu sorunu açtı",
+      "closed": "{name} bu sorunu kapattı",
+      "reopened": "{name} bu sorunu yeniden açtı",
+      "labelAdded": "{name} {label} etiketini ekledi",
+      "labelRemoved": "{name} {label} etiketini kaldırdı",
+      "generic": "{name} sorunu güncelledi",
+      "system": "Sistem",
+      "unknownLabel": "etiket",
+      "empty": "Henüz geçmiş yok."
+    },
+    "comments": {
+      "title": "Yorumlar",
+      "placeholder": "Yorum bırak",
+      "send": "Yorum yap",
+      "reply": "Yanıtla",
+      "edit": "Düzenle",
+      "replyPlaceholder": "Bir yanıt yazın",
+      "deleted": "Yorum silindi",
+      "unknown": "Bilinmeyen kullanıcı",
+      "closed": "Bu sorun kapalı. Yorumlar devre dışı."
+    },
+    "sidebar": {
+      "status": "Durum",
+      "labels": "Etiketler",
+      "noLabels": "Henüz etiket yok",
+      "manageLabels": "Etiketleri yönet",
+      "details": "Detaylar",
+      "created": "Oluşturuldu",
+      "updated": "Güncellendi"
+    },
+    "details": {
+      "emptyBody": "Açıklama yok."
+    },
+    "errors": {
+      "loadIssue": "Failed to load issue.",
+      "comment": "Failed to send comment.",
+      "rateLimited": "You're doing that too fast. Try again soon.",
+      "status": "Failed to update issue status.",
+      "labels": "Failed to update labels.",
+      "pin": "Sabitleme güncellenemedi.",
+      "delete": "Sorun silinemedi."
+    },
+    "common": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "save": "Kaydet",
+      "saving": "Kaydediliyor...",
+      "creating": "Creating...",
+      "sending": "Sending..."
+    }
+  },
+  "IssueSettings": {
+    "overview": {
+      "title": "Sorunlar ayarı",
+      "body": "Kullanıcıların açık ve yapılandırılmış sorunlar göndermesine yardımcı olmak için şablonlar ve etiketler oluşturun."
+    },
+    "template": {
+      "sectionTitle": "Şablonlar",
+      "create": "Yeni şablon",
+      "createTitle": "Şablon oluştur",
+      "editTitle": "Şablonu düzenle",
+      "name": "Şablon adı",
+      "namePlaceholder": "Hata raporu",
+      "about": "Hakkında",
+      "aboutPlaceholder": "Geliştirmemize yardımcı olmak için bir açıklama oluşturun",
+      "content": "Şablon içeriği",
+      "contentPlaceholder": "Hatayı açıklayın ve yeniden üretme adımlarını belirtin.",
+      "markdownHint": "Markdown biçimlendirmesi desteklenir.",
+      "defaultTitle": "Varsayılan sorun başlığı",
+      "defaultTitlePlaceholder": "Önerilen bir başlık ekleyin",
+      "titlePlaceholder": "Başlık yer tutucusu",
+      "titlePlaceholderPlaceholder": "Kısa özet",
+      "defaultLabels": "Varsayılan etiketler",
+      "noLabels": "Burada kullanmak için etiketler oluşturun.",
+      "save": "Şablonu kaydet",
+      "edit": "Önizle ve düzenle",
+      "delete": "Sil",
+      "deleteConfirm": "Bu şablon silinsin mi?",
+      "saved": "Şablon kaydedildi.",
+      "deleted": "Şablon silindi.",
+      "empty": "Henüz şablon yok.",
+      "noDescription": "Açıklama yok"
+    },
+    "labels": {
+      "sectionTitle": "Etiketler",
+      "create": "Yeni etiket",
+      "createTitle": "Etiket oluştur",
+      "editTitle": "Etiketi düzenle",
+      "name": "Etiket adı",
+      "namePlaceholder": "Hata",
+      "color": "Etiket rengi",
+      "applyAccessTitle": "Bu etiket kim tarafından uygulanabilir",
+      "applyAccessEveryone": "Herkes",
+      "applyAccessTeamOnly": "Yalnızca proje ekibi",
+      "save": "Etiketi kaydet",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "deleteConfirm": "Bu etiket silinsin mi?",
+      "saved": "Etiket kaydedildi.",
+      "deleted": "Etiket silindi.",
+      "empty": "Henüz etiket yok."
+    },
+    "errors": {
+      "templateSave": "Şablon kaydedilemedi.",
+      "templateDelete": "Şablon silinemedi.",
+      "labelSave": "Etiket kaydedilemedi.",
+      "labelDelete": "Etiket silinemedi."
+    },
+    "common": {
+      "backToSettings": "Ayarlar'a dön",
+      "close": "Kapat",
+      "cancel": "İptal",
+      "saving": "Kaydediliyor..."
+    }
+  },
+  "TwoFactorLogin": {
+    "title": "İki faktörlü doğrulama",
+    "description": "Uygulamadan tek kullanımlık kodu girin.",
+    "codeLabel": "Doğrulama kodu",
+    "codePlaceholder": "Kodu girin...",
+    "submit": "Devam",
+    "submitting": "Doğrulanıyor...",
+    "errors": {
+      "missingToken": "2FA belirteci eksik.",
+      "missingCode": "Kodu girin.",
+      "invalidCode": "Geçersiz kod.",
+      "invalidResponse": "Sunucudan geçersiz yanıt.",
+      "generic": "Kod doğrulanamadı."
+    }
+  }
+}

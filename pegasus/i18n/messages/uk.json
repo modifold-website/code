@@ -1,0 +1,2372 @@
+{
+  "pageTitle": {
+    "mods": "Моди — Modifold",
+    "modpacks": "Модпаки — Modifold"
+  },
+  "Header": {
+    "home": "Головна",
+    "mods": "Моди",
+    "modpacks": "Модпаки",
+    "modJams": "Мод-джеми",
+    "login": "Увійти",
+    "logout": "Вийти",
+    "settings": "Налаштування",
+    "createProject": "Створити проєкт",
+    "theme": {
+      "light": "Світла",
+      "dark": "Темна",
+      "system": "Системна"
+    },
+    "loginToCreate": "Будь ласка, увійдіть, щоб створити проєкт",
+    "beta": "бета",
+    "browse": "Відкрити контент",
+    "discoverContent": "Відкрити контент",
+    "myProfile": "Мій профіль",
+    "moderation": "Модерація",
+    "projects": "Проєкти",
+    "organizations": "Організації",
+    "likes": "Вподобані",
+    "notifications": "Сповіщення",
+    "appearance": "Тема"
+  },
+  "ModJamsPage": {
+    "metadata": {
+      "title": "Мод-джеми — Modifold",
+      "description": "Каталог мод-джемів спільноти: долучайтеся до творчих подій, голосуйте та переглядайте результати на Modifold."
+    },
+    "eyebrow": "Події спільноти",
+    "title": "Мод-джеми спільноти",
+    "description": "Долучайтеся до творчих подій, відкривайте роботи спільноти, голосуйте за фаворитів і повертайтеся до завершених джемів.",
+    "create": "Створити мод-джем",
+    "createFirst": "Створити мод-джем",
+    "loginToCreate": "Увійдіть, щоб створити мод-джем",
+    "statsLabel": "Статистика мод-джемів",
+    "stats": {
+      "active": "Активні джеми",
+      "voting": "Голосування",
+      "submissions": "Роботи"
+    },
+    "catalogTitle": "Усі мод-джеми",
+    "catalogDescription": "Схвалені події спільноти: активні та завершені.",
+    "filtersLabel": "Фільтри мод-джемів",
+    "sidebar": {
+      "status": "Фільтри"
+    },
+    "links": {
+      "title": "Посилання",
+      "website": "Веб-сайт",
+      "discord": "Discord‑сервер"
+    },
+    "jury": {
+      "title": "Журі",
+      "organizer": "Організатор",
+      "organizerTooltip": "Власник мод-джему",
+      "member": "Журі",
+      "memberTooltip": "Голос журі дає 3 очки"
+    },
+    "detail": {
+      "description": "Опис",
+      "rules": "Правила",
+      "emptySubmissions": "Робіт поки немає.",
+      "editSettings": "Редагувати налаштування",
+      "creatorProfile": "Відкрити профіль {username}",
+      "bestByNomination": "Найкращі проєкти в номінації “{title}”",
+      "bestByPoints": "Найкращі проєкти за очками",
+      "otherProjects": "Інші проєкти"
+    },
+    "timeline": {
+      "ariaLabel": "Таймлайн мод-джему",
+      "dateTimeSeparator": " о ",
+      "countdown": {
+        "upcoming": "Старт через",
+        "submissionsOpen": "Роботи приймаються до",
+        "votingOpen": "Голосування",
+        "completed": "Завершено"
+      },
+      "units": {
+        "hours": "г",
+        "minutes": "хв",
+        "seconds": "с"
+      },
+      "steps": {
+        "start": "Старт",
+        "submissions": "Прийом робіт закрито",
+        "voting": "Голосування відкрито",
+        "finish": "Фініш",
+        "submissionsOpen": "Прийом робіт відкрито",
+        "submissionsClose": "Прийом робіт закрито",
+        "votingOpen": "Голосування",
+        "winnersAnnounced": "Результати"
+      },
+      "afterSubmissions": "Після прийому"
+    },
+    "vote": {
+      "action": "Проголосувати",
+      "voted": "Проголосовано",
+      "success": "Голос зараховано",
+      "error": "Не вдалося проголосувати",
+      "nominationTitle": "Виберіть номінацію",
+      "nominationHint": "Голоси в кожній номінації рахуються окремо.",
+      "nominationAlreadyVoted": "Ви вже голосували в цій номінації"
+    },
+    "submit": {
+      "title": "Надіслати мод",
+      "loginHint": "Увійдіть, щоб прикріпити один зі своїх опублікованих модів до цього джему.",
+      "alreadySubmitted": "Ви вже надіслали проєкт на цей мод-джем.",
+      "chooseHint": "Виберіть проєкт, який хочете надіслати для участі в мод-джемі.",
+      "placeholder": "Виберіть опублікований мод",
+      "loading": "Завантаження...",
+      "emptyProjects": "Опубліковані моди не знайдено",
+      "action": "Надіслати проєкт",
+      "selectFirst": "Спочатку виберіть мод",
+      "loadError": "Не вдалося завантажити ваші проєкти",
+      "submitError": "Не вдалося надіслати проєкт",
+      "success": "Проєкт надіслано"
+    },
+    "creation": {
+      "title": "Створити мод-джем",
+      "close": "Закрити",
+      "name": "Назва",
+      "namePlaceholder": "Літній будівельний джем",
+      "summary": "Короткий опис",
+      "summaryHint": "Одне-два речення, які описують ваш мод-джем.",
+      "summaryPlaceholder": "Створіть мод навколо спільної теми та проголосуйте за найкращі роботи.",
+      "cancel": "Скасувати",
+      "creating": "Створення...",
+      "submit": "Створити чернетку",
+      "success": "Чернетку мод-джему створено",
+      "error": "Не вдалося створити мод-джем"
+    },
+    "participate": "Узяти участь",
+    "join": {
+      "joined": "Ви берете участь",
+      "success": "Ви приєдналися до мод-джему",
+      "error": "Не вдалося приєднатися",
+      "loginRequired": "Увійдіть, щоб узяти участь"
+    },
+    "settings": {
+      "sidebar": {
+        "general": "Основне",
+        "description": "Опис",
+        "rules": "Правила",
+        "links": "Посилання",
+        "nominations": "Номінації",
+        "jury": "Журі",
+        "moderation": "Модерація"
+      },
+      "unsaved": {
+        "save": "Зберегти зміни",
+        "reset": "Скинути",
+        "message": "У вас є незбережені зміни."
+      },
+      "general": {
+        "imageTooLarge": "Зображення має бути менше 20 МБ",
+        "saveError": "Не вдалося зберегти налаштування",
+        "saved": "Налаштування мод-джему збережено",
+        "avatar": "Аватар",
+        "avatarPreviewAlt": "Попередній перегляд аватара мод-джему",
+        "uploadAvatar": "Завантажити аватар",
+        "cover": "Обкладинка",
+        "coverPreviewAlt": "Попередній перегляд обкладинки мод-джему",
+        "uploadCover": "Завантажити обкладинку",
+        "name": "Назва",
+        "slug": "URL",
+        "shortDescription": "Короткий опис",
+        "shortDescriptionHint": "Показується в каталозі та на картках джему.",
+        "slugPlaceholder": "vash-dzhem",
+        "publicPage": "Публічна сторінка: /jams/{slug}",
+        "schedule": "Розклад",
+        "starts": "Старт мод-джему",
+        "submissionsStart": "Прийом робіт відкрито",
+        "submissionsEnd": "Прийом робіт закрито",
+        "votingEnds": "Фініш",
+        "votingStarts": "Голосування",
+        "winnersAnnounced": "Результати"
+      },
+      "links": {
+        "discord": "Discord URL",
+        "website": "URL веб-сайту",
+        "discordPlaceholder": "https://discord.gg/pryklad",
+        "websitePlaceholder": "https://example.com",
+        "saveError": "Не вдалося зберегти посилання",
+        "saved": "Посилання збережено"
+      },
+      "jury": {
+        "title": "Журі",
+        "hint": "Введіть slug користувача. Голос призначеного журі даватиме 3 очки замість 1.",
+        "placeholder": "user-slug",
+        "add": "Додати",
+        "remove": "Видалити",
+        "empty": "Журі поки не призначено.",
+        "added": "Учасника журі додано",
+        "removed": "Учасника журі видалено",
+        "addError": "Не вдалося додати учасника журі",
+        "removeError": "Не вдалося видалити учасника журі"
+      },
+      "nominations": {
+        "title": "Номінації",
+        "hint": "Створіть категорії на кшталт «Найкращий геймплей» або «Вибір журі». Користувачі можуть голосувати окремо в кожній номінації.",
+        "name": "Назва",
+        "placeholder": "Найкращий геймплей",
+        "description": "Опис",
+        "descriptionPlaceholder": "Коротко поясніть, за що голосують у цій номінації.",
+        "add": "Додати номінацію",
+        "saveEdit": "Зберегти",
+        "cancelEdit": "Скасувати",
+        "edit": "Редагувати",
+        "delete": "Видалити",
+        "empty": "Номінацій поки немає. Без номінацій голосування працює як один загальний голос.",
+        "added": "Номінацію додано",
+        "updated": "Номінацію оновлено",
+        "deleted": "Номінацію видалено",
+        "saveError": "Не вдалося зберегти номінацію",
+        "deleteError": "Не вдалося видалити номінацію"
+      },
+      "moderation": {
+        "title": "Модерація",
+        "hint": "Перевірте сторінку джему й надішліть її на перевірку Modifold, коли оформлення готове.",
+        "currentStatus": "Поточний статус",
+        "rejectionReason": "Причина відхилення",
+        "preview": "Відкрити попередній перегляд",
+        "submitForReview": "Надіслати на модерацію",
+        "pendingReview": "На модерації",
+        "approved": "Уже схвалено",
+        "submitReviewError": "Не вдалося надіслати на модерацію",
+        "sentToModeration": "Надіслано на модерацію",
+        "status": {
+          "draft": "Чернетка",
+          "pending_review": "На модерації",
+          "approved": "Схвалено",
+          "rejected": "Відхилено",
+          "archived": "В архіві"
+        }
+      },
+      "description": {
+        "title": "Повний опис",
+        "hint": "Використовуйте Markdown для основного тексту на сторінці джему.",
+        "placeholder": "Розкажіть учасникам, про що цей джем, що можна створити й чому це цікаво.",
+        "saved": "Опис збережено",
+        "saveError": "Не вдалося зберегти опис"
+      },
+      "rules": {
+        "title": "Правила",
+        "hint": "Використовуйте Markdown, щоб пояснити, що можна надсилати і як працює голосування.",
+        "placeholder": "Опишіть вимоги до робіт, правила голосування, строки та заборонений контент.",
+        "saved": "Правила збережено",
+        "saveError": "Не вдалося зберегти правила"
+      },
+      "markdown": {
+        "toolbarLabel": "Панель Markdown-редактора",
+        "heading1": "Заголовок 1",
+        "heading2": "Заголовок 2",
+        "heading3": "Заголовок 3",
+        "bold": "Жирний",
+        "italic": "Курсив",
+        "strikethrough": "Закреслений",
+        "code": "Код",
+        "bulletedList": "Маркований список",
+        "orderedList": "Нумерований список",
+        "link": "Посилання",
+        "image": "Зображення",
+        "linkTemplate": "[текст посилання](https://)",
+        "imageTemplate": "![опис зображення](https://)",
+        "preview": "Попередній перегляд",
+        "submitForReview": "Надіслати на модерацію",
+        "pendingReview": "На модерації",
+        "saveBeforeReview": "Збережіть зміни перед надсиланням на модерацію",
+        "submitReviewError": "Не вдалося надіслати на модерацію",
+        "sentToModeration": "Надіслано на модерацію"
+      }
+    },
+    "moderation": {
+      "rejectionReason": "Причина відхилення",
+      "approvedReason": "Схвалено модератором",
+      "error": "Не вдалося модерувати мод-джем",
+      "approved": "Мод-джем схвалено",
+      "rejected": "Мод-джем відхилено",
+      "empty": "Мод-джемів на перевірці немає.",
+      "approve": "Схвалити",
+      "reject": "Відхилити"
+    },
+    "filters": {
+      "active": "Активні",
+      "completed": "Завершені"
+    },
+    "status": {
+      "upcoming": "Незабаром",
+      "running": "Фаза створення",
+      "submissionsOpen": "Прийом робіт",
+      "votingOpen": "Голосування",
+      "completed": "Завершено",
+      "draft": "Чернетка",
+      "votingPending": "Очікування голосування"
+    },
+    "submissionsCount": "{count} робіт",
+    "votesCount": "{count} очок",
+    "emptyTitle": "Мод-джемів ще немає",
+    "emptyDescription": "Схвалені мод-джеми з'являться тут. Можна створити перший і надіслати його на модерацію.",
+    "emptyFilteredTitle": "У цьому розділі порожньо",
+    "emptyFilteredDescription": "Спробуйте інший фільтр або поверніться пізніше, коли почнеться нова подія."
+  },
+  "ModJamsDashboard": {
+    "title": "Ваші мод-джеми",
+    "create": "Створити мод-джем",
+    "empty": "Ви ще не створили жодного мод-джему.",
+    "settings": "Налаштування",
+    "submissions": "{count} робіт",
+    "votes": "{count} очок",
+    "status": {
+      "draft": "Чернетка",
+      "pendingReview": "На модерації",
+      "upcoming": "Незабаром",
+      "running": "Фаза створення",
+      "submissionsOpen": "Прийом робіт",
+      "votingOpen": "Голосування",
+      "completed": "Завершено",
+      "rejected": "Відхилено",
+      "archived": "В архіві",
+      "votingPending": "Очікування голосування"
+    }
+  },
+  "CookieBanner": {
+    "message": "Ми використовуємо файли cookie, щоб покращити ваш досвід. Необхідні cookie потрібні для роботи сайту, а аналітичні cookie допомагають нам зрозуміти, як ви користуєтеся сайтом.",
+    "learnMore": "Дізнатися більше",
+    "acceptAll": "Прийняти всі",
+    "customize": "Налаштувати",
+    "essentialCookies": "Необхідні cookie (обов’язкові)",
+    "analyticsCookies": "Аналітичні cookie",
+    "savePreferences": "Зберегти налаштування"
+  },
+  "Footer": {
+    "copyright": "© 2026 modifold.com",
+    "sections": "Розділи",
+    "community": "Спільнота",
+    "legal": "Правова інформація",
+    "privacyPolicy": "Політика конфіденційності",
+    "termsOfUse": "Умови використання",
+    "contentRules": "Правила контенту",
+    "copyrightPolicy": "Політика авторського права та DMCA",
+    "notOfficial": "ЦЕ НЕ ОФІЦІЙНИЙ СЕРВІС HYTALE. НЕ СХВАЛЕНО ТА НЕ ПОВ’ЯЗАНО З HYPIXEL STUDIOS CANADA INC.",
+    "mods": "Моди",
+    "news": "Новини",
+    "openSourceSoon": "Modifold — відкритий проєкт.",
+    "apiDocs": "Документація API",
+    "inspiredBy": "Натхненно",
+    "modrinthModal": {
+      "openAriaLabel": "Відкрити пояснення про Modrinth",
+      "closeAriaLabel": "Закрити",
+      "title": "Про натхнення Modrinth",
+      "paragraph1": "Modifold не копіює і не використовує код Modrinth. Наша кодова база написана незалежно.",
+      "paragraph2Prefix": "З дозволу команди",
+      "paragraph2Suffix": "ми використовуємо лише натхнення візуальним розташуванням блоків (наприклад, шаблонами компонування на сторінці мода).",
+      "paragraph3": "У січні 2026 року ми звернулися до Modrinth за дозволом і отримали підтвердження, що атрибуція є опціональною та залишається на наш розсуд.",
+      "quote1": "Водночас майже все в інтернеті — це переосмислення чогось іншого, і я б не дозволяв цьому зупиняти тебе.",
+      "quote2": "Надихайся там, де це доречно, формуй власне бачення того, як усе має працювати (у самого Modrinth є чимало зон для покращення), і зосередься на тому, щоб створити щось варте поширення!",
+      "quote3": "Чи вказувати атрибуцію Modrinth — цілком на твій розсуд."
+    }
+  },
+  "Layout": {
+    "stagingBanner": "Тестове середовище: частина функцій може не працювати або бути нестабільною."
+  },
+  "NotFound": {
+    "title": "Сторінку не знайдено",
+    "message": "Посилання відсутнє, переміщене або видалене.",
+    "joke": "Навіщо CurseForge? Краще завантажуй свої моди на Modifold."
+  },
+  "HomePage": {
+    "title": "Дім для ваших модів Hytale — Modifold",
+    "description": "Досліджуйте сцену модингу Hytale, грайте в те, що створює спільнота, і діліться власними роботами зі світом.",
+    "heroTitle": "Дім для ваших модів {hytale}",
+    "heroDescription": "Досліджуйте сцену модингу Hytale, грайте в те, що створює спільнота, і діліться власними роботами зі світом.",
+    "exploreMods": "Переглянути моди",
+    "dashboardCta": "Перейти до панелі керування",
+    "loginCta": "Увійти",
+    "statsTitle": "Зростаємо разом: {count}+ модів від спільноти",
+    "searchPlaceholder": "Шукати моди за назвою",
+    "noProjects": "Проєкти не знайдено",
+    "creatorsSpotlightTitle": "У центрі уваги — автори",
+    "creatorsSpotlightDescription": "Познайомтеся з авторами, які формують сцену модингу Hytale.",
+    "noCreators": "Поки що немає авторів",
+    "forPlayersTitle": "Для гравців",
+    "forPlayersDescription": "Знаходьте та завантажуйте моди, створені спільнотою. Слідкуйте за найсвіжішими новинами та релізами.",
+    "forCreatorsTitle": "Для авторів",
+    "forCreatorsDescription": "Завантажуйте свої моди, діліться ними зі світом і зростайте разом з аудиторією на платформі, створеній для Hytale.",
+    "latestNewsTitle": "Останні новини від Modifold",
+    "viewAllNews": "Переглянути всі новини",
+    "commentsTitle": "Коментарі для авторів",
+    "commentsDescription": "Обговорюйте релізи, залишайте фідбек і допомагайте покращувати моди.",
+    "localesDescription": "Інтерфейс доступний англійською, іспанською, португальською, російською, турецькою та українською.",
+    "showcase": {
+      "playersBadge": "Для гравців",
+      "playersTitle": "Знаходьте потрібне швидко й легко",
+      "playersLead": "Миттєвий пошук і зрозумілі картки допомагають одразу знаходити моди, що підходять вашому стилю гри.",
+      "searchPlaceholder": "Пошук проєктів...",
+      "sortRelevance": "За релевантністю"
+    },
+    "creatorSection": {
+      "badge": "Для авторів",
+      "title": "Діліться творіннями зі спільнотою",
+      "lead": "Modifold дає авторам зручні інструменти для публікації, оформлення, командної роботи та спілкування з аудиторією."
+    },
+    "creatorCards": {
+      "team": {
+        "title": "Команди та організації",
+        "description": "Об'єднуйте авторів в одну команду, розподіляйте ролі та публікуйте проєкти від імені організації."
+      },
+      "versions": {
+        "title": "Гнучкі версії",
+        "description": "Публікуйте релізи з каналами, підтримкою версій гри та завантажувачів, щоб гравці швидко знаходили сумісні моди."
+      },
+      "pages": {
+        "title": "Насичені сторінки проєктів",
+        "description": "Оформлюйте проєкт з Markdown-описом, галереєю, посиланнями, тегами й ліцензією в одному місці."
+      },
+      "feedback": {
+        "title": "Зворотний зв'язок від спільноти",
+        "description": "Коментарі допомагають авторам швидко отримувати фідбек і покращувати кожен реліз."
+      },
+      "moderation": {
+        "title": "Зрозуміла модерація",
+        "description": "Прості кроки подачі на модерацію, історія рішень і система скарг роблять публікацію безпечнішою для гравців і авторів."
+      },
+      "notifications": {
+        "title": "Підписки та сповіщення",
+        "description": "Слідкуйте за улюбленими авторами, отримуйте сповіщення й не пропускайте нові версії та оновлення."
+      }
+    },
+    "analyticsSection": {
+      "badge": "Modifold Analytics",
+      "title": "Відстежуйте реальне використання мода",
+      "lead": "Відстежуйте, скільки гравців використовує ваш мод і скільки серверів активно з часом. Modifold Analytics дає авторам зрозумілий і приватний сигнал реального використання в грі.",
+      "cta": "Опублікувати проєкт",
+      "chartLabel": "Прев'ю графіка онлайн-активності Modifold Analytics",
+      "chartTitle": "Modifold Analytics",
+      "chartSubtitle": "Гравці онлайн і активні сервери з вашим модом.",
+      "players": "Гравці",
+      "servers": "Сервери",
+      "downloads": "Завантаження",
+      "activeServers": "Активні сервери",
+      "onlineNow": "Онлайн зараз",
+      "learnMore": "Докладніше"
+    },
+    "notificationsPreview": {
+      "badge": "Для гравців",
+      "title": "Не пропускайте нові версії",
+      "lead": "Підписуйтеся на авторів і проєкти, щоб отримувати сповіщення про релізи та оновлення улюблених модів.",
+      "panelTitle": "Сповіщення",
+      "releasedVersion": "випустив версію {version} для",
+      "days": {
+        "yesterday": "Вчора",
+        "previous": "20 травня 2026"
+      }
+    }
+  },
+  "ProjectCreationModal": {
+    "title": "Створення проєкту",
+    "close": "Закрити",
+    "name": "Назва",
+    "summary": "Короткий опис",
+    "summaryHint": "Одне-два речення, які описують ваш проєкт.",
+    "projectType": "Тип проєкту",
+    "icon": "Іконка (обов’язково)",
+    "placeholders": {
+      "name": "Назва проєкту",
+      "summary": "Цей проєкт додає..."
+    },
+    "projectTypes": {
+      "mod": "Мод",
+      "modpack": "Модпак"
+    },
+    "createProject": "Створити проєкт",
+    "creating": "Створення...",
+    "cancel": "Скасувати",
+    "errors": {
+      "noProjectType": "Будь ласка, виберіть тип проєкту",
+      "generic": "Помилка створення проєкту"
+    },
+    "success": "Проєкт створено!"
+  },
+  "ProjectPage": {
+    "previous": "Попередній",
+    "next": "Наступний",
+    "backToVersions": "Назад до версій",
+    "loginRequired": "Будь ласка, увійдіть, щоб уподобати цей проєкт",
+    "likeError": "Не вдалося змінити вподобання. Спробуйте ще раз.",
+    "links": "Посилання",
+    "reportIssues": "Проблеми",
+    "viewSource": "Переглянути код",
+    "wiki": "Вікі",
+    "joinDiscord": "Приєднатися до Discord-сервера",
+    "iconAlt": "Іконка проєкту {title}",
+    "ownerAvatarAlt": "Аватар користувача {username}",
+    "editSettings": "Редагувати налаштування",
+    "status": {
+      "draft": "Чернетка",
+      "moderation": "На перевірці"
+    },
+    "tabs": {
+      "description": "Опис",
+      "gallery": "Галерея",
+      "versions": "Версії",
+      "gameVersion": "Версії гри",
+      "gameChannel": "Канали",
+      "loader": "Лоадери",
+      "comments": "Коментарі",
+      "issues": "Проблеми"
+    },
+    "creators": "Автори",
+    "owner": "Власник",
+    "organizationOwner": "Організація",
+    "created": "Створено",
+    "updated": "Оновлено",
+    "playersLast14dTooltip": "За останнi 14 днiв з цим модом грало {count} гравцiв",
+    "id": "ID:",
+    "notFound": "Проєкт не знайдено",
+    "metadata": {
+      "title": "{title} {titlePrefix} — Modifold",
+      "openGraph": {
+        "title": "{titlePrefix}: {title}"
+      },
+      "notFound": "Проєкт не знайдено — Modifold",
+      "version": {
+        "title": "{version} - {project} — Modifold",
+        "description": "Версія {version} проєкту {project}",
+        "notFound": "Версію не знайдено — Modifold",
+        "unknownProject": "Проєкт"
+      }
+    },
+    "editVersion": "Редагувати версію",
+    "versionNumber": "Номер версії",
+    "changelog": "Список змін",
+    "releaseChannel": "Канал релізу",
+    "gameVersions": "Версії гри",
+    "loaders": "Лоадери",
+    "file": "Файл",
+    "selectGameVersions": "Виберіть версії гри",
+    "selectLoaders": "Виберіть лоадери",
+    "update": "Оновити",
+    "updating": "Оновлення...",
+    "delete": "Видалити",
+    "cancel": "Скасувати",
+    "fillRequiredFields": "Будь ласка, заповніть усі обов’язкові поля",
+    "versionUpdated": "Версію успішно оновлено",
+    "confirmDeleteVersion": "Ви впевнені, що хочете видалити цю версію?",
+    "versionDeleted": "Версію успішно видалено",
+    "errorOccurred": "Сталася помилка. Спробуйте ще раз.",
+    "detailsTitle": "Відомості",
+    "licenseTitle": "Ліцензія",
+    "licensedAs": "Ліцензовано за {license}",
+    "download": "Завантажити",
+    "featuredVersionsTitle": "Обрані версії",
+    "showAllVersions": "Усі",
+    "downloadVersionAria": "Завантажити версію {version}",
+    "changesTitle": "Зміни",
+    "noChanges": "Немає змін",
+    "filesTitle": "Файли",
+    "noFiles": "Немає файлів",
+    "close": "Закрити",
+    "versions": {
+      "headers": {
+        "version": "Версія",
+        "statistics": "Статистика"
+      },
+      "notSpecified": "Не вказано",
+      "published": "Опубліковано:",
+      "downloads": "завантажень",
+      "statuses": {
+        "approved": "Опублікована",
+        "pending": "На перевірці",
+        "scanning": "На перевірці",
+        "needs_review": "На перевірці",
+        "blocked": "Заблокована",
+        "error": "Помилка перевірки"
+      },
+      "channels": {
+        "release": "Реліз",
+        "beta": "Бета",
+        "alpha": "Альфа"
+      },
+      "dependencies": {
+        "title": "Залежності",
+        "unknownDependency": "Невідома залежність",
+        "types": {
+          "required": "Обов'язкова",
+          "optional": "Необов'язкова",
+          "incompatible": "Несумісна",
+          "embedded": "Вбудована"
+        }
+      },
+      "downloadModal": {
+        "description": "Для роботи цього мода потрібні додаткові бібліотеки або моди.",
+        "anyVersion": "Будь-яка сумісна версія",
+        "openDependency": "Відкрити {dependency}"
+      },
+      "metadata": {
+        "title": "Метадані",
+        "gameVersion": "Версія гри",
+        "platform": "Платформа",
+        "releaseChannel": "Канал релізу",
+        "downloads": "Завантаження",
+        "publicationDate": "Дата публікації",
+        "versionId": "ID версії"
+      }
+    },
+    "filters": {
+      "gameVersionsAria": "Фільтр за версіями гри",
+      "channelsAria": "Фільтр за каналами",
+      "loadersAria": "Фільтр за лоадерами"
+    },
+    "gallery": {
+      "updateSuccess": "Зображення оновлено",
+      "updateError": "Помилка оновлення зображення",
+      "deleteConfirm": "Ви впевнені, що хочете видалити це зображення?",
+      "deleteSuccess": "Зображення видалено",
+      "deleteError": "Помилка видалення зображення",
+      "viewImage": "Переглянути {title} на весь екран",
+      "image": "Зображення галереї",
+      "editImage": "Редагувати зображення",
+      "noImages": "У галереї немає зображень.",
+      "lightboxLabel": "Лайтбокс зображення",
+      "openInNewTab": "Відкрити зображення у новій вкладці",
+      "title": "Заголовок",
+      "description": "Опис",
+      "orderIndex": "Порядковий індекс",
+      "featured": "Обране"
+    },
+    "versionNotFound": "Версію не знайдено",
+    "projectNotFound": "Проєкт не знайдено",
+    "comments": {
+      "title": "Коментарі",
+      "loginHint": "Увійдіть, щоб залишити коментар.",
+      "placeholder": "Напишіть коментар...",
+      "submit": "Надіслати",
+      "reply": "Відповісти",
+      "cancel": "Скасувати",
+      "delete": "Видалити",
+      "hide": "Сховати",
+      "show": "Показати",
+      "authorLabel": "Автор",
+      "deleted": "Коментар видалено.",
+      "loading": "Завантаження коментарів...",
+      "rateLimited": "Ви коментуєте надто часто. Спробуйте ще раз за кілька секунд.",
+      "errors": {
+        "load": "Не вдалося завантажити коментарі",
+        "submit": "Не вдалося надіслати коментар",
+        "moderate": "Не вдалося оновити коментар"
+      },
+      "status": {
+        "hidden": "Сховано",
+        "spam": "Спам",
+        "deleted": "Видалено"
+      },
+      "emptyLoggedIn": "Поки що немає коментарів. Залиште перший відгук про мод!",
+      "emptyGuest": "Поки що немає коментарів. Увійдіть, щоб залишити відгук про мод."
+    },
+    "report": {
+      "moreActions": "Додаткові дії",
+      "openModal": "Поскаржитися на проєкт",
+      "alreadySubmitted": "Скаргу вже надіслано",
+      "alreadySubmittedToast": "Ви вже надсилали скаргу на цей проєкт.",
+      "loginRequired": "Увійдіть, щоб поскаржитися на проєкт.",
+      "copyLink": "Скопіювати посилання",
+      "copySuccess": "Посилання скопійовано",
+      "copyError": "Не вдалося скопіювати посилання"
+    },
+    "contents": "Зміст",
+    "poweredBy": "Працює на"
+  },
+  "DashboardClient": {
+    "userAvatarAlt": "Аватар користувача {username}",
+    "projectIconAlt": "Іконка проєкту {title}",
+    "loading": "Завантаження проєктів...",
+    "noProjects": "Ви ще не створили жодного проєкту.",
+    "previous": "Попередній",
+    "next": "Наступний",
+    "edit": "Редагувати",
+    "metadata": {
+      "title": "Панель керування — Modifold",
+      "description": "Керуйте своїми проєктами на Modifold."
+    },
+    "byYou": "від вас",
+    "byOrganization": "від {name}"
+  },
+  "LikesDashboardClient": {
+    "projectIconAlt": "Іконка проєкту {title}",
+    "loading": "Завантаження вподобаних проєктів...",
+    "noLikes": "Ви ще не вподобали жодного проєкту.",
+    "previous": "Попередній",
+    "next": "Наступний",
+    "metadata": {
+      "title": "Вподобані проєкти — Modifold",
+      "description": "Проєкти, які ви вподобали на Modifold."
+    }
+  },
+  "SettingsBlogPage": {
+    "sidebar": {
+      "profileIconAlt": "Іконка профілю",
+      "projects": "Проєкти",
+      "likes": "Вподобані",
+      "notifications": "Сповіщення",
+      "settings": "Налаштування",
+      "apiTokens": "API-токени",
+      "verification": "Значок автора",
+      "organizations": "Організації",
+      "jams": "Мод-джеми",
+      "profile": "Профіль",
+      "appearance": "Зовнішній вигляд",
+      "language": "Мова",
+      "accountSecurity": "Безпека",
+      "featureFlags": "Feature flags"
+    },
+    "username": "Ім'я користувача",
+    "slug": {
+      "label": "URL",
+      "placeholder": "Enter profile URL",
+      "checking": "Checking URL availability...",
+      "available": "This URL is available.",
+      "errors": {
+        "required": "Enter a profile URL",
+        "too_short": "URL must be at least 4 characters",
+        "reserved_word": "URL cannot contain \"modifold\"",
+        "leading_hyphen": "URL cannot start with a hyphen",
+        "trailing_hyphen": "URL cannot end with a hyphen",
+        "invalid_format": "Only English letters, numbers, and hyphens between words are allowed",
+        "slug_taken": "This URL is already taken",
+        "generic": "Failed to check URL"
+      }
+    },
+    "description": "Опис",
+    "socialNetworks": "Соціальні мережі",
+    "uploadAvatar": "Завантажити аватар",
+    "avatarPreviewAlt": "Попередній перегляд аватара",
+    "placeholders": {
+      "username": "Введіть ім’я користувача",
+      "description": "Розкажіть про себе",
+      "youtube": "URL YouTube",
+      "telegram": "URL Telegram",
+      "x": "URL X",
+      "discord": "URL Discord"
+    },
+    "language": {
+      "title": "Мова",
+      "russian": "Російська",
+      "english": "Англійська",
+      "spanish": "Іспанська",
+      "portuguese": "Португальська",
+      "ukrainian": "Українська",
+      "turkish": "Турецька",
+      "notice": "Зміна мови сайту може призвести до того, що частина контенту відображатиметься англійською, якщо переклад недоступний. Сайт ще не повністю перекладений, тому частина контенту може залишатися англійською.",
+      "description": "Оберіть бажану мову сайту.",
+      "standard": "Стандартні мови"
+    },
+    "save": "Зберегти",
+    "errors": {
+      "fileTooLarge": "Файл завеликий. Максимальний розмір — 20 МБ",
+      "generic": "Помилка збереження налаштувань"
+    },
+    "success": "Налаштування успішно збережено!",
+    "metadata": {
+      "title": "Налаштування акаунта — Modifold"
+    },
+    "unsavedBar": {
+      "message": "У вас є незбережені зміни профілю.",
+      "reset": "Скинути"
+    },
+    "tabs": {
+      "profile": "Профіль",
+      "language": "Мова"
+    },
+    "appearance": {
+      "title": "Зовнішній вигляд",
+      "description": "Оберіть, як Modifold виглядає на цьому пристрої."
+    },
+    "flags": {
+      "title": "Feature flags",
+      "metadata": {
+        "title": "Feature flags — Modifold"
+      },
+      "defaultLabel": "Default:",
+      "defaultValue": "false",
+      "ariaLabelToggle": "Toggle"
+    },
+    "accountSecurity": {
+      "title": "Безпека",
+      "description": "Керуйте важливими діями облікового запису."
+    },
+    "passwordChange": {
+      "title": "Зміна пароля",
+      "description": "Введіть поточний пароль і новий пароль для входу через пошту.",
+      "currentPlaceholder": "Поточний пароль",
+      "newPlaceholder": "Новий пароль",
+      "showPassword": "Показати пароль",
+      "hidePassword": "Сховати пароль",
+      "submit": "Змінити пароль",
+      "submitting": "Збереження...",
+      "success": "Пароль успішно змінено",
+      "errors": {
+        "generic": "Не вдалося змінити пароль",
+        "missing_fields": "Введіть поточний і новий пароль",
+        "password_too_short": "Новий пароль має містити щонайменше 8 символів",
+        "user_not_found": "Користувача не знайдено",
+        "password_login_disabled": "Вхід за паролем не ввімкнено для цього акаунта",
+        "current_password_incorrect": "Поточний пароль указано неправильно",
+        "password_unchanged": "Новий пароль має відрізнятися від поточного"
+      }
+    },
+    "twoFactor": {
+      "title": "Двофакторна автентифікація",
+      "description": "Додайте ще один рівень безпеки під час входу.",
+      "enable": "Підключити автентифікатор",
+      "disable": "Вимкнути 2FA",
+      "modalTitle": "Підключити автентифікатор",
+      "step1": "Скануйте QR‑код у Google Authenticator, Authy або Microsoft Authenticator.",
+      "manualKey": "Якщо QR не сканується, введіть ключ вручну",
+      "continue": "Продовжити",
+      "back": "Назад",
+      "cancel": "Скасувати",
+      "step2Title": "Код підтвердження",
+      "step2Description": "Введіть одноразовий код із застосунку.",
+      "codePlaceholder": "Введіть код...",
+      "confirm": "Підтвердити",
+      "submitting": "Збереження...",
+      "success": "Двофакторну автентифікацію увімкнено",
+      "disabled": "Двофакторну автентифікацію вимкнено",
+      "disableTitle": "Вимкнути двофакторну автентифікацію",
+      "disableDescription": "Введіть код із застосунку, щоб вимкнути 2FA.",
+      "close": "Закрити",
+      "errors": {
+        "setup": "Не вдалося розпочати налаштування 2FA",
+        "missingCode": "Введіть код",
+        "invalidCode": "Невірний код"
+      }
+    }
+  },
+  "BrowsePage": {
+    "gameVersion": "Версія гри",
+    "gameVersions": "Версії гри",
+    "showAllVersions": "Показувати всі версії",
+    "loader": "Лоадер",
+    "categories": "Категорії",
+    "clearFilters": "Очистити фільтри",
+    "clearAllFilters": "Очистити всі фільтри",
+    "clearSearch": "Очистити пошук",
+    "placeholders": {
+      "search": "Пошук проєктів...",
+      "versionSearch": "Пошук..."
+    },
+    "sort": {
+      "downloads": "Найбільше завантажень",
+      "recent": "Нещодавно додані",
+      "updated": "Нещодавно оновлені"
+    },
+    "loading": "Завантаження проєктів...",
+    "noProjects": "Поки що немає проєктів",
+    "previous": "Попередній",
+    "next": "Наступний",
+    "view": {
+      "grid": "Сітка",
+      "list": "Список"
+    },
+    "recommended": {
+      "ariaLabel": "Рекомендовані моди",
+      "noSummary": "Опис поки не додано",
+      "downloadsTitle": "{count} завантажень",
+      "openProject": "Відкрити",
+      "participate": "Узяти участь",
+      "collapse": "Згорнути рекомендації",
+      "expand": "Розгорнути рекомендації"
+    },
+    "mods": "Моди",
+    "modpacks": "Модпаки"
+  },
+  "CategoryLabels": {
+    "adventure": "Пригоди",
+    "challenging": "Складні",
+    "combat": "Бої",
+    "cursed": "Абсурдні",
+    "decoration": "Декор",
+    "economy": "Економіка",
+    "equipment": "Спорядження",
+    "food": "Їжа",
+    "game_mechanics": "Механіки гри",
+    "kitchen_sink": "Збірна солянка",
+    "library": "Бібліотека",
+    "lightweight": "Легковагові",
+    "magic": "Магія",
+    "management": "Керування",
+    "minigame": "Мінігра",
+    "mobs": "Моби",
+    "multiplayer": "Мультиплеєр",
+    "optimization": "Оптимізація",
+    "quests": "Квести",
+    "social": "Соціальне",
+    "storage": "Сховище",
+    "technology": "Технології",
+    "transportation": "Транспорт",
+    "utility": "Утиліти",
+    "world_generation": "Генерація світу",
+    "texture_packs": "Текстурпаки"
+  },
+  "ProfilePage": {
+    "userAvatarAlt": "Аватар користувача {username}",
+    "loading": "Завантаження проєктів...",
+    "noProjects": "Поки що немає проєктів",
+    "previous": "Попередній",
+    "next": "Наступний",
+    "errors": {
+      "subscriptionChange": "Помилка зміни підписки",
+      "loadingFollowList": "Помилка завантаження списку підписок"
+    },
+    "loginToSubscribe": "Увійдіть, щоб підписатися",
+    "edit": "Редагувати",
+    "subscribe": "Підписатися",
+    "subscribed": "Підписано",
+    "accountFrozen": "Акаунт заморожено",
+    "defaultDescription": "Автор на Modifold.",
+    "role": {
+      "developer": "Розробник",
+      "team": "Команда Modifold"
+    },
+    "joined": "Приєднався:",
+    "subscribersLabel": "{count, plural, one {Підписник} other {Підписники}}",
+    "subscriptionsLabel": "{count, plural, one {Підписка} other {Підписки}}",
+    "followersModal": {
+      "subscribersTitle": "Підписники",
+      "subscriptionsTitle": "Підписки",
+      "loading": "Завантаження...",
+      "loadingMore": "Завантаження...",
+      "empty": "Список порожній"
+    },
+    "moreActionsPlaceholder": "Більше дій незабаром",
+    "moreActionsAria": "Більше дій",
+    "openAvatar": "Відкрити аватар",
+    "lightboxLabel": "Перегляд аватара профілю",
+    "openInNewTab": "Відкрити зображення в новій вкладці",
+    "close": "Закрити",
+    "metadata": {
+      "title": "{username} — Modifold",
+      "notFound": "Користувача не знайдено — Modifold",
+      "frozen": "Акаунт заморожено — Modifold"
+    },
+    "remove": "Прибрати",
+    "organizationsTitle": "Організації",
+    "linksTitle": "Посилання",
+    "verifiedModal": {
+      "creatorBadgeAlt": "Значок автора",
+      "creatorBadgeText": "Цей автор отримав значок автора на Modifold.",
+      "officialBadgeText": "Цей акаунт підтверджено як офіційний представниками Modifold.",
+      "learnMore": "Детальніше"
+    }
+  },
+  "SettingsProjectPage": {
+    "sidebar": {
+      "general": "Загальні",
+      "description": "Опис",
+      "links": "Посилання",
+      "versions": "Версії",
+      "gallery": "Галерея",
+      "tags": "Теги",
+      "analytics": "Аналітика",
+      "issues": "Проблеми",
+      "moderation": "Модерація",
+      "members": "Учасники",
+      "license": "Ліцензія"
+    },
+    "save": "Зберегти",
+    "unsavedBar": {
+      "message": "У вас є незбережені зміни.",
+      "reset": "Скинути"
+    },
+    "metadata": {
+      "title": "Налаштування — {title} — Modifold"
+    },
+    "analytics": {
+      "metadataTitle": "Аналітика — {title} — Modifold",
+      "title": "Аналітика",
+      "ranges": {
+        "3d": "3 дні",
+        "7d": "7 днів",
+        "30d": "30 днів",
+        "90d": "3 місяці"
+      },
+      "chartTypes": {
+        "label": "Тип графіка",
+        "line": "Лінія",
+        "bar": "Стовпці",
+        "lineAria": "Показати лінійний графік",
+        "barAria": "Показати стовпчиковий графік"
+      },
+      "stats": {
+        "downloads": "Завантаження",
+        "views": "Перегляди",
+        "countries": "Країни",
+        "onlineNow": "Онлайн зараз"
+      },
+      "live": {
+        "activeServers": "Активні сервери"
+      },
+      "online": {
+        "title": "Онлайн серверів і гравців",
+        "legendServers": "Servers",
+        "legendPlayers": "Players",
+        "tooltipServers": "{count, plural, one {# сервер} few {# сервери} many {# серверів} other {# сервера}}",
+        "tooltipPlayers": "{count, plural, one {# гравець} few {# гравці} many {# гравців} other {# гравця}}"
+      },
+      "onlineInfo": {
+        "closeAriaLabel": "Закрити модалку",
+        "paragraph1Prefix": "Будь-який моддер може інтегрувати аналітичний мод",
+        "paragraph1Suffix": "у свій проєкт і переглядати на Modifold детальну статистику.",
+        "paragraph2": "Наприклад: скільки гравців онлайн прямо зараз, як змінюється онлайн з часом і скільки активних серверів.",
+        "installationLabel": "Детальніше про встановлення:"
+      },
+      "downloads": {
+        "title": "Завантаження версій",
+        "tooltip": "{count, plural, one {# завантаження} few {# завантаження} many {# завантажень} other {# завантаження}}"
+      },
+      "views": {
+        "title": "Перегляди сторінки проєкту",
+        "tooltip": "{count, plural, one {# перегляд} few {# перегляди} many {# переглядів} other {# перегляду}}"
+      },
+      "countries": {
+        "eyebrow": "Регіони",
+        "title": "Завантаження за країнами",
+        "empty": "За вибраний період поки немає завантажень з кодом країни."
+      }
+    },
+    "general": {
+      "iconAlt": "Іконка проєкту",
+      "errors": {
+        "fileTooLarge": "Файл завеликий. Максимальний розмір — 20 МБ",
+        "save": "Помилка збереження налаштувань проєкту",
+        "delete": "Помилка видалення проєкту"
+      },
+      "success": {
+        "saved": "Налаштування проєкту збережено",
+        "deleted": "Проєкт успішно видалено"
+      },
+      "confirmDelete": "Ви впевнені, що хочете видалити \"{title}\"? Цю дію неможливо скасувати.",
+      "fields": {
+        "icon": "Іконка",
+        "name": "Назва",
+        "summary": "Короткий опис",
+        "url": "URL",
+        "visibility": "Видимість",
+        "issues": "Issues",
+        "playersCount": "Показувати кiлькiсть гравцiв"
+      },
+      "placeholders": {
+        "name": "Назва проєкту",
+        "summary": "Цей проєкт додає...",
+        "url": "Введіть URL"
+      },
+      "hints": {
+        "summary": "Мінімум 30 символів.",
+        "url": "URL має бути в нижньому регістрі, містити лише літери й цифри та може включати дефіси. Максимум 30 символів.",
+        "visibility": "Публічний: видимий у пошуку та профілях. Непублічний: опублікований, але не в пошуку. Приватний: доступний лише учасникам.",
+        "issues": "Controls whether the Issues tab and issue pages are available for this project.",
+        "playersCount": "Дозволяє показувати у картцi проєкту загальну кiлькiсть входiв у гру з вашим модом за останнi 2 тижнi."
+      },
+      "playersCount": {
+        "enabled": "Так",
+        "disabled": "Нi"
+      },
+      "issues": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "visibility": {
+        "public": "Публічний",
+        "unlisted": "Непублічний",
+        "private": "Приватний"
+      },
+      "actions": {
+        "save": "Зберегти",
+        "delete": "Видалити проєкт"
+      },
+      "organization": {
+        "title": "Організація",
+        "successUpdated": "Організацію проєкту оновлено",
+        "errors": {
+          "update": "Не вдалося оновити організацію"
+        },
+        "noOrganization": "Без організації",
+        "hint": "Привʼяжіть цей проєкт до організації, щоб він відображався як організаційний.",
+        "transfer": "Передати керування",
+        "transferring": "Передача..."
+      }
+    },
+    "description": {
+      "success": "Опис оновлено",
+      "errors": {
+        "save": "Помилка оновлення опису"
+      },
+      "title": "Опис",
+      "placeholder": "Введіть опис проєкту (підтримується Markdown)",
+      "hint": "Мінімум 50 символів.",
+      "preview": "Попередній перегляд",
+      "actions": {
+        "save": "Зберегти"
+      }
+    },
+    "links": {
+      "success": "Посилання оновлено",
+      "errors": {
+        "save": "Помилка оновлення посилань"
+      },
+      "fields": {
+        "issueTracker": "Трекер задач",
+        "sourceCode": "Вихідний код",
+        "wiki": "Вікі",
+        "hytaleModdingWiki": "HytaleModding Wiki",
+        "discord": "Discord"
+      },
+      "placeholders": {
+        "issueTracker": "URL до трекера задач",
+        "sourceCode": "URL до вихідного коду",
+        "wiki": "URL до вікі",
+        "hytaleModdingWiki": "https://wiki.hytalemodding.dev/mod/voile",
+        "discord": "URL до Discord"
+      },
+      "actions": {
+        "save": "Зберегти"
+      }
+    },
+    "license": {
+      "success": "Ліцензію успішно оновлено",
+      "errors": {
+        "save": "Помилка оновлення ліцензії"
+      },
+      "title": "Ліцензія проєкту",
+      "actions": {
+        "save": "Зберегти ліцензію",
+        "clear": "Очистити ліцензію"
+      },
+      "current": "Поточна ліцензія",
+      "noSelection": "Ліцензію не вибрано"
+    },
+    "tags": {
+      "success": "Теги оновлено",
+      "errors": {
+        "save": "Помилка оновлення тегів"
+      },
+      "title": "Теги проєкту",
+      "selected": "{count, plural, one {# вибрано} other {# вибрано}}",
+      "select": "Вибрати теги",
+      "actions": {
+        "save": "Зберегти теги",
+        "clear": "Очистити теги"
+      },
+      "current": "Поточні теги",
+      "none": "Теги не вибрані."
+    },
+    "versions": {
+      "errors": {
+        "selectVersionsAndLoaders": "Будь ласка, виберіть щонайменше одну версію гри та лоадер",
+        "upload": "Помилка завантаження версії",
+        "fileTooLarge": "Файл занадто великий. Максимальний розмір — 100 МБ"
+      },
+      "success": "Версію завантажено",
+      "successModeration": "Версію відправлено на модерацію",
+      "title": "Завантажити нову версію",
+      "dependenciesEditor": {
+        "title": "Додати залежність",
+        "description": "Виберіть проєкт, за потреби версію, тип зв'язку і додайте до списку.",
+        "fields": {
+          "project": "Проєкт",
+          "version": "Версія",
+          "dependencyRelation": "Тип залежності"
+        },
+        "dependencyTypes": {
+          "required": "Обов'язкова",
+          "optional": "Необов'язкова",
+          "incompatible": "Несумісна",
+          "embedded": "Вбудована"
+        },
+        "placeholders": {
+          "searchProject": "Пошук за назвою або вставка ID...",
+          "selectOrPasteVersionId": "Виберіть версію або вставте ID версії...",
+          "pasteVersionIdOptional": "Вставте ID версії (необов'язково)"
+        },
+        "popover": {
+          "typeAtLeast": "Введіть щонайменше {count} символ(и) для пошуку.",
+          "searching": "Пошук...",
+          "noProjectsFound": "Проєкти не знайдено. Ви все одно можете вставити точний ID проєкту.",
+          "unableToLoadProjects": "Не вдалося завантажити проєкти",
+          "anyVersion": "Будь-яка версія",
+          "selectProjectToChooseVersions": "Виберіть проєкт, щоб обрати одну з його версій.",
+          "loadingVersions": "Завантаження версій...",
+          "noMatchingVersions": "Відповідних версій немає. Ви все одно можете вставити точний ID версії.",
+          "unableToLoadVersions": "Не вдалося завантажити версії"
+        },
+        "actions": {
+          "add": "Додати",
+          "remove": "Видалити"
+        },
+        "list": {
+          "addedDependencies": "Додані залежності",
+          "unknownProject": "невідомий проєкт"
+        }
+      },
+      "fields": {
+        "versionNumber": "Номер версії",
+        "changelog": "Список змін",
+        "releaseChannel": "Канал релізу",
+        "gameVersions": "Версії гри",
+        "loaders": "Лоадери"
+      },
+      "placeholders": {
+        "versionNumber": "наприклад, 1.0",
+        "changelog": "Опишіть зміни в цій версії"
+      },
+      "releaseChannels": {
+        "release": "Реліз",
+        "beta": "Бета",
+        "alpha": "Альфа"
+      },
+      "gameVersionGroups": {
+        "releases": "Релізи",
+        "preReleases": "Пре-релізи"
+      },
+      "selectGameVersions": "Вибрати версії гри",
+      "selectedGameVersions": "{count, plural, one {# вибрано} other {# вибрано}}",
+      "selectLoaders": "Вибрати лоадери",
+      "selectedLoaders": "{count, plural, one {# вибрано} other {# вибрано}}",
+      "actions": {
+        "upload": "Завантажити версію"
+      },
+      "modal": {
+        "editMetadataTitle": "Редагувати метадані",
+        "editDetailsTitle": "Редагувати деталі",
+        "editFilesTitle": "Редагувати файли",
+        "steps": {
+          "files": "Файли",
+          "metadata": "Метадані",
+          "compatibility": "Сумісність",
+          "dependencies": "Залежності"
+        },
+        "dropzone": {
+          "uploadTitle": "Завантажити файл версії",
+          "uploadHint": "Перетягніть файл сюди або натисніть для вибору",
+          "replaceTitle": "Замінити файл версії (необов'язково)",
+          "replaceHint": "Перетягніть новий файл сюди або натисніть для вибору"
+        },
+        "actions": {
+          "continue": "Далі",
+          "back": "Назад",
+          "uploading": "Завантаження..."
+        }
+      }
+    },
+    "gallerySettings": {
+      "success": "Зображення завантажено",
+      "errors": {
+        "upload": "Помилка завантаження зображення"
+      },
+      "title": "Додати нове зображення",
+      "fields": {
+        "title": "Заголовок",
+        "description": "Опис",
+        "order": "Порядок",
+        "featured": "Обране"
+      },
+      "placeholders": {
+        "title": "Назва зображення",
+        "description": "Опис зображення",
+        "order": "Порядковий номер"
+      },
+      "featuredHint": "Обране зображення галереї відображається в пошуку та в картці вашого проєкту. Лише одне зображення галереї може бути обраним.",
+      "actions": {
+        "add": "Додати зображення"
+      },
+      "modal": {
+        "steps": {
+          "files": "Файли",
+          "metadata": "Метадані"
+        },
+        "dropzone": {
+          "uploadTitle": "Завантажити зображення",
+          "uploadHint": "Перетягніть зображення сюди або натисніть для вибору",
+          "replaceTitle": "Замінити зображення (необов'язково)",
+          "replaceHint": "Перетягніть нове зображення сюди або натисніть для вибору"
+        },
+        "actions": {
+          "continue": "Далі",
+          "back": "Назад",
+          "uploading": "Завантаження..."
+        }
+      },
+      "states": {
+        "enabled": "Увімкнено",
+        "disabled": "Вимкнено"
+      }
+    },
+    "moderation": {
+      "errors": {
+        "icon": "Будь ласка, завантажте іконку для проєкту",
+        "description": "Будь ласка, додайте опис для проєкту",
+        "summary": "Будь ласка, додайте короткий опис для проєкту",
+        "versions": "Будь ласка, завантажте принаймні одну версію для проєкту",
+        "alreadySubmitted": "Проєкт уже подано на модерацію",
+        "submit": "Помилка відправлення проєкту на модерацію"
+      },
+      "title": "Надіслати проєкт на модерацію",
+      "description": "Переконайтеся, що всі обов’язкові поля заповнені перед відправленням проєкту на перевірку",
+      "cards": {
+        "icon": {
+          "title": "Іконка проєкту",
+          "done": "Успішно завантажено",
+          "required": "Обов’язково (рекомендовано 512x512 px)"
+        },
+        "summary": {
+          "title": "Короткий опис",
+          "done": "Виглядає добре!",
+          "required": "Короткий опис (1-2 речення)"
+        },
+        "description": {
+          "title": "Опис",
+          "done": "Детально і готово",
+          "required": "Повний опис проєкту (рекомендовано 300+ символів)"
+        },
+        "versions": {
+          "title": "Версії",
+          "done": "Завантажено принаймні одну версію",
+          "required": "Завантажте принаймні одну версію"
+        }
+      },
+      "status": {
+        "queued": "Проєкт уже подано на модерацію",
+        "approved": "Проєкт схвалено"
+      },
+      "history": {
+        "title": "Історія модерації",
+        "empty": "Поки що немає подій модерації",
+        "actions": {
+          "queued": "Подано на перевірку",
+          "approved": "Схвалено",
+          "rejected": "Відхилено",
+          "changesRequested": "Запитані зміни"
+        },
+        "reason": "Причина",
+        "moderator": "Модератор"
+      },
+      "actions": {
+        "submitting": "Відправлення...",
+        "alreadySubmitted": "Вже подано",
+        "approved": "Проєкт схвалено",
+        "submit": "Подати на модерацію"
+      },
+      "success": {
+        "submit": "Проєкт надіслано на модерацію"
+      }
+    },
+    "members": {
+      "errors": {
+        "fetch": "Помилка завантаження учасників проєкту",
+        "enterUsername": "Будь ласка, введіть ім’я користувача",
+        "invite": "Помилка запрошення учасника",
+        "roleEmpty": "Роль не може бути порожньою",
+        "roleTooLong": "Роль занадто довга (макс. 50)",
+        "updateRole": "Помилка оновлення ролі",
+        "remove": "Помилка видалення учасника",
+        "leave": "Помилка виходу з проєкту"
+      },
+      "success": {
+        "inviteSent": "Запрошення надіслано",
+        "roleUpdated": "Роль оновлено",
+        "removed": "Учасника видалено",
+        "left": "Ви вийшли з проєкту"
+      },
+      "confirmRemove": "Видалити {username} з проєкту?",
+      "confirmLeave": "Вийти з \"{title}\"?",
+      "inviteTitle": "Запросити учасника",
+      "inviteDescription": "Запросіть людей до співпраці над цим проєктом.",
+      "placeholders": {
+        "username": "Введіть ім’я користувача",
+        "role": "Роль"
+      },
+      "actions": {
+        "invite": "Запросити",
+        "leave": "Вийти з проєкту",
+        "remove": "Видалити",
+        "saveRole": "Зберегти"
+      },
+      "leaveTitle": "Вийти з проєкту",
+      "leaveDescription": "Ви втратите доступ до цього проєкту.",
+      "none": "Поки що немає учасників.",
+      "avatarAlt": "Аватар учасника {username}",
+      "roleLabel": "Роль",
+      "status": {
+        "pending": "Очікує",
+        "accepted": "Прийнято",
+        "member": "Учасник"
+      }
+    }
+  },
+  "NewsPage": {
+    "title": "Новини",
+    "featuredArticle": {
+      "label": "Рекомендована стаття"
+    },
+    "moreTitle": "Більше статей",
+    "notFound": "Статтю не знайдено",
+    "byline": {
+      "and": "і",
+      "team": "Команда Modifold",
+      "separator": "•"
+    }
+  },
+  "LoginModal": {
+    "close": "Закрити",
+    "continueWith": "Продовжити з {provider}",
+    "continueWithEmail": "Продовжити через пошту",
+    "errors": {
+      "telegram": "Помилка авторизації Telegram",
+      "github": "Помилка авторизації GitHub",
+      "discord": "Помилка авторизації Discord",
+      "telegramProcessing": "Помилка обробки повідомлення Telegram",
+      "githubProcessing": "Помилка обробки повідомлення GitHub",
+      "discordProcessing": "Помилка обробки повідомлення Discord"
+    },
+    "emailAuth": {
+      "close": "Закрити",
+      "back": "Назад",
+      "loginTitle": "Вхід через пошту",
+      "registerTitle": "Створити акаунт",
+      "verifyTitle": "Підтвердьте пошту",
+      "emailPlaceholder": "Пошта",
+      "usernamePlaceholder": "Ім’я або назва",
+      "passwordPlaceholder": "Пароль",
+      "codePlaceholder": "Код із листа",
+      "showPassword": "Показати пароль",
+      "hidePassword": "Сховати пароль",
+      "loginButton": "Увійти",
+      "registerButton": "Створити акаунт",
+      "verifyButton": "Підтвердити",
+      "submitting": "Зачекайте...",
+      "createAccount": "Створити акаунт",
+      "backToLogin": "Увійти через пошту",
+      "codeSent": "Ми надіслали код на вашу пошту.",
+      "verifyDescription": "Введіть 6-значний код, надісланий на {email}. Він діє 5 хвилин.",
+      "captchaMissing": "hCaptcha site key не налаштовано.",
+      "errors": {
+        "invalidCredentials": "Невірна пошта або пароль",
+        "login": "Не вдалося увійти через пошту",
+        "register": "Не вдалося почати реєстрацію",
+        "verify": "Не вдалося підтвердити код"
+      }
+    },
+    "dataModal": {
+      "title": "Які дані ми збираємо?",
+      "intro": "Ми цінуємо вашу приватність і використовуємо соціальні логіни (Telegram, GitHub, Discord) для безпечної автентифікації на Modifold. Ми збираємо лише мінімум даних, необхідний для роботи:",
+      "items": {
+        "usernameAvatar": "Ім’я користувача та аватар для ідентифікації вашого профілю.",
+        "email": "Email-адресу (якщо її надає соцмережа) для зв’язку та персоналізації."
+      },
+      "outro": "Ми не збираємо паролі й не отримуємо їх від соціальних мереж. Усі дані зберігаються виключно на захищених серверах Modifold і ніколи не передаються третім сторонам. Детальніше — в нашій Політиці конфіденційності."
+    }
+  },
+  "DeleteAccountSection": {
+    "title": "Небезпечна зона",
+    "description": "Усі ваші проєкти, версії, завантажені файли, зображення, підписки та інша пов’язана інформація будуть безповоротно видалені.",
+    "deleteButton": "Видалити мій акаунт назавжди",
+    "confirmTitle": "Ви абсолютно впевнені?",
+    "confirmDescription": "Цю дію неможливо скасувати. Усі ваші проєкти, файли, зображення, підписники та дані акаунта будуть безповоротно видалені.",
+    "cancel": "Скасувати",
+    "confirmDelete": "Так, видалити мій акаунт",
+    "deleting": "Видалення...",
+    "success": "Акаунт і всі пов’язані дані успішно видалено",
+    "errors": {
+      "generic": "Не вдалося видалити акаунт"
+    }
+  },
+  "SettingsAPIPage": {
+    "sidebar": {
+      "profileIconAlt": "Іконка профілю"
+    },
+    "title": "API-токени",
+    "description": "API-токени дозволяють зовнішнім застосункам і скриптам отримувати доступ до Modifold від вашого імені. Зберігайте їх у безпеці та ніколи не публікуйте.",
+    "tokenName": "Назва токена",
+    "placeholders": {
+      "tokenName": "Токен для мого скрипта"
+    },
+    "expiration": "Термін дії",
+    "createToken": "Створити токен",
+    "close": "Закрити",
+    "cancel": "Скасувати",
+    "creating": "Створення...",
+    "newTokenTitle": "Створено новий API-токен!",
+    "copy": "Копіювати",
+    "importantLabel": "Важливо:",
+    "importantBody": "Цей токен більше не буде показано. Збережіть його в безпечному місці.",
+    "expiresLabel": "Дійсний до:",
+    "never": "Ніколи",
+    "tokensTitle": "Ваші API-токени",
+    "loadingTokens": "Завантаження токенів...",
+    "noTokens": "У вас ще немає API-токенів.",
+    "revoke": "Відкликати",
+    "confirmRevoke": "Ви впевнені, що хочете відкликати цей токен?",
+    "docsPrompt": "Потрібна допомога? Перегляньте нашу",
+    "docsLink": "Документацію API",
+    "durations": {
+      "week": "1 тиждень",
+      "month": "1 місяць",
+      "quarter": "3 місяці",
+      "year": "1 рік",
+      "forever": "Назавжди"
+    },
+    "success": {
+      "created": "Токен створено! Скопіюйте його зараз — більше він не відобразиться.",
+      "copied": "Токен скопійовано в буфер обміну!",
+      "revoked": "Токен відкликано"
+    },
+    "errors": {
+      "loadTokens": "Не вдалося завантажити API-токени",
+      "tokenNameRequired": "Будь ласка, введіть назву токена",
+      "createToken": "Не вдалося створити токен",
+      "revokeToken": "Не вдалося відкликати токен"
+    },
+    "table": {
+      "name": "Назва",
+      "token": "Токен (приховано)",
+      "created": "Створено",
+      "expires": "Дійсний до"
+    },
+    "metadata": {
+      "title": "API-токени — Modifold"
+    }
+  },
+  "AccessDenied": {
+    "metadata": {
+      "title": "Доступ заборонено — Modifold"
+    },
+    "message": "Доступ заборонено"
+  },
+  "ShareButtons": {
+    "copiedToast": "Посилання скопійовано",
+    "shareOnX": "Поділитися в X",
+    "shareByEmail": "Поділитися через email",
+    "copiedAria": "Скопійовано!",
+    "copyLinkAria": "Скопіювати посилання"
+  },
+  "LicenseModal": {
+    "close": "Закрити",
+    "unknown": "Невідома ліцензія",
+    "empty": "Порожньо",
+    "failed": "Не вдалося"
+  },
+  "ProjectCard": {
+    "by": "від",
+    "downloads": "завантажень",
+    "followers": "підписників",
+    "updated": "Оновлено",
+    "playersLast14dTooltip": "За останнi 14 днiв з цим модом грало {count} гравцiв",
+    "projectIconAlt": "Іконка проєкту {title}"
+  },
+  "ModerationPage": {
+    "metadata": {
+      "title": "Модерація — Modifold"
+    },
+    "title": "Модерація",
+    "tabs": {
+      "projects": "Проєкти",
+      "users": "Користувачі",
+      "verification": "Верифікація",
+      "statistics": "Статистика",
+      "reports": "Reports",
+      "technicalReview": "Перевірка файлів"
+    },
+    "charts": {
+      "approvedProjects": "Графік схвалених проєктів",
+      "userRegistrations": "Графік реєстрацій користувачів",
+      "projects": "Проєкти",
+      "registrations": "Реєстрації",
+      "date": "Дата: {date}"
+    },
+    "stats": {
+      "totalApproved": "Усього схвалених проєктів",
+      "totalUsers": "Усього користувачів",
+      "pending": "Проєкти в очікуванні",
+      "totalProjectVersions": "Усього версій проєктів",
+      "totalProjectDownloads": "Усього завантажень проєктів",
+      "totalUnpublishedProjects": "Неопубліковані проєкти",
+      "modsPlayersOnlineNow": "Гравцi модiв онлайн зараз",
+      "modServersOnlineNow": "Активних серверiв зараз"
+    },
+    "filters": {
+      "searchPlaceholder": "Пошук за назвою проєкту...",
+      "types": {
+        "all": "Усі проєкти",
+        "mod": "Моди"
+      },
+      "sort": {
+        "oldest": "Найстаріші",
+        "newest": "Найновіші"
+      }
+    },
+    "actions": {
+      "approve": "Схвалити",
+      "reject": "Відхилити",
+      "rejectPrompt": "Введіть причину відхилення:"
+    },
+    "errors": {
+      "fetchProjects": "Помилка отримання проєктів для модерації",
+      "fetchAnalytics": "Помилка отримання даних аналітики",
+      "approve": "Помилка схвалення проєкту",
+      "reject": "Помилка відхилення проєкту"
+    },
+    "success": {
+      "approved": "Проєкт схвалено",
+      "rejected": "Проєкт відхилено"
+    },
+    "pagination": {
+      "previous": "Попередній",
+      "next": "Наступний",
+      "pageOf": "Сторінка {page} з {totalPages}"
+    },
+    "empty": "Немає проєктів, що очікують на модерацію."
+  },
+  "TechnicalReviewPage": {
+    "metadata": {
+      "title": "Перевірка файлів — Modifold"
+    },
+    "filters": {
+      "searchPlaceholder": "Пошук за версіями, проєктами або ID...",
+      "sort": {
+        "oldest": "Найстаріші",
+        "newest": "Найновіші"
+      }
+    },
+    "statuses": {
+      "needs_review": "Потрібна перевірка",
+      "pending": "Очікує",
+      "scanning": "Сканується",
+      "error": "Помилка сканування",
+      "blocked": "Заблокована",
+      "approved": "Опублікована",
+      "all": "Усі статуси"
+    },
+    "fields": {
+      "version": "Версія",
+      "fileSize": "Розмір файлу",
+      "status": "Статус",
+      "scanRequested": "Запит перевірки",
+      "reason": "Причина",
+      "argusReasons": "Сигнали Argus",
+      "noFlags": "Для цього файлу немає підозрілих flags.",
+      "argusNotice": "Argus noticed: {message}",
+      "noArgusSummary": "no additional details"
+    },
+    "tabs": {
+      "thread": "Thread",
+      "files": "Files"
+    },
+    "severity": {
+      "critical": "Critical",
+      "severe": "Severe",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "info": "Info"
+    },
+    "actions": {
+      "download": "Завантажити",
+      "approve": "Approve",
+      "publish": "Опублікувати",
+      "block": "Заблокувати",
+      "copyCode": "Copy code"
+    },
+    "modal": {
+      "title": "Заблокувати версію",
+      "close": "Закрити",
+      "reason": "Причина",
+      "reasonPlaceholder": "Поясніть, чому версію заблоковано.",
+      "cancel": "Скасувати",
+      "confirm": "Заблокувати версію"
+    },
+    "success": {
+      "approved": "Версію опубліковано",
+      "blocked": "Версію заблоковано"
+    },
+    "errors": {
+      "fetch": "Не вдалося завантажити чергу перевірки файлів.",
+      "decision": "Не вдалося оновити версію."
+    },
+    "pagination": {
+      "previous": "Попередній",
+      "next": "Наступний",
+      "pageOf": "Сторінка {page} з {totalPages}"
+    },
+    "empty": "У цій черзі перевірки файлів немає версій."
+  },
+  "UsersModerationPage": {
+    "metadata": {
+      "title": "Модерація користувачів — Modifold"
+    },
+    "tabs": {
+      "projects": "Проєкти",
+      "users": "Користувачі",
+      "verification": "Верифікація",
+      "statistics": "Статистика",
+      "reports": "Reports"
+    },
+    "errors": {
+      "fetch": "Помилка отримання користувачів",
+      "updateRole": "Помилка оновлення ролі",
+      "fileTooLarge": "Файл завеликий. Максимальний розмір — 20 МБ",
+      "updateUser": "Помилка оновлення користувача"
+    },
+    "success": {
+      "roleUpdated": "Роль користувача оновлено",
+      "userUpdated": "Користувача оновлено"
+    },
+    "roles": {
+      "admin": "Адміністратор",
+      "moderator": "Модератор",
+      "user": "Користувач"
+    },
+    "actions": {
+      "editAria": "Змінити роль або редагувати користувача",
+      "edit": "Редагувати",
+      "save": "Зберегти",
+      "cancel": "Скасувати",
+      "close": "Закрити"
+    },
+    "pagination": {
+      "previous": "Попередній",
+      "next": "Наступний",
+      "pageOf": "Сторінка {page} з {totalPages}"
+    },
+    "empty": "Немає користувачів для відображення.",
+    "modal": {
+      "title": "Редагувати користувача {username}"
+    },
+    "fields": {
+      "avatar": "Аватар",
+      "avatarAlt": "Попередній перегляд аватара",
+      "username": "Ім’я користувача",
+      "email": "Email",
+      "slug": "URL",
+      "description": "Опис",
+      "role": "Роль"
+    },
+    "placeholders": {
+      "username": "Введіть ім’я користувача",
+      "email": "Введіть email",
+      "slug": "Введіть slug",
+      "description": "Введіть опис"
+    }
+  },
+  "NotificationsPage": {
+    "title": "Сповіщення",
+    "loading": "Завантаження сповіщень...",
+    "loadingMore": "Завантаження...",
+    "loadMore": "Завантажити ще",
+    "empty": "Поки що немає сповіщень",
+    "sidebarAvatarAlt": "Аватар користувача {username}",
+    "unknownUser": "Невідомий користувач",
+    "sections": {
+      "today": "Сьогодні",
+      "yesterday": "Вчора"
+    },
+    "messages": {
+      "followOne": "{username} підписався на вас",
+      "followMany": "{username} та ще {count} користувачів підписалися на вас",
+      "followOneTail": "підписався на вас",
+      "followManyTail": "та ще {count} користувачів підписалися на вас",
+      "projectLikeOne": "{username} вподобав ваш проєкт {project}",
+      "projectLikeMany": "{username} та ще {count} користувачів вподобали ваш проєкт {project}",
+      "projectLikeOneMiddle": "вподобав ваш проєкт",
+      "projectLikeManyMiddle": "та ще {count} користувачів вподобали ваш проєкт",
+      "projectVersionReleaseMiddle": "випустив(ла) версію {version} для",
+      "projectVersionApprovedMiddle": "Ваша версія {version} пройшла модерацію і тепер доступна для",
+      "projectFallback": "ваш проєкт",
+      "versionFallback": "нової",
+      "unknown": "Нове сповіщення",
+      "organizationFallback": "організацію",
+      "organizationInviteTail": "запросив(ла) вас до",
+      "organizationRemovedTail": "видалив(ла) вас з"
+    },
+    "errors": {
+      "fetch": "Не вдалося завантажити сповіщення",
+      "noToken": "Токен авторизації не знайдено"
+    },
+    "actions": {
+      "accept": "Прийняти",
+      "decline": "Відхилити"
+    }
+  },
+  "VerificationRequestModal": {
+    "title": "Заявка на значок автора",
+    "close": "Закрити",
+    "description": "Критерії рахуються автоматично за вашими опублікованими проєктами.",
+    "platform": "Платформа",
+    "followers": "Підписники",
+    "downloads": "Завантаження",
+    "note": "Коментар модератору",
+    "confirm": "Підтверджую, що надсилаю цю заявку добросовісно.",
+    "submit": "Надіслати заявку",
+    "submitting": "Надсилання...",
+    "cancel": "Скасувати",
+    "placeholders": {
+      "note": "Додатковий коментар для модераторів (необов’язково).",
+      "xUrl": "https://x.com/yourprofile",
+      "youtubeUrl": "https://youtube.com/@yourchannel",
+      "curseforgeUrl": "https://curseforge.com/members/you"
+    },
+    "errors": {
+      "missingLinks": "Додайте принаймні одне посилання на X, YouTube або CurseForge.",
+      "confirmRequired": "Підтвердіть перед надсиланням.",
+      "pending": "У вас уже є заявка на розгляді.",
+      "generic": "Помилка під час надсилання заявки",
+      "cooldown": "Повторна заявка доступна через 7 днів після відмови.",
+      "notEligible": "Вимоги ще не виконані."
+    },
+    "success": "Заявку надіслано",
+    "checklist": {
+      "downloads": "Завантаження сумарно: {current} / {required}",
+      "players": "Гравці за 14 днів: {current} / {required}"
+    }
+  },
+  "VerificationModerationPage": {
+    "metadata": {
+      "title": "Заявки на верифікацію — Modifold"
+    },
+    "tabs": {
+      "projects": "Проєкти",
+      "users": "Користувачі",
+      "verification": "Верифікація",
+      "statistics": "Статистика",
+      "reports": "Reports"
+    },
+    "filters": {
+      "pending": "На розгляді",
+      "approved": "Схвалені",
+      "rejected": "Відхилені",
+      "all": "Усі"
+    },
+    "statuses": {
+      "pending": "На розгляді",
+      "approved": "Схвалено",
+      "rejected": "Відхилено"
+    },
+    "fields": {
+      "createdAt": "Дата заявки",
+      "note": "Коментар",
+      "xUrl": "Посилання X",
+      "youtubeUrl": "Посилання YouTube",
+      "curseforgeUrl": "Посилання CurseForge"
+    },
+    "actions": {
+      "approve": "Схвалити",
+      "reject": "Відхилити",
+      "notePrompt": "Коментар модератора (необов’язково):"
+    },
+    "errors": {
+      "fetch": "Помилка завантаження заявок",
+      "update": "Помилка оновлення заявки"
+    },
+    "success": {
+      "approved": "Заявку схвалено",
+      "rejected": "Заявку відхилено"
+    },
+    "pagination": {
+      "previous": "Назад",
+      "next": "Вперед",
+      "pageOf": "Сторінка {page} з {totalPages}"
+    },
+    "empty": "Заявок немає."
+  },
+  "SettingsVerificationPage": {
+    "metadata": {
+      "title": "Значок автора — Modifold"
+    },
+    "title": "Значок автора",
+    "subtitle": "Офіційний статус для активних і надійних моддерів.",
+    "badgeAlt": "Значок автора",
+    "benefitsNote": "Значок автора виділяє профіль, допомагає гравцям швидше знаходити надійних авторів і відкриває пріоритет на промо від команди Modifold.",
+    "statusLabel": "Статус",
+    "status": {
+      "verified": "Значок автора активний",
+      "notVerified": "Значок поки не активний"
+    },
+    "promoCard": {
+      "avatarAlt": "Аватар користувача",
+      "usernameFallback": "Користувач"
+    },
+    "whatYouGetTitle": "Що ви отримуєте",
+    "whatYouGet": {
+      "list1": "Значок автора біля імені в профілі та коментарях.",
+      "list2": "Більше шансів потрапити в добірки та блоки на головній.",
+      "list3": "Пріоритет у програмах підтримки та creator-кампаніях."
+    },
+    "requirementsTitle": "Вимоги для значка",
+    "requirementsList": {
+      "projects": "Опублікувати {required} проєкти",
+      "downloads": "Набрати {required} завантажень"
+    },
+    "claim": "Отримати значок автора",
+    "claiming": "Застосування...",
+    "success": {
+      "claimed": "Значок автора надано."
+    },
+    "errors": {
+      "fetch": "Не вдалося завантажити статус верифікації",
+      "claim": "Не вдалося надати значок автора",
+      "notEligible": "Вимоги ще не виконані.",
+      "alreadyVerified": "Значок автора вже активний."
+    }
+  },
+  "ProjectReportModal": {
+    "title": "Скарга на проєкт",
+    "close": "Закрити",
+    "description": "Оберіть причину скарги. За потреби додайте коментар для модераторів.",
+    "reason": "Причина",
+    "comment": "Коментар (необов’язково)",
+    "commentCounter": "{count}/{max}",
+    "submit": "Надіслати скаргу",
+    "submitting": "Надсилання...",
+    "cancel": "Скасувати",
+    "success": "Скаргу успішно надіслано.",
+    "placeholders": {
+      "comment": "Опишіть проблему детальніше (необов’язково)."
+    },
+    "reasons": {
+      "spam": "Спам / сміттєвий контент",
+      "malware": "Шкідливий файл / небезпечний контент",
+      "copyright": "Порушення авторських прав",
+      "nsfw": "18+ / неприйнятний контент",
+      "fraud": "Шахрайство / оманливий контент",
+      "rules_violation": "Порушення правил",
+      "other": "Інше"
+    },
+    "errors": {
+      "reasonRequired": "Оберіть причину скарги.",
+      "commentTooLong": "Коментар надто довгий (максимум {max} символів).",
+      "duplicate": "Ви вже надсилали скаргу на цей проєкт.",
+      "generic": "Не вдалося надіслати скаргу. Спробуйте пізніше."
+    }
+  },
+  "ReportsModerationPage": {
+    "metadata": {
+      "title": "Скарги на проєкти — модерація — Modifold"
+    },
+    "tabs": {
+      "projects": "Проєкти",
+      "reports": "Скарги",
+      "statistics": "Статистика",
+      "users": "Користувачі",
+      "verification": "Верифікація"
+    },
+    "filters": {
+      "searchPlaceholder": "Пошук за проєктом",
+      "status": {
+        "open": "Активні",
+        "resolved": "Завершені",
+        "dismissed": "Відхилені",
+        "all": "Усі статуси"
+      },
+      "sort": {
+        "newest": "Спочатку нові",
+        "oldest": "Спочатку старі"
+      },
+      "reasons": {
+        "all": "Усі причини",
+        "spam": "Спам",
+        "malware": "Шкідливе ПЗ",
+        "copyright": "Авторські права",
+        "nsfw": "18+ контент",
+        "fraud": "Шахрайство",
+        "rules_violation": "Порушення правил",
+        "other": "Інше"
+      }
+    },
+    "statuses": {
+      "open": "Активна",
+      "resolved": "Завершена",
+      "dismissed": "Відхилена"
+    },
+    "fields": {
+      "reason": "Причина",
+      "reporter": "Хто поскаржився",
+      "comment": "Коментар",
+      "moderationResult": "Рішення модератора",
+      "resolvedBy": "Опрацював: {username}",
+      "noResolver": "Модератора не вказано"
+    },
+    "actions": {
+      "resolve": "Завершити",
+      "dismiss": "Відхилити",
+      "notePrompt": "Коментар модератора (необов’язково)"
+    },
+    "pagination": {
+      "previous": "Назад",
+      "next": "Далі",
+      "pageOf": "Сторінка {page} з {totalPages}"
+    },
+    "success": {
+      "resolved": "Скаргу позначено як завершену.",
+      "dismissed": "Скаргу відхилено."
+    },
+    "errors": {
+      "fetch": "Не вдалося завантажити скарги.",
+      "decision": "Не вдалося оновити скаргу."
+    },
+    "empty": "За поточними фільтрами скарг не знайдено."
+  },
+  "Organizations": {
+    "dashboard": {
+      "title": "Організації",
+      "create": "Створити організацію",
+      "empty": "Ви ще не є учасником жодної організації.",
+      "noSummary": "Немає опису",
+      "members": "{count, plural, one {# учасник} few {# учасники} many {# учасників} other {# учасника}}"
+    },
+    "create": {
+      "title": "Створення організації",
+      "close": "Закрити",
+      "success": "Організацію створено",
+      "fields": {
+        "name": "Назва",
+        "url": "URL",
+        "summary": "Короткий опис"
+      },
+      "placeholders": {
+        "name": "Введіть назву організації...",
+        "summary": "Організація для..."
+      },
+      "actions": {
+        "cancel": "Скасувати",
+        "create": "Створити організацію",
+        "creating": "Створення..."
+      },
+      "errors": {
+        "generic": "Не вдалося створити організацію"
+      }
+    },
+    "page": {
+      "edit": "Редагувати",
+      "organizationBadge": "Організація",
+      "organizationOwnerTooltip": "Власник організації",
+      "openAvatar": "Відкрити аватар",
+      "lightboxLabel": "Перегляд зображення організації",
+      "openInNewTab": "Відкрити зображення в новій вкладці",
+      "close": "Закрити",
+      "membersTitle": "Учасники",
+      "dateCreated": "Дата реєстрації: {date}",
+      "membersCount": "{count, plural, one {учасник} few {учасники} many {учасників} other {учасника}}",
+      "projectsCount": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
+      "emptyProjects": "У цієї організації ще немає проєктів."
+    },
+    "settings": {
+      "title": "Інформація про організацію",
+      "membersTitle": "Керування учасниками",
+      "projectsTitle": "Проєкти організації",
+      "navOverview": "Огляд",
+      "navMembers": "Учасники",
+      "navProjects": "Проєкти",
+      "inviteTitle": "Запросити учасника",
+      "invitePlaceholder": "Slug користувача",
+      "projectPermissions": "Права проєкту",
+      "organizationPermissions": "Права організації",
+      "publicPage": "Публічна сторінка",
+      "iconAlt": "Іконка організації {name}",
+      "fields": {
+        "icon": "Іконка",
+        "name": "Назва",
+        "url": "URL",
+        "slug": "Слаг",
+        "summary": "Короткий опис"
+      },
+      "slug": {
+        "checking": "Checking URL availability...",
+        "available": "This URL is available.",
+        "errors": {
+          "required": "Enter an organization URL",
+          "too_short": "URL must be at least 4 characters",
+          "reserved_word": "URL cannot contain \"modifold\"",
+          "leading_hyphen": "URL cannot start with a hyphen",
+          "trailing_hyphen": "URL cannot end with a hyphen",
+          "invalid_format": "Only English letters, numbers, and hyphens between words are allowed",
+          "slug_taken": "This URL is already taken",
+          "generic": "Failed to check URL"
+        }
+      },
+      "actions": {
+        "uploadIcon": "Завантажити іконку",
+        "uploading": "Завантаження...",
+        "save": "Зберегти організацію",
+        "saving": "Збереження...",
+        "invite": "Запросити",
+        "inviting": "Запрошення...",
+        "expand": "Розгорнути",
+        "collapse": "Згорнути",
+        "openProjectSettings": "Налаштування проєкту",
+        "detachProject": "Відв'язати проєкт",
+        "detachingProject": "Відв'язування...",
+        "saveMember": "Зберегти зміни",
+        "removeMember": "Видалити учасника",
+        "removingMember": "Видалення..."
+      },
+      "status": {
+        "accepted": "Прийнято",
+        "pending": "В очікуванні",
+        "invited": "Запрошено",
+        "declined": "Відхилено"
+      },
+      "delete": {
+        "title": "Видалення організації",
+        "description": "Видалення організації назавжди видалить учасників, запрошення та прив'язки проєктів.",
+        "action": "Видалити організацію",
+        "confirmTitle": "Ви абсолютно впевнені?",
+        "confirmAction": "Так, видалити організацію",
+        "cancel": "Скасувати",
+        "close": "Закрити",
+        "deleting": "Видалення...",
+        "confirm": "Видалити цю організацію?",
+        "success": "Організацію видалено",
+        "error": "Не вдалося видалити організацію"
+      },
+      "successSaved": "Організацію збережено",
+      "successIconUploaded": "Іконку організації завантажено",
+      "successInviteSent": "Запрошення надіслано",
+      "successMemberUpdated": "Оновлено учасника {username}",
+      "successMemberRemoved": "Учасника {username} видалено",
+      "successProjectDetached": "Проєкт {title} відв'язано",
+      "confirmDetachProject": "Відв'язати проєкт {title} від організації?",
+      "confirmRemoveMember": "Видалити {username} з організації?",
+      "emptyProjects": "До цієї організації ще не прив'язано жодного проєкту.",
+      "errors": {
+        "save": "Не вдалося зберегти організацію",
+        "iconUpload": "Не вдалося завантажити іконку організації",
+        "invite": "Не вдалося запросити користувача",
+        "inviteSlugRequired": "Введіть slug користувача",
+        "memberUpdate": "Не вдалося оновити учасника",
+        "memberRemove": "Не вдалося видалити учасника",
+        "projectDetach": "Не вдалося відв'язати проєкт",
+        "fileTooLarge": "Файл завеликий. Максимум 20 МБ"
+      },
+      "navLinks": "Посилання",
+      "links": {
+        "fields": {
+          "discord": "Discord",
+          "website": "Посилання на сайт",
+          "twitter": "X (Twitter)",
+          "bluesky": "Bluesky",
+          "telegram": "Telegram",
+          "youtube": "YouTube"
+        },
+        "placeholders": {
+          "discord": "URL Discord",
+          "website": "URL сайту",
+          "twitter": "URL X",
+          "bluesky": "URL Bluesky",
+          "telegram": "URL Telegram",
+          "youtube": "URL YouTube"
+        },
+        "actions": {
+          "save": "Зберегти посилання"
+        },
+        "success": "Посилання оновлено",
+        "errors": {
+          "save": "Не вдалося оновити посилання"
+        }
+      }
+    },
+    "permissions": {
+      "project": {
+        "project_edit_details": "Редагувати деталі",
+        "project_edit_body": "Редагувати опис",
+        "project_edit_gallery": "Редагувати галерею",
+        "project_manage_versions": "Керувати версіями",
+        "project_delete": "Видалити проєкт"
+      },
+      "organization": {
+        "organization_edit_details": "Редагувати організацію",
+        "organization_manage_invites": "Керувати запрошеннями",
+        "organization_manage_members": "Керувати учасниками",
+        "organization_add_project": "Додавати проєкти",
+        "organization_remove_project": "Видаляти проєкти"
+      }
+    }
+  },
+  "Issues": {
+    "title": "Проблеми",
+    "status": {
+      "open": "Відкрита",
+      "closed": "Закрита"
+    },
+    "filters": {
+      "open": "Відкриті",
+      "closed": "Закриті",
+      "newest": "Найновіші",
+      "oldest": "Найстаріші"
+    },
+    "pagination": {
+      "prev": "Попередня",
+      "next": "Наступна"
+    },
+    "empty": "Ще немає проблем. Будьте першим, хто почне обговорення.",
+    "newIssue": {
+      "button": "Нова проблема",
+      "loginRequired": "Увійдіть, щоб створити проблему.",
+      "selectTitle": "Створити нову проблему",
+      "blankTitle": "Власна проблема",
+      "blankDesc": "Почати з порожнього шаблону",
+      "noDescription": "Без опису",
+      "createTitle": "Створити нову проблему",
+      "createWith": "Створити нову проблему: {name}",
+      "titleLabel": "Заголовок",
+      "titlePlaceholder": "Короткий опис",
+      "labelsTitle": "Мітки",
+      "bodyLabel": "Деталі",
+      "bodyPlaceholder": "Опишіть помилку або ідею детально.",
+      "markdownHint": "Підтримується Markdown.",
+      "createButton": "Створити проблему",
+      "titleRequired": "Заголовок проблеми обов’язковий.",
+      "createError": "Не вдалося створити проблему."
+    },
+    "meta": {
+      "by": "від"
+    },
+    "actions": {
+      "close": "Закрити проблему",
+      "reopen": "Відкрити знову",
+      "pin": "Закріпити проблему",
+      "unpin": "Відкріпити проблему",
+      "edit": "Редагувати",
+      "delete": "Видалити проблему",
+      "deleteConfirm": "Видалити цю проблему?",
+      "deleteSuccess": "Проблему видалено."
+    },
+    "history": {
+      "opened": "{name} відкрив(ла) проблему",
+      "closed": "{name} закрив(ла) проблему",
+      "reopened": "{name} повторно відкрив(ла) проблему",
+      "labelAdded": "{name} додав(ла) мітку {label}",
+      "labelRemoved": "{name} видалив(ла) мітку {label}",
+      "generic": "{name} оновив(ла) проблему",
+      "system": "Система",
+      "unknownLabel": "мітка",
+      "empty": "Історія поки порожня."
+    },
+    "comments": {
+      "title": "Коментарі",
+      "placeholder": "Залишити коментар",
+      "send": "Коментувати",
+      "reply": "Відповісти",
+      "edit": "Редагувати",
+      "replyPlaceholder": "Напишіть відповідь",
+      "deleted": "Коментар видалено",
+      "unknown": "Невідомий користувач",
+      "closed": "Цю проблему закрито. Коментарі вимкнено."
+    },
+    "sidebar": {
+      "status": "Статус",
+      "labels": "Мітки",
+      "noLabels": "Ще немає міток",
+      "manageLabels": "Керувати мітками",
+      "details": "Деталі",
+      "created": "Створено",
+      "updated": "Оновлено"
+    },
+    "details": {
+      "emptyBody": "Опис відсутній."
+    },
+    "errors": {
+      "loadIssue": "Failed to load issue.",
+      "comment": "Failed to send comment.",
+      "rateLimited": "You're doing that too fast. Try again soon.",
+      "status": "Failed to update issue status.",
+      "labels": "Failed to update labels.",
+      "pin": "Не вдалося оновити закріплення.",
+      "delete": "Не вдалося видалити проблему."
+    },
+    "common": {
+      "close": "Close",
+      "cancel": "Cancel",
+      "save": "Зберегти",
+      "saving": "Збереження...",
+      "creating": "Creating...",
+      "sending": "Sending..."
+    }
+  },
+  "IssueSettings": {
+    "overview": {
+      "title": "Налаштування проблем",
+      "body": "Створюйте шаблони та мітки, щоб користувачі подавали зрозумілі та структуровані проблеми."
+    },
+    "template": {
+      "sectionTitle": "Шаблони",
+      "create": "Новий шаблон",
+      "createTitle": "Створити шаблон",
+      "editTitle": "Редагувати шаблон",
+      "name": "Назва шаблону",
+      "namePlaceholder": "Звіт про помилку",
+      "about": "Опис",
+      "aboutPlaceholder": "Створіть опис, щоб допомогти нам покращити",
+      "content": "Вміст шаблону",
+      "contentPlaceholder": "Опишіть помилку та наведіть кроки відтворення.",
+      "markdownHint": "Підтримується оформлення Markdown.",
+      "defaultTitle": "Заголовок проблеми за замовчуванням",
+      "defaultTitlePlaceholder": "Додайте рекомендований заголовок",
+      "titlePlaceholder": "Підказка заголовка",
+      "titlePlaceholderPlaceholder": "Короткий опис",
+      "defaultLabels": "Мітки за замовчуванням",
+      "noLabels": "Створіть мітки, щоб використовувати їх тут.",
+      "save": "Зберегти шаблон",
+      "edit": "Переглянути та редагувати",
+      "delete": "Видалити",
+      "deleteConfirm": "Видалити цей шаблон?",
+      "saved": "Шаблон збережено.",
+      "deleted": "Шаблон видалено.",
+      "empty": "Ще немає шаблонів.",
+      "noDescription": "Без опису"
+    },
+    "labels": {
+      "sectionTitle": "Мітки",
+      "create": "Нова мітка",
+      "createTitle": "Створити мітку",
+      "editTitle": "Редагувати мітку",
+      "name": "Назва мітки",
+      "namePlaceholder": "Помилка",
+      "color": "Колір мітки",
+      "applyAccessTitle": "Хто може встановлювати цю мітку",
+      "applyAccessEveryone": "Усі користувачі",
+      "applyAccessTeamOnly": "Лише команда проєкту",
+      "save": "Зберегти мітку",
+      "edit": "Редагувати",
+      "delete": "Видалити",
+      "deleteConfirm": "Видалити цю мітку?",
+      "saved": "Мітку збережено.",
+      "deleted": "Мітку видалено.",
+      "empty": "Ще немає міток."
+    },
+    "errors": {
+      "templateSave": "Не вдалося зберегти шаблон.",
+      "templateDelete": "Не вдалося видалити шаблон.",
+      "labelSave": "Не вдалося зберегти мітку.",
+      "labelDelete": "Не вдалося видалити мітку."
+    },
+    "common": {
+      "backToSettings": "Назад до налаштувань",
+      "close": "Закрити",
+      "cancel": "Скасувати",
+      "saving": "Збереження..."
+    }
+  },
+  "TwoFactorLogin": {
+    "title": "Двофакторна автентифікація",
+    "description": "Введіть одноразовий код із застосунку.",
+    "codeLabel": "Код підтвердження",
+    "codePlaceholder": "Введіть код...",
+    "submit": "Продовжити",
+    "submitting": "Перевірка...",
+    "errors": {
+      "missingToken": "Відсутній токен 2FA.",
+      "missingCode": "Введіть код.",
+      "invalidCode": "Невірний код.",
+      "invalidResponse": "Невірна відповідь сервера.",
+      "generic": "Не вдалося перевірити код."
+    }
+  }
+}

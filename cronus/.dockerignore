@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log*
+bun-debug.log*
+.env
+.env.local
+tmp
+Dockerfile
+.dockerignore
+

@@ -1,0 +1,158 @@
+name: modifold
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: modifold-mysql
+    restart: unless-stopped
+    command: --mysql-native-password=ON
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root-password}
+      MYSQL_DATABASE: ${DB_NAME:-modifold}
+      MYSQL_USER: ${DB_USER:-modifold}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me-db-password}
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8-alpine
+    container_name: modifold-clickhouse
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-modifold}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-modifold}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me-clickhouse-password}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - ./data/clickhouse:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8123/ping | grep -q Ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: modifold-redis
+    restart: unless-stopped
+    command: sh -c 'redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis-password}
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep -q PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  argus:
+    profiles:
+      - argus
+    build:
+      context: ./argus
+      dockerfile: Dockerfile
+    container_name: modifold-argus
+    restart: unless-stopped
+    env_file:
+      - path: ./.env.docker
+        required: false
+    environment:
+      ARGUS_PORT: 4010
+    volumes:
+      - ./data/argus-tmp:/app/tmp
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://127.0.0.1:4010/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    container_name: modifold-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 256M
+    ports:
+      - "127.0.0.1:${PHPMYADMIN_PORT:-8081}:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  cronus:
+    build:
+      context: ./cronus
+      dockerfile: Dockerfile
+    container_name: modifold-cronus
+    restart: unless-stopped
+    env_file:
+      - path: ./.env.docker
+        required: false
+    environment:
+      API_BASE: ${PUBLIC_API_BASE:-https://api.modifold.com}
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-modifold}
+      DB_PASSWORD: ${DB_PASSWORD:-change-me-db-password}
+      DB_NAME: ${DB_NAME:-modifold}
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-modifold}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-modifold}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me-clickhouse-password}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me-redis-password}@redis:6379
+      MEDIA_ROOT: /app/media
+      ARGUS_BASE_URL: ${ARGUS_BASE_URL:-}
+    ports:
+      - "127.0.0.1:${CRONUS_PORT:-4000}:4000"
+    volumes:
+      - ./data/media:/app/media
+      - ./data/cronus-tmp:/app/tmp
+    depends_on:
+      mysql:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://127.0.0.1:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  pegasus:
+    build:
+      context: ./pegasus
+      dockerfile: Dockerfile
+      args:
+        STAGING: ${STAGING:-false}
+        API_BASE: ${API_BASE:-https://api.modifold.com}
+        NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-https://api.modifold.com}
+        NEXT_PUBLIC_GITHUB_CLIENT_ID: ${NEXT_PUBLIC_GITHUB_CLIENT_ID:-}
+        NEXT_PUBLIC_DISCORD_CLIENT_ID: ${NEXT_PUBLIC_DISCORD_CLIENT_ID:-}
+        NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_HCAPTCHA_SITE_KEY:-}
+    container_name: modifold-pegasus
+    restart: unless-stopped
+    env_file:
+      - path: ./.env.docker
+        required: false
+    environment:
+      API_BASE: ${API_BASE:-https://api.modifold.com}
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    ports:
+      - "127.0.0.1:${PEGASUS_PORT:-3000}:3000"
+    depends_on:
+      cronus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12

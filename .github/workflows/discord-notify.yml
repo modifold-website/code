@@ -1,0 +1,130 @@
+name: Discord Notifications
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - name: Notify Discord (push)
+        if: github.event_name == 'push' && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+
+          COMMIT_COUNT=$(jq '.commits | length' "$GITHUB_EVENT_PATH")
+          COMMITS_MD=$(jq -r '
+            (.commits[:5] // [])
+            | map("- `\(.id[0:7])` \((.message | split("\n")[0])) - **\(.author.name)**")
+            | join("\n")
+          ' "$GITHUB_EVENT_PATH")
+
+          if [ -z "$COMMITS_MD" ]; then
+            COMMITS_MD="- No commit details available"
+          fi
+
+          COMPARE_URL=$(jq -r '.compare // empty' "$GITHUB_EVENT_PATH")
+          if [ -z "$COMPARE_URL" ]; then
+            COMPARE_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
+          fi
+
+          EMBED_COLOR=3177968
+          if [ "$GITHUB_REF_NAME" = "develop" ]; then
+            EMBED_COLOR=16098851
+          fi
+
+          PAYLOAD=$(jq -n \
+            --arg title "[$GITHUB_REPOSITORY] $COMMIT_COUNT new commit(s) to $GITHUB_REF_NAME" \
+            --arg description "$COMMITS_MD" \
+            --arg url "$COMPARE_URL" \
+            --arg actor "$GITHUB_ACTOR" \
+            --arg ref "$GITHUB_REF_NAME" \
+            --argjson color "$EMBED_COLOR" \
+            '{
+              embeds: [
+                {
+                  title: $title,
+                  description: $description,
+                  url: $url,
+                  color: $color,
+                  footer: { text: ("Pushed by " + $actor + " - " + $ref) }
+                }
+              ]
+            }')
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK_URL"
+
+      - name: Notify Discord (pull request)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.ref != 'develop' && env.DISCORD_WEBHOOK_URL != ''
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+
+          PR_BODY_TRIMMED=$(printf "%s" "${PR_BODY:-}" | head -c 900)
+          if [ -z "$PR_BODY_TRIMMED" ]; then
+            PR_BODY_TRIMMED="No description provided."
+          fi
+
+          EMBED_COLOR=3177968
+          if [ "$PR_BASE_REF" = "develop" ] || [ "$PR_HEAD_REF" = "develop" ]; then
+            EMBED_COLOR=16098851
+          fi
+
+          PAYLOAD=$(jq -n \
+            --arg title "[$GITHUB_REPOSITORY] PR #$PR_NUMBER $PR_ACTION: $PR_TITLE" \
+            --arg description "$PR_BODY_TRIMMED" \
+            --arg url "$PR_URL" \
+            --arg author "$PR_AUTHOR" \
+            --arg base "$PR_BASE_REF" \
+            --arg head "$PR_HEAD_REF" \
+            --argjson color "$EMBED_COLOR" \
+            '{
+              embeds: [
+                {
+                  title: $title,
+                  description: $description,
+                  url: $url,
+                  color: $color,
+                  fields: [
+                    { name: "Author", value: $author, inline: true },
+                    { name: "From", value: $head, inline: true },
+                    { name: "To", value: $base, inline: true }
+                  ]
+                }
+              ]
+            }')
+
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK_URL"
+

@@ -1,0 +1,391 @@
+.markdown-body blockquote,
+.markdown-body code,
+.markdown-body details,
+.markdown-body dl,
+.markdown-body ol,
+.markdown-body p,
+.markdown-body pre,
+.markdown-body table,
+.markdown-body ul {
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+.markdown-body ul,
+.markdown-body ol {
+    padding-left: 40px;
+}
+.markdown-body li,
+.markdown-body p {
+    line-height: 1.5;
+    padding: 0;
+}
+.markdown-body h1 {
+    display: block;
+}
+.markdown-body h1,
+.markdown-body h2 {
+    border-bottom: none;
+    padding: 0;
+}
+.markdown-body [data-contrast-text] {
+    color: #1a202c;
+}
+strong {
+    font-weight: 600;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    border-color: var(--theme-sidebar-separator-color-background);
+    border-style: solid;
+    border-bottom-width: 1px;
+    padding-bottom: 16px;
+}
+.markdown-body h1 {
+    font-size: 1.5rem;
+}
+@media (min-width: 640px) {
+    .markdown-body h1 {
+        font-size: 2rem;
+    }
+}
+.markdown-body h2 {
+    font-size: 1.25rem;
+}
+@media (min-width: 640px) {
+    .markdown-body h2 {
+        font-size: 1.5rem;
+    }
+}
+.markdown-body h3 {
+    font-size: 1.125rem;
+}
+@media (min-width: 640px) {
+    .markdown-body h3 {
+        font-size: 1.25rem;
+    }
+}
+.markdown-body p {
+    font-size: 0.875rem;
+    margin-bottom: 1.25rem;
+}
+@media (min-width: 640px) {
+    .markdown-body p {
+        font-size: 1rem;
+    }
+}
+.markdown-body p:last-child {
+    margin-bottom: 0;
+}
+.markdown-body a {
+    color: #307df0;
+    font-weight: 600;
+}
+.markdown-body a:hover {
+    text-decoration: underline;
+}
+.markdown-body h1 a,
+.markdown-body h2 a {
+    font-weight: 800;
+}
+.markdown-body h1 a,
+.markdown-body h2 a,
+.markdown-body h3 a,
+.markdown-body h4 a,
+.markdown-body h5 a,
+.markdown-body h6 a {
+    color: #1a202c;
+}
+.markdown-body img {
+    display: inline-block;
+    height: auto;
+    max-width: 100%;
+}
+@media (max-width: 640px) {
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3,
+    .markdown-body h4,
+    .markdown-body h5,
+    .markdown-body h6 {
+        margin-bottom: 0.5rem;
+    }
+    .markdown-body p {
+        margin-bottom: 1rem;
+    }
+    .markdown-body ol,
+    .markdown-body ul {
+        padding-left: 1.25rem;
+    }
+    .markdown-body pre {
+        font-size: 0.75rem;
+        overflow-x: auto;
+    }
+    .markdown-body table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+.textarea__input {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+}
+.markdown-body b {
+    font-weight: 600;
+}
+.markdown-body i {
+    font-style: italic;
+}
+.markdown-body details {
+    margin-bottom: 16px;
+    margin-top: 0;
+}
+.markdown-body details {
+    border: .15rem solid var(--theme-color-background);
+    border-radius: .5rem;
+    padding: .5rem .5rem 0;
+}
+.markdown-body details summary {
+    background-color: var(--theme-color-background);
+    border-radius: .5rem;
+    cursor: pointer;
+    font-weight: 700;
+    margin: -.5rem -.5rem 0;
+    padding: .5rem .8rem;
+}
+.markdown-body details summary:hover {
+    filter: brightness(0.85);
+}
+.markdown-body details[open] {
+    padding: 0.5rem;
+}
+.markdown-body details[open] summary {
+    border-radius: .25rem .25rem 0 0;
+    margin-bottom: 0.5rem;
+}
+.markdown-body details[open] > :last-child:not(summary),
+.markdown-body > :last-child {
+    margin-bottom: 0 !important;
+}
+.markdown-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.markdown-editor__hint {
+    margin: 0;
+    color: var(--theme-color-text-secondary);
+}
+.markdown-editor__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.markdown-editor__toolbar-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.markdown-editor__tool {
+    min-width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--theme-color-background);
+    color: var(--theme-color-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter .15s ease, transform .05s ease;
+}
+.markdown-editor__tool:hover {
+    filter: brightness(.95);
+}
+.markdown-editor__tool:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: none;
+}
+.markdown-editor__tool:disabled:hover {
+    filter: none;
+}
+.markdown-editor__tool:active {
+    transform: translateY(1px);
+}
+.markdown-editor__tool svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    flex-shrink: 0;
+}
+.markdown-editor__preview-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--theme-color-text-primary);
+    cursor: pointer;
+}
+.markdown-editor__preview-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+}
+.markdown-editor__preview-toggle-ui {
+    width: 52px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--theme-color-background);
+    display: inline-flex;
+    align-items: center;
+    padding: 6px;
+    box-sizing: border-box;
+    transition: background-color .18s ease;
+}
+.markdown-editor__preview-toggle-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--theme-color-text-primary);
+    transition: transform .18s ease;
+}
+.markdown-editor__preview-toggle input:checked + .markdown-editor__preview-toggle-ui {
+    background: #307def;
+}
+.markdown-editor__preview-toggle input:checked + .markdown-editor__preview-toggle-ui .markdown-editor__preview-toggle-thumb {
+    transform: translateX(22px);
+    background: #FFFFFF;
+}
+.markdown-editor__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+.markdown-editor__grid--split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.markdown-editor__panel {
+    overflow: hidden;
+    border-radius: 16px;
+}
+.markdown-editor__textarea {
+    min-height: 320px;
+    margin: 0;
+    border: 0;
+    resize: vertical;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    line-height: 1.5;
+}
+.markdown-editor__preview {
+    min-height: 320px;
+    border: 1px solid var(--theme-color-border);
+}
+.markdown-editor__preview-scroll {
+    padding: 16px;
+    max-height: 520px;
+    overflow-y: auto;
+}
+.markdown-editor__support {
+    margin: 0;
+    color: var(--theme-color-text-secondary);
+}
+@media (max-width: 960px) {
+    .markdown-editor__toolbar {
+        align-items: stretch;
+    }
+    .markdown-editor__preview-toggle-ui {
+        width: 52px;
+        height: 32px;
+        padding: 5px;
+    }
+    .markdown-editor__preview-toggle-thumb {
+        width: 18px;
+        height: 18px;
+    }
+    .markdown-editor__preview-toggle input:checked + .markdown-editor__preview-toggle-ui .markdown-editor__preview-toggle-thumb {
+        transform: translateX(25px);
+    }
+}
+.markdown-body pre {
+    background-color: var(--theme-color-background);
+    border-radius: 8px;
+    max-width: 100%;
+    margin-top: 1rem;
+    overflow-x: auto;
+    padding: 14px;
+}
+.markdown-body pre code {
+    border-radius: 0;
+    font-size: 80%;
+    padding: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.markdown-body code {
+    background-color: var(--theme-color-background);
+    border-radius: 8px;
+    font-size: 80%;
+    padding: 0.2em 0.4em;
+}
+.markdown-body .markdown-mermaid {
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--theme-color-background);
+    border-radius: 14px;
+    overflow-x: auto;
+}
+.markdown-body .markdown-mermaid svg {
+    max-width: 100%;
+    height: auto;
+}
+.markdown-body .markdown-mermaid__error {
+    margin-top: 12px;
+}
+.news .markdown-body code {
+    background-color: var(--theme-color-background-content);
+}
+.markdown-body table thead {
+    font-size: 16px;
+    border-bottom: 0;
+}
+.markdown-body table tbody {
+    font-size: 14px;
+}
+.markdown-body table thead tr th {
+    font-weight: 500;
+    padding-top: 0;
+}
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: transparent;
+}
+.markdown-body table th,
+.markdown-body table td {
+    padding: 10px 10px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--theme-color-background);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.markdown-body table th {
+    font-weight: 500;
+}
+.markdown-body table tbody tr:last-child td {
+    border-bottom: 0;
+}
