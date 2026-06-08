@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const swaggerUi = require("swagger-ui-express");
 
 const specs = require("./swagger");
-const { API_BASE } = require("./config/apiBase");
 const { db } = require("./config/db");
 const { clickhouse } = require("./config/clickhouse");
 const { cacheClient } = require("./config/cache");
@@ -165,8 +164,8 @@ const startServer = () => {
 	app.use("/mod-jams", modJamsRoutes);
 
 	const server = app.listen(SERVER_PORT, () => {
-		console.log(`Server running on ${API_BASE}`);
-		console.log(`Swagger UI ${API_BASE}/api-docs`);
+		console.log(`Server running on http://localhost:${SERVER_PORT}`);
+		console.log(`Swagger UI http://localhost:${SERVER_PORT}/api-docs`);
 	});
 
 	server.setTimeout(600000);

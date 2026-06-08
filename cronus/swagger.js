@@ -2,7 +2,6 @@ require("dotenv").config();
 
 const swaggerJsdoc = require("swagger-jsdoc");
 const path = require('path');
-const { API_BASE, STAGING } = require("./config/apiBase");
 
 const options = {
     definition: {
@@ -60,8 +59,8 @@ Use exponential backoff and respect \`retry-after\` for retries.
         },
         servers: [
             {
-                url: API_BASE,
-                description: STAGING ? "Staging server" : "Production server"
+                url: "https://api.modifold.com",
+                description: "Production server"
             }
         ],
         components: {

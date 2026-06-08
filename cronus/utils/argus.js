@@ -45,7 +45,7 @@ const notifyArgusAboutVersion = async ({ versionId, projectId, projectSlug, file
 			file_url: fileUrl,
 			file_name: fileName,
 			file_size: fileSize,
-			callback_url: `${String(process.env.API_BASE || "").replace(/\/+$/, "")}/moderation/argus/versions/${versionId}/report`,
+			callback_url: `https://api.modifold.com/moderation/argus/versions/${versionId}/report`,
 		}),
 	});
 
