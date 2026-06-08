@@ -191,7 +191,7 @@
     z-index: 1;
     border-radius: inherit;
 }
-.new-project-card > *:not(.new-project-card__overlay) {
+.new-project-card:not(.project-page-card) > *:not(.new-project-card__overlay) {
     position: relative;
     z-index: 2;
     pointer-events: none;
