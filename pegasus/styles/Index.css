@@ -703,6 +703,17 @@ body[data-feature-flag-frosted-menus="true"] .account-menu-root {
     --button-bg-color-active: #2a6dd1;
     --button-text-color: #fff;
 }
+.button--type-download {
+    --button-bg-color-hover: #07aa5d;
+    --button-bg-color-active: #07aa5d;
+    --button-text-color: #fff;
+    background: #00af5c;
+}
+@media (hover: hover) {
+    .button--type-download:hover {
+        box-shadow: var(--button-bg-color-hover);
+    }
+}
 .button--type-secondary {
     box-shadow: var(--theme-color-button-secondary-shadow);
     --button-bg-color: var(--theme-color-button-secondary);

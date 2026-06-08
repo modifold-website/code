@@ -534,7 +534,7 @@
         "unknownProject": "Projeto"
       }
     },
-    "editVersion": "Editar versão",
+    "editVersion": "Editar",
     "versionNumber": "Número da versão",
     "changelog": "Registro de mudanças",
     "releaseChannel": "Canal de lançamento",
@@ -572,6 +572,9 @@
       "notSpecified": "Não especificado",
       "published": "Publicado:",
       "downloads": "downloads",
+      "requiredContent": "Conteúdo obrigatório",
+      "optionalDependencies": "Dependências opcionais",
+      "compatibility": "Compatibilidade",
       "statuses": {
         "approved": "Publicado",
         "pending": "Em revisão",
@@ -598,11 +601,14 @@
       "downloadModal": {
         "description": "Este mod precisa de bibliotecas ou mods adicionais para funcionar.",
         "anyVersion": "Qualquer versão compatível",
-        "openDependency": "Abrir {dependency}"
+        "openDependency": "Abrir {dependency}",
+        "viewProject": "Ver projeto",
+        "downloadDependency": "Baixar dependência"
       },
       "metadata": {
         "title": "Metadados",
         "gameVersion": "Versão do jogo",
+        "hytaleVersions": "Versões do Hytale",
         "platform": "Plataforma",
         "releaseChannel": "Canal de lançamento",
         "downloads": "Downloads",

@@ -535,7 +535,7 @@
         "unknownProject": "Проєкт"
       }
     },
-    "editVersion": "Редагувати версію",
+    "editVersion": "Редагувати",
     "versionNumber": "Номер версії",
     "changelog": "Список змін",
     "releaseChannel": "Канал релізу",
@@ -573,6 +573,9 @@
       "notSpecified": "Не вказано",
       "published": "Опубліковано:",
       "downloads": "завантажень",
+      "requiredContent": "Обов'язковий контент",
+      "optionalDependencies": "Опціональні залежності",
+      "compatibility": "Сумісність",
       "statuses": {
         "approved": "Опублікована",
         "pending": "На перевірці",
@@ -599,11 +602,14 @@
       "downloadModal": {
         "description": "Для роботи цього мода потрібні додаткові бібліотеки або моди.",
         "anyVersion": "Будь-яка сумісна версія",
-        "openDependency": "Відкрити {dependency}"
+        "openDependency": "Відкрити {dependency}",
+        "viewProject": "Переглянути проєкт",
+        "downloadDependency": "Завантажити залежність"
       },
       "metadata": {
         "title": "Метадані",
         "gameVersion": "Версія гри",
+        "hytaleVersions": "Версії Hytale",
         "platform": "Платформа",
         "releaseChannel": "Канал релізу",
         "downloads": "Завантаження",

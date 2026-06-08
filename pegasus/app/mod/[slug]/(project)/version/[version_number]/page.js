@@ -1,9 +1,10 @@
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
-
 ﻿import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import VersionPage from "@/components/pages/VersionPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
+import { fetchGameVersionItems } from "@/utils/gameVersions";
+
+const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 export async function generateMetadata({ params }) {
     const { slug, version_number } = await params;
@@ -77,6 +78,15 @@ export default async function Page({ params }) {
     });
 
     const members = membersRes.ok ? await membersRes.json() : [];
+    const settingsAccessRes = authToken ? await fetch(`${serverApiBase}/projects/${slug}/settings`, {
+        headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${authToken}`,
+        },
+    }) : null;
+    const canEditVersion = Boolean(settingsAccessRes?.ok);
 
-    return <VersionPage project={{ ...project, members }} version={version} authToken={authToken} />;
+    const gameVersions = await fetchGameVersionItems();
+
+    return <VersionPage project={{ ...project, members }} version={version} authToken={authToken} gameVersions={gameVersions} canEditVersion={canEditVersion} />;
 }
