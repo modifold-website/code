@@ -389,9 +389,15 @@ router.get("/:username/projects", async (req, res) => {
             LEFT JOIN users u ON p.user_id = u.id
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN project_members pm ON p.id = pm.project_id
-            WHERE p.status = 'approved' AND (u.slug = ? OR pm.user_id = (SELECT id FROM users WHERE slug = ?))
-            GROUP BY p.id
+            WHERE p.status = 'approved' AND (
+                u.slug = ?
+                OR EXISTS (
+                    SELECT 1
+                    FROM project_members pm
+                    INNER JOIN users member_user ON member_user.id = pm.user_id
+                    WHERE pm.project_id = p.id AND member_user.slug = ?
+                )
+            )
             ORDER BY p.downloads DESC
             LIMIT ? OFFSET ?
         `;
@@ -400,8 +406,15 @@ router.get("/:username/projects", async (req, res) => {
             SELECT COUNT(DISTINCT p.id) as total
             FROM projects p
             LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN project_members pm ON p.id = pm.project_id
-            WHERE p.status = 'approved' AND (u.slug = ? OR pm.user_id = (SELECT id FROM users WHERE slug = ?))
+            WHERE p.status = 'approved' AND (
+                u.slug = ?
+                OR EXISTS (
+                    SELECT 1
+                    FROM project_members pm
+                    INNER JOIN users member_user ON member_user.id = pm.user_id
+                    WHERE pm.project_id = p.id AND member_user.slug = ?
+                )
+            )
         `;
 
         const params = [username, username, Number(limit), Number(offset)];
