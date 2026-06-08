@@ -285,7 +285,7 @@ router.post("/argus/versions/:versionId/report", async (req, res) => {
 
 	const reason = sanitizePlainText(String(req.body?.reason || ""), { preserveNewlines: true }) || null;
 	const report = normalizeArgusReport(req.body?.report || null);
-	const status = verdict === "approved" ? "needs_review" : verdict;
+	const status = verdict === "error" ? "error" : "needs_review";
 
 	try {
 		const version = await getVersionForModeration(versionId);
