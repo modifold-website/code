@@ -1,60 +1,15 @@
-![Modifold Banner](https://modifold.com/images/banner.png?v=3)
+# ![Modifold Monorepo Cover](/.github/assets/monorepo_cover.png)
 
-![Issues](https://img.shields.io/github/issues-raw/modifold-website/code?color=c78aff&label=issues&style=for-the-badge)
-![Pull Requests](https://img.shields.io/github/issues-pr-raw/modifold-website/code?color=c78aff&label=PRs&style=for-the-badge)
-![Contributors](https://img.shields.io/github/contributors/modifold-website/code?color=c78aff&label=contributors&style=for-the-badge)
-![Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/modifold-website/code/badge?style=flat&logoColor=white&color=c78aff&style=for-the-badge)
-![Commit Activity](https://img.shields.io/github/commit-activity/m/modifold-website/code?color=c78aff&label=commits&style=for-the-badge)
-![Last Commit](https://img.shields.io/github/last-commit/modifold-website/code?color=c78aff&label=last%20commit&style=for-the-badge)
+![Issues](https://img.shields.io/github/issues-raw/modifold-website/code?color=307DF0&label=issues&style=for-the-badge)
+![Pull Requests](https://img.shields.io/github/issues-pr-raw/modifold-website/code?color=307DF0&label=PRs&style=for-the-badge)
+![Contributors](https://img.shields.io/github/contributors/modifold-website/code?color=307DF0&label=contributors&style=for-the-badge)
+![Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/modifold-website/code/badge?style=flat&logoColor=white&color=307DF0&style=for-the-badge)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/modifold-website/code?color=307DF0&label=commits&style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/modifold-website/code?color=307DF0&label=last%20commit&style=for-the-badge)
 
 # Modifold Web Platform
 
 Modifold is a modding platform for publishing and discovering Hytale mods.
-
-## Quick Start with Docker
-
-Create the local runtime env:
-
-```bash
-cp .env.docker.example .env.docker
-```
-
-Edit `.env.docker`, then start everything:
-
-```bash
-docker compose --env-file .env.docker up -d --build
-```
-
-Default local URLs:
-
-- Frontend: `http://localhost:3000`
-- API: `http://127.0.0.1:4000`
-
-Check services:
-
-```bash
-docker compose --env-file .env.docker ps
-docker compose --env-file .env.docker logs -f pegasus cronus
-curl http://127.0.0.1:4000/health
-```
-
-## Local Development without Docker
-
-Frontend:
-
-```bash
-cd pegasus
-bun install
-bun run dev
-```
-
-Backend:
-
-```bash
-cd cronus
-bun install
-bun index.js
-```
 
 ## Contributing
 

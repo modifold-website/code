@@ -534,7 +534,7 @@
         "unknownProject": "Проект"
       }
     },
-    "editVersion": "Редактировать версию",
+    "editVersion": "Редактировать",
     "versionNumber": "Номер версии",
     "changelog": "Список изменений",
     "releaseChannel": "Канал релиза",
@@ -572,6 +572,9 @@
       "notSpecified": "Не указано",
       "published": "Опубликовано:",
       "downloads": "скачиваний",
+      "requiredContent": "Обязательный контент",
+      "optionalDependencies": "Опциональные зависимости",
+      "compatibility": "Совместимость",
       "statuses": {
         "approved": "Опубликована",
         "pending": "На проверке",
@@ -598,11 +601,14 @@
       "downloadModal": {
         "description": "Для работы этого мода нужны дополнительные библиотеки или моды.",
         "anyVersion": "Любая совместимая версия",
-        "openDependency": "Открыть {dependency}"
+        "openDependency": "Открыть {dependency}",
+        "viewProject": "Посмотреть проект",
+        "downloadDependency": "Скачать зависимость"
       },
       "metadata": {
         "title": "Метаданные",
         "gameVersion": "Версия игры",
+        "hytaleVersions": "Версии Hytale",
         "platform": "Платформа",
         "releaseChannel": "Канал релиза",
         "downloads": "Скачивания",

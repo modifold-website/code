@@ -533,7 +533,7 @@
         "unknownProject": "Proje"
       }
     },
-    "editVersion": "Sürümü düzenle",
+    "editVersion": "Sürümü",
     "versionNumber": "Sürüm numarası",
     "changelog": "Değişiklik günlüğü",
     "releaseChannel": "Yayın kanalı",
@@ -571,6 +571,9 @@
       "notSpecified": "Belirtilmedi",
       "published": "Yayınlanma:",
       "downloads": "indirme",
+      "requiredContent": "Gerekli içerik",
+      "optionalDependencies": "İsteğe bağlı bağımlılıklar",
+      "compatibility": "Uyumluluk",
       "statuses": {
         "approved": "Yayınlandı",
         "pending": "İncelemede",
@@ -597,11 +600,14 @@
       "downloadModal": {
         "description": "Bu modun çalışması için ek kütüphaneler veya modlar gerekir.",
         "anyVersion": "Uyumlu herhangi bir sürüm",
-        "openDependency": "{dependency} aç"
+        "openDependency": "{dependency} aç",
+        "viewProject": "Projeyi görüntüle",
+        "downloadDependency": "Bağımlılığı indir"
       },
       "metadata": {
         "title": "Meta verileri",
         "gameVersion": "Oyun sürümü",
+        "hytaleVersions": "Hytale sürümleri",
         "platform": "Platform",
         "releaseChannel": "Yayın kanalı",
         "downloads": "İndirmeler",

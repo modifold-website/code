@@ -534,7 +534,7 @@
         "unknownProject": "Project"
       }
     },
-    "editVersion": "Edit Version",
+    "editVersion": "Edit",
     "versionNumber": "Version Number",
     "changelog": "Changelog",
     "releaseChannel": "Release Channel",
@@ -572,6 +572,9 @@
       "notSpecified": "Not specified",
       "published": "Published:",
       "downloads": "downloads",
+      "requiredContent": "Required content",
+      "optionalDependencies": "Optional dependencies",
+      "compatibility": "Compatibility",
       "statuses": {
         "approved": "Published",
         "pending": "Under review",
@@ -598,11 +601,14 @@
       "downloadModal": {
         "description": "This mod requires additional libraries or mods to work.",
         "anyVersion": "Any compatible version",
-        "openDependency": "Open {dependency}"
+        "openDependency": "Open {dependency}",
+        "viewProject": "View project",
+        "downloadDependency": "Download dependency"
       },
       "metadata": {
         "title": "Metadata",
         "gameVersion": "Game Version",
+        "hytaleVersions": "Hytale versions",
         "platform": "Platform",
         "releaseChannel": "Release channel",
         "downloads": "Downloads",
