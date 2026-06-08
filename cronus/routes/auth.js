@@ -5,11 +5,9 @@ const slugify = require("slugify");
 const crypto = require("crypto");
 const axios = require("axios");
 const { authenticator } = require("otplib");
-const { API_BASE, STAGING } = require("../config/apiBase");
 const { sendMail } = require("../utils/smtpMailer");
 const router = express.Router();
 const auth = require("../middleware/auth");
-const FRONTEND_BASE = process.env.FRONTEND_BASE || (STAGING ? "https://staging.modifold.com" : "https://modifold.com");
 const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;
@@ -204,7 +202,7 @@ async function verifyPassword(password, hash) {
 
 function redirectToFrontendAuth(res, params) {
     const hash = new URLSearchParams(params).toString();
-    return res.redirect(`${FRONTEND_BASE}/auth/callback#${hash}`);
+    return res.redirect(`https://modifold.com/auth/callback#${hash}`);
 }
 
 function verifyTelegramData(data, botToken) {
@@ -385,7 +383,7 @@ router.post("/discord-login", async (req, res) => {
                 client_secret: process.env.DISCORD_CLIENT_SECRET,
                 grant_type: "authorization_code",
                 code,
-                redirect_uri: `${API_BASE}/auth/discord-callback`,
+                redirect_uri: `https://api.modifold.com/auth/discord-callback`,
             }),
             {
                 headers: {
@@ -483,7 +481,7 @@ router.get("/discord-callback", async (req, res) => {
                 client_secret: process.env.DISCORD_CLIENT_SECRET,
                 grant_type: "authorization_code",
                 code,
-                redirect_uri: `${API_BASE}/auth/discord-callback`,
+                redirect_uri: `https://api.modifold.com/auth/discord-callback`,
             }),
             {
                 headers: {
