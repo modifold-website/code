@@ -8,7 +8,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
-import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
 
 export default function DescriptionSettings({ project, authToken }) {
     const t = useTranslations("SettingsProjectPage");
@@ -237,29 +238,7 @@ export default function DescriptionSettings({ project, authToken }) {
                                                 <ReactMarkdown
                                                     remarkPlugins={[remarkGfm]}
                                                     rehypePlugins={[rehypeRaw]}
-                                                    components={{
-                                                        a: ({ href, children }) => {
-                                                            const safeHref = getSafeMarkdownHref(href);
-                                                            if(!safeHref) {
-                                                                return <>{children}</>;
-                                                            }
-
-                                                            const isExternal = /^https?:\/\//i.test(safeHref);
-                                                            return (
-                                                                <a href={safeHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined}>
-                                                                    {children}
-                                                                </a>
-                                                            );
-                                                        },
-                                                        img: ({ src, alt, title }) => {
-                                                            const safeSrc = getSafeMarkdownImageSrc(src);
-                                                            if(!safeSrc) {
-                                                                return null;
-                                                            }
-
-                                                            return <img src={safeSrc} alt={alt || ""} title={title} loading="lazy" />;
-                                                        },
-                                                    }}
+                                                    components={projectDescriptionMarkdownComponents}
                                                 >
                                                     {prepareProjectDescriptionMarkdown(description)}
                                                 </ReactMarkdown>

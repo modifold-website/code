@@ -1154,7 +1154,7 @@
 	min-height: 86px;
 	padding: 14px 18px;
 }
-.version-page__required-card::hover .version-page__required-copy strong {
+.version-page__required-card:hover .version-page__required-copy strong {
     text-decoration: underline;
 }
 .version-page__required-icon {
