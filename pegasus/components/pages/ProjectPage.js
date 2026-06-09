@@ -6,7 +6,8 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import ProjectSidebar from "../project/ProjectSidebar";
 import ProjectInlineGallerySlider from "../project/ProjectInlineGallerySlider";
-import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
 import { getProjectPath } from "@/utils/projectRoutes";
 
 export default function ProjectPage({ project, authToken, showInlineGallery = false }) {
@@ -42,29 +43,7 @@ export default function ProjectPage({ project, authToken, showInlineGallery = fa
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeRaw]}
-                            components={{
-                                a: ({ href, children }) => {
-                                    const safeHref = getSafeMarkdownHref(href);
-                                    if(!safeHref) {
-                                        return <>{children}</>;
-                                    }
-
-                                    const isExternal = /^https?:\/\//i.test(safeHref);
-                                    return (
-                                        <a href={safeHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined}>
-                                            {children}
-                                        </a>
-                                    );
-                                },
-                                img: ({ src, alt, title }) => {
-                                    const safeSrc = getSafeMarkdownImageSrc(src);
-                                    if(!safeSrc) {
-                                        return null;
-                                    }
-
-                                    return <img src={safeSrc} alt={alt || ""} title={title} loading="lazy" />;
-                                },
-                            }}
+                            components={projectDescriptionMarkdownComponents}
                         >
                             {safeDescription}
                         </ReactMarkdown>

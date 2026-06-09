@@ -783,7 +783,7 @@
 .version__game-versions {
     background: var(--theme-color-background);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     padding-top: 2px;
     padding-bottom: 2px;
     padding-left: 6px;
@@ -806,7 +806,7 @@
 .version__game-platform {
     background: var(--theme-color-background);
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     padding-top: 2px;
     padding-bottom: 2px;
     padding-left: 6px;
@@ -1154,7 +1154,7 @@
 	min-height: 86px;
 	padding: 14px 18px;
 }
-.version-page__required-card::hover .version-page__required-copy strong {
+.version-page__required-card:hover .version-page__required-copy strong {
     text-decoration: underline;
 }
 .version-page__required-icon {
