@@ -632,6 +632,8 @@
       "noImages": "Galeride görsel yok.",
       "lightboxLabel": "Görsel lightbox",
       "openInNewTab": "Görseli yeni sekmede aç",
+      "trailer": "Fragman",
+      "openTrailer": "Fragmanı aç",
       "title": "Başlık",
       "description": "Açıklama",
       "orderIndex": "Sıra indeksi",
@@ -1267,6 +1269,10 @@
         "upload": "Görsel yüklenemedi"
       },
       "title": "Yeni görsel ekle",
+      "media": {
+        "title": "Galeri medyası",
+        "description": "Bir fragman ve ekran görüntüleri ekleyin. Fragman her zaman ilk gösterilir."
+      },
       "fields": {
         "title": "Başlık",
         "description": "Açıklama",
@@ -1281,6 +1287,22 @@
       "featuredHint": "Öne çıkan galeri görseli arama sonuçlarında ve proje kartınızda görünür. Galeride yalnızca bir görsel öne çıkarılabilir.",
       "actions": {
         "add": "Görsel ekle"
+      },
+      "trailer": {
+        "eyebrow": "YouTube",
+        "add": "Fragman ekle",
+        "title": "Proje fragmanı",
+        "description": "Bir YouTube videosu ekleyin. Galeride ekran görüntülerinden önce görünür.",
+        "modalDescription": "Bir YouTube bağlantısı veya video ID'si yapıştırın. Aynı anda yalnızca bir fragman aktif olabilir.",
+        "urlLabel": "YouTube bağlantısı",
+        "placeholder": "https://www.youtube.com/watch?v=...",
+        "save": "Fragmanı kaydet",
+        "remove": "Fragmanı kaldır",
+        "success": "Fragman kaydedildi",
+        "deleted": "Fragman kaldırıldı",
+        "error": "Fragman kaydedilemedi",
+        "previewTitle": "Fragman önizlemesi",
+        "cardDescription": "Galeri görsellerinden önce gösterilir."
       },
       "modal": {
         "steps": {

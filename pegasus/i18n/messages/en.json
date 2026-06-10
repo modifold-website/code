@@ -633,6 +633,8 @@
       "noImages": "No images in the gallery.",
       "lightboxLabel": "Image lightbox",
       "openInNewTab": "Open image in new tab",
+      "trailer": "Trailer",
+      "openTrailer": "Open trailer",
       "title": "Title",
       "description": "Description",
       "orderIndex": "Order Index",
@@ -1268,6 +1270,10 @@
         "upload": "Error uploading image"
       },
       "title": "Add New Image",
+      "media": {
+        "title": "Gallery media",
+        "description": "Add a trailer and screenshots. The trailer is always shown first."
+      },
       "fields": {
         "title": "Title",
         "description": "Description",
@@ -1282,6 +1288,22 @@
       "featuredHint": "A featured gallery image shows up in search and your project card. Only one gallery image can be featured.",
       "actions": {
         "add": "Add Image"
+      },
+      "trailer": {
+        "eyebrow": "YouTube",
+        "add": "Add trailer",
+        "title": "Project trailer",
+        "description": "Add one YouTube video. It appears first in the gallery, before screenshots.",
+        "modalDescription": "Paste a YouTube link or video ID. One trailer can be active at a time.",
+        "urlLabel": "YouTube link",
+        "placeholder": "https://www.youtube.com/watch?v=...",
+        "save": "Save trailer",
+        "remove": "Remove trailer",
+        "success": "Trailer saved",
+        "deleted": "Trailer removed",
+        "error": "Error saving trailer",
+        "previewTitle": "Trailer preview",
+        "cardDescription": "Shown before gallery images."
       },
       "modal": {
         "steps": {

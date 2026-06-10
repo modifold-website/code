@@ -41,6 +41,61 @@ const normalizeVersionArray = (value) => {
     return [...new Set(parseJsonArrayField(value).map((item) => String(item || "").trim()).filter(Boolean))];
 };
 
+const getYouTubeVideoId = (value) => {
+    if(typeof value !== "string") {
+        return null;
+    }
+
+    const trimmedValue = value.trim();
+    if(!trimmedValue) {
+        return null;
+    }
+
+    if(/^[a-zA-Z0-9_-]{11}$/.test(trimmedValue)) {
+        return trimmedValue;
+    }
+
+    let parsedUrl;
+    try {
+        parsedUrl = new URL(trimmedValue);
+    } catch {
+        return null;
+    }
+
+    const hostname = parsedUrl.hostname.replace(/^www\./i, "").toLowerCase();
+    if(hostname === "youtu.be") {
+        const videoId = parsedUrl.pathname.split("/").filter(Boolean)[0] || "";
+        return /^[a-zA-Z0-9_-]{11}$/.test(videoId) ? videoId : null;
+    }
+
+    if(hostname === "youtube.com" || hostname === "m.youtube.com" || hostname === "music.youtube.com") {
+        if(parsedUrl.pathname === "/watch") {
+            const videoId = parsedUrl.searchParams.get("v") || "";
+            return /^[a-zA-Z0-9_-]{11}$/.test(videoId) ? videoId : null;
+        }
+
+        const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
+        if(["embed", "shorts", "live"].includes(pathParts[0])) {
+            const videoId = pathParts[1] || "";
+            return /^[a-zA-Z0-9_-]{11}$/.test(videoId) ? videoId : null;
+        }
+    }
+
+    return null;
+};
+
+const normalizeYouTubeTrailer = (value) => {
+    const videoId = getYouTubeVideoId(value);
+    if(!videoId) {
+        return null;
+    }
+
+    return {
+        videoId,
+        url: `https://www.youtube.com/watch?v=${videoId}`,
+    };
+};
+
 const validateGameVersions = async (versions) => {
     if(!Array.isArray(versions) || versions.length === 0) {
         return false;
@@ -1891,6 +1946,48 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
     }
 });
 
+router.put("/:slug/gallery/trailer", auth, async (req, res) => {
+    const { youtube_url } = req.body || {};
+
+    try {
+        const project = await getProjectBySlug(req.params.slug);
+        if(!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const access = await requireProjectPermission(res, {
+            project,
+            userId: req.user.id,
+            permission: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
+        });
+
+        if(!access) {
+            return;
+        }
+
+        const trimmedUrl = typeof youtube_url === "string" ? youtube_url.trim() : "";
+        const trailer = trimmedUrl ? normalizeYouTubeTrailer(trimmedUrl) : null;
+
+        if(trimmedUrl && !trailer) {
+            return res.status(400).json({ message: "Invalid YouTube URL" });
+        }
+
+        await db.query(
+            "UPDATE projects SET trailer_youtube_url = ?, trailer_youtube_video_id = ?, updated_at = NOW() WHERE id = ?",
+            [trailer?.url || null, trailer?.videoId || null, project.id]
+        );
+
+        res.json({
+            success: true,
+            trailer_youtube_url: trailer?.url || null,
+            trailer_youtube_video_id: trailer?.videoId || null,
+        });
+    } catch (error) {
+        console.error("Error updating gallery trailer:", error);
+        res.status(500).json({ message: "Error updating gallery trailer", error: error.message });
+    }
+});
+
 router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req, res) => {
     const { title, description, ordering, featured } = req.body;
     try {
@@ -2165,6 +2262,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             loaders: projectData.loaders ? projectData.loaders.split(',') : [],
             versions: formattedVersions,
             gallery,
+            trailer_youtube_url: projectData.trailer_youtube_url || null,
+            trailer_youtube_video_id: projectData.trailer_youtube_video_id || null,
             tags: projectData.tags,
             user_id: projectData.user_id,
             showProjectBackground: projectData.showProjectBackground,
