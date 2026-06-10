@@ -898,7 +898,7 @@
 .version-download-modal__dependency-main {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 2px;
 	min-width: 0;
 }
 .version-download-modal__dependency-main p,
