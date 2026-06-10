@@ -757,9 +757,9 @@
 	margin-bottom: 14px;
 }
 .dashboard-analytics-filter-card__header h1 {
-	font-size: 24px;
-	line-height: 1;
-	font-weight: 600;
+	font-size: 20px;
+    font-weight: 500;
+    line-height: 24px;
 }
 .dashboard-analytics-filter-card__actions {
 	display: inline-flex;
@@ -910,12 +910,8 @@
 	justify-content: space-between;
 	margin-top: 14px;
 }
-.dashboard-analytics-project-field {
-	min-width: 220px;
-}
 .dashboard-analytics-project-filter {
 	gap: 8px;
-	width: 100%;
 	justify-content: flex-start;
 }
 .dashboard-analytics-project-filter__dot {
@@ -1048,9 +1044,11 @@
     .project-analytics__stats {
         grid-template-columns: 1fr;
     }
+    .project-analytics-card__header {
+        flex-direction: column;
+    }
     .project-analytics-card__header,
     .project-analytics-country {
-        flex-direction: column;
         align-items: flex-start;
     }
 	.project-analytics-chart-toggle {
@@ -1068,9 +1066,6 @@
 	.dashboard-analytics-filter-card__header {
 		align-items: flex-start;
 		flex-direction: column;
-	}
-	.dashboard-analytics-filter-card__header h1 {
-		font-size: 30px;
 	}
 	.dashboard-analytics-filter-row {
 		align-items: flex-start;

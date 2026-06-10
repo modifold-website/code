@@ -62,6 +62,15 @@ const normalizeProjectIds = (value) => String(value || "").split(",").map((item)
 
 const getProjectGradientId = (projectSlug) => `dashboardAnalytics${String(projectSlug || "").replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
+const areProjectIdListsEqual = (firstList, secondList) => {
+	if(firstList.length !== secondList.length) {
+		return false;
+	}
+
+	const firstSet = new Set(firstList);
+	return secondList.every((id) => firstSet.has(id));
+};
+
 const formatDateValue = (date) => {
 	const year = date.getFullYear();
 	const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -284,6 +293,10 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 	const selectedProjects = Array.isArray(analytics.selectedProjects) ? analytics.selectedProjects : [];
 	const selectedProjectIds = normalizeProjectIds(initialProjectIds);
 	const isAllProjects = selectedProjectIds.length === 0;
+	const isDraftAllProjects = draftProjectIds.length === 0;
+	const hasFilterChanges = from !== (initialFrom || "")
+		|| to !== (initialTo || "")
+		|| !areProjectIdListsEqual(draftProjectIds, selectedProjectIds);
 	const downloads = Array.isArray(analytics.downloads) ? analytics.downloads : [];
 	const views = Array.isArray(analytics.views) ? analytics.views : [];
 	const countries = Array.isArray(analytics.countries) ? analytics.countries : [];
@@ -296,7 +309,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 	const canCompareProjects = selectedProjects.length > 1;
 	const selectedProjectColor = !isAllProjects && selectedProjects.length === 1 ? getProjectColor(selectedProjects[0], 0) : null;
 	const regionNames = typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames([locale], { type: "region" }) : null;
-	const projectFilterLabel = isAllProjects ? t("filters.allProjects") : t("filters.selectedProjects", { count: selectedProjectIds.length });
+	const projectFilterLabel = isDraftAllProjects ? t("filters.allProjects") : t("filters.selectedProjects", { count: draftProjectIds.length });
 	const datePopoverLabels = {
 		placeholder: t("filters.selectDate"),
 		clear: t("filters.clearDate"),
@@ -336,7 +349,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 		if(to) {
 			params.set("to", to);
 		}
-		if(draftProjectIds.length && draftProjectIds.length < projects.length) {
+		if(draftProjectIds.length) {
 			params.set("project_ids", draftProjectIds.join(","));
 		}
 
@@ -457,10 +470,12 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 									</div>
 
 									<div className="version-filters dashboard-analytics-filters">
-										<div className="field field--default dashboard-analytics-project-field" ref={projectFilterRef}>
+										<div className="field field--default" ref={projectFilterRef}>
 											<button className="button button--size-m button--type-secondary dashboard-analytics-project-filter" onClick={() => setIsProjectFilterOpen((prev) => !prev)} aria-expanded={isProjectFilterOpen} type="button">
 												<span className="dashboard-analytics-project-filter__dot" />
-												<span className="dashboard-analytics-project-filter__label">{projectFilterLabel}</span>
+												<span className="dashboard-analytics-project-filter__label">
+													{projectFilterLabel}
+												</span>
 
 												<svg className={`icon icon--chevron_down ${isProjectFilterOpen ? "open" : ""}`} width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
 													<path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path>
@@ -470,33 +485,40 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											{isProjectFilterOpen && (
 												<div className="popover dashboard-analytics-project-popover">
 													<div className="context-list" data-scrollable="">
-															<button type="button" className={`context-list-option dashboard-analytics-project-option ${draftProjectIds.length === 0 ? "context-list-option--selected" : ""}`} onClick={selectAllProjects}>
-																<span className={`dashboard-analytics-project-option__check ${draftProjectIds.length === 0 ? "dashboard-analytics-project-option__check--checked" : ""}`}>
-																	{draftProjectIds.length === 0 ? (
-																		<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
-																			<path d="M20 6 9 17l-5-5"></path>
-																		</svg>
-																	) : null}
-																</span>
-																<span className="context-list-option__label">{t("filters.allProjects")}</span>
-															</button>
+														<button type="button" className={`context-list-option dashboard-analytics-project-option ${draftProjectIds.length === 0 ? "context-list-option--selected" : ""}`} onClick={selectAllProjects}>
+															<span className={`dashboard-analytics-project-option__check ${draftProjectIds.length === 0 ? "dashboard-analytics-project-option__check--checked" : ""}`}>
+																{draftProjectIds.length === 0 ? (
+																	<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
+																		<path d="M20 6 9 17l-5-5"></path>
+																	</svg>
+																) : null}
+															</span>
+
+															<span className="context-list-option__label">
+																{t("filters.allProjects")}
+															</span>
+														</button>
 
 														{projects.map((project, index) => {
 															const projectId = String(project.id);
 															const isSelected = draftProjectIds.includes(projectId);
 
-																return (
-																	<button key={project.id} type="button" className={`context-list-option dashboard-analytics-project-option ${isSelected ? "context-list-option--selected" : ""}`} onClick={() => toggleProject(projectId)}>
-																		<span className={`dashboard-analytics-project-option__check ${isSelected ? "dashboard-analytics-project-option__check--checked" : ""}`}>
-																			{isSelected ? (
-																				<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
-																					<path d="M20 6 9 17l-5-5"></path>
-																				</svg>
-																			) : null}
-																		</span>
-																		<span className="dashboard-analytics-project-option__color" style={{ backgroundColor: getProjectColor(project, index) }} />
-																		<span className="context-list-option__label">{project.title}</span>
-																	</button>
+															return (
+																<button key={project.id} type="button" className={`context-list-option dashboard-analytics-project-option ${isSelected ? "context-list-option--selected" : ""}`} onClick={() => toggleProject(projectId)}>
+																	<span className={`dashboard-analytics-project-option__check ${isSelected ? "dashboard-analytics-project-option__check--checked" : ""}`}>
+																		{isSelected ? (
+																			<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
+																				<path d="M20 6 9 17l-5-5"></path>
+																			</svg>
+																		) : null}
+																	</span>
+
+																	<span className="dashboard-analytics-project-option__color" style={{ backgroundColor: getProjectColor(project, index) }} />
+																	
+																	<span className="context-list-option__label">
+																		{project.title}
+																	</span>
+																</button>
 															);
 														})}
 													</div>
@@ -504,7 +526,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											)}
 										</div>
 
-										<button type="button" className="button button--size-m button--type-primary button--active-transform dashboard-analytics-apply" onClick={applyFilters} disabled={isPending}>
+										<button type="button" className="button button--size-m button--type-primary button--active-transform dashboard-analytics-apply" onClick={applyFilters} disabled={isPending || !hasFilterChanges}>
 											{isPending ? t("filters.applying") : t("filters.apply")}
 										</button>
 									</div>
