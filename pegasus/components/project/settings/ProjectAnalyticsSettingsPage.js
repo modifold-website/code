@@ -12,13 +12,13 @@ const getTimeRangeHref = (project, range) => {
 	return range === "7d" ? base : `${base}?time_range=${range}`;
 };
 
-const formatChartDate = (date, locale) => {
+export const formatChartDate = (date, locale) => {
 	const normalized = typeof date === "string" && date.includes("T") ? date : `${date}T00:00:00Z`;
 	const value = new Date(normalized);
 	return value.toLocaleDateString(locale, { day: "numeric", month: "short" });
 };
 
-const formatChartDateTime = (date, locale) => {
+export const formatChartDateTime = (date, locale) => {
 	const normalized = typeof date === "string" && date.includes("T") ? date : `${date}T00:00:00Z`;
 	const value = new Date(normalized);
 	return value.toLocaleString(locale, {
@@ -66,7 +66,7 @@ function OnlineTooltip({ active, payload, locale, t, visibleSeries }) {
 	);
 }
 
-function BarTooltipCursor({ x, y, width, height, color = "#00af5c" }) {
+export function BarTooltipCursor({ x, y, width, height, color = "#00af5c" }) {
 	if(x == null || y == null || width == null || height == null) {
 		return null;
 	}
@@ -88,7 +88,7 @@ function BarTooltipCursor({ x, y, width, height, color = "#00af5c" }) {
 	);
 }
 
-function ChartTypeToggle({ chartType, onChange, t }) {
+export function ChartTypeToggle({ chartType, onChange, t }) {
 	return (
 		<div className="project-analytics-chart-toggle" role="group" aria-label={t("analytics.chartTypes.label")}>
 			<button type="button" className={`project-analytics-chart-toggle__item button--active-transform ${chartType === "line" ? "is-active" : ""}`} onClick={() => onChange("line")} aria-pressed={chartType === "line"} aria-label={t("analytics.chartTypes.lineAria")}>
@@ -114,7 +114,7 @@ function ChartTypeToggle({ chartType, onChange, t }) {
 	);
 }
 
-function AnalyticsChart({ title, data, locale, lineColor, gradientId, tooltipLabelKey, t }) {
+export function AnalyticsChart({ title, data, locale, lineColor, gradientId, tooltipLabelKey, t }) {
 	const [chartType, setChartType] = useState("line");
 	const commonChartChildren = (
 		<>
@@ -168,7 +168,7 @@ function AnalyticsChart({ title, data, locale, lineColor, gradientId, tooltipLab
 	);
 }
 
-function OnlineChart({ title, data, locale, t }) {
+export function OnlineChart({ title, data, locale, t }) {
 	const [visibleSeries, setVisibleSeries] = useState({ servers: true, players: true });
 	const [chartType, setChartType] = useState("line");
 

@@ -696,6 +696,41 @@
     "byYou": "senin tarafından",
     "byOrganization": "{name} tarafından"
   },
+  "DashboardAnalyticsPage": {
+    "userAvatarAlt": "User avatar {username}",
+    "title": "Analytics",
+    "empty": "You do not have published projects with analytics yet.",
+    "emptyPoint": "No events",
+    "metadata": {
+      "title": "Analytics — Modifold",
+      "description": "View analytics for all of your published projects on Modifold."
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "dateRange": "Timeframe",
+      "filteredBy": "Filtered by",
+      "allProjects": "All projects",
+      "selectedProjects": "{count, plural, one {# project} other {# projects}}",
+      "reset": "Reset",
+      "refresh": "Refresh",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "selectDate": "Select date",
+      "clearDate": "Clear",
+      "today": "Today",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "legend": {
+      "showMore": "Show more",
+      "showLess": "Show less"
+    },
+    "charts": {
+      "downloads": "Version downloads",
+      "views": "Project page views"
+    }
+  },
   "LikesDashboardClient": {
     "projectIconAlt": "{title} proje simgesi",
     "loading": "Beğenilen projeler yükleniyor...",
@@ -711,6 +746,7 @@
     "sidebar": {
       "profileIconAlt": "Profil simgesi",
       "projects": "Projeler",
+      "analytics": "Analytics",
       "likes": "Beğenilenler",
       "notifications": "Bildirimler",
       "settings": "Ayarlar",

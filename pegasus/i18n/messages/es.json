@@ -697,6 +697,41 @@
     "byYou": "de ti",
     "byOrganization": "de {name}"
   },
+  "DashboardAnalyticsPage": {
+    "userAvatarAlt": "User avatar {username}",
+    "title": "Analytics",
+    "empty": "You do not have published projects with analytics yet.",
+    "emptyPoint": "No events",
+    "metadata": {
+      "title": "Analytics — Modifold",
+      "description": "View analytics for all of your published projects on Modifold."
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "dateRange": "Timeframe",
+      "filteredBy": "Filtered by",
+      "allProjects": "All projects",
+      "selectedProjects": "{count, plural, one {# project} other {# projects}}",
+      "reset": "Reset",
+      "refresh": "Refresh",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "selectDate": "Select date",
+      "clearDate": "Clear",
+      "today": "Today",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "legend": {
+      "showMore": "Show more",
+      "showLess": "Show less"
+    },
+    "charts": {
+      "downloads": "Version downloads",
+      "views": "Project page views"
+    }
+  },
   "LikesDashboardClient": {
     "projectIconAlt": "Icono del proyecto {title}",
     "loading": "Cargando proyectos con me gusta...",
@@ -712,6 +747,7 @@
     "sidebar": {
       "profileIconAlt": "Icono del perfil",
       "projects": "Proyectos",
+      "analytics": "Analytics",
       "likes": "Me gusta",
       "notifications": "Notificaciones",
       "settings": "Ajustes",

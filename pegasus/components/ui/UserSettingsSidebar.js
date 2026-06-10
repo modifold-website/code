@@ -48,6 +48,19 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
                             {labels.projects}
                         </Link>
 
+                        <Link href="/dashboard/analytics" scroll={false} className={`sidebar-item ${isActive("/dashboard/analytics") ? "sidebar-item--active" : ""}`} data-ripple>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-chart-no-axes-combined-icon lucide-chart-no-axes-combined">
+                                <path d="M12 16v5"></path>
+                                <path d="M16 14v7"></path>
+                                <path d="M20 10v11"></path>
+                                <path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"></path>
+                                <path d="M4 18v3"></path>
+                                <path d="M8 14v7"></path>
+                            </svg>
+
+                            {labels.analytics}
+                        </Link>
+
                         <Link href="/dashboard/organizations" scroll={false} className={`sidebar-item ${isActive("/dashboard/organizations") ? "sidebar-item--active" : ""}`} data-ripple>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-building2-icon lucide-building-2">
                                 <path d="M10 12h4"></path>
@@ -58,19 +71,6 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
                             </svg>
 
                             {labels.organizations}
-                        </Link>
-
-                        <Link href="/dashboard/jams" scroll={false} className={`sidebar-item ${isActive("/dashboard/jams") ? "sidebar-item--active" : ""}`} data-ripple>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-trophy-icon lucide-trophy">
-                                <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>
-                                <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/>
-                                <path d="M18 9h1.5a1 1 0 0 0 0-5H18"/>
-                                <path d="M4 22h16"/>
-                                <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/>
-                                <path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
-                            </svg>
-
-                            {labels.jams}
                         </Link>
 
                         <Link href="/dashboard/likes" scroll={false} className={`sidebar-item ${isActive("/dashboard/likes") ? "sidebar-item--active" : ""}`} data-ripple>
@@ -88,6 +88,21 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
                             </svg>
 
                             {labels.notifications}
+                        </Link>
+
+                        <div className="sidebar-separator-view _theme_default _size_s"></div>
+
+                        <Link href="/dashboard/jams" scroll={false} className={`sidebar-item ${isActive("/dashboard/jams") ? "sidebar-item--active" : ""}`} data-ripple>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-trophy-icon lucide-trophy">
+                                <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>
+                                <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/>
+                                <path d="M18 9h1.5a1 1 0 0 0 0-5H18"/>
+                                <path d="M4 22h16"/>
+                                <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/>
+                                <path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
+                            </svg>
+
+                            {labels.jams}
                         </Link>
                     </>
                 )}
