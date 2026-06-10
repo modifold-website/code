@@ -6,10 +6,27 @@ import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import GalleryUploadModal from "@/modal/GalleryUploadModal";
 import GalleryEditModal from "@/modal/GalleryEditModal";
+import GalleryTrailerModal from "@/modal/GalleryTrailerModal";
 
 const GALLERY_STEPS = {
     FILES: "files",
     METADATA: "metadata",
+};
+
+const getYouTubeEmbedUrl = (videoId) => {
+    if(!videoId) {
+        return "";
+    }
+
+    return `https://www.youtube.com/embed/${videoId}`;
+};
+
+const getYouTubeWatchUrl = (videoId) => {
+    if(!videoId) {
+        return "";
+    }
+
+    return `https://www.youtube.com/watch?v=${videoId}`;
 };
 
 export default function GallerySettings({ project, authToken }) {
@@ -18,6 +35,10 @@ export default function GallerySettings({ project, authToken }) {
 
     const images = Array.isArray(project?.gallery) ? project.gallery : [];
     const [galleryImages, setGalleryImages] = useState(images);
+    const [trailerUrl, setTrailerUrl] = useState(project?.trailer_youtube_url || "");
+    const [trailerVideoId, setTrailerVideoId] = useState(project?.trailer_youtube_video_id || "");
+    const [trailerLoading, setTrailerLoading] = useState(false);
+    const [trailerModalOpen, setTrailerModalOpen] = useState(false);
 
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
@@ -50,7 +71,9 @@ export default function GallerySettings({ project, authToken }) {
 
     useEffect(() => {
         setGalleryImages(Array.isArray(project?.gallery) ? project.gallery : []);
-    }, [project?.gallery]);
+        setTrailerUrl(project?.trailer_youtube_url || "");
+        setTrailerVideoId(project?.trailer_youtube_video_id || "");
+    }, [project?.gallery, project?.trailer_youtube_url, project?.trailer_youtube_video_id]);
 
     const refreshGallery = async () => {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}`, {
@@ -66,6 +89,66 @@ export default function GallerySettings({ project, authToken }) {
 
         const nextProject = await response.json();
         setGalleryImages(Array.isArray(nextProject?.gallery) ? nextProject.gallery : []);
+        setTrailerUrl(nextProject?.trailer_youtube_url || "");
+        setTrailerVideoId(nextProject?.trailer_youtube_video_id || "");
+    };
+
+    const handleTrailerSubmit = async (event) => {
+        event.preventDefault();
+        setTrailerLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/trailer`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({ youtube_url: trailerUrl }),
+            });
+
+            if(response.ok) {
+                const data = await response.json();
+                setTrailerUrl(data?.trailer_youtube_url || "");
+                setTrailerVideoId(data?.trailer_youtube_video_id || "");
+                setTrailerModalOpen(false);
+                toast.success(t("gallerySettings.trailer.success"));
+            } else {
+                toast.error(t("gallerySettings.trailer.error"));
+            }
+        } catch {
+            toast.error(t("gallerySettings.trailer.error"));
+        } finally {
+            setTrailerLoading(false);
+        }
+    };
+
+    const handleTrailerDelete = async () => {
+        setTrailerLoading(true);
+
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/trailer`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({ youtube_url: "" }),
+            });
+
+            if(response.ok) {
+                setTrailerUrl("");
+                setTrailerVideoId("");
+                setTrailerModalOpen(false);
+                toast.success(t("gallerySettings.trailer.deleted"));
+            } else {
+                toast.error(t("gallerySettings.trailer.error"));
+            }
+        } catch {
+            toast.error(t("gallerySettings.trailer.error"));
+        } finally {
+            setTrailerLoading(false);
+        }
     };
 
     const formatFileSize = (size) => {
@@ -83,11 +166,18 @@ export default function GallerySettings({ project, authToken }) {
         setUploadModalOpen(true);
     };
 
-    const handleUploadBarKeyDown = (event) => {
-        if(event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            openUploadModal();
+    const openTrailerModal = () => {
+        setTrailerUrl(trailerVideoId ? getYouTubeWatchUrl(trailerVideoId) : "");
+        setTrailerModalOpen(true);
+    };
+
+    const closeTrailerModal = () => {
+        if(trailerLoading) {
+            return;
         }
+
+        setTrailerModalOpen(false);
+        setTrailerUrl(trailerVideoId ? getYouTubeWatchUrl(trailerVideoId) : "");
     };
 
     const resetUploadModal = () => {
@@ -444,12 +534,25 @@ export default function GallerySettings({ project, authToken }) {
         }
     };
 
+    const hasGalleryMedia = trailerVideoId || galleryImages.length > 0;
+
     return (
         <>
             <div style={{ width: "100%" }}>
-                <div className="content content--padding" style={{ marginBottom: "12px" }}>
-                    <div className="gallery-upload-bar" role="button" tabIndex={0} onClick={openUploadModal} onKeyDown={handleUploadBarKeyDown}>
-                        <button type="button" className="button button--size-m button--type-primary button--with-icon" style={{ "--icon-size": "17px" }}>
+                <div className="content content--padding gallery-media-toolbar">
+                    <div className="gallery-media-toolbar__copy">
+                        <h2>{t("gallerySettings.media.title")}</h2>
+                        <p>{t("gallerySettings.media.description")}</p>
+                    </div>
+
+                    <div className="gallery-media-toolbar__actions">
+                        <button type="button" className="button button--size-m button--type-minimal button--with-icon gallery-media-toolbar__button" style={{ "--icon-size": "17px" }} onClick={openTrailerModal}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-play-icon lucide-play"><path d="m6 3 14 9-14 9V3Z"/></svg>
+
+                            {t("gallerySettings.trailer.add")}
+                        </button>
+
+                        <button type="button" className="button button--size-m button--type-primary button--with-icon" style={{ "--icon-size": "17px" }} onClick={openUploadModal}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-upload-icon lucide-upload"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
 
                             {t("gallerySettings.actions.add")}
@@ -457,12 +560,49 @@ export default function GallerySettings({ project, authToken }) {
                     </div>
                 </div>
 
-                {galleryImages.length === 0 ? (
+                {!hasGalleryMedia ? (
                     <div className="subsite-empty-feed">
                         <p className="subsite-empty-feed__title">{tProject("gallery.noImages")}</p>
                     </div>
                 ) : (
                     <div className="gallery-settings-grid">
+                        {trailerVideoId && (
+                            <div className="gallery-settings-card gallery-settings-card--trailer-editor">
+                                <div className="gallery-settings-card__preview gallery-settings-card__preview--video">
+                                    <iframe
+                                        src={getYouTubeEmbedUrl(trailerVideoId)}
+                                        title={t("gallerySettings.trailer.previewTitle")}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        allowFullScreen
+                                    />
+                                </div>
+
+                                <div className="gallery-settings-card__body" style={{ paddingTop: "12px" }}>
+                                    <div className="gallery-settings-card__info">
+                                        <div className="gallery-settings-card__date" style={{ marginBottom: "12px" }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="m6 3 14 9-14 9V3Z"></path>
+                                            </svg>
+
+                                            {tProject("gallery.trailer")}
+                                        </div>
+
+                                        <p>{t("gallerySettings.trailer.cardDescription")}</p>
+                                    </div>
+
+                                    <div className="gallery-settings-card__actions">
+                                        <button type="button" className="button button--size-m button--type-minimal" onClick={openTrailerModal}>
+                                            {tProject("gallery.editImage")}
+                                        </button>
+
+                                        <button type="button" className="button button--size-m button--type-minimal" onClick={handleTrailerDelete} disabled={trailerLoading}>
+                                            {tProject("delete")}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {galleryImages.map((image) => (
                             <div key={image.id} className="gallery-settings-card">
                                 <div className="gallery-settings-card__preview">
@@ -485,9 +625,13 @@ export default function GallerySettings({ project, authToken }) {
                                     </div>
 
                                     <div className="gallery-settings-card__actions">
-                                        <button type="button" className="button button--size-m button--type-minimal" onClick={() => openEditModal(image)}>{tProject("gallery.editImage")}</button>
+                                        <button type="button" className="button button--size-m button--type-minimal" onClick={() => openEditModal(image)}>
+                                            {tProject("gallery.editImage")}
+                                        </button>
 
-                                        <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDeleteById(image.id)}>{tProject("delete")}</button>
+                                        <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDeleteById(image.id)}>
+                                            {tProject("delete")}
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -517,6 +661,19 @@ export default function GallerySettings({ project, authToken }) {
                 uploadFormData={uploadFormData}
                 handleUploadInputChange={handleUploadInputChange}
                 toggleUploadFeatured={toggleUploadFeatured}
+                t={t}
+                tProject={tProject}
+            />
+
+            <GalleryTrailerModal
+                isOpen={trailerModalOpen}
+                onRequestClose={closeTrailerModal}
+                trailerLoading={trailerLoading}
+                trailerUrl={trailerUrl}
+                trailerVideoId={trailerVideoId}
+                setTrailerUrl={setTrailerUrl}
+                handleTrailerSubmit={handleTrailerSubmit}
+                handleTrailerDelete={handleTrailerDelete}
                 t={t}
                 tProject={tProject}
             />

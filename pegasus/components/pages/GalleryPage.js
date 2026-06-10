@@ -10,6 +10,14 @@ import ProjectSidebar from "../project/ProjectSidebar";
 
 Modal.setAppElement("body");
 
+const getYouTubeEmbedUrl = (videoId) => {
+    if(!videoId) {
+        return "";
+    }
+
+    return `https://www.youtube.com/embed/${videoId}`;
+};
+
 export default function GalleryPage({ project, authToken }) {
     const t = useTranslations("ProjectPage");
     const tSettings = useTranslations("SettingsProjectPage");
@@ -18,6 +26,9 @@ export default function GalleryPage({ project, authToken }) {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [galleryImages, setGalleryImages] = useState(Array.isArray(project?.gallery) ? project.gallery : []);
+    const trailerVideoId = project?.trailer_youtube_video_id || "";
+    const hasTrailer = Boolean(trailerVideoId);
+    const hasGalleryMedia = hasTrailer || galleryImages.length > 0;
     const [editLoading, setEditLoading] = useState(false);
     const [editFormData, setEditFormData] = useState({
         title: "",
@@ -148,10 +159,33 @@ export default function GalleryPage({ project, authToken }) {
         <>
             <div className="project__general">
                 <div>
-                    {galleryImages.length === 0 ? (
+                    {!hasGalleryMedia ? (
                         <p style={{ color: "var(--theme-color-text-secondary)" }}>{t("gallery.noImages")}</p>
                     ) : (
-                        <div className="gallery-settings-grid">
+                        <div className="gallery-settings-grid gallery-page-grid">
+                            {hasTrailer && (
+                                <div className="gallery-settings-card gallery-settings-card--trailer-compact">
+                                    <div className="gallery-settings-card__preview gallery-settings-card__preview--video">
+                                        <iframe
+                                            src={getYouTubeEmbedUrl(trailerVideoId)}
+                                            title={t("gallery.trailer")}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                            allowFullScreen
+                                        />
+                                    </div>
+
+                                    <div className="gallery-settings-card__body" style={{ paddingTop: "12px" }}>
+                                        <div className="gallery-settings-card__date">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="m6 3 14 9-14 9V3Z"></path>
+                                            </svg>
+
+                                            {t("gallery.trailer")}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {galleryImages.map((image) => (
                                 <div key={image.id} className="gallery-settings-card">
                                     <div className="gallery-settings-card__preview" aria-label={t("gallery.viewImage", { title: image.title || t("gallery.image") })} {...getLightboxTriggerProps(image)}>
@@ -180,8 +214,13 @@ export default function GalleryPage({ project, authToken }) {
 
                                         {user && project.user_id === user.id && (
                                             <div className="gallery-settings-card__actions">
-                                                <button type="button" className="button button--size-m button--type-minimal" onClick={() => openEditModal(image)}>{t("gallery.editImage")}</button>
-                                                <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDeleteById(image.id)}>{t("delete")}</button>
+                                                <button type="button" className="button button--size-m button--type-minimal" onClick={() => openEditModal(image)}>
+                                                    {t("gallery.editImage")}
+                                                </button>
+
+                                                <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDeleteById(image.id)}>
+                                                    {t("delete")}
+                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -241,8 +280,13 @@ export default function GalleryPage({ project, authToken }) {
                                         <p className="gallery-modal-help">{tSettings("gallerySettings.featuredHint")}</p>
 
                                         <div className="gallery-modal-actions">
-                                            <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDelete(selectedImage.id)} disabled={editLoading}>{t("delete")}</button>
-                                            <button type="submit" className="button button--size-m button--type-primary" disabled={editLoading}>{t("update")}</button>
+                                            <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDelete(selectedImage.id)} disabled={editLoading}>
+                                                {t("delete")}
+                                            </button>
+                                            
+                                            <button type="submit" className="button button--size-m button--type-primary" disabled={editLoading}>
+                                                {t("update")}
+                                            </button>
                                         </div>
                                     </form>
                                 </div>

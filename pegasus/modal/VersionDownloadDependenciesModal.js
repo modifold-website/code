@@ -46,7 +46,7 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 			<div className="modal-window">
 				<div className="modal-window__header version-download-modal__header">
 					<div className="version-download-modal__project">
-						<img src={projectIconUrl} alt="" width="35" height="35" className="version-download-modal__project-icon" />
+						<img src={projectIconUrl} alt="" width="32" height="32" className="version-download-modal__project-icon" />
 
 						<div className="version-download-modal__project-text">
 							<h2 className="modal-window__title">{project?.title || tProject("projectNotFound")}</h2>

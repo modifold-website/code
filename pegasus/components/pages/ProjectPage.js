@@ -36,7 +36,7 @@ export default function ProjectPage({ project, authToken, showInlineGallery = fa
             <div className="project__general">
                 <div>
                     {showInlineGallery && (
-                        <ProjectInlineGallerySlider images={project?.gallery || []} projectTitle={project?.title || ""} />
+                        <ProjectInlineGallerySlider images={project?.gallery || []} projectTitle={project?.title || ""} trailerVideoId={project?.trailer_youtube_video_id || ""} />
                     )}
 
                     <div className="content content--padding markdown-body">

@@ -633,6 +633,8 @@
       "noImages": "No hay imágenes en la galería.",
       "lightboxLabel": "Visor de imágenes",
       "openInNewTab": "Abrir imagen en una nueva pestaña",
+      "trailer": "Tráiler",
+      "openTrailer": "Abrir tráiler",
       "title": "Título",
       "description": "Descripción",
       "orderIndex": "Índice de orden",
@@ -1268,6 +1270,10 @@
         "upload": "Error al subir la imagen"
       },
       "title": "Añadir nueva imagen",
+      "media": {
+        "title": "Medios de la galería",
+        "description": "Añade un tráiler y capturas. El tráiler siempre se muestra primero."
+      },
       "fields": {
         "title": "Título",
         "description": "Descripción",
@@ -1282,6 +1288,22 @@
       "featuredHint": "Una imagen destacada de la galería aparece en la búsqueda y en la tarjeta de tu proyecto. Solo una imagen de la galería puede estar destacada.",
       "actions": {
         "add": "Añadir imagen"
+      },
+      "trailer": {
+        "eyebrow": "YouTube",
+        "add": "Añadir tráiler",
+        "title": "Tráiler del proyecto",
+        "description": "Añade un video de YouTube. Aparece primero en la galería, antes de las capturas.",
+        "modalDescription": "Pega un enlace de YouTube o el ID del video. Solo puede haber un tráiler activo.",
+        "urlLabel": "Enlace de YouTube",
+        "placeholder": "https://www.youtube.com/watch?v=...",
+        "save": "Guardar tráiler",
+        "remove": "Quitar tráiler",
+        "success": "Tráiler guardado",
+        "deleted": "Tráiler eliminado",
+        "error": "Error al guardar el tráiler",
+        "previewTitle": "Vista previa del tráiler",
+        "cardDescription": "Se muestra antes de las imágenes de la galería."
       },
       "modal": {
         "steps": {
