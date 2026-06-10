@@ -1170,11 +1170,20 @@
     border-radius: var(--layout-island-border-radius);
 	display: grid;
 	gap: 12px;
-	grid-template-columns: auto minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 1fr) auto;
 	min-height: 86px;
 	padding: 14px 18px;
 }
-.version-page__required-card:hover .version-page__required-copy strong {
+.version-page__required-link {
+	align-items: center;
+	color: inherit;
+	display: grid;
+	gap: 12px;
+	grid-template-columns: auto minmax(0, 1fr);
+	min-width: 0;
+	text-decoration: none;
+}
+.version-page__required-link:hover .version-page__required-copy strong {
     text-decoration: underline;
 }
 .version-page__required-icon {

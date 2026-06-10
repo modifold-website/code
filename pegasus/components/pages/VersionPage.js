@@ -684,17 +684,30 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                             <section className="version-page__required-content">
                                 <h2>{t("versions.requiredContent")}</h2>
 
-                                <div className="version-page__required-grid">
-                                    {requiredContent.map((item) => (
-                                        <div key={item.id} className="version-page__required-card">
-                                            <img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
+								<div className="version-page__required-grid">
+									{requiredContent.map((item) => (
+										<div key={item.id} className="version-page__required-card">
+											{item.href ? (
+												<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
+													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
 
-                                            <div className="version-page__required-copy">
-                                                <strong>{item.title}</strong>
-                                                <span>{t("versions.downloadModal.anyVersion")}</span>
-                                            </div>
+													<div className="version-page__required-copy">
+														<strong>{item.title}</strong>
+														<span>{t("versions.downloadModal.anyVersion")}</span>
+													</div>
+												</Link>
+											) : (
+												<div className="version-page__required-link">
+													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
 
-                                            <div className="version-page__required-actions">
+													<div className="version-page__required-copy">
+														<strong>{item.title}</strong>
+														<span>{t("versions.downloadModal.anyVersion")}</span>
+													</div>
+												</div>
+											)}
+
+											<div className="version-page__required-actions">
                                                 {item.href && (
                                                     <Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
                                                         <Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
@@ -788,17 +801,30 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                             <section className="version-page__required-content">
                                 <h2>{t("versions.optionalDependencies")}</h2>
 
-                                <div className="version-page__required-grid">
-                                    {optionalContent.map((item) => (
-                                        <div key={item.id} className="version-page__required-card">
-                                            <img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
+								<div className="version-page__required-grid">
+									{optionalContent.map((item) => (
+										<div key={item.id} className="version-page__required-card">
+											{item.href ? (
+												<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
+													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
 
-                                            <div className="version-page__required-copy">
-                                                <strong>{item.title}</strong>
-                                                <span>{t("versions.downloadModal.anyVersion")}</span>
-                                            </div>
+													<div className="version-page__required-copy">
+														<strong>{item.title}</strong>
+														<span>{t("versions.downloadModal.anyVersion")}</span>
+													</div>
+												</Link>
+											) : (
+												<div className="version-page__required-link">
+													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
 
-                                            <div className="version-page__required-actions">
+													<div className="version-page__required-copy">
+														<strong>{item.title}</strong>
+														<span>{t("versions.downloadModal.anyVersion")}</span>
+													</div>
+												</div>
+											)}
+
+											<div className="version-page__required-actions">
                                                 {item.href && (
                                                     <Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
                                                         <Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
