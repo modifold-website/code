@@ -62,6 +62,25 @@ const normalizeProjectIds = (value) => String(value || "").split(",").map((item)
 
 const getProjectGradientId = (projectSlug) => `dashboardAnalytics${String(projectSlug || "").replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
+const formatDateValue = (date) => {
+	const year = date.getFullYear();
+	const month = `${date.getMonth() + 1}`.padStart(2, "0");
+	const day = `${date.getDate()}`.padStart(2, "0");
+	return `${year}-${month}-${day}`;
+};
+
+const getDefaultDateRange = () => {
+	const endDate = new Date();
+	endDate.setHours(0, 0, 0, 0);
+	const startDate = new Date(endDate);
+	startDate.setMonth(endDate.getMonth() - 1);
+
+	return {
+		from: formatDateValue(startDate),
+		to: formatDateValue(endDate),
+	};
+};
+
 function MultiProjectTooltip({ active, payload, label, locale, t }) {
 	if(!active || !payload?.length) {
 		return null;
@@ -329,12 +348,15 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 	};
 
 	const resetFilters = () => {
-		setFrom("");
-		setTo("");
+		const defaultRange = getDefaultDateRange();
+
+		setFrom(defaultRange.from);
+		setTo(defaultRange.to);
 		setDraftProjectIds([]);
 		setIsProjectFilterOpen(false);
 		startTransition(() => {
-			router.push("/dashboard/analytics");
+			const params = new URLSearchParams(defaultRange);
+			router.push(`/dashboard/analytics?${params.toString()}`);
 		});
 	};
 

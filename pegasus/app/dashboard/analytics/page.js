@@ -13,7 +13,7 @@ const getDefaultDateRange = () => {
 	const endDate = new Date();
 	endDate.setUTCHours(0, 0, 0, 0);
 	const startDate = new Date(endDate);
-	startDate.setUTCDate(endDate.getUTCDate() - 29);
+	startDate.setUTCMonth(endDate.getUTCMonth() - 1);
 
 	return {
 		from: startDate.toISOString().slice(0, 10),
