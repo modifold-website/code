@@ -62,8 +62,9 @@ bun-debug.log*
 .vercel/
 .turbo/
 
-# Local reference repositories.
-modrinth-code/
+# Generated docs import helpers.
+docs/scripts/
+docs/pnpm-lock.yaml
 
 # Private services checked out separately on production.
 argus/

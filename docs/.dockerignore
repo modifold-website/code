@@ -1,0 +1,15 @@
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.cache/
+*.tsbuildinfo
+*.log
+.DS_Store
+public/.DS_Store
+public/assets/.DS_Store
+scripts/
+pnpm-lock.yaml
+skills-lock.json
