@@ -79,6 +79,27 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
         return num;
     };
 
+    const getUpdatedTooltipDateOptions = (date) => {
+        const options = {
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+        };
+
+        if(date.getFullYear() !== new Date().getFullYear()) {
+            options.year = "numeric";
+        }
+
+        return options;
+    };
+
+    const formatUpdatedTooltip = (dateString) => {
+        const date = new Date(dateString);
+
+        return `${t("updated")} ${new Intl.DateTimeFormat(locale, getUpdatedTooltipDateOptions(date)).format(date)}`;
+    };
+
     const featuredImage = project?.gallery?.find((image) => image?.featured === 1) || project?.gallery?.[0] || null;
     const coverUrl = featuredImage?.url || null;
     const rawColor = project?.color;
@@ -160,7 +181,7 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
                         </div>
                     )}
 
-                    <div className="media-project-stat media-project-updated" title={formatDate(project.updated_at)}>
+                    <div className="media-project-stat media-project-updated" title={formatUpdatedTooltip(project.updated_at)}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" className="lucide lucide-heart-icon lucide-update">
                             <path d="M3 3v5h5"></path>
                             <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"></path>
