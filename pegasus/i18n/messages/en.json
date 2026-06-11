@@ -971,6 +971,10 @@
       "team": "Modifold Team"
     },
     "joined": "Joined:",
+    "projectsLabel": "{count, plural, one {project} other {projects}}",
+    "downloadsLabel": "{count, plural, one {download} other {downloads}}",
+    "publishedProjectsTooltip": "Published projects",
+    "downloadsTooltip": "Author project downloads",
     "subscribersLabel": "{count, plural, one {Subscriber} other {Subscribers}}",
     "subscriptionsLabel": "{count, plural, one {Subscription} other {Subscriptions}}",
     "followersModal": {
@@ -2118,6 +2122,9 @@
       "dateCreated": "Date registered: {date}",
       "membersCount": "{count, plural, one {member} other {members}}",
       "projectsCount": "{count, plural, one {project} other {projects}}",
+      "downloadsCount": "{count, plural, one {download} other {downloads}}",
+      "publishedProjectsTooltip": "Published projects",
+      "downloadsTooltip": "Author project downloads",
       "emptyProjects": "This organization doesn't have projects yet."
     },
     "settings": {

@@ -971,6 +971,10 @@
       "team": "Equipe Modifold"
     },
     "joined": "Entrou em:",
+    "projectsLabel": "{count, plural, one {projeto} other {projetos}}",
+    "downloadsLabel": "{count, plural, one {download} other {downloads}}",
+    "publishedProjectsTooltip": "Projetos publicados",
+    "downloadsTooltip": "Downloads dos projetos do autor",
     "subscribersLabel": "{count, plural, one {Assinante} other {Assinantes}}",
     "subscriptionsLabel": "{count, plural, one {Inscrição} other {Inscrições}}",
     "followersModal": {
@@ -2118,6 +2122,9 @@
       "dateCreated": "Data de registro: {date}",
       "membersCount": "{count, plural, one {membro} other {membros}}",
       "projectsCount": "{count, plural, one {projeto} other {projetos}}",
+      "downloadsCount": "{count, plural, one {download} other {downloads}}",
+      "publishedProjectsTooltip": "Projetos publicados",
+      "downloadsTooltip": "Downloads dos projetos do autor",
       "emptyProjects": "Esta organização ainda não tem projetos."
     },
     "settings": {

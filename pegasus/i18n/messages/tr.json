@@ -970,6 +970,10 @@
       "team": "Modifold Ekibi"
     },
     "joined": "Katılma:",
+    "projectsLabel": "{count, plural, one {proje} other {proje}}",
+    "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
+    "publishedProjectsTooltip": "Yayınlanan projeler",
+    "downloadsTooltip": "Yazarın proje indirmeleri",
     "subscribersLabel": "{count, plural, one {Abone} other {Aboneler}}",
     "subscriptionsLabel": "{count, plural, one {Abonelik} other {Abonelikler}}",
     "followersModal": {
@@ -2117,6 +2121,9 @@
       "dateCreated": "Kayıt tarihi: {date}",
       "membersCount": "{count, plural, one {üye} other {üye}}",
       "projectsCount": "{count, plural, one {proje} other {proje}}",
+      "downloadsCount": "{count, plural, one {indirme} other {indirme}}",
+      "publishedProjectsTooltip": "Yayınlanan projeler",
+      "downloadsTooltip": "Yazarın proje indirmeleri",
       "emptyProjects": "Bu organizasyonun henüz projesi yok."
     },
     "settings": {

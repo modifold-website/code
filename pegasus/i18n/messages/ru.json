@@ -971,6 +971,10 @@
       "team": "Команда Modifold"
     },
     "joined": "Дата регистрации:",
+    "projectsLabel": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
+    "downloadsLabel": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
+    "publishedProjectsTooltip": "Опубликованные проекты",
+    "downloadsTooltip": "Скачивания проектов автора",
     "subscribersLabel": "{count, plural, one {подписчик} other {подписчиков}}",
     "subscriptionsLabel": "{count, plural, one {подписка} other {подписок}}",
     "followersModal": {
@@ -2118,6 +2122,9 @@
       "dateCreated": "Дата регистрации: {date}",
       "membersCount": "{count, plural, one {участник} few {участника} many {участников} other {участника}}",
       "projectsCount": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
+      "downloadsCount": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
+      "publishedProjectsTooltip": "Опубликованные проекты",
+      "downloadsTooltip": "Скачивания проектов автора",
       "emptyProjects": "В этой организации пока нет проектов."
     },
     "settings": {

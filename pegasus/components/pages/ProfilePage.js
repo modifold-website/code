@@ -96,7 +96,11 @@ const formatDate = (timestamp, locale) => {
     return `${day} ${month} ${hours}:${minutes}`;
 };
 
-export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], organizations = [], currentPage = 1, totalPages = 1 }) {
+const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
+
+const getProjectDownloadsTotal = (projects) => projects.reduce((sum, project) => sum + Math.max(0, Number(project?.downloads) || 0), 0);
+
+export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], totalProjects = null, totalDownloads = null, organizations = [], currentPage = 1, totalPages = 1 }) {
     const t = useTranslations("ProfilePage");
     const tLinks = useTranslations("Organizations.settings.links");
     const locale = useLocale();
@@ -171,6 +175,8 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 
     const countSubs = user.subscribers || 0;
     const countUserSubs = user.subscriptions || 0;
+    const publishedProjectsCount = Math.max(0, Number(totalProjects ?? projects.length) || 0);
+    const authorDownloadsCount = Math.max(0, Number(totalDownloads ?? getProjectDownloadsTotal(projects)) || 0);
 
     const isOwnProfile = isLoggedIn && user.id === currentUser.id;
 
@@ -273,12 +279,58 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                 </div>
 
                                 <div className="subsite-followers">
+                                    <Tooltip content={t("publishedProjectsTooltip")}>
+                                        <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-box-icon lucide-box" aria-hidden="true">
+                                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                                                <path d="m3.3 7 8.7 5 8.7-5"></path>
+                                                <path d="M12 22V12"></path>
+                                            </svg>
+
+                                            <span>{formatFullNumber(publishedProjectsCount, locale)}</span>
+                                            
+                                            {t("projectsLabel", { count: publishedProjectsCount })}
+                                        </button>
+                                    </Tooltip>
+
+                                    <Tooltip content={t("downloadsTooltip")}>
+                                        <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download-icon lucide-download" aria-hidden="true">
+                                                <path d="M12 15V3"></path>
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <path d="m7 10 5 5 5-5"></path>
+                                            </svg>
+
+                                            <span>{formatFullNumber(authorDownloadsCount, locale)}</span>
+                                            
+                                            {t("downloadsLabel", { count: authorDownloadsCount })}
+                                        </button>
+                                    </Tooltip>
+
                                     <button type="button" className={`subsite-followers__item subsite-followers__item--button ${countSubs < 1 ? "subsite-followers__item--disabled" : ""}`} onClick={() => handleOpenFollowModal("subscribers")} disabled={countSubs < 1}>
-                                        <span>{countSubs}</span> {t("subscribersLabel", { count: countSubs })}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-icon lucide-users" aria-hidden="true">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                            <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
+                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                        </svg>
+
+                                        <span>{formatFullNumber(countSubs, locale)}</span>
+                                        
+                                        {t("subscribersLabel", { count: countSubs })}
                                     </button>
 
                                     <button type="button" className={`subsite-followers__item subsite-followers__item--button ${countUserSubs < 1 ? "subsite-followers__item--disabled" : ""}`} onClick={() => handleOpenFollowModal("subscriptions")} disabled={countUserSubs < 1}>
-                                        <span>{countUserSubs}</span> {t("subscriptionsLabel", { count: countUserSubs })}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-plus-icon lucide-user-round-plus" aria-hidden="true">
+                                            <path d="M2 21a8 8 0 0 1 13.292-6"></path>
+                                            <circle cx="10" cy="8" r="5"></circle>
+                                            <path d="M19 16v6"></path>
+                                            <path d="M22 19h-6"></path>
+                                        </svg>
+
+                                        <span>{formatFullNumber(countUserSubs, locale)}</span>
+                                        
+                                        {t("subscriptionsLabel", { count: countUserSubs })}
                                     </button>
                                 </div>
                             </div>
