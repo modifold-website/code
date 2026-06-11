@@ -229,7 +229,7 @@ export default async function RootLayout({ children }) {
                                                 <div className="footer-col footer-col__wrap">
                                                     <p className="footer-col__header">{messages.Footer.sections}</p>
 
-                                                    <a href={`${process.env.NEXT_PUBLIC_API_BASE}/api-docs`} target="_blank" className="footer-link">
+                                                    <a href="https://docs.modifold.com/" target="_blank" className="footer-link">
                                                         {messages.Footer.apiDocs}
                                                     </a>
                                                 </div>
