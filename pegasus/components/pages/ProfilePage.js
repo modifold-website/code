@@ -80,20 +80,33 @@ const renderDescription = (desc) => {
     });
 };
 
-const formatDate = (timestamp, locale) => {
-    const date = new Date(timestamp);
+const getDateFormatOptions = (date) => {
     const now = new Date();
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleString(locale, { month: 'short' });
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const year = date.getFullYear();
+    const options = {
+        day: "numeric",
+        month: "long",
+    };
 
-    if(year !== now.getFullYear()) {
-        return `${day} ${month} ${year} ${hours}:${minutes}`;
+    if(date.getFullYear() !== now.getFullYear()) {
+        options.year = "numeric";
     }
 
-    return `${day} ${month} ${hours}:${minutes}`;
+    return options;
+};
+
+const formatJoinedDate = (timestamp, locale) => {
+    const date = new Date(timestamp);
+    return new Intl.DateTimeFormat(locale, getDateFormatOptions(date)).format(date);
+};
+
+const formatJoinedTooltip = (timestamp, locale) => {
+    const date = new Date(timestamp);
+
+    return new Intl.DateTimeFormat(locale, {
+        ...getDateFormatOptions(date),
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(date);
 };
 
 const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
@@ -275,7 +288,11 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                 <p className="subsite-header__description">{desc}</p>
 
                                 <div className="subsite-header__cols">
-                                    <div className="subsite-header__date-created">{t("joined")} {formatDate(user.created_at, locale)}</div>
+                                    <div className="subsite-header__date-created">
+                                        <Tooltip content={formatJoinedTooltip(user.created_at, locale)}>
+                                            <span>{t("joined")} {formatJoinedDate(user.created_at, locale)}</span>
+                                        </Tooltip>
+                                    </div>
                                 </div>
 
                                 <div className="subsite-followers">
