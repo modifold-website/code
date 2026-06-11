@@ -976,8 +976,8 @@
     "downloadsLabel": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}",
     "publishedProjectsTooltip": "Опубліковані проєкти",
     "downloadsTooltip": "Завантаження проєктів автора",
-    "subscribersLabel": "{count, plural, one {Підписник} other {Підписники}}",
-    "subscriptionsLabel": "{count, plural, one {Підписка} other {Підписки}}",
+    "subscribersLabel": "{count, plural, one {підписник} other {підписники}}",
+    "subscriptionsLabel": "{count, plural, one {підписка} other {підписки}}",
     "followersModal": {
       "subscribersTitle": "Підписники",
       "subscriptionsTitle": "Підписки",

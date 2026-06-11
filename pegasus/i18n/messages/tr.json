@@ -974,8 +974,8 @@
     "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
     "publishedProjectsTooltip": "Yayınlanan projeler",
     "downloadsTooltip": "Yazarın proje indirmeleri",
-    "subscribersLabel": "{count, plural, one {Abone} other {Aboneler}}",
-    "subscriptionsLabel": "{count, plural, one {Abonelik} other {Abonelikler}}",
+    "subscribersLabel": "{count, plural, one {abone} other {aboneler}}",
+    "subscriptionsLabel": "{count, plural, one {abonelik} other {abonelikler}}",
     "followersModal": {
       "subscribersTitle": "Takipçiler",
       "subscriptionsTitle": "Takip edilenler",

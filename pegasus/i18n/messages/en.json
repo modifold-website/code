@@ -975,8 +975,8 @@
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Published projects",
     "downloadsTooltip": "Author project downloads",
-    "subscribersLabel": "{count, plural, one {Subscriber} other {Subscribers}}",
-    "subscriptionsLabel": "{count, plural, one {Subscription} other {Subscriptions}}",
+    "subscribersLabel": "{count, plural, one {subscriber} other {subscribers}}",
+    "subscriptionsLabel": "{count, plural, one {subscription} other {subscriptions}}",
     "followersModal": {
       "subscribersTitle": "Followers",
       "subscriptionsTitle": "Following",
