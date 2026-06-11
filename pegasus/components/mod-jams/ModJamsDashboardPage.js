@@ -23,6 +23,7 @@ export default function ModJamsDashboardPage({ authToken, initialJams = [] }) {
 					mode="dashboard"
 					labels={{
 						projects: tSidebar("projects"),
+						analytics: tSidebar("analytics"),
 						likes: tSidebar("likes"),
 						organizations: tSidebar("organizations"),
 						jams: tSidebar("jams"),

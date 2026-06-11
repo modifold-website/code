@@ -697,6 +697,41 @@
     "byYou": "por você",
     "byOrganization": "por {name}"
   },
+  "DashboardAnalyticsPage": {
+    "userAvatarAlt": "User avatar {username}",
+    "title": "Analytics",
+    "empty": "You do not have published projects with analytics yet.",
+    "emptyPoint": "No events",
+    "metadata": {
+      "title": "Analytics — Modifold",
+      "description": "View analytics for all of your published projects on Modifold."
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "dateRange": "Timeframe",
+      "filteredBy": "Filtered by",
+      "allProjects": "All projects",
+      "selectedProjects": "{count, plural, one {# project} other {# projects}}",
+      "reset": "Reset",
+      "refresh": "Refresh",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "selectDate": "Select date",
+      "clearDate": "Clear",
+      "today": "Today",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "legend": {
+      "showMore": "Show more",
+      "showLess": "Show less"
+    },
+    "charts": {
+      "downloads": "Version downloads",
+      "views": "Project page views"
+    }
+  },
   "LikesDashboardClient": {
     "projectIconAlt": "Ícone do projeto {title}",
     "loading": "Carregando projetos curtidos...",
@@ -712,6 +747,7 @@
     "sidebar": {
       "profileIconAlt": "Ícone do perfil",
       "projects": "Projetos",
+      "analytics": "Analytics",
       "likes": "Curtidos",
       "notifications": "Notificações",
       "settings": "Configurações",
@@ -935,8 +971,12 @@
       "team": "Equipe Modifold"
     },
     "joined": "Entrou em:",
-    "subscribersLabel": "{count, plural, one {Assinante} other {Assinantes}}",
-    "subscriptionsLabel": "{count, plural, one {Inscrição} other {Inscrições}}",
+    "projectsLabel": "{count, plural, one {projeto} other {projetos}}",
+    "downloadsLabel": "{count, plural, one {download} other {downloads}}",
+    "publishedProjectsTooltip": "Projetos publicados",
+    "downloadsTooltip": "Downloads dos projetos do autor",
+    "subscribersLabel": "{count, plural, one {assinante} other {assinantes}}",
+    "subscriptionsLabel": "{count, plural, one {inscrição} other {inscrições}}",
     "followersModal": {
       "subscribersTitle": "Seguidores",
       "subscriptionsTitle": "Seguindo",
@@ -2082,6 +2122,9 @@
       "dateCreated": "Data de registro: {date}",
       "membersCount": "{count, plural, one {membro} other {membros}}",
       "projectsCount": "{count, plural, one {projeto} other {projetos}}",
+      "downloadsCount": "{count, plural, one {download} other {downloads}}",
+      "publishedProjectsTooltip": "Projetos publicados",
+      "downloadsTooltip": "Downloads dos projetos do autor",
       "emptyProjects": "Esta organização ainda não tem projetos."
     },
     "settings": {

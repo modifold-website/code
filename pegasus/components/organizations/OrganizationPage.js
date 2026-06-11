@@ -8,6 +8,10 @@ import ImageLightbox, { useImageLightbox } from "@/components/ui/ImageLightbox";
 import UserName from "@/components/ui/UserName";
 import Tooltip from "@/components/ui/Tooltip";
 
+const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
+
+const getProjectDownloadsTotal = (projects) => projects.reduce((sum, project) => sum + Math.max(0, Number(project?.downloads) || 0), 0);
+
 export default function OrganizationPage({ organization, members = [], projects = [], my_permissions = null }) {
     const t = useTranslations("Organizations");
     const tLinks = useTranslations("Organizations.settings.links");
@@ -31,6 +35,8 @@ export default function OrganizationPage({ organization, members = [], projects 
         day: "numeric",
         month: "short",
     }) : null;
+    const publishedProjectsCount = projects.length;
+    const downloadsCount = getProjectDownloadsTotal(projects);
 
     return (
         <>
@@ -78,12 +84,45 @@ export default function OrganizationPage({ organization, members = [], projects 
                                 )}
                                 
                                 <div className="subsite-followers">
-                                    <div className="subsite-followers__item">
-                                        <span>{members.length}</span> {t("page.membersCount", { count: members.length })}
-                                    </div>
+                                    <Tooltip content={t("page.publishedProjectsTooltip")}>
+                                        <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-box-icon lucide-box" aria-hidden="true">
+                                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                                                <path d="m3.3 7 8.7 5 8.7-5"></path>
+                                                <path d="M12 22V12"></path>
+                                            </svg>
+
+                                            <span>{formatFullNumber(publishedProjectsCount, locale)}</span>
+                                            
+                                            {t("page.projectsCount", { count: publishedProjectsCount })}
+                                        </button>
+                                    </Tooltip>
+
+                                    <Tooltip content={t("page.downloadsTooltip")}>
+                                        <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download-icon lucide-download" aria-hidden="true">
+                                                <path d="M12 15V3"></path>
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                                <path d="m7 10 5 5 5-5"></path>
+                                            </svg>
+
+                                            <span>{formatFullNumber(downloadsCount, locale)}</span>
+                                            
+                                            {t("page.downloadsCount", { count: downloadsCount })}
+                                        </button>
+                                    </Tooltip>
 
                                     <div className="subsite-followers__item">
-                                        <span>{projects.length}</span> {t("page.projectsCount", { count: projects.length })}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-icon lucide-users" aria-hidden="true">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                            <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
+                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                        </svg>
+
+                                        <span>{formatFullNumber(members.length, locale)}</span>
+                                        
+                                        {t("page.membersCount", { count: members.length })}
                                     </div>
                                 </div>
                             </div>

@@ -402,8 +402,8 @@ router.get("/:username/projects", async (req, res) => {
             LIMIT ? OFFSET ?
         `;
 
-        let countQuery = `
-            SELECT COUNT(DISTINCT p.id) as total
+        let statsQuery = `
+            SELECT COUNT(DISTINCT p.id) as total, COALESCE(SUM(p.downloads), 0) AS totalDownloads
             FROM projects p
             LEFT JOIN users u ON p.user_id = u.id
             WHERE p.status = 'approved' AND (
@@ -418,10 +418,10 @@ router.get("/:username/projects", async (req, res) => {
         `;
 
         const params = [username, username, Number(limit), Number(offset)];
-        const countParams = [username, username];
+        const statsParams = [username, username];
 
         const [projects] = await db.query(query, params);
-        const [[{ total }]] = await db.query(countQuery, countParams);
+        const [[{ total, totalDownloads }]] = await db.query(statsQuery, statsParams);
 
         res.json({
             projects: projects.map((project) => ({
@@ -455,6 +455,8 @@ router.get("/:username/projects", async (req, res) => {
                 },
             })),
             totalPages: Math.ceil(total / limit),
+            totalProjects: Number(total || 0),
+            totalDownloads: Number(totalDownloads || 0),
             currentPage: Number(page),
         });
     } catch (error) {

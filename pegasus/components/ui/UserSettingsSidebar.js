@@ -48,6 +48,19 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
                             {labels.projects}
                         </Link>
 
+                        <Link href="/dashboard/analytics" scroll={false} className={`sidebar-item ${isActive("/dashboard/analytics") ? "sidebar-item--active" : ""}`} data-ripple>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-chart-no-axes-combined-icon lucide-chart-no-axes-combined">
+                                <path d="M12 16v5"></path>
+                                <path d="M16 14v7"></path>
+                                <path d="M20 10v11"></path>
+                                <path d="m22 3-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15"></path>
+                                <path d="M4 18v3"></path>
+                                <path d="M8 14v7"></path>
+                            </svg>
+
+                            {labels.analytics}
+                        </Link>
+
                         <Link href="/dashboard/organizations" scroll={false} className={`sidebar-item ${isActive("/dashboard/organizations") ? "sidebar-item--active" : ""}`} data-ripple>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-building2-icon lucide-building-2">
                                 <path d="M10 12h4"></path>
@@ -60,6 +73,25 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
                             {labels.organizations}
                         </Link>
 
+                        <Link href="/notifications" scroll={false} className={`sidebar-item ${isActive("/notifications") ? "sidebar-item--active" : ""}`} data-ripple>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-bell-icon lucide-bell">
+                                <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+                                <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
+                            </svg>
+
+                            {labels.notifications}
+                        </Link>
+
+                        <Link href="/dashboard/likes" scroll={false} className={`sidebar-item ${isActive("/dashboard/likes") ? "sidebar-item--active" : ""}`} data-ripple>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-heart-icon lucide-heart">
+                                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+                            </svg>
+
+                            {labels.likes}
+                        </Link>
+
+                        <div className="sidebar-separator-view _theme_default _size_s"></div>
+
                         <Link href="/dashboard/jams" scroll={false} className={`sidebar-item ${isActive("/dashboard/jams") ? "sidebar-item--active" : ""}`} data-ripple>
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-trophy-icon lucide-trophy">
                                 <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>
@@ -71,23 +103,6 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
                             </svg>
 
                             {labels.jams}
-                        </Link>
-
-                        <Link href="/dashboard/likes" scroll={false} className={`sidebar-item ${isActive("/dashboard/likes") ? "sidebar-item--active" : ""}`} data-ripple>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-heart-icon lucide-heart">
-                                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
-                            </svg>
-
-                            {labels.likes}
-                        </Link>
-
-                        <Link href="/notifications" scroll={false} className={`sidebar-item ${isActive("/notifications") ? "sidebar-item--active" : ""}`} data-ripple>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-bell-icon lucide-bell">
-                                <path d="M10.268 21a2 2 0 0 0 3.464 0" />
-                                <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
-                            </svg>
-
-                            {labels.notifications}
                         </Link>
                     </>
                 )}

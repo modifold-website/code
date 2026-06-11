@@ -697,6 +697,41 @@
     "byYou": "от вас",
     "byOrganization": "от {name}"
   },
+  "DashboardAnalyticsPage": {
+    "userAvatarAlt": "Аватар пользователя {username}",
+    "title": "Аналитика",
+    "empty": "У вас пока нет опубликованных проектов с аналитикой.",
+    "emptyPoint": "Нет событий",
+    "metadata": {
+      "title": "Аналитика — Modifold",
+      "description": "Смотрите аналитику по всем своим опубликованным проектам на Modifold."
+    },
+    "filters": {
+      "from": "От",
+      "to": "До",
+      "dateRange": "Период",
+      "filteredBy": "Фильтр",
+      "allProjects": "Все проекты",
+      "selectedProjects": "{count, plural, one {# проект} few {# проекта} many {# проектов} other {# проекта}}",
+      "reset": "Сбросить",
+      "refresh": "Обновить",
+      "apply": "Применить",
+      "applying": "Применяем...",
+      "selectDate": "Выберите дату",
+      "clearDate": "Удалить",
+      "today": "Сегодня",
+      "previousMonth": "Предыдущий месяц",
+      "nextMonth": "Следующий месяц"
+    },
+    "legend": {
+      "showMore": "Показать ещё",
+      "showLess": "Скрыть"
+    },
+    "charts": {
+      "downloads": "Скачивания версий",
+      "views": "Просмотры страниц проектов"
+    }
+  },
   "LikesDashboardClient": {
     "projectIconAlt": "Иконка проекта {title}",
     "loading": "Загрузка понравившихся проектов...",
@@ -712,6 +747,7 @@
     "sidebar": {
       "profileIconAlt": "Иконка профиля",
       "projects": "Проекты",
+      "analytics": "Аналитика",
       "likes": "Понравилось",
       "notifications": "Уведомления",
       "settings": "Настройки",
@@ -935,6 +971,10 @@
       "team": "Команда Modifold"
     },
     "joined": "Дата регистрации:",
+    "projectsLabel": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
+    "downloadsLabel": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
+    "publishedProjectsTooltip": "Опубликованные проекты",
+    "downloadsTooltip": "Скачивания проектов автора",
     "subscribersLabel": "{count, plural, one {подписчик} other {подписчиков}}",
     "subscriptionsLabel": "{count, plural, one {подписка} other {подписок}}",
     "followersModal": {
@@ -2082,6 +2122,9 @@
       "dateCreated": "Дата регистрации: {date}",
       "membersCount": "{count, plural, one {участник} few {участника} many {участников} other {участника}}",
       "projectsCount": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
+      "downloadsCount": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
+      "publishedProjectsTooltip": "Опубликованные проекты",
+      "downloadsTooltip": "Скачивания проектов автора",
       "emptyProjects": "В этой организации пока нет проектов."
     },
     "settings": {

@@ -109,6 +109,8 @@ export default async function Page({ params, searchParams }) {
             subscriptionId={subscriptionId}
             authToken={authToken}
             projects={projectsData.projects || []}
+            totalProjects={projectsData.totalProjects}
+            totalDownloads={projectsData.totalDownloads}
             organizations={organizationsData.organizations || []}
             currentPage={projectsData.currentPage || currentProjectsPage}
             totalPages={projectsData.totalPages || 1}

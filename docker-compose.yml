@@ -156,3 +156,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  docs:
+    build:
+      context: ./docs
+      dockerfile: Dockerfile
+    container_name: modifold-docs
+    restart: unless-stopped
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: 3001
+    ports:
+      - "127.0.0.1:${DOCS_PORT:-3001}:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://127.0.0.1:3001').then((r)=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12

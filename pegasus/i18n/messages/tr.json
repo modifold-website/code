@@ -696,6 +696,41 @@
     "byYou": "senin tarafından",
     "byOrganization": "{name} tarafından"
   },
+  "DashboardAnalyticsPage": {
+    "userAvatarAlt": "User avatar {username}",
+    "title": "Analytics",
+    "empty": "You do not have published projects with analytics yet.",
+    "emptyPoint": "No events",
+    "metadata": {
+      "title": "Analytics — Modifold",
+      "description": "View analytics for all of your published projects on Modifold."
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "dateRange": "Timeframe",
+      "filteredBy": "Filtered by",
+      "allProjects": "All projects",
+      "selectedProjects": "{count, plural, one {# project} other {# projects}}",
+      "reset": "Reset",
+      "refresh": "Refresh",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "selectDate": "Select date",
+      "clearDate": "Clear",
+      "today": "Today",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "legend": {
+      "showMore": "Show more",
+      "showLess": "Show less"
+    },
+    "charts": {
+      "downloads": "Version downloads",
+      "views": "Project page views"
+    }
+  },
   "LikesDashboardClient": {
     "projectIconAlt": "{title} proje simgesi",
     "loading": "Beğenilen projeler yükleniyor...",
@@ -711,6 +746,7 @@
     "sidebar": {
       "profileIconAlt": "Profil simgesi",
       "projects": "Projeler",
+      "analytics": "Analytics",
       "likes": "Beğenilenler",
       "notifications": "Bildirimler",
       "settings": "Ayarlar",
@@ -934,8 +970,12 @@
       "team": "Modifold Ekibi"
     },
     "joined": "Katılma:",
-    "subscribersLabel": "{count, plural, one {Abone} other {Aboneler}}",
-    "subscriptionsLabel": "{count, plural, one {Abonelik} other {Abonelikler}}",
+    "projectsLabel": "{count, plural, one {proje} other {proje}}",
+    "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
+    "publishedProjectsTooltip": "Yayınlanan projeler",
+    "downloadsTooltip": "Yazarın proje indirmeleri",
+    "subscribersLabel": "{count, plural, one {abone} other {aboneler}}",
+    "subscriptionsLabel": "{count, plural, one {abonelik} other {abonelikler}}",
     "followersModal": {
       "subscribersTitle": "Takipçiler",
       "subscriptionsTitle": "Takip edilenler",
@@ -2081,6 +2121,9 @@
       "dateCreated": "Kayıt tarihi: {date}",
       "membersCount": "{count, plural, one {üye} other {üye}}",
       "projectsCount": "{count, plural, one {proje} other {proje}}",
+      "downloadsCount": "{count, plural, one {indirme} other {indirme}}",
+      "publishedProjectsTooltip": "Yayınlanan projeler",
+      "downloadsTooltip": "Yazarın proje indirmeleri",
       "emptyProjects": "Bu organizasyonun henüz projesi yok."
     },
     "settings": {

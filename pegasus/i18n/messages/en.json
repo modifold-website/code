@@ -697,6 +697,41 @@
     "byYou": "by you",
     "byOrganization": "by {name}"
   },
+  "DashboardAnalyticsPage": {
+    "userAvatarAlt": "User avatar {username}",
+    "title": "Analytics",
+    "empty": "You do not have published projects with analytics yet.",
+    "emptyPoint": "No events",
+    "metadata": {
+      "title": "Analytics — Modifold",
+      "description": "View analytics for all of your published projects on Modifold."
+    },
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "dateRange": "Timeframe",
+      "filteredBy": "Filtered by",
+      "allProjects": "All projects",
+      "selectedProjects": "{count, plural, one {# project} other {# projects}}",
+      "reset": "Reset",
+      "refresh": "Refresh",
+      "apply": "Apply",
+      "applying": "Applying...",
+      "selectDate": "Select date",
+      "clearDate": "Clear",
+      "today": "Today",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "legend": {
+      "showMore": "Show more",
+      "showLess": "Show less"
+    },
+    "charts": {
+      "downloads": "Version downloads",
+      "views": "Project page views"
+    }
+  },
   "LikesDashboardClient": {
     "projectIconAlt": "Project icon {title}",
     "loading": "Loading liked projects...",
@@ -712,6 +747,7 @@
     "sidebar": {
       "profileIconAlt": "Profile icon",
       "projects": "Projects",
+      "analytics": "Analytics",
       "likes": "Liked projects",
       "notifications": "Notifications",
       "settings": "Settings",
@@ -935,8 +971,12 @@
       "team": "Modifold Team"
     },
     "joined": "Joined:",
-    "subscribersLabel": "{count, plural, one {Subscriber} other {Subscribers}}",
-    "subscriptionsLabel": "{count, plural, one {Subscription} other {Subscriptions}}",
+    "projectsLabel": "{count, plural, one {project} other {projects}}",
+    "downloadsLabel": "{count, plural, one {download} other {downloads}}",
+    "publishedProjectsTooltip": "Published projects",
+    "downloadsTooltip": "Author project downloads",
+    "subscribersLabel": "{count, plural, one {subscriber} other {subscribers}}",
+    "subscriptionsLabel": "{count, plural, one {subscription} other {subscriptions}}",
     "followersModal": {
       "subscribersTitle": "Followers",
       "subscriptionsTitle": "Following",
@@ -2082,6 +2122,9 @@
       "dateCreated": "Date registered: {date}",
       "membersCount": "{count, plural, one {member} other {members}}",
       "projectsCount": "{count, plural, one {project} other {projects}}",
+      "downloadsCount": "{count, plural, one {download} other {downloads}}",
+      "publishedProjectsTooltip": "Published projects",
+      "downloadsTooltip": "Author project downloads",
       "emptyProjects": "This organization doesn't have projects yet."
     },
     "settings": {

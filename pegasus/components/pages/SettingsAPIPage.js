@@ -153,7 +153,7 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
                         <div className="api-docs-link">
                             <p>
                                 {t("docsPrompt")} {" "}
-                                <a href={`${process.env.NEXT_PUBLIC_API_BASE}/api-docs`} target="_blank">
+                                <a href="https://docs.modifold.com/" target="_blank">
                                     {t("docsLink")}
                                 </a>
                             </p>

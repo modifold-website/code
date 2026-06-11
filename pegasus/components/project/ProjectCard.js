@@ -63,13 +63,25 @@ export default function ProjectCard({ project, maxTags = 5, actions = null }) {
         return new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
     };
 
+    const getUpdatedTooltipDateOptions = (date) => {
+        const options = {
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+        };
+
+        if(date.getFullYear() !== new Date().getFullYear()) {
+            options.year = "numeric";
+        }
+
+        return options;
+    };
+
     const formatUpdatedTooltip = (dateString) => {
         const date = new Date(dateString);
 
-        return `${t("updated")} ${new Intl.DateTimeFormat(locale, {
-            dateStyle: "long",
-            timeStyle: "short"
-        }).format(date)}`;
+        return `${t("updated")} ${new Intl.DateTimeFormat(locale, getUpdatedTooltipDateOptions(date)).format(date)}`;
     };
 
     return (

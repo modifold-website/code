@@ -88,6 +88,7 @@ export default function DashboardClient({ initialProjects, initialTotalPages, in
                     mode="dashboard"
                     labels={{
                         projects: tSidebar("projects"),
+                        analytics: tSidebar("analytics"),
                         likes: tSidebar("likes"),
                         organizations: tSidebar("organizations"),
                         jams: tSidebar("jams"),
