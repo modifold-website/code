@@ -312,18 +312,6 @@ body.theme-dark {
     --active-text: #03200f;
     --shadow-popover: 0px 4px 20px #00000052, 0 0 0 1px #363636;
 }
-body.theme-light .brand-logo-light {
-    display: block;
-}
-body.theme-light .brand-logo-dark {
-    display: none;
-}
-body.theme-dark .brand-logo-light {
-    display: none;
-}
-body.theme-dark .brand-logo-dark {
-    display: block;
-}
 * {
     box-sizing: border-box;
 }
