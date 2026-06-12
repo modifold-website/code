@@ -17,7 +17,6 @@ export default function ProjectMasthead({ project, authToken }) {
     const cardT = useTranslations("ProjectCard");
     const locale = useLocale();
     const { isLoggedIn, user } = useAuth();
-    const [, setFollowers] = useState(project.followers || 0);
     const [isLiked, setIsLiked] = useState(project.is_liked || false);
     const [isActionsOpen, setIsActionsOpen] = useState(false);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -169,7 +168,6 @@ export default function ProjectMasthead({ project, authToken }) {
 
             const data = await response.json();
             if(response.ok) {
-                setFollowers(data.followers);
                 setIsLiked(data.is_liked);
                 window.dispatchEvent(new CustomEvent("likes:changed", {
                     detail: {
