@@ -735,7 +735,7 @@ a {
 }
 .content {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) 250px;
     gap: 24px;
     padding: 34px 56px;
 }
@@ -794,6 +794,7 @@ a {
     background: #1f6ddd;
 }
 .prose {
+    margin: 0 auto;
     border: 0;
     border-radius: 0;
     padding: 0;
