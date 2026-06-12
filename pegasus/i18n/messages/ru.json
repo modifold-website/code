@@ -1486,6 +1486,7 @@
     "close": "Закрыть",
     "continueWith": "Продолжить через {provider}",
     "continueWithEmail": "Продолжить через почту",
+    "lastSignIn": "Последний вход",
     "errors": {
       "telegram": "Ошибка авторизации Telegram",
       "github": "Ошибка авторизации GitHub",

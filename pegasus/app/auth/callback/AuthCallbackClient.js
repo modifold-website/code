@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 
 function parseHashParams() {
     if(typeof window === "undefined") {
@@ -54,6 +55,7 @@ export default function AuthCallbackClient() {
         }
 
         completeLogin(token).then(() => {
+            commitPendingSignInProvider();
             window.location.replace(nextPath);
         }).catch((loginError) => {
             setErrorMessage(loginError?.message || "Authentication failed.");

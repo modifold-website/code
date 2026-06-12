@@ -1485,6 +1485,7 @@
     "close": "Kapat",
     "continueWith": "{provider} ile devam et",
     "continueWithEmail": "E-posta ile devam et",
+    "lastSignIn": "Son giriş",
     "errors": {
       "telegram": "Telegram ile giriş hatası",
       "github": "GitHub ile giriş hatası",

@@ -1892,6 +1892,28 @@ body[data-feature-flag-frosted-menus="true"] .popover {
     flex-direction: column;
     padding-bottom: 24px;
 }
+.oauth-provider-button {
+    position: relative;
+}
+.oauth-provider-last-sign-in-badge {
+    display: inline-flex;
+    position: absolute;
+    top: -12px;
+    right: 12px;
+    z-index: 1;
+    color: #307df0;
+    background: rgb(205 225 255);
+    border: 1px solid #307df0;
+    white-space: nowrap;
+    pointer-events: none;
+    border-radius: 999px;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
 @media (hover: hover) {
     .auth__button:hover {
         background: var(--theme-color-button-minimal-hover);
