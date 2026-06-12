@@ -1486,6 +1486,7 @@
     "close": "Cerrar",
     "continueWith": "Continuar con",
     "continueWithEmail": "Continuar con correo",
+    "lastSignIn": "Último inicio",
     "errors": {
       "telegram": "Error al iniciar sesión con Telegram",
       "github": "Error al iniciar sesión con GitHub",

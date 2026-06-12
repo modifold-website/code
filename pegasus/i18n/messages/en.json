@@ -1486,6 +1486,7 @@
     "close": "Close",
     "continueWith": "Continue with {provider}",
     "continueWithEmail": "Continue with email",
+    "lastSignIn": "Last sign in",
     "errors": {
       "telegram": "Telegram authorization error",
       "github": "GitHub authorization error",

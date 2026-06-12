@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
+import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 
 const AuthContext = createContext();
 
@@ -97,6 +98,7 @@ export function AuthProvider({ children, isLoggedIn, userData }) {
                 const telegramData = JSON.parse(decodedPayload);
 
                 const result = await telegramLogin(telegramData);
+                commitPendingSignInProvider("telegram");
                 sessionStorage.removeItem("telegramAuthReturnPath");
 
                 if(result?.twoFactorRequired && result?.twoFactorToken) {

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 
 function parseHashParams() {
     if(typeof window === "undefined") {
@@ -80,6 +81,7 @@ export default function TwoFactorClient() {
             }
 
             await completeLogin(data.token);
+            commitPendingSignInProvider();
             window.location.replace(nextPath);
         } catch (error) {
             setErrorMessage(t("errors.generic"));
