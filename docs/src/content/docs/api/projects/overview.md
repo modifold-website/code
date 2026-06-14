@@ -1,6 +1,6 @@
 ---
 title: Overview
-description: Project discovery, creation, updates, versions, gallery, and comments endpoints.
+description: Project discovery, creation, updates, versions, and gallery endpoints.
 order: 0
 ---
 
@@ -25,6 +25,3 @@ order: 0
 | `GET` | [`/projects/{slug}`](/api/projects/get-projects-slug) | Get full project details by slug |
 | `DELETE` | [`/projects/{slug}`](/api/projects/delete-projects-slug) | Delete a project |
 | `PUT` | [`/projects/{id}`](/api/projects/put-projects-id) | Update project by ID |
-| `GET` | [`/projects/{slug}/comments`](/api/projects/get-projects-slug-comments) | Get project comments |
-| `POST` | [`/projects/{slug}/comments`](/api/projects/post-projects-slug-comments) | Create a project comment |
-| `PATCH` | [`/projects/{slug}/comments/{commentId}`](/api/projects/patch-projects-slug-comments-commentid) | Moderate or delete a comment |
