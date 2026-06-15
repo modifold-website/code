@@ -1,15 +1,17 @@
 ---
 title: Get a project
-description: Get full project details by slug
+description: Get full project details by slug or ID
 order: 15
 ---
 
 ## GET /projects/{slug}
 
-**Summary:** Get full project details by slug
+**Summary:** Get full project details by slug or ID
 
 Returns complete information about a project including metadata, versions, gallery images, team members, and like status.
 Some fields (is_liked) depend on authentication.
+
+The same endpoint is also available at `/v1/projects/{slug}`.
 
 ### Example Request
 
@@ -17,11 +19,17 @@ Some fields (is_liked) depend on authentication.
 curl -X GET "https://api.modifold.com/projects/example-project"
 ```
 
+The project ID can be used instead of the slug:
+
+```bash
+curl -X GET "https://api.modifold.com/projects/FlmWzw"
+```
+
 ### Parameters
 
 | Name | In | Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| slug | path | string | yes | Unique project slug |
+| slug | path | string | yes | Unique project slug or project ID |
 
 ### Example Response
 

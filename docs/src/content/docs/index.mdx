@@ -18,6 +18,12 @@ hideHeader: true
 https://api.modifold.com
 ```
 
+## API Versions
+
+All existing version 1 endpoints are available through both their legacy paths and the explicit `/v1` prefix. For example, `/projects` and `/v1/projects` are equivalent. Project path parameters accept either a project slug or project ID.
+
+New version-focused endpoints use the `/v2` prefix. For example, retrieve a version directly by ID with [`GET /v2/version/{versionId}`](/api/v2/get-version-versionid).
+
 ## Authentication
 
 Protected endpoints require a Bearer token in the `Authorization` header:

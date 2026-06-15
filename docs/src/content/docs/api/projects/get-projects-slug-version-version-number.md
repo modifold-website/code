@@ -14,14 +14,14 @@ Includes parsed game versions and loaders as arrays, and file information as an 
 ### Example Request
 
 ```bash
-curl -X GET "https://api.modifold.com/projects/example-project/version/1.0.0"
+curl -X GET "https://api.modifold.com/projects/example-project/version/UddlN6L4"
 ```
 
 ### Parameters
 
 | Name | In | Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| slug | path | string | yes | Project slug |
+| slug | path | string | yes | Project slug or project ID |
 | version_number | path | string | yes | Unique version ID (not version number string) |
 
 ### Example Response

@@ -30,7 +30,7 @@ curl -X DELETE "https://api.modifold.com/projects/example-project" \
 
 | Name | In | Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| slug | path | string | yes | Unique project slug |
+| slug | path | string | yes | Unique project slug or project ID |
 
 ### Example Response
 

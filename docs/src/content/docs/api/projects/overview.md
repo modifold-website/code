@@ -6,6 +6,8 @@ order: 0
 
 ## Endpoints
 
+These version 1 endpoints are available through both `/projects` and `/v1/projects`. In the paths below, `{slug}` accepts either the human-readable project slug or the project ID.
+
 | Method | Path | Summary |
 | --- | --- | --- |
 | `GET` | [`/projects`](/api/projects/get-projects) | Get list of approved projects (mods/modpacks) |
@@ -22,6 +24,6 @@ order: 0
 | `POST` | [`/projects/{slug}/gallery`](/api/projects/post-projects-slug-gallery) | Add image to project gallery |
 | `PUT` | [`/projects/{slug}/gallery/{galleryId}`](/api/projects/put-projects-slug-gallery-galleryid) | Update gallery image |
 | `DELETE` | [`/projects/{slug}/gallery/{galleryId}`](/api/projects/delete-projects-slug-gallery-galleryid) | Delete gallery image |
-| `GET` | [`/projects/{slug}`](/api/projects/get-projects-slug) | Get full project details by slug |
+| `GET` | [`/projects/{slug}`](/api/projects/get-projects-slug) | Get full project details by slug or ID |
 | `DELETE` | [`/projects/{slug}`](/api/projects/delete-projects-slug) | Delete a project |
 | `PUT` | [`/projects/{id}`](/api/projects/put-projects-id) | Update project by ID |
