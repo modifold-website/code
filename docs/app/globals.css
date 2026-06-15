@@ -965,6 +965,8 @@ a {
     position: sticky;
     top: 86px;
     align-self: start;
+	min-width: 0;
+	max-width: 100%;
     border-left: 1px solid var(--border);
     padding-left: 18px;
 }
@@ -982,8 +984,16 @@ a {
 .toc li + li {
     margin-top: 8px;
 }
+.toc li {
+	min-width: 0;
+}
 .toc a {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
     text-decoration: none;
+	text-overflow: ellipsis;
+	white-space: nowrap;
     color: var(--muted);
     font-size: 15px;
     line-height: 1.35;
