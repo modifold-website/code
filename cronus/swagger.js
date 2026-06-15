@@ -149,6 +149,26 @@ const filterHiddenOperations = (spec) => {
     return spec;
 };
 
+const addV1PathAliases = (spec) => {
+	if(!spec?.paths) {
+		return spec;
+	}
+
+	for(const [pathKey, methods] of Object.entries({ ...spec.paths })) {
+		if(!pathKey.startsWith("/") || /^\/v\d+(?:\/|$)/.test(pathKey)) {
+			continue;
+		}
+
+		const versionedPath = `/v1${pathKey}`;
+		if(!spec.paths[versionedPath]) {
+			spec.paths[versionedPath] = JSON.parse(JSON.stringify(methods));
+		}
+	}
+
+	return spec;
+};
+
 filterHiddenOperations(specs);
+addV1PathAliases(specs);
 
 module.exports = specs;

@@ -1,13 +1,13 @@
 const express = require("express");
-const { db } = require("../config/db");
-const auth = require("../middleware/auth");
+const { db } = require("../../config/db");
+const auth = require("../../middleware/auth");
 const router = express.Router();
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs").promises;
 const path = require("path");
-const { sanitizePlainText } = require("../utils/sanitize");
-const { validateSlug } = require("../utils/slug");
+const { sanitizePlainText } = require("../../utils/sanitize");
+const { validateSlug } = require("../../utils/slug");
 
 const storage = multer.diskStorage({
     destination: process.env.MEDIA_ROOT,

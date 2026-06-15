@@ -1,16 +1,16 @@
 const express = require("express");
 const crypto = require("crypto");
-const { db } = require("../config/db");
-const { clickhouse, hasClickHouseConfig } = require("../config/clickhouse");
-const auth = require("../middleware/auth");
-const { getCacheJson, setCacheJson } = require("../utils/cache");
+const { db } = require("../../config/db");
+const { clickhouse, hasClickHouseConfig } = require("../../config/clickhouse");
+const auth = require("../../middleware/auth");
+const { getCacheJson, setCacheJson } = require("../../utils/cache");
 const router = express.Router();
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs").promises;
 const path = require("path");
-const { sanitizePlainText, sanitizeSocialLinks } = require("../utils/sanitize");
-const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../utils/slug");
+const { sanitizePlainText, sanitizeSocialLinks } = require("../../utils/sanitize");
+const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 
 const storage = multer.diskStorage({
     destination: process.env.MEDIA_ROOT,
