@@ -1,10 +1,10 @@
 require("dotenv").config();
 
 const express = require("express");
-const { db } = require("../config/db");
-const { clickhouse, hasClickHouseConfig } = require("../config/clickhouse");
-const auth = require("../middleware/auth");
-const { normalizeEmbedTheme, renderProjectAnalyticsEmbedSvg } = require("../utils/analyticsEmbedImage");
+const { db } = require("../../config/db");
+const { clickhouse, hasClickHouseConfig } = require("../../config/clickhouse");
+const auth = require("../../middleware/auth");
+const { normalizeEmbedTheme, renderProjectAnalyticsEmbedSvg } = require("../../utils/analyticsEmbedImage");
 
 const router = express.Router();
 

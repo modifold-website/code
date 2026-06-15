@@ -1,9 +1,9 @@
 const express = require("express");
-const { db } = require("../config/db");
-const { clickhouse } = require("../config/clickhouse");
-const auth = require("../middleware/auth");
-const { sanitizePlainText } = require("../utils/sanitize");
-const { fanoutVersionReleaseNotifications, sendVersionApprovedOwnerNotification } = require("../utils/versionNotifications");
+const { db } = require("../../config/db");
+const { clickhouse } = require("../../config/clickhouse");
+const auth = require("../../middleware/auth");
+const { sanitizePlainText } = require("../../utils/sanitize");
+const { fanoutVersionReleaseNotifications, sendVersionApprovedOwnerNotification } = require("../../utils/versionNotifications");
 const router = express.Router();
 
 const isModeratorRole = (role) => role === "admin" || role === "moderator";

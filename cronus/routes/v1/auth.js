@@ -1,13 +1,13 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
-const { db } = require("../config/db");
+const { db } = require("../../config/db");
 const slugify = require("slugify");
 const crypto = require("crypto");
 const axios = require("axios");
 const { authenticator } = require("otplib");
-const { sendMail } = require("../utils/smtpMailer");
+const { sendMail } = require("../../utils/smtpMailer");
 const router = express.Router();
-const auth = require("../middleware/auth");
+const auth = require("../../middleware/auth");
 const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;

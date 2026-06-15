@@ -20,7 +20,7 @@ Requires authentication.
 ### Example Request
 
 ```bash
-curl -X DELETE "https://api.modifold.com/projects/example-project/versions/1.0.0" \
+curl -X DELETE "https://api.modifold.com/projects/example-project/versions/UddlN6L4" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -28,7 +28,7 @@ curl -X DELETE "https://api.modifold.com/projects/example-project/versions/1.0.0
 
 | Name | In | Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| slug | path | string | yes | Project slug |
+| slug | path | string | yes | Project slug or project ID |
 | versionId | path | string | yes | Unique version ID to delete |
 
 ### Example Response

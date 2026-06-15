@@ -20,7 +20,7 @@ Requires authentication.
 ### Example Request
 
 ```bash
-curl -X PUT "https://api.modifold.com/projects/example-project/versions/1.0.0" \
+curl -X PUT "https://api.modifold.com/projects/example-project/versions/UddlN6L4" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -F "version_number=1.0.0" \
   -F "changelog=string" \
@@ -35,7 +35,7 @@ curl -X PUT "https://api.modifold.com/projects/example-project/versions/1.0.0" \
 
 | Name | In | Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| slug | path | string | yes | Project slug |
+| slug | path | string | yes | Project slug or project ID |
 | versionId | path | string | yes | Unique version ID |
 
 ### Request Body

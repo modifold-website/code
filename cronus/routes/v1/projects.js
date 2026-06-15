@@ -1,23 +1,23 @@
 require("dotenv").config();
 
 const express = require('express');
-const { db } = require('../config/db');
-const { clickhouse, hasClickHouseConfig } = require('../config/clickhouse');
-const auth = require('../middleware/auth');
+const { db } = require('../../config/db');
+const { clickhouse, hasClickHouseConfig } = require('../../config/clickhouse');
+const auth = require('../../middleware/auth');
 const multer = require('multer');
 const fs = require('fs').promises;
 const path = require('path');
 const slugify = require('slugify');
 const crypto = require('crypto');
 const sharp = require('sharp');
-const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require('../utils/sanitize');
-const { validateSlug } = require("../utils/slug");
-const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../utils/organizations');
-const optionalAuth = require('../middleware/optionalAuth');
-const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../utils/cache");
-const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../utils/projectCache");
-const { fanoutVersionReleaseNotifications } = require("../utils/versionNotifications");
-const { notifyArgusAboutVersion } = require("../utils/argus");
+const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require('../../utils/sanitize');
+const { validateSlug } = require("../../utils/slug");
+const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
+const optionalAuth = require('../../middleware/optionalAuth');
+const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
+const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
+const { fanoutVersionReleaseNotifications } = require("../../utils/versionNotifications");
+const { notifyArgusAboutVersion } = require("../../utils/argus");
 const router = express.Router();
 
 const parseJsonArrayField = (value) => {
@@ -447,6 +447,33 @@ const getProjectPlayersInLastDaysBySlug = async ({ projectSlugs, days }) => {
 
     return countsBySlug;
 };
+
+router.param("slug", async (req, res, next, identifier) => {
+	try {
+		const [projects] = await db.query(
+			`SELECT id, slug
+			FROM projects
+			WHERE BINARY id = BINARY ? OR slug = ?
+			ORDER BY (BINARY id = BINARY ?) DESC
+			LIMIT 1`,
+			[identifier, identifier, identifier]
+		);
+
+		if(projects.length) {
+			req.params.slug = projects[0].slug;
+			req.projectIdentifier = {
+				id: projects[0].id,
+				slug: projects[0].slug,
+				requested: identifier,
+			};
+		}
+
+		next();
+	} catch(error) {
+		console.error("Error resolving project identifier:", error);
+		res.status(500).json({ message: "Error resolving project identifier", error: error.message });
+	}
+});
 
 router.use("/:slug*", (req, res, next) => {
     const { slug } = req.params || {};

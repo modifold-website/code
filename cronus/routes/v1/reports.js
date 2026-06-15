@@ -1,7 +1,7 @@
 const express = require("express");
-const { db } = require("../config/db");
-const auth = require("../middleware/auth");
-const { sanitizePlainText } = require("../utils/sanitize");
+const { db } = require("../../config/db");
+const auth = require("../../middleware/auth");
+const { sanitizePlainText } = require("../../utils/sanitize");
 
 const router = express.Router();
 

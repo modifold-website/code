@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
-const { db } = require('../config/db');
+const auth = require('../../middleware/auth');
+const { db } = require('../../config/db');
 const crypto = require('crypto');
 
 const TOKEN_PREFIX = 'mf_';

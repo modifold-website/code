@@ -6,11 +6,11 @@ const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs").promises;
 const path = require("path");
-const auth = require("../middleware/auth");
-const { db } = require("../config/db");
-const { sanitizePlainText, sanitizeExternalUrl } = require("../utils/sanitize");
-const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../utils/slug");
-const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, getOrganizationMemberAccess, hasOrganizationPermission, logOrganizationAudit } = require("../utils/organizations");
+const auth = require("../../middleware/auth");
+const { db } = require("../../config/db");
+const { sanitizePlainText, sanitizeExternalUrl } = require("../../utils/sanitize");
+const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
+const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, getOrganizationMemberAccess, hasOrganizationPermission, logOrganizationAudit } = require("../../utils/organizations");
 
 const router = express.Router();
 

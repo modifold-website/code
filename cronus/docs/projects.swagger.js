@@ -1063,7 +1063,7 @@
  * @swagger
  * /projects/{slug}:
  *   get:
- *     summary: Get full project details by slug
+ *     summary: Get full project details by slug or ID
  *     description: |
  *       Returns complete information about a project including metadata, versions, gallery images, team members, and like status.
  *       Some fields (is_liked) depend on authentication.
@@ -1074,7 +1074,7 @@
  *         required: true
  *         schema:
  *           type: string
- *         description: Unique project slug
+ *         description: Unique project slug or project ID
  *     responses:
  *       200:
  *         description: Project details

@@ -1,10 +1,12 @@
 ---
 title: Overview
-description: Project discovery, creation, updates, versions, gallery, and comments endpoints.
+description: Project discovery, creation, updates, versions, and gallery endpoints.
 order: 0
 ---
 
 ## Endpoints
+
+These version 1 endpoints are available through both `/projects` and `/v1/projects`. In the paths below, `{slug}` accepts either the human-readable project slug or the project ID.
 
 | Method | Path | Summary |
 | --- | --- | --- |
@@ -22,9 +24,6 @@ order: 0
 | `POST` | [`/projects/{slug}/gallery`](/api/projects/post-projects-slug-gallery) | Add image to project gallery |
 | `PUT` | [`/projects/{slug}/gallery/{galleryId}`](/api/projects/put-projects-slug-gallery-galleryid) | Update gallery image |
 | `DELETE` | [`/projects/{slug}/gallery/{galleryId}`](/api/projects/delete-projects-slug-gallery-galleryid) | Delete gallery image |
-| `GET` | [`/projects/{slug}`](/api/projects/get-projects-slug) | Get full project details by slug |
+| `GET` | [`/projects/{slug}`](/api/projects/get-projects-slug) | Get full project details by slug or ID |
 | `DELETE` | [`/projects/{slug}`](/api/projects/delete-projects-slug) | Delete a project |
 | `PUT` | [`/projects/{id}`](/api/projects/put-projects-id) | Update project by ID |
-| `GET` | [`/projects/{slug}/comments`](/api/projects/get-projects-slug-comments) | Get project comments |
-| `POST` | [`/projects/{slug}/comments`](/api/projects/post-projects-slug-comments) | Create a project comment |
-| `PATCH` | [`/projects/{slug}/comments/{commentId}`](/api/projects/patch-projects-slug-comments-commentid) | Moderate or delete a comment |

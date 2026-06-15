@@ -5,11 +5,11 @@ const multer = require("multer");
 const path = require("path");
 const sharp = require("sharp");
 const slugify = require("slugify");
-const { db } = require("../config/db");
-const auth = require("../middleware/auth");
-const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require("../utils/sanitize");
-const { getSlugValidationMessage, validateSlug } = require("../utils/slug");
-const { bumpProjectCacheVersionById } = require("../utils/projectCache");
+const { db } = require("../../config/db");
+const auth = require("../../middleware/auth");
+const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require("../../utils/sanitize");
+const { getSlugValidationMessage, validateSlug } = require("../../utils/slug");
+const { bumpProjectCacheVersionById } = require("../../utils/projectCache");
 
 const router = express.Router();
 

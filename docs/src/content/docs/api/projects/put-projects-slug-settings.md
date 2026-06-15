@@ -43,7 +43,7 @@ curl -X PUT "https://api.modifold.com/projects/example-project/settings" \
 
 | Name | In | Type | Required | Description |
 | --- | --- | --- | --- | --- |
-| slug | path | string | yes | Project slug |
+| slug | path | string | yes | Project slug or project ID |
 
 ### Request Body
 

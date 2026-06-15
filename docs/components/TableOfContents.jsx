@@ -69,7 +69,7 @@ export default function TableOfContents({ headings }) {
                     const isActive = displayedActiveId === heading.id;
                     return (
                         <li key={heading.id} className={`${heading.depth === 3 ? 'toc-sub' : ''} ${isActive ? 'toc-active' : ''}`.trim()}>
-                            <a href={`#${heading.id}`}>{heading.text}</a>
+                            <a href={`#${heading.id}`} title={heading.text}>{heading.text}</a>
                         </li>
                     );
                 })}

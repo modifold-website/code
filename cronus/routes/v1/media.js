@@ -1,7 +1,7 @@
 const express = require("express");
 const { Readable } = require("stream");
 const { pipeline } = require("stream/promises");
-const { sanitizeExternalUrl } = require("../utils/sanitize");
+const { sanitizeExternalUrl } = require("../../utils/sanitize");
 
 const router = express.Router();
 
