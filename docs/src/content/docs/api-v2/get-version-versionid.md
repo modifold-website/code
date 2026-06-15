@@ -1,7 +1,7 @@
 ---
 title: Get a version
 description: Get a project version directly by its version ID.
-order: 1
+order: 101
 ---
 
 ## GET /v2/version/{versionId}
@@ -53,8 +53,6 @@ Status: `200`
   "dependencies": []
 }
 ```
-
-Authenticated users who can view a non-public version also receive `moderation_status` and `moderation_reason`.
 
 ### Responses
 

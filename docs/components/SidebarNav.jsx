@@ -10,6 +10,10 @@ function prettyLabel(segment) {
         return 'Modifold API';
     }
 
+	if(segment === 'api-v2') {
+		return 'API v2';
+	}
+
     if(segment === 'projects') {
         return 'projects';
     }
