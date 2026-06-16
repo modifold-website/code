@@ -34,7 +34,6 @@
       "title": "Мод-джемы — Modifold",
       "description": "Каталог мод-джемов сообщества: участвуйте в творческих событиях, голосуйте и смотрите результаты на Modifold."
     },
-    "eyebrow": "События сообщества",
     "title": "Мод-джемы сообщества",
     "description": "Участвуйте в творческих событиях, открывайте работы сообщества, голосуйте за фаворитов и возвращайтесь к завершённым джемам.",
     "create": "Создать мод-джем",
@@ -371,6 +370,17 @@
   "NotFound": {
     "title": "Страница не найдена",
     "message": "Ссылка не найдена, перемещена или удалена."
+  },
+  "HytaleModJamPromotion": {
+    "ariaLabel": "Промо Hytale Modjam",
+    "logosLabel": "Hytale и HytaleModding",
+    "hytaleLogoAlt": "Логотип Hytale",
+    "hytaleModdingLogoAlt": "Логотип HytaleModding",
+    "title": "The Hytale Modjam",
+    "description": "7-дневное событие для моддеров, где авторы со всего мира создают моды по секретной теме. Финансируется Hypixel Studios.",
+    "prizeLabel": "Призовой фонд",
+    "prizeAmount": "$5,000",
+    "cta": "Перейти к Modjam"
   },
   "HomePage": {
     "title": "Дом для ваших модов Hytale — Modifold",

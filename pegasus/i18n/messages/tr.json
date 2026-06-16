@@ -33,7 +33,6 @@
       "title": "Mod jamleri — Modifold",
       "description": "Topluluk mod jamlerini keşfedin, yaratıcı etkinliklere katılın, oy verin ve sonuçları Modifold'da görün."
     },
-    "eyebrow": "Topluluk etkinlikleri",
     "title": "Topluluk mod jamleri",
     "description": "Yaratıcı etkinliklere katılın, topluluğun neler yaptığını keşfedin, favorilerinize oy verin ve biten etkinliklere geri dönün.",
     "create": "Mod jam oluştur",
@@ -370,6 +369,17 @@
   "NotFound": {
     "title": "Sayfa bulunamadı",
     "message": "Bağlantı yok, taşınmış ya da silinmiş."
+  },
+  "HytaleModJamPromotion": {
+    "ariaLabel": "Hytale Modjam tanıtımı",
+    "logosLabel": "Hytale ve HytaleModding",
+    "hytaleLogoAlt": "Hytale Logosu",
+    "hytaleModdingLogoAlt": "HytaleModding Logosu",
+    "title": "The Hytale Modjam",
+    "description": "Dünyanın dört bir yanından içerik üreticilerinin gizli bir temaya göre harika modlar geliştirmek için bir araya geldiği 7 günlük bir modlama etkinliği. Hypixel Studios tarafından finanse edilmektedir.",
+    "prizeLabel": "Ödül Havuzu",
+    "prizeAmount": "$5,000",
+    "cta": "Modjam'e katıl"
   },
   "HomePage": {
     "title": "Hytale modlarınız için bir yuva - Modifold",

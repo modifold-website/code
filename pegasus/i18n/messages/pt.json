@@ -34,7 +34,6 @@
       "title": "Mod jams — Modifold",
       "description": "Explore mod jams da comunidade, participe de desafios criativos, vote e veja resultados no Modifold."
     },
-    "eyebrow": "Eventos da comunidade",
     "title": "Mod jams da comunidade",
     "description": "Participe de desafios criativos, descubra o que a comunidade está criando, vote nos favoritos e revisite eventos encerrados.",
     "create": "Criar mod jam",
@@ -371,6 +370,17 @@
   "NotFound": {
     "title": "Página não encontrada",
     "message": "O link não existe, foi movido ou removido."
+  },
+  "HytaleModJamPromotion": {
+    "ariaLabel": "Promoção do Hytale Modjam",
+    "logosLabel": "Hytale e HytaleModding",
+    "hytaleLogoAlt": "Logo do Hytale",
+    "hytaleModdingLogoAlt": "Logo do HytaleModding",
+    "title": "The Hytale Modjam",
+    "description": "Um evento de modding de 7 dias onde criadores do mundo todo se reúnem para criar mods incríveis com base em um tema secreto. Financiado pela Hypixel Studios.",
+    "prizeLabel": "Prêmio total",
+    "prizeAmount": "$5,000",
+    "cta": "Entrar no Modjam"
   },
   "HomePage": {
     "title": "O lar dos seus mods de Hytale — Modifold",

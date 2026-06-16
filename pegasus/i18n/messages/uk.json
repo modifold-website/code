@@ -34,7 +34,6 @@
       "title": "Мод-джеми — Modifold",
       "description": "Каталог мод-джемів спільноти: долучайтеся до творчих подій, голосуйте та переглядайте результати на Modifold."
     },
-    "eyebrow": "Події спільноти",
     "title": "Мод-джеми спільноти",
     "description": "Долучайтеся до творчих подій, відкривайте роботи спільноти, голосуйте за фаворитів і повертайтеся до завершених джемів.",
     "create": "Створити мод-джем",
@@ -372,6 +371,17 @@
     "title": "Сторінку не знайдено",
     "message": "Посилання відсутнє, переміщене або видалене.",
     "joke": "Навіщо CurseForge? Краще завантажуй свої моди на Modifold."
+  },
+  "HytaleModJamPromotion": {
+    "ariaLabel": "Промо Hytale Modjam",
+    "logosLabel": "Hytale і HytaleModding",
+    "hytaleLogoAlt": "Логотип Hytale",
+    "hytaleModdingLogoAlt": "Логотип HytaleModding",
+    "title": "The Hytale Modjam",
+    "description": "7-денна подія для моддерів, де автори з усього світу створюють моди за секретною темою. Фінансується Hypixel Studios.",
+    "prizeLabel": "Призовий фонд",
+    "prizeAmount": "$5,000",
+    "cta": "Перейти до Modjam"
   },
   "HomePage": {
     "title": "Дім для ваших модів Hytale — Modifold",

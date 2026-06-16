@@ -264,7 +264,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
             <BrowseFiltersSidebar t={t} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
-                {projectType === "mod" && (recommendedProjects.length > 0 || activeModJams.length > 0) && (
+                {projectType === "mod" && (
                     <BrowseRecommendedRail projects={recommendedProjects} modJams={activeModJams} t={t} projectType={projectType} initialCollapsed={initialRecommendedCollapsed} />
                 )}
 
