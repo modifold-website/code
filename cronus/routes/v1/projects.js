@@ -41,6 +41,17 @@ const normalizeVersionArray = (value) => {
     return [...new Set(parseJsonArrayField(value).map((item) => String(item || "").trim()).filter(Boolean))];
 };
 
+const PROJECT_TYPE_ALIASES = {
+    mod: "mod",
+    mods: "mod",
+    modpack: "modpack",
+    modpacks: "modpack",
+    world: "world",
+    worlds: "world",
+};
+
+const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;
+
 const getYouTubeVideoId = (value) => {
     if(typeof value !== "string") {
         return null;
@@ -1163,9 +1174,9 @@ const requireProjectPermission = async (res, { project, userId, permission }) =>
 router.get("/", async (req, res) => {
     try {
         const { type, sort = "downloads", search = "", tags, game_versions, loaders, page = 1, limit = 20 } = req.query;
-        const allowedTypes = ["mod", "modpack"];
+        const normalizedType = type ? normalizeProjectType(type) : null;
 
-        if(type && !allowedTypes.includes(type)) {
+        if(type && !normalizedType) {
             return res.status(400).json({ message: "Invalid project type" });
         }
 
@@ -1210,10 +1221,10 @@ router.get("/", async (req, res) => {
         const params = [];
         const countParams = [];
 
-        if(type) {
+        if(normalizedType) {
             whereClause += " AND p.project_type = ?";
-            params.push(type);
-            countParams.push(type);
+            params.push(normalizedType);
+            countParams.push(normalizedType);
         }
 
         if(search) {
@@ -1492,11 +1503,11 @@ router.get('/user/projects', auth, async (req, res) => {
 
 router.post("/", auth, upload.single("icon"), async (req, res) => {
     const { title, summary, visibility, project_type } = req.body;
-    const allowedProjectTypes = ["mod", "modpack"];
+    const normalizedProjectType = normalizeProjectType(project_type);
     const defaultLicenseId = "arr";
     const defaultLicenseName = "All Rights Reserved / No License";
 
-    if(!title || !summary || !allowedProjectTypes.includes(project_type)) {
+    if(!title || !summary || !normalizedProjectType) {
         return res.status(400).json({ message: "Missing required fields or invalid project type" });
     }
 
@@ -1572,7 +1583,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
         }
 
         const sql = "INSERT INTO projects (id, slug, user_id, title, summary, visibility, project_type, icon_url, color, license_id, license_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        const values = [projectId, slug, req.user.id, safeTitle, safeSummary, visibility, project_type, iconUrl, projectColor, defaultLicenseId, defaultLicenseName];
+        const values = [projectId, slug, req.user.id, safeTitle, safeSummary, visibility, normalizedProjectType, iconUrl, projectColor, defaultLicenseId, defaultLicenseName];
 
         await db.query(sql, values);
 
@@ -1581,7 +1592,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
             [projectId, req.user.id, "Owner", "accept"]
         );
 
-        res.json({ id: projectId, slug, title: safeTitle, summary: safeSummary, visibility, project_type, icon_url: iconUrl, color: projectColor, success: true });
+        res.json({ id: projectId, slug, title: safeTitle, summary: safeSummary, visibility, project_type: normalizedProjectType, icon_url: iconUrl, color: projectColor, success: true });
     } catch (error) {
         console.error("Error creating project:", error);
         res.status(500).json({ message: "Error creating project", error: error.message });

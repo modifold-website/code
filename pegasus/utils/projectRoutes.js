@@ -1,6 +1,8 @@
 const PROJECT_TYPE_PATHS = {
     mod: "/mod",
     modpack: "/modpack",
+    world: "/world",
+    worlds: "/world",
 };
 
 export const getProjectBasePath = (projectType) => PROJECT_TYPE_PATHS[projectType] || PROJECT_TYPE_PATHS.mod;

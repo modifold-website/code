@@ -9,7 +9,6 @@ import { useAuth } from "../providers/AuthProvider";
 import LoginModal from "../../modal/LoginModal";
 import HomeAnalyticsSection from "../ui/HomeAnalyticsSection";
 import HomeNotificationsSection from "../ui/HomeNotificationsSection";
-import HytaleModJamPromotion from "../ui/HytaleModJamPromotion";
 
 export default function HomePage({ news = [], locale, projects = [], projectsLimit = 20 }) {
 	const t = useTranslations("HomePage");
@@ -107,8 +106,6 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
                         </div>
                     </div>
                 </section>
-
-				<HytaleModJamPromotion />
 
                 <section className="stats-section">
                     <div className="mods-marquee">

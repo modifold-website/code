@@ -1,11 +1,23 @@
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
-
 ﻿import { cookies, headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ProjectPage from "@/components/pages/ProjectPage";
 import { getLocale } from "next-intl/server";
 import Script from "next/script";
 import { getProjectBasePath } from "@/utils/projectRoutes";
+
+const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
+
+const getProjectTypeTitle = (projectType) => ({
+    mod: "Hytale Mod",
+    modpack: "Hytale Modpack",
+    world: "Hytale World",
+})[projectType] || "Hytale Project";
+
+const getApplicationCategory = (projectType) => ({
+    mod: "Game Mod",
+    modpack: "Modpack",
+    world: "Game Map",
+})[projectType] || String(projectType || "project").replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
@@ -21,14 +33,14 @@ export async function generateMetadata({ params }) {
 
     const project = await res.json();
     const basePath = getProjectBasePath(project.project_type);
-    const projectTypeTitle = project.project_type === "modpack" ? "Hytale Modpack" : "Hytale Mod";
+    const projectTypeTitle = getProjectTypeTitle(project.project_type);
 
     const description = project.summary.length > 160 ? `${project.summary.substring(0, 157)}...` : project.summary;
 
     return {
         title: `${project.title} — ${projectTypeTitle} — Modifold`,
         description,
-        keywords: `${project.title}, Hytale, mods, shaders, resource packs, modpacks, download mods Hytale, Modifold`,
+        keywords: `${project.title}, Hytale, mods, shaders, resource packs, modpacks, worlds, maps, download Hytale maps, Modifold`,
         author: project.owner.username,
         robots: "index, follow",
         alternates: {
@@ -43,7 +55,7 @@ export async function generateMetadata({ params }) {
                     url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
                     width: 1200,
                     height: 630,
-                    alt: `${project.title} Hytale Mod`,
+                    alt: `${project.title} ${projectTypeTitle}`,
                 },
             ],
             url: `https://modifold.com${basePath}/${project.slug}`,
@@ -106,6 +118,7 @@ export default async function Page({ params }) {
 
     const project = await res.json();
     const basePath = getProjectBasePath(project.project_type);
+    const applicationCategory = getApplicationCategory(project.project_type);
 
     fetch(`${serverApiBase}/projects/${slug}/view`, {
         method: "POST",
@@ -130,7 +143,7 @@ export default async function Page({ params }) {
                     "@context": "https://schema.org",
                     "@type": "SoftwareApplication",
                     "name": project.title,
-                    "applicationCategory": project.project_type === "mod" ? "Game Mod" : project.project_type.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase()),
+                    "applicationCategory": applicationCategory,
                     "operatingSystem": "Hytale",
                     "author": { "@type": "Person", "name": project.owner.username },
                     "description": project.summary,

@@ -481,6 +481,10 @@ router.get("/", auth, async (req, res) => {
         const typeMap = {
             mods: "mod",
             mod: "mod",
+            modpacks: "modpack",
+            modpack: "modpack",
+            worlds: "world",
+            world: "world",
         };
 
         const normalizedType = type ? typeMap[type.toLowerCase()] : undefined;

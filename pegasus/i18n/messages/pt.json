@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Mods — Modifold",
-    "modpacks": "Modpacks — Modifold"
+    "modpacks": "Modpacks — Modifold",
+    "worlds": "Mundos — Modifold"
   },
   "Header": {
     "home": "Início",
     "mods": "Mods",
     "modpacks": "Modpacks",
+    "worlds": "Mundos",
     "modJams": "Mod jams",
     "login": "Entrar",
     "logout": "Sair",
@@ -371,17 +373,6 @@
     "title": "Página não encontrada",
     "message": "O link não existe, foi movido ou removido."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Promoção do Hytale Modjam",
-    "logosLabel": "Hytale e HytaleModding",
-    "hytaleLogoAlt": "Logo do Hytale",
-    "hytaleModdingLogoAlt": "Logo do HytaleModding",
-    "title": "The Hytale Modjam",
-    "description": "Um evento de modding de 7 dias onde criadores do mundo todo se reúnem para criar mods incríveis com base em um tema secreto. Financiado pela Hypixel Studios.",
-    "prizeLabel": "Prêmio total",
-    "prizeAmount": "$5,000",
-    "cta": "Entrar no Modjam"
-  },
   "HomePage": {
     "title": "O lar dos seus mods de Hytale — Modifold",
     "description": "Explore a cena de mods de Hytale, jogue o que a comunidade cria e compartilhe seu próprio trabalho com o mundo.",
@@ -484,7 +475,8 @@
     },
     "projectTypes": {
       "mod": "Mod",
-      "modpack": "Modpack"
+      "modpack": "Modpack",
+      "world": "Mundo"
     },
     "createProject": "Criar projeto",
     "creating": "Criando...",
@@ -512,6 +504,18 @@
     "status": {
       "draft": "Rascunho",
       "moderation": "Em revisão"
+    },
+    "statusBanner": {
+      "draft": {
+        "title": "Projeto em rascunho",
+        "description": "Somente você e os membros do projeto podem vê-lo. Preencha os campos obrigatórios e envie para moderação quando estiver pronto.",
+        "action": "Abrir checklist de publicação"
+      },
+      "moderation": {
+        "title": "Projeto em revisão",
+        "description": "Seu projeto está na fila de moderação. Você ainda pode editá-lo; as alterações não afetarão a posição dele.",
+        "action": "Ver status da moderação"
+      }
     },
     "tabs": {
       "description": "Descrição",
@@ -930,7 +934,8 @@
       "expand": "Mostrar recomendações"
     },
     "mods": "Mods",
-    "modpacks": "Pacotes de mods"
+    "modpacks": "Pacotes de mods",
+    "worlds": "Mundos"
   },
   "CategoryLabels": {
     "adventure": "Aventura",
@@ -940,20 +945,30 @@
     "decoration": "Decoração",
     "economy": "Economia",
     "equipment": "Equipamento",
+    "exploration": "Exploração",
     "food": "Comida",
     "game_mechanics": "Mecânicas de jogo",
+    "horror": "Terror",
     "kitchen_sink": "Tudo em um",
     "library": "Biblioteca",
     "lightweight": "Leves",
     "magic": "Magia",
     "management": "Gestão",
+    "mini_game": "Minijogo",
     "minigame": "Minijogo",
     "mobs": "Mobs",
     "multiplayer": "Multijogador",
     "optimization": "Otimização",
+    "parkour": "Parkour",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Quebra-cabeças",
     "quests": "Missões",
+    "roleplay": "Roleplay",
     "social": "Social",
     "storage": "Armazenamento",
+    "story": "História",
+    "survival": "Sobrevivência",
     "technology": "Tecnologia",
     "transportation": "Transporte",
     "utility": "Utilidade",
@@ -1674,7 +1689,9 @@
       "searchPlaceholder": "Pesquisar por título do projeto...",
       "types": {
         "all": "Todos os projetos",
-        "mod": "Mods"
+        "mod": "Mods",
+        "modpack": "Modpacks",
+        "world": "Mundos"
       },
       "sort": {
         "oldest": "Mais antigos",

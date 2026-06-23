@@ -43,21 +43,6 @@
 	min-height: 220px;
 	z-index: 1;
 }
-.mod-jams-catalog-hero__eyebrow {
-	display: flex;
-	align-items: center;
-    justify-content: center;
-	background: var(--theme-color-button-secondary);
-    width: fit-content;
-    color: var(--theme-color-text-primary);
-    border-radius: 9px;
-    padding: 0 16px;
-    font-size: 15px;
-    font-weight: 500;
-    height: 34px;
-    line-height: 22px;
-    box-shadow: var(--theme-color-button-secondary-shadow);
-}
 .mod-jams-background {
 	position: absolute;
     display: block;

@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Моды — Modifold",
-    "modpacks": "Модпаки — Modifold"
+    "modpacks": "Модпаки — Modifold",
+    "worlds": "Миры — Modifold"
   },
   "Header": {
     "home": "Главная",
     "mods": "Моды",
     "modpacks": "Модпаки",
+    "worlds": "Миры",
     "modJams": "Мод-джемы",
     "login": "Войти",
     "logout": "Выйти",
@@ -371,17 +373,6 @@
     "title": "Страница не найдена",
     "message": "Ссылка не найдена, перемещена или удалена."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Промо Hytale Modjam",
-    "logosLabel": "Hytale и HytaleModding",
-    "hytaleLogoAlt": "Логотип Hytale",
-    "hytaleModdingLogoAlt": "Логотип HytaleModding",
-    "title": "The Hytale Modjam",
-    "description": "7-дневное событие для моддеров, где авторы со всего мира создают моды по секретной теме. Финансируется Hypixel Studios.",
-    "prizeLabel": "Призовой фонд",
-    "prizeAmount": "$5,000",
-    "cta": "Перейти к Modjam"
-  },
   "HomePage": {
     "title": "Дом для ваших модов Hytale — Modifold",
     "description": "Исследуйте сцену моддинга Hytale, играйте в проекты сообщества и делитесь собственными работами со всем миром.",
@@ -484,7 +475,8 @@
     },
     "projectTypes": {
       "mod": "Мод",
-      "modpack": "Модпак"
+      "modpack": "Модпак",
+      "world": "Мир"
     },
     "createProject": "Создать проект",
     "creating": "Создание...",
@@ -512,6 +504,18 @@
     "status": {
       "draft": "Черновик",
       "moderation": "На проверке"
+    },
+    "statusBanner": {
+      "draft": {
+        "title": "Проект в черновике",
+        "description": "Этот проект виден только вам и участникам проекта. Заполните обязательные поля и отправьте его на модерацию, когда всё будет готово.",
+        "action": "Открыть чеклист публикации"
+      },
+      "moderation": {
+        "title": "Проект на проверке",
+        "description": "Проект находится в очереди модерации. Его всё ещё можно редактировать, это не повлияет на место в очереди.",
+        "action": "Посмотреть статус модерации"
+      }
     },
     "tabs": {
       "description": "Описание",
@@ -930,7 +934,8 @@
       "expand": "Развернуть блок рекомендаций"
     },
     "mods": "Моды",
-    "modpacks": "Модпаки"
+    "modpacks": "Модпаки",
+    "worlds": "Миры"
   },
   "CategoryLabels": {
     "adventure": "Приключения",
@@ -940,20 +945,30 @@
     "decoration": "Декор",
     "economy": "Экономика",
     "equipment": "Снаряжение",
+    "exploration": "Исследование",
     "food": "Еда",
     "game_mechanics": "Механики",
+    "horror": "Хоррор",
     "kitchen_sink": "Всё подряд",
     "library": "Библиотека",
     "lightweight": "Легковесные",
     "magic": "Магия",
     "management": "Менеджмент",
+    "mini_game": "Мини-игра",
     "minigame": "Мини-игры",
     "mobs": "Мобы",
     "multiplayer": "Сетевая игра",
     "optimization": "Оптимизация",
+    "parkour": "Паркур",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Головоломки",
     "quests": "Квесты",
+    "roleplay": "Ролевая игра",
     "social": "Социальное",
     "storage": "Хранилище",
+    "story": "Сюжет",
+    "survival": "Выживание",
     "technology": "Технологии",
     "transportation": "Транспорт",
     "utility": "Утилиты",
@@ -1674,7 +1689,9 @@
       "searchPlaceholder": "Поиск по названию проекта...",
       "types": {
         "all": "Все проекты",
-        "mod": "Моды"
+        "mod": "Моды",
+        "modpack": "Модпаки",
+        "world": "Миры"
       },
       "sort": {
         "oldest": "Сначала старые",

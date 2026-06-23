@@ -1,11 +1,14 @@
 {
   "pageTitle": {
-    "mods": "Modlar - Modifold"
+    "mods": "Modlar - Modifold",
+    "modpacks": "Modpackler - Modifold",
+    "worlds": "Dünyalar - Modifold"
   },
   "Header": {
     "home": "Ana sayfa",
     "mods": "Modlar",
     "modpacks": "Modpackler",
+    "worlds": "Dünyalar",
     "modJams": "Mod jamleri",
     "login": "Giriş yap",
     "logout": "Çıkış yap",
@@ -370,17 +373,6 @@
     "title": "Sayfa bulunamadı",
     "message": "Bağlantı yok, taşınmış ya da silinmiş."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Hytale Modjam tanıtımı",
-    "logosLabel": "Hytale ve HytaleModding",
-    "hytaleLogoAlt": "Hytale Logosu",
-    "hytaleModdingLogoAlt": "HytaleModding Logosu",
-    "title": "The Hytale Modjam",
-    "description": "Dünyanın dört bir yanından içerik üreticilerinin gizli bir temaya göre harika modlar geliştirmek için bir araya geldiği 7 günlük bir modlama etkinliği. Hypixel Studios tarafından finanse edilmektedir.",
-    "prizeLabel": "Ödül Havuzu",
-    "prizeAmount": "$5,000",
-    "cta": "Modjam'e katıl"
-  },
   "HomePage": {
     "title": "Hytale modlarınız için bir yuva - Modifold",
     "description": "Hytale modlama sahnesini keşfedin, topluluğun ürettiklerini oynayın ve kendi çalışmalarınızı dünyayla paylaşın.",
@@ -483,7 +475,8 @@
     },
     "projectTypes": {
       "mod": "Mod",
-      "modpack": "Modpack"
+      "modpack": "Modpack",
+      "world": "Dünya"
     },
     "createProject": "Proje oluştur",
     "creating": "Oluşturuluyor...",
@@ -511,6 +504,18 @@
     "status": {
       "draft": "Taslak",
       "moderation": "İncelemede"
+    },
+    "statusBanner": {
+      "draft": {
+        "title": "Proje taslakta",
+        "description": "Bu projeyi yalnızca siz ve proje üyeleri görebilir. Gerekli alanları tamamlayıp hazır olduğunda moderasyona gönderin.",
+        "action": "Yayın checklist'ini aç"
+      },
+      "moderation": {
+        "title": "Proje inceleniyor",
+        "description": "Projeniz moderasyon kuyruğunda. Hâlâ düzenleyebilirsiniz; değişiklikler sıradaki konumunu etkilemez.",
+        "action": "Moderasyon durumunu görüntüle"
+      }
     },
     "tabs": {
       "description": "Açıklama",
@@ -929,7 +934,8 @@
       "expand": "Önerileri genişlet"
     },
     "mods": "Modlar",
-    "modpacks": "Mod paketleri"
+    "modpacks": "Mod paketleri",
+    "worlds": "Dünyalar"
   },
   "CategoryLabels": {
     "adventure": "Macera",
@@ -939,20 +945,30 @@
     "decoration": "Dekorasyon",
     "economy": "Ekonomi",
     "equipment": "Ekipman",
+    "exploration": "Keşif",
     "food": "Yiyecek",
     "game_mechanics": "Oyun mekaniği",
+    "horror": "Korku",
     "kitchen_sink": "Her Şey",
     "library": "Kütüphane",
     "lightweight": "Hafif",
     "magic": "Büyü",
     "management": "Yönetim",
+    "mini_game": "Mini oyun",
     "minigame": "Mini oyun",
     "mobs": "Yaratıklar",
     "multiplayer": "Çok oyunculu",
     "optimization": "Optimizasyon",
+    "parkour": "Parkur",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Bulmaca",
     "quests": "Görevler",
+    "roleplay": "Rol yapma",
     "social": "Sosyal",
     "storage": "Depolama",
+    "story": "Hikaye",
+    "survival": "Hayatta kalma",
     "technology": "Teknoloji",
     "transportation": "Ulaşım",
     "utility": "Araçlar",
@@ -1673,7 +1689,9 @@
       "searchPlaceholder": "Proje adına göre ara...",
       "types": {
         "all": "Tüm projeler",
-        "mod": "Modlar"
+        "mod": "Modlar",
+        "modpack": "Modpackler",
+        "world": "Dünyalar"
       },
       "sort": {
         "oldest": "En eski",

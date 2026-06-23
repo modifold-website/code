@@ -116,7 +116,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
         return () => clearTimeout(timer);
     }, [searchInput, search]);
 
-    const typeLabel = projectType === "all" ? t("filters.types.all") : t("filters.types.mod");
+    const typeLabel = t(`filters.types.${projectType}`);
     const sortLabel = sort === "oldest" ? t("filters.sort.oldest") : t("filters.sort.newest");
 
     return (
@@ -156,9 +156,9 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                         {isTypePopoverOpen && (
                             <div className="popover">
                                 <div className="context-list" data-scrollable style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                    {["all", "mod"].map((type) => (
+                                    {["all", "mod", "modpack", "world"].map((type) => (
                                         <div key={type} className={`context-list-option ${projectType === type ? "context-list-option--selected" : ""}`} onClick={() => handleTypeSelect(type)}>
-                                            <div className="context-list-option__label">{type === "all" ? t("filters.types.all") : t("filters.types.mod")}</div>
+                                            <div className="context-list-option__label">{t(`filters.types.${type}`)}</div>
                                         </div>
                                     ))}
                                 </div>
