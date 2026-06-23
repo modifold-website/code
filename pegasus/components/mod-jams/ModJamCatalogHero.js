@@ -1,9 +1,7 @@
 export default function ModJamCatalogHero({ t, onCreate }) {
 	return (
 		<section className="mod-jams-catalog-hero">
-			<div className="mod-jams-catalog-hero__copy">
-				<span className="mod-jams-catalog-hero__eyebrow">{t("eyebrow")}</span>
-				
+			<div className="mod-jams-catalog-hero__copy">				
 				<h1>{t("title")}</h1>
 				
 				<p>{t("description")}</p>
