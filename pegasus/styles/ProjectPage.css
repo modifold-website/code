@@ -196,10 +196,9 @@
     margin-bottom: 15px;
     padding: 16px 18px;
     display: flex;
-    color: #713f12;
-    background: #ffedd5;
-    border: 1px solid #f97316;
+    color: var(--banner-warning-color);
     border-radius: var(--layout-island-border-radius);
+    background: var(--banner-warning-bg);
 }
 .project-status-banner__icon {
     display: flex;
