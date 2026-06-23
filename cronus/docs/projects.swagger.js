@@ -2,7 +2,7 @@
  * @swagger
  * /projects:
  *   get:
- *     summary: Get list of approved projects (mods/modpacks)
+ *     summary: Get list of approved projects (mods/modpacks/worlds)
  *     description: |
  *       Retrieves a paginated list of approved projects with filtering, sorting and search capabilities.
  *       Supports filtering by project type, tags, game versions, loaders, search by title.
@@ -12,8 +12,8 @@
  *         name: type
  *         schema:
  *           type: string
- *           enum: [mod, modpack]
- *         description: 'Project type filter ("mod" or "modpack")'
+ *           enum: [mod, modpack, world]
+ *         description: 'Project type filter ("mod", "modpack", or "world"). Plural aliases like "worlds" are accepted.'
  *         required: false
  *
  *       - in: query
@@ -198,9 +198,9 @@
  * @swagger
  * /projects:
  *   post:
- *     summary: Create a new project (mod/modpack)
+ *     summary: Create a new project (mod/modpack/world)
  *     description: |
- *       Creates a new project (mods or modpacks).
+ *       Creates a new project (mods, modpacks, or worlds).
  *       Requires authentication (JWT or API token starting with mf_).
  *       Uploads an icon file and creates project directory structure.
  *     tags: [Projects]
@@ -235,7 +235,7 @@
  *                 description: Project visibility level
  *               project_type:
  *                 type: string
- *                 enum: [mod, modpack]
+ *                 enum: [mod, modpack, world]
  *                 description: Type of project
  *               icon:
  *                 type: string
@@ -714,7 +714,7 @@
  *                         nullable: true
  *                       project_type:
  *                         type: string
- *                         enum: [mod, modpack]
+ *                         enum: [mod, modpack, world]
  *                       version_id:
  *                         type: string
  *                         nullable: true
@@ -1091,7 +1091,7 @@
  *                   description: URL-friendly project identifier
  *                 project_type:
  *                   type: string
- *                   enum: [mod, modpack]
+ *                   enum: [mod, modpack, world]
  *                   description: Type of project
  *                 title:
  *                   type: string

@@ -42,6 +42,10 @@ export default function BrowseTabs() {
                 {t("mods")}
             </Link>
 
+            <Link href="/worlds" className={`tabs__tab ${pathname === "/worlds" ? "tabs__tab--active" : ""}`}>
+                {t("worlds")}
+            </Link>
+
             <Link href="/modpacks" className={`tabs__tab ${pathname === "/modpacks" ? "tabs__tab--active" : ""}`}>
                 {t("modpacks")}
             </Link>

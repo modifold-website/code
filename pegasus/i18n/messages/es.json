@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Mods — Modifold",
-    "modpacks": "Modpacks — Modifold"
+    "modpacks": "Modpacks — Modifold",
+    "worlds": "Mundos — Modifold"
   },
   "Header": {
     "home": "Inicio",
     "mods": "Mods",
     "modpacks": "Modpacks",
+    "worlds": "Mundos",
     "modJams": "Mod jams",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
@@ -484,7 +486,8 @@
     },
     "projectTypes": {
       "mod": "Mod",
-      "modpack": "Modpack"
+      "modpack": "Modpack",
+      "world": "Mundo"
     },
     "createProject": "Crear proyecto",
     "creating": "Creando...",
@@ -930,7 +933,8 @@
       "expand": "Mostrar recomendaciones"
     },
     "mods": "Mods",
-    "modpacks": "Paquetes de mods"
+    "modpacks": "Paquetes de mods",
+    "worlds": "Mundos"
   },
   "CategoryLabels": {
     "adventure": "Aventura",
@@ -940,20 +944,30 @@
     "decoration": "Decoración",
     "economy": "Economía",
     "equipment": "Equipamiento",
+    "exploration": "Exploración",
     "food": "Comida",
     "game_mechanics": "Mecánicas de juego",
+    "horror": "Terror",
     "kitchen_sink": "Cajón de sastre",
     "library": "Biblioteca",
     "lightweight": "Ligeros",
     "magic": "Magia",
     "management": "Gestión",
+    "mini_game": "Minijuego",
     "minigame": "Minijuego",
     "mobs": "Mobs",
     "multiplayer": "Multijugador",
     "optimization": "Optimización",
+    "parkour": "Parkour",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Puzles",
     "quests": "Misiones",
+    "roleplay": "Rol",
     "social": "Social",
     "storage": "Almacenamiento",
+    "story": "Historia",
+    "survival": "Supervivencia",
     "technology": "Tecnología",
     "transportation": "Transporte",
     "utility": "Utilidad",
@@ -1674,7 +1688,9 @@
       "searchPlaceholder": "Buscar por título del proyecto...",
       "types": {
         "all": "Todos los proyectos",
-        "mod": "Mods"
+        "mod": "Mods",
+        "modpack": "Modpacks",
+        "world": "Mundos"
       },
       "sort": {
         "oldest": "Más antiguos",

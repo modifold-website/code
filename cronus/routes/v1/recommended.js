@@ -3,13 +3,24 @@ const { db } = require("../../config/db");
 
 const router = express.Router();
 
-const ALLOWED_PROJECT_TYPES = new Set(["mod", "modpack"]);
+const PROJECT_TYPE_ALIASES = {
+    mod: "mod",
+    mods: "mod",
+    modpack: "modpack",
+    modpacks: "modpack",
+    world: "world",
+    worlds: "world",
+};
+
+const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;
 
 router.get("/", async (req, res) => {
     try {
         const { type } = req.query;
 
-        if(type && !ALLOWED_PROJECT_TYPES.has(type)) {
+        const normalizedType = type ? normalizeProjectType(type) : null;
+
+        if(type && !normalizedType) {
             return res.status(400).json({ message: "Invalid project type" });
         }
 
@@ -29,9 +40,9 @@ router.get("/", async (req, res) => {
             orderClause = "ORDER BY r.id ASC";
         }
 
-        if(type) {
+        if(normalizedType) {
             whereClause += " AND p.project_type = ?";
-            params.push(type);
+            params.push(normalizedType);
         }
 
         const query = `

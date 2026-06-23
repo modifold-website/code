@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Моди — Modifold",
-    "modpacks": "Модпаки — Modifold"
+    "modpacks": "Модпаки — Modifold",
+    "worlds": "Світи — Modifold"
   },
   "Header": {
     "home": "Головна",
     "mods": "Моди",
     "modpacks": "Модпаки",
+    "worlds": "Світи",
     "modJams": "Мод-джеми",
     "login": "Увійти",
     "logout": "Вийти",
@@ -485,7 +487,8 @@
     },
     "projectTypes": {
       "mod": "Мод",
-      "modpack": "Модпак"
+      "modpack": "Модпак",
+      "world": "Світ"
     },
     "createProject": "Створити проєкт",
     "creating": "Створення...",
@@ -931,7 +934,8 @@
       "expand": "Розгорнути рекомендації"
     },
     "mods": "Моди",
-    "modpacks": "Модпаки"
+    "modpacks": "Модпаки",
+    "worlds": "Світи"
   },
   "CategoryLabels": {
     "adventure": "Пригоди",
@@ -941,20 +945,30 @@
     "decoration": "Декор",
     "economy": "Економіка",
     "equipment": "Спорядження",
+    "exploration": "Дослідження",
     "food": "Їжа",
     "game_mechanics": "Механіки гри",
+    "horror": "Горор",
     "kitchen_sink": "Збірна солянка",
     "library": "Бібліотека",
     "lightweight": "Легковагові",
     "magic": "Магія",
     "management": "Керування",
+    "mini_game": "Мінігра",
     "minigame": "Мінігра",
     "mobs": "Моби",
     "multiplayer": "Мультиплеєр",
     "optimization": "Оптимізація",
+    "parkour": "Паркур",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Головоломки",
     "quests": "Квести",
+    "roleplay": "Рольова гра",
     "social": "Соціальне",
     "storage": "Сховище",
+    "story": "Сюжет",
+    "survival": "Виживання",
     "technology": "Технології",
     "transportation": "Транспорт",
     "utility": "Утиліти",
@@ -1675,7 +1689,9 @@
       "searchPlaceholder": "Пошук за назвою проєкту...",
       "types": {
         "all": "Усі проєкти",
-        "mod": "Моди"
+        "mod": "Моди",
+        "modpack": "Модпаки",
+        "world": "Світи"
       },
       "sort": {
         "oldest": "Найстаріші",

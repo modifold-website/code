@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Mods — Modifold",
-    "modpacks": "Modpacks — Modifold"
+    "modpacks": "Modpacks — Modifold",
+    "worlds": "Mundos — Modifold"
   },
   "Header": {
     "home": "Início",
     "mods": "Mods",
     "modpacks": "Modpacks",
+    "worlds": "Mundos",
     "modJams": "Mod jams",
     "login": "Entrar",
     "logout": "Sair",
@@ -484,7 +486,8 @@
     },
     "projectTypes": {
       "mod": "Mod",
-      "modpack": "Modpack"
+      "modpack": "Modpack",
+      "world": "Mundo"
     },
     "createProject": "Criar projeto",
     "creating": "Criando...",
@@ -930,7 +933,8 @@
       "expand": "Mostrar recomendações"
     },
     "mods": "Mods",
-    "modpacks": "Pacotes de mods"
+    "modpacks": "Pacotes de mods",
+    "worlds": "Mundos"
   },
   "CategoryLabels": {
     "adventure": "Aventura",
@@ -940,20 +944,30 @@
     "decoration": "Decoração",
     "economy": "Economia",
     "equipment": "Equipamento",
+    "exploration": "Exploração",
     "food": "Comida",
     "game_mechanics": "Mecânicas de jogo",
+    "horror": "Terror",
     "kitchen_sink": "Tudo em um",
     "library": "Biblioteca",
     "lightweight": "Leves",
     "magic": "Magia",
     "management": "Gestão",
+    "mini_game": "Minijogo",
     "minigame": "Minijogo",
     "mobs": "Mobs",
     "multiplayer": "Multijogador",
     "optimization": "Otimização",
+    "parkour": "Parkour",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Quebra-cabeças",
     "quests": "Missões",
+    "roleplay": "Roleplay",
     "social": "Social",
     "storage": "Armazenamento",
+    "story": "História",
+    "survival": "Sobrevivência",
     "technology": "Tecnologia",
     "transportation": "Transporte",
     "utility": "Utilidade",
@@ -1674,7 +1688,9 @@
       "searchPlaceholder": "Pesquisar por título do projeto...",
       "types": {
         "all": "Todos os projetos",
-        "mod": "Mods"
+        "mod": "Mods",
+        "modpack": "Modpacks",
+        "world": "Mundos"
       },
       "sort": {
         "oldest": "Mais antigos",

@@ -1,11 +1,14 @@
 {
   "pageTitle": {
-    "mods": "Modlar - Modifold"
+    "mods": "Modlar - Modifold",
+    "modpacks": "Modpackler - Modifold",
+    "worlds": "Dünyalar - Modifold"
   },
   "Header": {
     "home": "Ana sayfa",
     "mods": "Modlar",
     "modpacks": "Modpackler",
+    "worlds": "Dünyalar",
     "modJams": "Mod jamleri",
     "login": "Giriş yap",
     "logout": "Çıkış yap",
@@ -483,7 +486,8 @@
     },
     "projectTypes": {
       "mod": "Mod",
-      "modpack": "Modpack"
+      "modpack": "Modpack",
+      "world": "Dünya"
     },
     "createProject": "Proje oluştur",
     "creating": "Oluşturuluyor...",
@@ -929,7 +933,8 @@
       "expand": "Önerileri genişlet"
     },
     "mods": "Modlar",
-    "modpacks": "Mod paketleri"
+    "modpacks": "Mod paketleri",
+    "worlds": "Dünyalar"
   },
   "CategoryLabels": {
     "adventure": "Macera",
@@ -939,20 +944,30 @@
     "decoration": "Dekorasyon",
     "economy": "Ekonomi",
     "equipment": "Ekipman",
+    "exploration": "Keşif",
     "food": "Yiyecek",
     "game_mechanics": "Oyun mekaniği",
+    "horror": "Korku",
     "kitchen_sink": "Her Şey",
     "library": "Kütüphane",
     "lightweight": "Hafif",
     "magic": "Büyü",
     "management": "Yönetim",
+    "mini_game": "Mini oyun",
     "minigame": "Mini oyun",
     "mobs": "Yaratıklar",
     "multiplayer": "Çok oyunculu",
     "optimization": "Optimizasyon",
+    "parkour": "Parkur",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Bulmaca",
     "quests": "Görevler",
+    "roleplay": "Rol yapma",
     "social": "Sosyal",
     "storage": "Depolama",
+    "story": "Hikaye",
+    "survival": "Hayatta kalma",
     "technology": "Teknoloji",
     "transportation": "Ulaşım",
     "utility": "Araçlar",
@@ -1673,7 +1688,9 @@
       "searchPlaceholder": "Proje adına göre ara...",
       "types": {
         "all": "Tüm projeler",
-        "mod": "Modlar"
+        "mod": "Modlar",
+        "modpack": "Modpackler",
+        "world": "Dünyalar"
       },
       "sort": {
         "oldest": "En eski",

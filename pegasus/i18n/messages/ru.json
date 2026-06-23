@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Моды — Modifold",
-    "modpacks": "Модпаки — Modifold"
+    "modpacks": "Модпаки — Modifold",
+    "worlds": "Миры — Modifold"
   },
   "Header": {
     "home": "Главная",
     "mods": "Моды",
     "modpacks": "Модпаки",
+    "worlds": "Миры",
     "modJams": "Мод-джемы",
     "login": "Войти",
     "logout": "Выйти",
@@ -484,7 +486,8 @@
     },
     "projectTypes": {
       "mod": "Мод",
-      "modpack": "Модпак"
+      "modpack": "Модпак",
+      "world": "Мир"
     },
     "createProject": "Создать проект",
     "creating": "Создание...",
@@ -930,7 +933,8 @@
       "expand": "Развернуть блок рекомендаций"
     },
     "mods": "Моды",
-    "modpacks": "Модпаки"
+    "modpacks": "Модпаки",
+    "worlds": "Миры"
   },
   "CategoryLabels": {
     "adventure": "Приключения",
@@ -940,20 +944,30 @@
     "decoration": "Декор",
     "economy": "Экономика",
     "equipment": "Снаряжение",
+    "exploration": "Исследование",
     "food": "Еда",
     "game_mechanics": "Механики",
+    "horror": "Хоррор",
     "kitchen_sink": "Всё подряд",
     "library": "Библиотека",
     "lightweight": "Легковесные",
     "magic": "Магия",
     "management": "Менеджмент",
+    "mini_game": "Мини-игра",
     "minigame": "Мини-игры",
     "mobs": "Мобы",
     "multiplayer": "Сетевая игра",
     "optimization": "Оптимизация",
+    "parkour": "Паркур",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Головоломки",
     "quests": "Квесты",
+    "roleplay": "Ролевая игра",
     "social": "Социальное",
     "storage": "Хранилище",
+    "story": "Сюжет",
+    "survival": "Выживание",
     "technology": "Технологии",
     "transportation": "Транспорт",
     "utility": "Утилиты",
@@ -1674,7 +1688,9 @@
       "searchPlaceholder": "Поиск по названию проекта...",
       "types": {
         "all": "Все проекты",
-        "mod": "Моды"
+        "mod": "Моды",
+        "modpack": "Модпаки",
+        "world": "Миры"
       },
       "sort": {
         "oldest": "Сначала старые",

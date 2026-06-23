@@ -4,8 +4,7 @@ import { usePathname } from "next/navigation";
 
 export default function BrowseBackground() {
     const pathname = usePathname();
-    const isModpacks = pathname?.startsWith("/modpacks");
-    const src = isModpacks ? "/images/background-modpacks.webp" : "/images/background-mods.webp";
+    const src = pathname?.startsWith("/worlds") ? "/images/background-worlds.webp" : pathname?.startsWith("/modpacks") ? "/images/background-modpacks.webp" : "/images/background-mods.webp";
 
     return <img src={src} className="fixed-background-teleport" alt="" aria-hidden="true" />;
 }

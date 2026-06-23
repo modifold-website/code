@@ -1,12 +1,14 @@
 {
   "pageTitle": {
     "mods": "Mods — Modifold",
-    "modpacks": "Modpacks — Modifold"
+    "modpacks": "Modpacks — Modifold",
+    "worlds": "Worlds — Modifold"
   },
   "Header": {
     "home": "Home",
     "mods": "Mods",
     "modpacks": "Modpacks",
+    "worlds": "Worlds",
     "modJams": "Mod jams",
     "login": "Sign in",
     "logout": "Log out",
@@ -484,7 +486,8 @@
     },
     "projectTypes": {
       "mod": "Mod",
-      "modpack": "Modpack"
+      "modpack": "Modpack",
+      "world": "World"
     },
     "createProject": "Create Project",
     "creating": "Creating...",
@@ -930,7 +933,8 @@
       "expand": "Expand recommendations"
     },
     "mods": "Mods",
-    "modpacks": "Modpacks"
+    "modpacks": "Modpacks",
+    "worlds": "Worlds"
   },
   "CategoryLabels": {
     "adventure": "Adventure",
@@ -940,20 +944,30 @@
     "decoration": "Decoration",
     "economy": "Economy",
     "equipment": "Equipment",
+    "exploration": "Exploration",
     "food": "Food",
     "game_mechanics": "Game Mechanics",
+    "horror": "Horror",
     "kitchen_sink": "Kitchen Sink",
     "library": "Library",
     "lightweight": "Lightweight",
     "magic": "Magic",
     "management": "Management",
+    "mini_game": "Mini Game",
     "minigame": "Minigame",
     "mobs": "Mobs",
     "multiplayer": "Multiplayer",
     "optimization": "Optimization",
+    "parkour": "Parkour",
+    "pve": "PvE",
+    "pvp": "PvP",
+    "puzzle": "Puzzle",
     "quests": "Quests",
+    "roleplay": "Roleplay",
     "social": "Social",
     "storage": "Storage",
+    "story": "Story",
+    "survival": "Survival",
     "technology": "Technology",
     "transportation": "Transportation",
     "utility": "Utility",
@@ -1674,7 +1688,9 @@
       "searchPlaceholder": "Search by project title...",
       "types": {
         "all": "All projects",
-        "mod": "Mods"
+        "mod": "Mods",
+        "modpack": "Modpacks",
+        "world": "Worlds"
       },
       "sort": {
         "oldest": "Oldest",

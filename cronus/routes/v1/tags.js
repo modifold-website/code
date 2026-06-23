@@ -3,7 +3,16 @@ const { db } = require("../../config/db");
 
 const router = express.Router();
 
-const ALLOWED_PROJECT_TYPES = new Set(["mod", "modpack"]);
+const PROJECT_TYPE_ALIASES = {
+    mod: "mod",
+    mods: "mod",
+    modpack: "modpack",
+    modpacks: "modpack",
+    world: "world",
+    worlds: "world",
+};
+
+const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;
 
 router.get("/game-versions", async (req, res) => {
     try {
@@ -32,8 +41,8 @@ router.get("/game-versions", async (req, res) => {
 
 router.get("/:projectType", async (req, res) => {
     try {
-        const { projectType } = req.params;
-        if(!ALLOWED_PROJECT_TYPES.has(projectType)) {
+        const projectType = normalizeProjectType(req.params.projectType);
+        if(!projectType) {
             return res.status(400).json({ message: "Invalid project type" });
         }
 
