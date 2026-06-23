@@ -373,17 +373,6 @@
     "title": "Sayfa bulunamadı",
     "message": "Bağlantı yok, taşınmış ya da silinmiş."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Hytale Modjam tanıtımı",
-    "logosLabel": "Hytale ve HytaleModding",
-    "hytaleLogoAlt": "Hytale Logosu",
-    "hytaleModdingLogoAlt": "HytaleModding Logosu",
-    "title": "The Hytale Modjam",
-    "description": "Dünyanın dört bir yanından içerik üreticilerinin gizli bir temaya göre harika modlar geliştirmek için bir araya geldiği 7 günlük bir modlama etkinliği. Hypixel Studios tarafından finanse edilmektedir.",
-    "prizeLabel": "Ödül Havuzu",
-    "prizeAmount": "$5,000",
-    "cta": "Modjam'e katıl"
-  },
   "HomePage": {
     "title": "Hytale modlarınız için bir yuva - Modifold",
     "description": "Hytale modlama sahnesini keşfedin, topluluğun ürettiklerini oynayın ve kendi çalışmalarınızı dünyayla paylaşın.",

@@ -373,17 +373,6 @@
     "title": "Page not found",
     "message": "The link is missing, moved, or deleted."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Hytale Modjam promotion",
-    "logosLabel": "Hytale and HytaleModding",
-    "hytaleLogoAlt": "Hytale Logo",
-    "hytaleModdingLogoAlt": "HytaleModding Logo",
-    "title": "The Hytale Modjam",
-    "description": "A 7-day modding event where creators from around the world come together to build amazing mods based on a secret theme. Funded by Hypixel Studios.",
-    "prizeLabel": "Prize Pool",
-    "prizeAmount": "$5,000",
-    "cta": "Join the Modjam"
-  },
   "HomePage": {
     "title": "The home for your Hytale mods — Modifold",
     "description": "Explore the Hytale modding scene, play what the community builds, and share your own work with the world.",

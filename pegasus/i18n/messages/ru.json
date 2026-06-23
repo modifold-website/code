@@ -373,17 +373,6 @@
     "title": "Страница не найдена",
     "message": "Ссылка не найдена, перемещена или удалена."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Промо Hytale Modjam",
-    "logosLabel": "Hytale и HytaleModding",
-    "hytaleLogoAlt": "Логотип Hytale",
-    "hytaleModdingLogoAlt": "Логотип HytaleModding",
-    "title": "The Hytale Modjam",
-    "description": "7-дневное событие для моддеров, где авторы со всего мира создают моды по секретной теме. Финансируется Hypixel Studios.",
-    "prizeLabel": "Призовой фонд",
-    "prizeAmount": "$5,000",
-    "cta": "Перейти к Modjam"
-  },
   "HomePage": {
     "title": "Дом для ваших модов Hytale — Modifold",
     "description": "Исследуйте сцену моддинга Hytale, играйте в проекты сообщества и делитесь собственными работами со всем миром.",

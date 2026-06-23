@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getProjectPath } from "@/utils/projectRoutes";
-import HytaleModJamPromotion, { HYTALE_MODJAM_PROMO_SLIDE } from "@/components/ui/HytaleModJamPromotion";
 
 const SLIDE_DURATION_MS = 440;
 
@@ -28,10 +27,6 @@ function getSlidePreviewImage(slide, featuredImage) {
 }
 
 function HeroPane({ slide, t }) {
-	if(slide?.type === "hytale-modjam-promo") {
-		return <HytaleModJamPromotion variant="rail" />;
-	}
-
 	if(!slide?.item) {
 		return null;
 	}
@@ -92,7 +87,6 @@ function HeroPane({ slide, t }) {
 
 export default function BrowseRecommendedRail({ projects = [], modJams = [], t, projectType = "mod", initialCollapsed = false }) {
 	const slides = useMemo(() => [
-		HYTALE_MODJAM_PROMO_SLIDE,
 		...modJams.map((jam) => ({ type: "mod-jam", item: jam })),
 		...projects.map((project) => ({ type: "project", item: project })),
 	], [projects, modJams]);

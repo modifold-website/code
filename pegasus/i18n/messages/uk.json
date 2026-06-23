@@ -374,17 +374,6 @@
     "message": "Посилання відсутнє, переміщене або видалене.",
     "joke": "Навіщо CurseForge? Краще завантажуй свої моди на Modifold."
   },
-  "HytaleModJamPromotion": {
-    "ariaLabel": "Промо Hytale Modjam",
-    "logosLabel": "Hytale і HytaleModding",
-    "hytaleLogoAlt": "Логотип Hytale",
-    "hytaleModdingLogoAlt": "Логотип HytaleModding",
-    "title": "The Hytale Modjam",
-    "description": "7-денна подія для моддерів, де автори з усього світу створюють моди за секретною темою. Фінансується Hypixel Studios.",
-    "prizeLabel": "Призовий фонд",
-    "prizeAmount": "$5,000",
-    "cta": "Перейти до Modjam"
-  },
   "HomePage": {
     "title": "Дім для ваших модів Hytale — Modifold",
     "description": "Досліджуйте сцену модингу Hytale, грайте в те, що створює спільнота, і діліться власними роботами зі світом.",
