@@ -190,6 +190,43 @@
     gap: 36px;
     margin-bottom: 96px;
 }
+.project-status-banner {
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 15px;
+    padding: 16px 18px;
+    display: flex;
+    color: #713f12;
+    background: #ffedd5;
+    border: 1px solid #f97316;
+    border-radius: var(--layout-island-border-radius);
+}
+.project-status-banner__icon {
+    display: flex;
+    flex: 0 0 auto;
+}
+.project-status-banner__icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+}
+.project-status-banner__content {
+    min-width: 0;
+}
+.project-status-banner__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+.project-status-banner__text {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.45;
+}
+.project-status-banner__link {
+    margin-top: 10px;
+}
 .project-inline-gallery {
 	padding: 12px;
 	margin-bottom: 15px;
@@ -726,6 +763,17 @@
     }
 }
 @media (max-width: 520px) {
+    .project-status-banner {
+        gap: 12px;
+        padding: 14px;
+    }
+    .project-status-banner__icon svg {
+        width: 22px;
+        height: 22px;
+    }
+    .project-status-banner__text {
+        font-size: 14px;
+    }
     .project-page-card__main {
         flex-direction: column;
         align-items: stretch;

@@ -505,6 +505,18 @@
       "draft": "Draft",
       "moderation": "Under review"
     },
+    "statusBanner": {
+      "draft": {
+        "title": "Project draft",
+        "description": "Only you and project members can see this project. Finish the required details and submit it for moderation when it is ready.",
+        "action": "Open publishing checklist"
+      },
+      "moderation": {
+        "title": "Project under review",
+        "description": "Your project is in the moderation queue. You can still edit it; changes will not affect its position.",
+        "action": "View moderation status"
+      }
+    },
     "tabs": {
       "description": "Description",
       "gallery": "Gallery",

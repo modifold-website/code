@@ -505,6 +505,18 @@
       "draft": "Borrador",
       "moderation": "En revisión"
     },
+    "statusBanner": {
+      "draft": {
+        "title": "Proyecto en borrador",
+        "description": "Solo tú y los miembros del proyecto pueden verlo. Completa los campos obligatorios y envíalo a moderación cuando esté listo.",
+        "action": "Abrir checklist de publicación"
+      },
+      "moderation": {
+        "title": "Proyecto en revisión",
+        "description": "Tu proyecto está en la cola de moderación. Aún puedes editarlo; los cambios no afectarán su posición.",
+        "action": "Ver estado de moderación"
+      }
+    },
     "tabs": {
       "description": "Descripción",
       "gallery": "Galería",

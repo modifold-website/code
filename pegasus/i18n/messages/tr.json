@@ -505,6 +505,18 @@
       "draft": "Taslak",
       "moderation": "İncelemede"
     },
+    "statusBanner": {
+      "draft": {
+        "title": "Proje taslakta",
+        "description": "Bu projeyi yalnızca siz ve proje üyeleri görebilir. Gerekli alanları tamamlayıp hazır olduğunda moderasyona gönderin.",
+        "action": "Yayın checklist'ini aç"
+      },
+      "moderation": {
+        "title": "Proje inceleniyor",
+        "description": "Projeniz moderasyon kuyruğunda. Hâlâ düzenleyebilirsiniz; değişiklikler sıradaki konumunu etkilemez.",
+        "action": "Moderasyon durumunu görüntüle"
+      }
+    },
     "tabs": {
       "description": "Açıklama",
       "gallery": "Galeri",

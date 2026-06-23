@@ -505,6 +505,18 @@
       "draft": "Rascunho",
       "moderation": "Em revisão"
     },
+    "statusBanner": {
+      "draft": {
+        "title": "Projeto em rascunho",
+        "description": "Somente você e os membros do projeto podem vê-lo. Preencha os campos obrigatórios e envie para moderação quando estiver pronto.",
+        "action": "Abrir checklist de publicação"
+      },
+      "moderation": {
+        "title": "Projeto em revisão",
+        "description": "Seu projeto está na fila de moderação. Você ainda pode editá-lo; as alterações não afetarão a posição dele.",
+        "action": "Ver status da moderação"
+      }
+    },
     "tabs": {
       "description": "Descrição",
       "gallery": "Galeria",
