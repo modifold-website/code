@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import UserName from "../ui/UserName";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
-import { getProjectPath } from "@/utils/projectRoutes";
+import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 
 export default function ProjectCard({ project, maxTags = 5, actions = null }) {
     const t = useTranslations("ProjectCard");
@@ -11,7 +11,8 @@ export default function ProjectCard({ project, maxTags = 5, actions = null }) {
     const hasTags = project.tags?.length > 0;
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
     const playersLast14Days = Math.max(0, Number(project?.players_last_14d) || 0);
-    const showPlayersLast14Days = project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1";
+    const isWorldProject = isWorldProjectType(project?.project_type || project?.projectType || project?.type);
+    const showPlayersLast14Days = !isWorldProject && (project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1");
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);

@@ -5,6 +5,8 @@ const PROJECT_TYPE_PATHS = {
     worlds: "/world",
 };
 
+export const isWorldProjectType = (projectType) => projectType === "world";
+
 export const getProjectBasePath = (projectType) => PROJECT_TYPE_PATHS[projectType] || PROJECT_TYPE_PATHS.mod;
 
 export const getProjectPathByType = ({ slug, projectType, suffix = "" }) => {
