@@ -501,6 +501,7 @@
     "iconAlt": "Ícone do projeto {title}",
     "ownerAvatarAlt": "Avatar do usuário {username}",
     "editSettings": "Editar configurações",
+    "emptyDescription": "Adicione uma descrição nas configurações do projeto para que os jogadores entendam o que este projeto faz.",
     "status": {
       "draft": "Rascunho",
       "moderation": "Em revisão"

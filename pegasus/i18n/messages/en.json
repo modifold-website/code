@@ -501,6 +501,7 @@
     "iconAlt": "Project icon {title}",
     "ownerAvatarAlt": "User avatar {username}",
     "editSettings": "Edit Settings",
+    "emptyDescription": "Add a description in project settings so players understand what this project does.",
     "status": {
       "draft": "Draft",
       "moderation": "Under review"
