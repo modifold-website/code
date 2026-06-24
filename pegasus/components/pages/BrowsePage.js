@@ -238,6 +238,24 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setCurrentPage(1);
     };
 
+    const scrollToPageTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
+
+    const handlePageChange = (nextPage) => {
+        const normalizedPage = Math.min(totalPages, Math.max(1, nextPage));
+
+        if(normalizedPage === currentPage) {
+            return;
+        }
+
+        setCurrentPage(normalizedPage);
+        scrollToPageTop();
+    };
+
     const getPageButtons = () => {
         const maxButtons = 10;
         let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
@@ -250,7 +268,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         const buttons = [];
         for(let i = startPage; i <= endPage; i++) {
             buttons.push(
-                <button key={i} className={`button button--size-m pagination-button ${currentPage === i ? "button--type-primary" : "button--type-secondary"}`} onClick={() => setCurrentPage(i)} aria-current={currentPage === i ? "page" : undefined}>
+                <button key={i} className={`button button--size-m pagination-button ${currentPage === i ? "button--type-primary" : "button--type-secondary"}`} onClick={() => handlePageChange(i)} aria-current={currentPage === i ? "page" : undefined}>
                     {i}
                 </button>
             );
@@ -329,13 +347,13 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
                 {totalPages > 1 && (
                     <div className="pagination-controls">
-                        <button className="button button--size-m button--type-secondary" onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1} aria-disabled={currentPage === 1}>
+                        <button className="button button--size-m button--type-secondary" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-disabled={currentPage === 1}>
                             {t("previous")}
                         </button>
 
                         {getPageButtons()}
 
-                        <button className="button button--size-m button--type-secondary" onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} aria-disabled={currentPage === totalPages}>
+                        <button className="button button--size-m button--type-secondary" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} aria-disabled={currentPage === totalPages}>
                             {t("next")}
                         </button>
                     </div>
