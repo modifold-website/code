@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import { validateSlug } from "@/utils/slug";
+import { isWorldProjectType } from "@/utils/projectRoutes";
 
 const getInitialFormData = (project) => ({
     title: project?.title || "",
@@ -39,6 +40,7 @@ export default function ProjectSettings({ project, organizationOptions: initialO
     const [isIssuesMenuOpen, setIsIssuesMenuOpen] = useState(false);
     const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
     const [isPlayersCountMenuOpen, setIsPlayersCountMenuOpen] = useState(false);
+    const showPlayersCountSetting = !isWorldProjectType(project?.project_type || project?.projectType || project?.type);
     const organizationButtonRef = useRef(null);
     const organizationMenuRef = useRef(null);
     const issuesButtonRef = useRef(null);
@@ -70,7 +72,7 @@ export default function ProjectSettings({ project, organizationOptions: initialO
         formData.summary !== savedFormData.summary ||
         formData.visibility !== savedFormData.visibility ||
         formData.issues_enabled !== savedFormData.issues_enabled ||
-        formData.show_players_last_14d !== savedFormData.show_players_last_14d ||
+        (showPlayersCountSetting && formData.show_players_last_14d !== savedFormData.show_players_last_14d) ||
         formData.slug !== savedFormData.slug ||
         selectedOrganizationSlug !== savedOrganizationSlug ||
         Boolean(formData.icon)
@@ -134,7 +136,9 @@ export default function ProjectSettings({ project, organizationOptions: initialO
         data.append("summary", formData.summary);
         data.append("visibility", formData.visibility);
         data.append("issues_enabled", formData.issues_enabled ? "1" : "0");
-        data.append("show_players_last_14d", formData.show_players_last_14d ? "1" : "0");
+        if(showPlayersCountSetting) {
+            data.append("show_players_last_14d", formData.show_players_last_14d ? "1" : "0");
+        }
         data.append("slug", formData.slug);
         if(formData.icon) {
             data.append("icon", formData.icon);
@@ -337,36 +341,40 @@ export default function ProjectSettings({ project, organizationOptions: initialO
                                     <p>{t("general.hints.issues")}</p>
                                 </div>
 
-                                <p className="blog-settings__field-title">{t("general.fields.playersCount")}</p>
-                                <div className="field field--default blog-settings__input" ref={playersCountMenuRef}>
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsPlayersCountMenuOpen((prev) => !prev)} ref={playersCountButtonRef}>
-                                        <div className="field__wrapper-body">
-                                            <div className="select">
-                                                <div className="select__selected">
-                                                    {formData.show_players_last_14d ? t("general.playersCount.enabled") : t("general.playersCount.disabled")}
+                                {showPlayersCountSetting ? (
+                                    <>
+                                        <p className="blog-settings__field-title">{t("general.fields.playersCount")}</p>
+                                        <div className="field field--default blog-settings__input" ref={playersCountMenuRef}>
+                                            <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsPlayersCountMenuOpen((prev) => !prev)} ref={playersCountButtonRef}>
+                                                <div className="field__wrapper-body">
+                                                    <div className="select">
+                                                        <div className="select__selected">
+                                                            {formData.show_players_last_14d ? t("general.playersCount.enabled") : t("general.playersCount.disabled")}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
+
+                                                <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isPlayersCountMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                                            </label>
+
+                                            {isPlayersCountMenuOpen && (
+                                                <div className="popover">
+                                                    <div className="context-list" data-scrollable>
+                                                        <div className={`context-list-option ${formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: true })); setIsPlayersCountMenuOpen(false); }}>
+                                                            <div className="context-list-option__label">{t("general.playersCount.enabled")}</div>
+                                                        </div>
+
+                                                        <div className={`context-list-option ${!formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: false })); setIsPlayersCountMenuOpen(false); }}>
+                                                            <div className="context-list-option__label">{t("general.playersCount.disabled")}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <p>{t("general.hints.playersCount")}</p>
                                         </div>
-
-                                        <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isPlayersCountMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                                    </label>
-
-                                    {isPlayersCountMenuOpen && (
-                                        <div className="popover">
-                                            <div className="context-list" data-scrollable>
-                                                <div className={`context-list-option ${formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: true })); setIsPlayersCountMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.playersCount.enabled")}</div>
-                                                </div>
-
-                                                <div className={`context-list-option ${!formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: false })); setIsPlayersCountMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.playersCount.disabled")}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <p>{t("general.hints.playersCount")}</p>
-                                </div>
+                                    </>
+                                ) : null}
 
                                 <p className="blog-settings__field-title">{t("general.organization.title")}</p>
                                 <div className="field field--default blog-settings__input" ref={organizationMenuRef}>

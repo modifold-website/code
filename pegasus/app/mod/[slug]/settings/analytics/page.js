@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectAnalyticsSettingsPage from "@/components/project/settings/ProjectAnalyticsSettingsPage";
-import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getProjectBasePath, isWorldProjectType } from "@/utils/projectRoutes";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -77,7 +77,7 @@ export default async function Page({ params, searchParams }) {
         redirect("/");
     }
 
-    const [projectResponse, analyticsResponse, onlineNowResponse, onlineSeriesResponse] = await Promise.all([
+    const [projectResponse, analyticsResponse] = await Promise.all([
         fetch(`${serverApiBase}/projects/${slug}`, {
             headers: {
                 Accept: "application/json",
@@ -87,8 +87,6 @@ export default async function Page({ params, searchParams }) {
         }),
         
         fetchProjectAnalytics(slug, authToken, timeRange),
-        fetchOnlineNow(slug),
-        fetchOnlineSeries(slug, ONLINE_RANGE_DAYS[timeRange] || 7),
     ]);
 
     if(!projectResponse.ok || !analyticsResponse.ok) {
@@ -103,17 +101,28 @@ export default async function Page({ params, searchParams }) {
 
     const project = await projectResponse.json();
     const analytics = await analyticsResponse.json();
-    const onlineNowPayload = onlineNowResponse.ok ? await onlineNowResponse.json() : null;
-	const onlineSeriesPayload = onlineSeriesResponse.ok ? await onlineSeriesResponse.json() : null;
-	const onlineSeries = Array.isArray(onlineSeriesPayload?.points) ? onlineSeriesPayload.points.map((point) => ({
-		date: String(point.day || "").slice(0, 19),
-		players: Number(point.players ?? point.joins) || 0,
-		servers: Number(point.servers) || 0,
-	})).filter((point) => Boolean(point.date)) : [];
-	const onlineSummary = {
-		playersOnlineNow: Number(onlineNowPayload?.playersOnlineNow ?? onlineNowPayload?.onlineNow) || 0,
-		activeServersNow: Number(onlineNowPayload?.activeServersNow) || 0,
-	};
+    const isWorldProject = isWorldProjectType(project.project_type);
+    let onlineSeries = [];
+    let onlineSummary = null;
+
+    if(!isWorldProject) {
+        const [onlineNowResponse, onlineSeriesResponse] = await Promise.all([
+            fetchOnlineNow(slug),
+            fetchOnlineSeries(slug, ONLINE_RANGE_DAYS[timeRange] || 7),
+        ]);
+        const onlineNowPayload = onlineNowResponse.ok ? await onlineNowResponse.json() : null;
+        const onlineSeriesPayload = onlineSeriesResponse.ok ? await onlineSeriesResponse.json() : null;
+        onlineSeries = Array.isArray(onlineSeriesPayload?.points) ? onlineSeriesPayload.points.map((point) => ({
+            date: String(point.day || "").slice(0, 19),
+            players: Number(point.players ?? point.joins) || 0,
+            servers: Number(point.servers) || 0,
+        })).filter((point) => Boolean(point.date)) : [];
+        onlineSummary = {
+            playersOnlineNow: Number(onlineNowPayload?.playersOnlineNow ?? onlineNowPayload?.onlineNow) || 0,
+            activeServersNow: Number(onlineNowPayload?.activeServersNow) || 0,
+        };
+    }
+
 	const basePath = getProjectBasePath(project.project_type);
 
     if(requestedTimeRange === "7d") {

@@ -20,7 +20,16 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString(currentLocale, { month: "long", day: "numeric", year: "numeric" });
+        const options = {
+            month: "long",
+            day: "numeric",
+        };
+
+        if(date.getFullYear() !== new Date().getFullYear()) {
+            options.year = "numeric";
+        }
+
+        return date.toLocaleDateString(currentLocale, options);
     };
 
     const hytaleToken = "__HYTALE__";

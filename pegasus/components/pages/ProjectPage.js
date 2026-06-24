@@ -11,6 +11,7 @@ import ProjectStatusBanner from "../ui/ProjectStatusBanner";
 import { prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
 import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
 import { getProjectPath } from "@/utils/projectRoutes";
+import { useTranslations } from "next-intl";
 
 const MODERATION_PROJECT_STATUSES = new Set(["queued", "pending", "in_review"]);
 
@@ -36,7 +37,9 @@ const hasProjectEditPermission = (permissions = {}) => Boolean(
 
 export default function ProjectPage({ project, authToken, showInlineGallery = false }) {
     const { user } = useAuth();
+    const t = useTranslations("ProjectPage");
     const safeDescription = prepareProjectDescriptionMarkdown(project.description);
+    const hasDescription = Boolean(safeDescription);
     const bannerType = getProjectStatusBannerType(project.status);
     const isProjectAuthor = Boolean(user?.id && Number(project.user_id) === Number(user.id));
     const showStatusBanner = Boolean(bannerType && (isProjectAuthor || hasProjectEditPermission(project.permissions)));
@@ -73,9 +76,17 @@ export default function ProjectPage({ project, authToken, showInlineGallery = fa
                     ) : null}
 
                     <div className="content content--padding markdown-body">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={projectDescriptionMarkdownComponents}>
-                            {safeDescription}
-                        </ReactMarkdown>
+                        {hasDescription ? (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={projectDescriptionMarkdownComponents}>
+                                {safeDescription}
+                            </ReactMarkdown>
+                        ) : (
+                            <div className="subsite-empty-feed">
+                                <img src="/images/kweebec.png" style={{ width: "200px" }} alt="" />
+                                
+                                <p className="subsite-empty-feed__title">{t("emptyDescription")}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

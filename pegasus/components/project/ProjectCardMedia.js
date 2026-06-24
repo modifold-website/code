@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import UserName from "../ui/UserName";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
-import { getProjectPath } from "@/utils/projectRoutes";
+import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 const MAX_RGB_INT = 16777215;
 
 const clampByte = (value) => Math.max(0, Math.min(255, Math.round(value)));
@@ -22,17 +22,18 @@ const darkenRgb = (rgb, amount = 0.52) => ({
     b: rgb.b * (1 - amount),
 });
 
-export default function ProjectCardMedia({ project, actions = null, showFollowers = true }) {
+export default function ProjectCardMedia({ project, actions = null, showFollowers = true, relativeTimeBase = null }) {
     const t = useTranslations("ProjectCard");
     const locale = useLocale();
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+    const relativeNow = relativeTimeBase ? new Date(relativeTimeBase) : new Date();
     const playersLast14Days = Math.max(0, Number(project?.players_last_14d) || 0);
-    const showPlayersLast14Days = project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1";
+    const isWorldProject = isWorldProjectType(project?.project_type || project?.projectType || project?.type);
+    const showPlayersLast14Days = !isWorldProject && (project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1");
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = date - now;
+        const diffMs = date - relativeNow;
         const seconds = Math.round(diffMs / 1000);
         const minutes = Math.round(seconds / 60);
         const hours = Math.round(minutes / 60);
@@ -87,7 +88,7 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
             minute: "2-digit",
         };
 
-        if(date.getFullYear() !== new Date().getFullYear()) {
+        if(date.getFullYear() !== relativeNow.getFullYear()) {
             options.year = "numeric";
         }
 

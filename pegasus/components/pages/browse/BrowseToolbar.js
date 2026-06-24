@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearSearch, cardView, onToggleCardView, sort, onSortSelect }) {
+export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearSearch, cardView, onToggleCardView, sort, onSortSelect, paginationControls = null }) {
     const [isSortOpen, setIsSortOpen] = useState(false);
     const sortRef = useRef(null);
     const sortOptions = [
@@ -52,26 +52,6 @@ export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearS
             </div>
 
             <div style={{ display: "flex", gap: "12px", flexDirection: "row", alignItems: "center" }}>
-                <div className="browse-view-toggle">
-                    <button className={`browse-view-toggle__item ${cardView === "list" ? "is-active" : ""}`} onClick={() => cardView !== "list" && onToggleCardView()} aria-pressed={cardView === "list"} type="button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M3 14h7v7H3zM3 3h7v7H3zM14 4h7M14 9h7M14 15h7M14 20h7"></path>
-                        </svg>
-                        
-                        <span>{t("view.list")}</span>
-                    </button>
-                    
-                    <button className={`browse-view-toggle__item ${cardView === "media" ? "is-active" : ""}`} onClick={() => cardView !== "media" && onToggleCardView()} aria-pressed={cardView === "media"} type="button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
-                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
-                            <circle cx="9" cy="9" r="2"></circle>
-                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-                        </svg>
-
-                        <span>{t("view.grid")}</span>
-                    </button>
-                </div>
-
                 <div className="sort-wrapper button button--size-m button--type-secondary" ref={sortRef}>
                     <div className="dropdown">
                         <button className="dropdown__label" onClick={() => setIsSortOpen((prev) => !prev)} aria-expanded={isSortOpen}>
@@ -95,6 +75,28 @@ export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearS
                         </div>
                     )}
                 </div>
+
+                <div className="browse-view-toggle">
+                    <button className={`browse-view-toggle__item ${cardView === "list" ? "is-active" : ""}`} onClick={() => cardView !== "list" && onToggleCardView()} aria-pressed={cardView === "list"} type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M3 14h7v7H3zM3 3h7v7H3zM14 4h7M14 9h7M14 15h7M14 20h7"></path>
+                        </svg>
+                        
+                        <span>{t("view.list")}</span>
+                    </button>
+                    
+                    <button className={`browse-view-toggle__item ${cardView === "media" ? "is-active" : ""}`} onClick={() => cardView !== "media" && onToggleCardView()} aria-pressed={cardView === "media"} type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
+                            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                            <circle cx="9" cy="9" r="2"></circle>
+                            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
+                        </svg>
+
+                        <span>{t("view.grid")}</span>
+                    </button>
+                </div>
+
+                {paginationControls}
             </div>
         </div>
     );

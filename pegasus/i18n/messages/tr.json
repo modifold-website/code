@@ -501,6 +501,7 @@
     "iconAlt": "{title} proje simgesi",
     "ownerAvatarAlt": "{username} kullanıcı avatarı",
     "editSettings": "Ayarları düzenle",
+    "emptyDescription": "Oyuncuların bu projenin ne yaptığını anlaması için proje ayarlarına bir açıklama ekleyin.",
     "status": {
       "draft": "Taslak",
       "moderation": "İncelemede"

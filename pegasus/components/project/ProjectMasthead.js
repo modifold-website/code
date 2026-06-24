@@ -10,7 +10,7 @@ import { useLocale, useTranslations } from "next-intl";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
 import ProjectReportModal from "@/modal/ProjectReportModal";
-import { getProjectPath } from "@/utils/projectRoutes";
+import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 
 export default function ProjectMasthead({ project, authToken }) {
     const t = useTranslations("ProjectPage");
@@ -26,7 +26,8 @@ export default function ProjectMasthead({ project, authToken }) {
     const isDraftProject = projectStatus === "draft";
     const isModerationProject = ["queued", "pending", "in_review"].includes(projectStatus);
     const playersLast14Days = Math.max(0, Number(project?.players_last_14d) || 0);
-    const showPlayersLast14Days = project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1";
+    const isWorldProject = isWorldProjectType(project?.project_type || project?.projectType || project?.type);
+    const showPlayersLast14Days = !isWorldProject && (project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1");
     const hasTags = project.tags?.length > 0;
     const isProjectAuthor = Boolean(user?.id && Number(project.user_id) === Number(user.id));
     const actionsRef = useRef(null);

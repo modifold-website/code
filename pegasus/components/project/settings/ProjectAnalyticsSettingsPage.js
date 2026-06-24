@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
-import { getProjectPath } from "@/utils/projectRoutes";
+import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 import AnalyticsOnlineInfoModal from "@/modal/AnalyticsOnlineInfoModal";
 
 const getTimeRangeHref = (project, range) => {
@@ -264,6 +264,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 	const downloads = Array.isArray(analytics?.downloads) ? analytics.downloads : [];
 	const views = Array.isArray(analytics?.views) ? analytics.views : [];
 	const countries = Array.isArray(analytics?.countries) ? analytics.countries : [];
+	const isWorldProject = isWorldProjectType(project?.project_type || project?.projectType || project?.type);
 	const hasOnline = onlineSeries.length > 0;
 	const totals = analytics?.totals || {};
 	const activeServersNow = Number(onlineSummary?.activeServersNow) || 0;
@@ -345,7 +346,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				</div>
 			</div>
 		
-			<div className="project-analytics__stats">
+			<div className={`project-analytics__stats ${isWorldProject ? "project-analytics__stats--two" : ""}`}>
 				<div className="content content--padding project-analytics-stat">
 					<p className="project-analytics-stat__label">
 						{t("analytics.stats.downloads")}
@@ -360,48 +361,65 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 					<strong>{totals.downloads || 0}</strong>
 				</div>
 
-				<div className="content content--padding project-analytics-stat">
-					<p className="project-analytics-stat__label">
-						{t("analytics.live.activeServers")}
+				{isWorldProject ? (
+					<div className="content content--padding project-analytics-stat">
+						<p className="project-analytics-stat__label">
+							{t("analytics.stats.views")}
 
-						<svg xmlns="http://www.w3.org/2000/svg" style={{ fill: "none", marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-							<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
-							<rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
-							<line x1="6" x2="6.01" y1="6" y2="6"/>
-							<line x1="6" x2="6.01" y1="18" y2="18"/>
-						</svg>
-					</p>
+							<svg xmlns="http://www.w3.org/2000/svg" style={{ fill: "none", marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+								<circle cx="12" cy="12" r="3"/>
+							</svg>
+						</p>
 
-					<strong>{activeServersNow}</strong>
-				</div>
+						<strong>{totals.views || 0}</strong>
+					</div>
+				) : (
+					<>
+						<div className="content content--padding project-analytics-stat">
+							<p className="project-analytics-stat__label">
+								{t("analytics.live.activeServers")}
 
-				<div className="content content--padding project-analytics-stat project-analytics-stat--online">
-					<p className="project-analytics-stat__label">
-						{t("analytics.stats.onlineNow")}
-						
-						{!hasOnline && (
-							<span className="project-analytics-info" onClick={() => setIsOnlineInfoModalOpen(true)}>
-								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-									<circle cx="12" cy="12" r="10"/>
-									<path d="M12 16v-4"/>
-									<path d="M12 8h.01"/>
+								<svg xmlns="http://www.w3.org/2000/svg" style={{ fill: "none", marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/>
+									<rect width="20" height="8" x="2" y="14" rx="2" ry="2"/>
+									<line x1="6" x2="6.01" y1="6" y2="6"/>
+									<line x1="6" x2="6.01" y1="18" y2="18"/>
 								</svg>
-							</span>
-						)}
+							</p>
 
-						<svg xmlns="http://www.w3.org/2000/svg" style={{ fill: "none", marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-							<path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
-							<path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-							<circle cx="9" cy="7" r="4"></circle>
-						</svg>
-					</p>
+							<strong>{activeServersNow}</strong>
+						</div>
 
-					<strong>{playersOnlineNow}</strong>
-				</div>
+						<div className="content content--padding project-analytics-stat project-analytics-stat--online">
+							<p className="project-analytics-stat__label">
+								{t("analytics.stats.onlineNow")}
+								
+								{!hasOnline && (
+									<span className="project-analytics-info" onClick={() => setIsOnlineInfoModalOpen(true)}>
+										<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+											<circle cx="12" cy="12" r="10"/>
+											<path d="M12 16v-4"/>
+											<path d="M12 8h.01"/>
+										</svg>
+									</span>
+								)}
+
+								<svg xmlns="http://www.w3.org/2000/svg" style={{ fill: "none", marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+									<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+									<path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
+									<path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+									<circle cx="9" cy="7" r="4"></circle>
+								</svg>
+							</p>
+
+							<strong>{playersOnlineNow}</strong>
+						</div>
+					</>
+				)}
 			</div>
 
-			{hasOnline ? (
+			{!isWorldProject && hasOnline ? (
 				<OnlineChart
 					title={t("analytics.online.title")}
 					data={onlineSeries}
@@ -410,10 +428,12 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				/>
 			) : null}
 
-			<AnalyticsOnlineInfoModal
-				isOpen={isOnlineInfoModalOpen}
-				onRequestClose={() => setIsOnlineInfoModalOpen(false)}
-			/>
+			{!isWorldProject ? (
+				<AnalyticsOnlineInfoModal
+					isOpen={isOnlineInfoModalOpen}
+					onRequestClose={() => setIsOnlineInfoModalOpen(false)}
+				/>
+			) : null}
 
 			<AnalyticsChart
 				title={t("analytics.downloads.title")}
