@@ -8,7 +8,7 @@
 DOCKER.md
 
 # Docker runtime data and uploads.
-data/
+/data/
 media/
 uploads/
 cronus/tmp/
