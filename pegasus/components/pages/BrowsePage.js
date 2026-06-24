@@ -307,7 +307,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
     return (
         <div className="browse-page">
-            <BrowseFiltersSidebar t={t} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
+            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
                 {projectType === "mod" && (
