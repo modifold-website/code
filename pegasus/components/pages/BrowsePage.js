@@ -79,6 +79,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
     const [totalPages, setTotalPages] = useState(() => initialData?.totalPages || 1);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
+    const [relativeTimeBase, setRelativeTimeBase] = useState(() => initialData?.timestamp || Date.now());
     const apiCacheRef = useRef(hasInitialData ? new Map([
         [initialData.apiKey, {
             projects: initialData.projects || [],
@@ -151,6 +152,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         if(cached) {
             setProjects(cached.projects);
             setTotalPages(cached.totalPages);
+            setRelativeTimeBase(cached.fetchedAt);
             setLoading(false);
         } else {
             setLoading(true);
@@ -171,14 +173,16 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
                 const nextProjects = res.data.projects || [];
                 const nextTotalPages = res.data.totalPages || 1;
+                const fetchedAt = Date.now();
 
                 setProjects(nextProjects);
                 setTotalPages(nextTotalPages);
+                setRelativeTimeBase(fetchedAt);
 
                 apiCacheRef.current.set(apiKey, {
                     projects: nextProjects,
                     totalPages: nextTotalPages,
-                    fetchedAt: Date.now(),
+                    fetchedAt,
                 });
             } catch (err) {
                 if(!controller.signal.aborted && !cached) {
@@ -359,7 +363,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
                 ) : projects.length > 0 ? (
                     <div className={cardView === "media" ? "browse-project-grid" : "browse-project-list"}>
                         {projects.map((project) => (
-                            cardView === "media" ? <ProjectCardMedia key={project.id} project={project} /> : <ProjectCard key={project.id} project={project} />
+                            cardView === "media" ? <ProjectCardMedia key={project.id} project={project} relativeTimeBase={relativeTimeBase} /> : <ProjectCard key={project.id} project={project} relativeTimeBase={relativeTimeBase} />
                         ))}
                     </div>
                 ) : (
