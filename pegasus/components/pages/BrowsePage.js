@@ -277,6 +277,26 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         return buttons;
     };
 
+    const renderPaginationControls = (style) => {
+        if(totalPages <= 1) {
+            return null;
+        }
+
+        return (
+            <div className="pagination-controls" style={style}>
+                <button className="button button--size-m button--type-secondary" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-disabled={currentPage === 1}>
+                    {t("previous")}
+                </button>
+
+                {getPageButtons()}
+
+                <button className="button button--size-m button--type-secondary" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} aria-disabled={currentPage === totalPages}>
+                    {t("next")}
+                </button>
+            </div>
+        );
+    };
+
     return (
         <div className="browse-page">
             <BrowseFiltersSidebar t={t} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
@@ -286,7 +306,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
                     <BrowseRecommendedRail projects={recommendedProjects} modJams={activeModJams} t={t} projectType={projectType} initialCollapsed={initialRecommendedCollapsed} />
                 )}
 
-                <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} />
+                <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ marginTop: 0, marginLeft: "auto" })} />
 
                 {(selectedTags.length > 0 || selectedGameVersions.length > 0) && (
                     <div className="browse-selected-filters">
@@ -345,19 +365,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
                     </div>
                 )}
 
-                {totalPages > 1 && (
-                    <div className="pagination-controls">
-                        <button className="button button--size-m button--type-secondary" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-disabled={currentPage === 1}>
-                            {t("previous")}
-                        </button>
-
-                        {getPageButtons()}
-
-                        <button className="button button--size-m button--type-secondary" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} aria-disabled={currentPage === totalPages}>
-                            {t("next")}
-                        </button>
-                    </div>
-                )}
+                {renderPaginationControls()}
             </div>
         </div>
     );

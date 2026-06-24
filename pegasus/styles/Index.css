@@ -1584,7 +1584,6 @@ body.light .ripple-effect {
     user-select: none;
     color: var(--color-text);
     outline: 0;
-    width: 200px;
     width: var(--width, 200px);
     position: var(--position);
     top: var(--top);
@@ -3285,17 +3284,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .context-list-option--with-details .context-list-option__art {
     grid-row: span 2;
 }
-.context-list-option--with-details .context-list-option__label {
-    font-weight: 500;
-}
 .context-list-option--selected {
     background-color: var(--option-color-selected);
 }
 .context-list-option--selected.context-list-option--focused {
     background-color: var(--option-color-selected-hover);
-}
-.context-list-option--selected .context-list-option__label {
-    font-weight: 500;
 }
 .context-list-option__art {
     --option-art-radius: 6px;
@@ -3317,6 +3310,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     height: 100%;
 }
 .context-list-option__label {
+    font-weight: 400;
     font-size: 15px;
     line-height: 22px;
     white-space: nowrap;
@@ -4335,7 +4329,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     display: flex;
     align-items: stretch;
     gap: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     flex-direction: column;
 }
 .browse-selected-filters {
@@ -4418,12 +4412,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
     gap: 8px;
 }
 .sort-wrapper {
-    margin-left: auto;
     position: relative;
 }
 .popover--sort {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 10px);
     right: 0;
     z-index: 3;
     --width: max-content;
