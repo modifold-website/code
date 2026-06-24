@@ -8,6 +8,19 @@ export default function NewsPage({ featuredArticle, otherArticles, locale }) {
     const activeLocale = useLocale();
 
     const dateLocale = locale || activeLocale;
+    const formatArticleDate = (dateString) => {
+        const date = new Date(dateString);
+        const options = {
+            month: "long",
+            day: "numeric",
+        };
+
+        if(date.getFullYear() !== new Date().getFullYear()) {
+            options.year = "numeric";
+        }
+
+        return date.toLocaleDateString(dateLocale, options);
+    };
 
     return (
         <div className="layout">
@@ -26,7 +39,7 @@ export default function NewsPage({ featuredArticle, otherArticles, locale }) {
                                     <p className="featured-desc">{featuredArticle.description}</p>
 
                                     <span className="featured-date">
-                                        {new Date(featuredArticle.date).toLocaleDateString(dateLocale, { month: "long", day: "numeric", year: "numeric" })}
+                                        {formatArticleDate(featuredArticle.date)}
                                     </span>
                                 </div>
                             </div>
@@ -47,7 +60,7 @@ export default function NewsPage({ featuredArticle, otherArticles, locale }) {
                                 <p>{article.description}</p>
 
                                 <span>
-                                    {new Date(article.date).toLocaleDateString(dateLocale, { month: "long", day: "numeric", year: "numeric" })}
+                                    {formatArticleDate(article.date)}
                                 </span>
                             </article>
                         </Link>
