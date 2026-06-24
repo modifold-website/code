@@ -381,12 +381,14 @@ svg {
 
     --banner-warning-bg: #ffedd5;
     --banner-warning-color: #713f12;
+    --banner-warning-border-color: #ffdcad;
 }
 body.dark {
     color-scheme: dark;
 
     --banner-warning-bg: #453425;
     --banner-warning-color: #e4d9ca;
+    --banner-warning-border-color: #63452b;
 
     --project_card-box-shadow: rgba(0,0,0,.25) 0px 2px 4px 0px;
 

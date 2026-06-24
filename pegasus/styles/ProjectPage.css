@@ -196,6 +196,7 @@
     margin-bottom: 15px;
     padding: 16px 18px;
     display: flex;
+    border: 1px solid var(--banner-warning-border-color);
     color: var(--banner-warning-color);
     border-radius: var(--layout-island-border-radius);
     background: var(--banner-warning-bg);
