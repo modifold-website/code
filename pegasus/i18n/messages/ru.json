@@ -582,11 +582,17 @@
     "versions": {
       "headers": {
         "version": "Версия",
-        "statistics": "Статистика"
+        "statistics": "Статистика",
+        "name": "Название",
+        "gameVersion": "Версия игры",
+        "platforms": "Платформы",
+        "published": "Опубликовано",
+        "downloads": "Скачивания"
       },
       "notSpecified": "Не указано",
       "published": "Опубликовано:",
       "downloads": "скачиваний",
+      "download": "Скачать",
       "requiredContent": "Обязательный контент",
       "optionalDependencies": "Опциональные зависимости",
       "compatibility": "Совместимость",

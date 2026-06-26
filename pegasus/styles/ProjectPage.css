@@ -190,6 +190,9 @@
     gap: 36px;
     margin-bottom: 96px;
 }
+.project__general > div {
+	min-width: 0;
+}
 .project-status-banner {
     align-items: flex-start;
     gap: 14px;
@@ -529,14 +532,17 @@
     transition: background-color .2s ease, filter .2s ease, outline .2s ease, transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .all-versions .version-button .download-button {
+	--version-download-color: #00c853;
+	--version-download-hover: #00af5c;
+	--version-download-bg: rgba(0, 200, 83, 0.1);
     cursor: pointer;
 	height: 40px;
     width: 40px;
     margin: 0;
     display: flex;
     padding: 0;
-    color: #00c853;
-    background: rgba(0, 200, 83, 0.1);
+    color: var(--version-download-color);
+    background: var(--version-download-bg);
     border-radius: 100px;
     font-size: 13px;
     font-weight: 500;
@@ -545,6 +551,21 @@
     align-items: center;
     justify-content: center;
     transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease, color 200ms ease;
+}
+.all-versions .version-button .download-button.type--release {
+	--version-download-color: #00c853;
+	--version-download-hover: #00af5c;
+	--version-download-bg: rgba(0, 200, 83, 0.1);
+}
+.all-versions .version-button .download-button.type--beta {
+	--version-download-color: #ffa347;
+	--version-download-hover: #d98426;
+	--version-download-bg: rgba(255, 163, 71, 0.12);
+}
+.all-versions .version-button .download-button.type--alpha {
+	--version-download-color: #ff496e;
+	--version-download-hover: #d93658;
+	--version-download-bg: rgba(255, 73, 110, 0.12);
 }
 .all-versions .version-button .version-actions {
     grid-area: download;
@@ -569,7 +590,7 @@
 }
 .version-button .download-button:hover {
     color: #ffffff !important;
-    background: #00af5c !important;
+    background: var(--version-download-hover) !important;
 }
 .version-button .download-button.version-actions__trigger:hover {
     color: var(--theme-color-text-primary) !important;
@@ -586,7 +607,7 @@
     background: var(--theme-color-background-content) !important;
 }
 .all-versions .version-button .version__title {
-    font-weight: 600;
+    font-weight: 500;
     grid-area: title;
     display: flex;
     gap: 4px;
@@ -650,6 +671,193 @@
 .all-versions .version-button .version__stats strong {
 	font-size: 18px;
     font-weight: bolder;
+}
+.all-versions--table {
+	overflow: visible;
+	padding: 0;
+}
+.all-versions--table .card-header {
+	display: grid;
+	grid-template-areas: none;
+	grid-template-columns: 44px minmax(90px, 1fr) minmax(150px, 1.2fr) minmax(110px, 0.9fr) minmax(150px, 1fr) minmax(100px, 0.75fr);
+	align-items: center;
+	column-gap: 18px;
+	min-height: 52px;
+	margin: 0;
+	padding: 0 20px;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 1.25;
+	border-bottom: 1px solid var(--theme-color-border);
+}
+.all-versions--table .card-header div {
+	min-width: 0;
+	white-space: nowrap;
+}
+.all-versions--table .card-header div:first-child,
+.all-versions--table .card-header div:nth-child(2),
+.all-versions--table .card-header div:nth-child(3) {
+	grid-area: auto;
+}
+.all-versions--table .card-header div:nth-child(3) {
+	text-align: left;
+}
+.all-versions--table .version-button {
+	display: grid;
+	grid-template: none;
+	grid-template-columns: 44px minmax(90px, 1fr) minmax(150px, 1.2fr) minmax(110px, 0.9fr) minmax(150px, 1fr) minmax(100px, 0.75fr);
+	align-items: center;
+	column-gap: 18px;
+	min-height: 73px;
+	padding: 16px 20px;
+	border-radius: 0;
+	border-bottom: 1px solid var(--theme-color-border);
+	cursor: pointer;
+}
+.all-versions--table .version-button:nth-of-type(odd) {
+	background: var(--theme-version-table-row-background);
+}
+.all-versions--table .version-button:last-child {
+	border-bottom: 0;
+}
+.all-versions--table .version-button:hover {
+	border-radius: 0;
+}
+.all-versions--table .version-button:focus-visible {
+	outline: 2px solid var(--theme-color-signal-active-default);
+	outline-offset: -2px;
+}
+.all-versions--table .version-table__game-versions,
+.all-versions--table .version-table__platforms,
+.all-versions--table .version-table__published,
+.all-versions--table .version-button .version__stats {
+	cursor: default;
+    width: max-content;
+}
+.all-versions--table .version-table__download-action {
+	grid-area: auto;
+	justify-self: center;
+	display: inline-flex;
+}
+.all-versions--table .version-button .download-button {
+	grid-area: auto;
+	justify-self: center;
+}
+.all-versions--table .version-table__name {
+	min-width: 0;
+	color: inherit;
+	text-decoration: none;
+}
+.all-versions--table .version-button .version__title {
+	grid-area: auto;
+	font-size: 16px;
+	line-height: 1.25;
+}
+.all-versions--table .version-button .version__title:hover {
+	text-decoration: underline;
+}
+.all-versions--table .version-table__game-versions,
+.all-versions--table .version-table__platforms {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-width: 0;
+}
+.all-versions--table .version-table__value {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-width: 0;
+}
+.all-versions--table .version-button .version__metadata {
+	grid-area: auto;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	min-width: 0;
+	font-size: 16px;
+	line-height: 1.25;
+}
+.all-versions--table .version-button .version__metadata .divider {
+	display: none;
+}
+.all-versions--table .version-button .version__stats {
+	grid-area: auto;
+	align-items: flex-start;
+	text-align: left;
+	min-width: 0;
+}
+.all-versions--table .version-button .version__stats span {
+	font-size: 16px;
+	line-height: 1.25;
+	font-weight: 500;
+	color: var(--theme-color-text-secondary);
+}
+@media (max-width: 1180px) {
+	.all-versions--table .card-header {
+		display: none;
+	}
+	.all-versions.all-versions--table {
+		padding: 0;
+	}
+	.all-versions.all-versions--table .version-button {
+		display: flex;
+        gap: 12px;
+        min-height: 0;
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+	}
+	.all-versions--table .version-button .download-button {
+		grid-area: auto;
+	}
+	.all-versions--table .version-table__download-action {
+		grid-area: download;
+	}
+	.all-versions--table .version-table__game-versions {
+		grid-area: game;
+	}
+	.all-versions--table .version-table__platforms {
+		grid-area: platforms;
+	}
+	.all-versions--table .version-table__published {
+		grid-area: published;
+	}
+	.all-versions--table .version-table__game-versions,
+	.all-versions--table .version-table__platforms,
+	.all-versions--table .version-table__published,
+	.all-versions--table .version-button .version__stats {
+		display: grid;
+		grid-template-columns: minmax(108px, 0.45fr) minmax(0, 1fr);
+		align-items: flex-start;
+		width: 100%;
+		max-width: none;
+		gap: 8px 12px;
+	}
+	.all-versions--table .version-table__value {
+		grid-column: 2;
+		align-items: center;
+	}
+	.all-versions--table .version-table__game-versions::before,
+	.all-versions--table .version-table__platforms::before,
+	.all-versions--table .version-table__published::before,
+	.all-versions--table .version-button .version__stats::before {
+		content: attr(data-label);
+		display: block;
+		font-size: 16px;
+		font-weight: 500;
+		line-height: 1.25;
+		color: var(--theme-color-text-secondary);
+	}
+	.all-versions--table .version-button .version__stats {
+		padding-left: 0;
+	}
+	.all-versions--table .version-button .version__stats span {
+		font-size: 16px;
+		line-height: 1.25;
+	}
 }
 @media (max-width: 859px) {
     .masthead {
@@ -746,10 +954,17 @@
         row-gap: 0.3rem;
         column-gap: 0.75rem;
     }
-    .all-versions .version-button .version__title,
-    .all-versions .version-button .version__metadata {
+    .all-versions .version-button .version__title {
         min-width: 0;
         overflow-wrap: anywhere;
+    }
+    .all-versions .version-button .version__metadata {
+        grid-template-columns: minmax(108px, .45fr) minmax(0, 1fr);
+        align-items: center;
+        gap: 8px 12px;
+        width: 100%;
+        max-width: none;
+        display: grid;
     }
     .all-versions .version-button .version__stats {
         flex-direction: row;
@@ -835,14 +1050,10 @@
         min-width: 44px;
     }
 }
-.all-versions .version-button .version__stats span {
-	font-size: 16px;
-    color: #8B8B8B;
-    font-weight: 500;
-}
 .version_number {
-    font-size: 15px;
-    color: #8B8B8B;
+    color: var(--theme-color-text-secondary);
+    font-weight: 500;
+    font-size: 16px;
 }
 .version-button:hover {
     background-color: var(--theme-color-background);

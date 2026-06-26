@@ -582,11 +582,17 @@
     "versions": {
       "headers": {
         "version": "Versão",
-        "statistics": "Estatísticas"
+        "statistics": "Estatísticas",
+        "name": "Nome",
+        "gameVersion": "Versão do jogo",
+        "platforms": "Plataformas",
+        "published": "Publicado",
+        "downloads": "Downloads"
       },
       "notSpecified": "Não especificado",
       "published": "Publicado:",
       "downloads": "downloads",
+      "download": "Baixar",
       "requiredContent": "Conteúdo obrigatório",
       "optionalDependencies": "Dependências opcionais",
       "compatibility": "Compatibilidade",
