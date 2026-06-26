@@ -593,6 +593,7 @@
       "published": "Publicado:",
       "downloads": "descargas",
       "download": "Descargar",
+      "empty": "El autor del proyecto aún no ha subido versiones. ¡Pídeselo!",
       "requiredContent": "Contenido requerido",
       "optionalDependencies": "Dependencias opcionales",
       "compatibility": "Compatibilidad",

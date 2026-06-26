@@ -327,7 +327,11 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             <div>{t("versions.headers.downloads")}</div>
                         </div>
 
-                        {currentVersions.map((version) => {
+                        {currentVersions.length === 0 ? (
+                            <div className="subsite-empty-feed">
+                                <p className="subsite-empty-feed__title">{t("versions.empty")}</p>
+                            </div>
+                        ) : currentVersions.map((version) => {
                             const moderationBadge = getVersionModerationBadge(version.moderation_status);
                             const versionLoaders = parseVersionList(version.loaders);
                             const versionGameVersions = parseVersionList(version.game_versions);

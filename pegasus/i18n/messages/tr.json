@@ -593,6 +593,7 @@
       "published": "Yayınlanma:",
       "downloads": "indirme",
       "download": "İndir",
+      "empty": "Proje sahibi henüz sürüm yüklemedi. Ondan bunu isteyin!",
       "requiredContent": "Gerekli içerik",
       "optionalDependencies": "İsteğe bağlı bağımlılıklar",
       "compatibility": "Uyumluluk",

@@ -593,6 +593,7 @@
       "published": "Published:",
       "downloads": "downloads",
       "download": "Download",
+      "empty": "The project author has not uploaded any versions yet. Ask them to do it!",
       "requiredContent": "Required content",
       "optionalDependencies": "Optional dependencies",
       "compatibility": "Compatibility",
