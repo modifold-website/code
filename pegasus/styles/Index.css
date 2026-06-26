@@ -4336,6 +4336,12 @@ input[type="file"]::-webkit-file-upload-button:hover {
     margin-bottom: 12px;
     flex-direction: column;
 }
+.sort-controls__actions {
+    display: flex;
+    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+}
 .browse-selected-filters {
     display: flex;
     flex-wrap: wrap;
@@ -5161,6 +5167,15 @@ body.light div .image-container::before {
         align-items: center !important;
         gap: 10px !important;
         flex-direction: column !important;
+    }
+    .sort-controls__actions {
+        gap: 12px;
+        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(auto, 1fr));
+    }
+    .browse-view-toggle {
+        margin-left: auto;
     }
     .browse-recommended-hero__frame {
         height: 240px;
