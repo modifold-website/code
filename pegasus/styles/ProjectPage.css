@@ -771,6 +771,14 @@
 	gap: 6px;
 	min-width: 0;
 }
+.all-versions--table .version-table__game-versions .version-table__value {
+	flex-direction: column;
+	align-items: flex-start;
+}
+.all-versions--table .version-table__game-versions .version__game-versions {
+	width: max-content;
+	max-width: 100%;
+}
 .all-versions--table .version-button .version__metadata {
 	grid-area: auto;
 	flex-direction: column;
