@@ -583,11 +583,18 @@
     "versions": {
       "headers": {
         "version": "Версія",
-        "statistics": "Статистика"
+        "statistics": "Статистика",
+        "name": "Назва",
+        "gameVersion": "Версія гри",
+        "platforms": "Платформи",
+        "published": "Опубліковано",
+        "downloads": "Завантаження"
       },
       "notSpecified": "Не вказано",
       "published": "Опубліковано:",
       "downloads": "завантажень",
+      "download": "Завантажити",
+      "empty": "Автор проєкту ще не завантажив версії. Попросіть його про це!",
       "requiredContent": "Обов'язковий контент",
       "optionalDependencies": "Опціональні залежності",
       "compatibility": "Сумісність",

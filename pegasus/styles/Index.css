@@ -323,6 +323,7 @@ svg {
     color-scheme: light;
 
     --theme-sidebar-separator-color-background: rgb(0 0 0 / 5%);
+    --theme-version-table-row-background: #f9f9f9;
     --theme-color-brand-primary: #067aff;
     --theme-color-brand-logo: #000;
     --theme-color-signal-active-default: #307df0;
@@ -401,6 +402,7 @@ body.dark {
 
     --theme-modal-overlay-background: rgb(0 0 0 / 50%);
     --theme-sidebar-separator-color-background: rgb(255 255 255 / 3%);
+    --theme-version-table-row-background: #1d1d1e;
     --theme-color-brand-logo: #fff;
     --theme-color-brand-primary: #307df0;
     --theme-color-signal-active-default: #3375d6;
@@ -4334,6 +4336,12 @@ input[type="file"]::-webkit-file-upload-button:hover {
     margin-bottom: 12px;
     flex-direction: column;
 }
+.sort-controls__actions {
+    display: flex;
+    gap: 12px;
+    flex-direction: row;
+    align-items: center;
+}
 .browse-selected-filters {
     display: flex;
     flex-wrap: wrap;
@@ -5159,6 +5167,15 @@ body.light div .image-container::before {
         align-items: center !important;
         gap: 10px !important;
         flex-direction: column !important;
+    }
+    .sort-controls__actions {
+        gap: 12px;
+        align-items: center;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(auto, 1fr));
+    }
+    .browse-view-toggle {
+        margin-left: auto;
     }
     .browse-recommended-hero__frame {
         height: 240px;

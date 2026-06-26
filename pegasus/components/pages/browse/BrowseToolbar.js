@@ -51,7 +51,7 @@ export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearS
                 </label>
             </div>
 
-            <div style={{ display: "flex", gap: "12px", flexDirection: "row", alignItems: "center" }}>
+            <div className="sort-controls__actions">
                 <div className="sort-wrapper button button--size-m button--type-secondary" ref={sortRef}>
                     <div className="dropdown">
                         <button className="dropdown__label" onClick={() => setIsSortOpen((prev) => !prev)} aria-expanded={isSortOpen}>

@@ -582,11 +582,18 @@
     "versions": {
       "headers": {
         "version": "Sürüm",
-        "statistics": "İstatistikler"
+        "statistics": "İstatistikler",
+        "name": "Ad",
+        "gameVersion": "Oyun sürümü",
+        "platforms": "Platformlar",
+        "published": "Yayınlandı",
+        "downloads": "İndirmeler"
       },
       "notSpecified": "Belirtilmedi",
       "published": "Yayınlanma:",
       "downloads": "indirme",
+      "download": "İndir",
+      "empty": "Proje sahibi henüz sürüm yüklemedi. Ondan bunu isteyin!",
       "requiredContent": "Gerekli içerik",
       "optionalDependencies": "İsteğe bağlı bağımlılıklar",
       "compatibility": "Uyumluluk",

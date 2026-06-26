@@ -8,9 +8,21 @@ import VersionDisplay from "../VersionDisplay";
 import { useTranslations, useLocale } from "next-intl";
 import ProjectSidebar from "../project/ProjectSidebar";
 import VersionDownloadButton from "../project/VersionDownloadButton";
+import Tooltip from "../ui/Tooltip";
 import { DEFAULT_GAME_VERSIONS, sortByKnownGameVersions } from "@/utils/gameVersions";
 
 const releaseChannels = ["release", "beta", "alpha"];
+const VERSION_ROW_NAVIGATION_EXCLUDE_SELECTOR = [
+	"a",
+	"button",
+	".version-table__download-action",
+	".download-button",
+	".version-table__game-versions",
+	".version-table__platforms",
+	".version-table__published",
+	".version__metadata",
+	".version__stats",
+].join(",");
 const VERSION_MODERATION_BADGE_TYPES = {
     pending: "pending",
     scanning: "pending",
@@ -19,6 +31,22 @@ const VERSION_MODERATION_BADGE_TYPES = {
     error: "error",
 };
 const VERSION_MODERATION_STATUS_KEYS = new Set(Object.keys(VERSION_MODERATION_BADGE_TYPES));
+
+function parseVersionList(value) {
+	if(Array.isArray(value)) {
+		return value.map((item) => String(item).trim()).filter(Boolean);
+	}
+
+	if(!value || String(value).trim() === "null") {
+		return [];
+	}
+
+	return String(value).split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function shouldSkipVersionRowNavigation(target) {
+	return target instanceof Element && Boolean(target.closest(VERSION_ROW_NAVIGATION_EXCLUDE_SELECTOR));
+}
 
 export default function VersionsPage({ project, authToken, gameVersions = DEFAULT_GAME_VERSIONS }) {
     const t = useTranslations("ProjectPage");
@@ -194,6 +222,27 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
         };
     };
 
+    const openVersionPage = (href) => {
+        router.push(href);
+    };
+
+    const handleVersionRowClick = (event, href) => {
+        if(event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || shouldSkipVersionRowNavigation(event.target)) {
+            return;
+        }
+
+        openVersionPage(href);
+    };
+
+    const handleVersionRowKeyDown = (event, href) => {
+        if(shouldSkipVersionRowNavigation(event.target) || (event.key !== "Enter" && event.key !== " ")) {
+            return;
+        }
+
+        event.preventDefault();
+        openVersionPage(href);
+    };
+
     return (
         <>
             <div className="project__general">
@@ -203,11 +252,13 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             <button style={{ display: "flex", gap: "4px" }} type="button" className="button button--size-m button--type-secondary" onClick={toggleFilterGameVersionsPopover} aria-label={t("filters.gameVersionsAria")}>
                                 {t("tabs.gameVersion")}
 
-                                <svg className="icon icon--chevron_down " width="20" height="20" viewBox="0 0 24 24"><path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path></svg>
+                                <svg className={`icon icon--chevron_down ${isFilterGameVersionsPopoverOpen ? "rotate" : ""}`} width="20" height="20" viewBox="0 0 24 24">
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path>
+                                </svg>
                             </button>
 
                             {isFilterGameVersionsPopoverOpen && (
-                                <div className="popover">
+                                <div className="popover" style={{ "--top": "calc(100% + 10px)" }}>
                                     <div className="context-list" style={{ maxHeight: "200px" }}>
                                         {availableGameVersions.map((version) => (
                                             <div key={version} className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)}>
@@ -223,11 +274,13 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             <button style={{ display: "flex", gap: "4px" }} type="button" className="button button--size-m button--type-secondary" onClick={toggleFilterChannelsPopover} aria-label={t("filters.channelsAria")}>
                                 {t("tabs.gameChannel")}
 
-                                <svg className="icon icon--chevron_down " width="20" height="20" viewBox="0 0 24 24"><path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path></svg>
+                                <svg className={`icon icon--chevron_down ${isFilterChannelsPopoverOpen ? "rotate" : ""}`} width="20" height="20" viewBox="0 0 24 24">
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path>
+                                </svg>
                             </button>
 
                             {isFilterChannelsPopoverOpen && (
-                                <div className="popover">
+                                <div className="popover" style={{ "--top": "calc(100% + 10px)" }}>
                                     <div className="context-list" style={{ maxHeight: "200px" }}>
                                         {availableChannels.map((channel) => (
                                             <div key={channel} className={`context-list-option ${filterChannels.includes(channel) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterChannel(channel)}>
@@ -241,13 +294,15 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
 
                         <div className="field field--default" ref={filterLoadersRef}>
                             <button style={{ display: "flex", gap: "4px" }} type="button" className="button button--size-m button--type-secondary" onClick={toggleFilterLoadersPopover} aria-label={t("filters.loadersAria")}>
-                                {t("tabs.loader") || "Loader"}
+                                {t("tabs.loader")}
 
-                                <svg className="icon icon--chevron_down " width="20" height="20" viewBox="0 0 24 24"><path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path></svg>
+                                <svg className={`icon icon--chevron_down ${isFilterLoadersPopoverOpen ? "rotate" : ""}`} width="20" height="20" viewBox="0 0 24 24">
+                                    <path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor"></path>
+                                </svg>
                             </button>
 
                             {isFilterLoadersPopoverOpen && (
-                                <div className="popover">
+                                <div className="popover" style={{ "--top": "calc(100% + 10px)" }}>
                                     <div className="context-list" style={{ maxHeight: "200px" }}>
                                         {availableLoaders.map((loader) => (
                                             <div key={loader} className={`context-list-option ${filterLoaders.includes(loader) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterLoader(loader)}>
@@ -262,61 +317,81 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                         </div>
                     </div>
 
-                    <div className="all-versions">
-                        <div className="card-header">
-                            <div></div>
-                            <div>{t("versions.headers.version")}</div>
-                            <div>{t("versions.headers.statistics")}</div>
+                    <div className="all-versions all-versions--table">
+                        <div className="card-header version-table__header">
+                            <div className="version-table__download-heading"></div>
+                            <div>{t("versions.headers.name")}</div>
+                            <div>{t("versions.headers.gameVersion")}</div>
+                            <div>{t("versions.headers.platforms")}</div>
+                            <div>{t("versions.headers.published")}</div>
+                            <div>{t("versions.headers.downloads")}</div>
                         </div>
 
-                        {currentVersions.map((version) => {
+                        {currentVersions.length === 0 ? (
+                            <div className="subsite-empty-feed">
+                                <p className="subsite-empty-feed__title">{t("versions.empty")}</p>
+                            </div>
+                        ) : currentVersions.map((version) => {
                             const moderationBadge = getVersionModerationBadge(version.moderation_status);
+                            const versionLoaders = parseVersionList(version.loaders);
+                            const versionGameVersions = parseVersionList(version.game_versions);
+                            const versionHref = `${getProjectPath(project)}/version/${version.id}`;
 
                             return (
-                                <div key={version.id} className="version-button">
-                                    <VersionDownloadButton project={project} version={version} className="download-button" href={`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${version.id}/download`}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"></path>
-                                        </svg>
-                                    </VersionDownloadButton>
+                                <div key={version.id} className="version-button" role="link" tabIndex={0} onClick={(event) => handleVersionRowClick(event, versionHref)} onKeyDown={(event) => handleVersionRowKeyDown(event, versionHref)}>
+                                    <span className="version-table__download-action">
+                                        <Tooltip content={t("versions.download")} delay={300}>
+                                            <VersionDownloadButton project={project} version={version} className={`download-button type--${version.release_channel || "release"}`} href={`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${version.id}/download`} ariaLabel={t("downloadVersionAria", { version: version.version_number })}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"></path>
+                                                </svg>
+                                            </VersionDownloadButton>
+                                        </Tooltip>
+                                    </span>
 
-                                    <Link href={`${getProjectPath(project)}/version/${version.id}`}>
+                                    <Link href={versionHref} className="version-table__name">
                                         <span className="version__title">
                                             {version.version_number}
+                                        </span>
+                                    </Link>
 
-                                            {version.loaders && version.loaders.trim() && version.loaders !== "null" ? (
-                                                version.loaders.split(",").map((loader, index) => (
+                                    <div className="version-table__game-versions" data-label={t("versions.headers.gameVersion")}>
+                                        <div className="version-table__value">
+                                            <VersionDisplay gameVersions={versionGameVersions} allGameVersions={gameVersions} />
+                                        </div>
+                                    </div>
+
+                                    <div className="version-table__platforms" data-label={t("versions.headers.platforms")}>
+                                        <div className="version-table__value">
+                                            {versionLoaders.length > 0 ? (
+                                                versionLoaders.map((loader, index) => (
                                                     <span key={index} className="version__game-platform">
-                                                        {loader.trim()}
+                                                        {loader}
                                                     </span>
                                                 ))
                                             ) : (
                                                 <span className="version__game-platform">{t("versions.notSpecified")}</span>
                                             )}
-                                            
-                                            <VersionDisplay gameVersions={version.game_versions ? version.game_versions.split(",").map((v) => v.trim()) : []} allGameVersions={gameVersions} />
-                                        </span>
+                                        </div>
+                                    </div>
 
-                                        <div className="version__metadata">
-                                            {moderationBadge && (
+                                    <div className="version__metadata version-table__published" data-label={t("versions.headers.published")}>
+                                        <div className="version-table__value">
+                                            {moderationBadge ? (
                                                 <span className={`version__badge type--${moderationBadge.type}`} style={{ marginRight: "8px" }}>
                                                     <span className="circle"></span>
                                                     {moderationBadge.label}
                                                 </span>
+                                            ) : (
+                                                <span className="version_number">{formatDate(version.created_at)}</span>
                                             )}
-
-                                            <span className={`version__badge type--${version.release_channel}`}>
-                                                <span className="circle"></span>
-                                                {t("versions.published")}
-                                            </span>
-                                            <span className="divider"></span>
-                                            <span className="version_number">{formatDate(version.created_at)}</span>
                                         </div>
-                                    </Link>
+                                    </div>
 
-                                    <div className="version__stats">
-                                        <strong>{version.downloads}</strong>
-                                        <span>{t("versions.downloads")}</span>
+                                    <div className="version__stats" data-label={t("versions.headers.downloads")}>
+                                        <div className="version-table__value">
+                                            <span>{version.downloads}</span>
+                                        </div>
                                     </div>
                                 </div>
                             );

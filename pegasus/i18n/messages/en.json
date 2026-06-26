@@ -582,11 +582,18 @@
     "versions": {
       "headers": {
         "version": "Version",
-        "statistics": "Statistics"
+        "statistics": "Statistics",
+        "name": "Name",
+        "gameVersion": "Game version",
+        "platforms": "Platforms",
+        "published": "Published",
+        "downloads": "Downloads"
       },
       "notSpecified": "Not specified",
       "published": "Published:",
       "downloads": "downloads",
+      "download": "Download",
+      "empty": "The project author has not uploaded any versions yet. Ask them to do it!",
       "requiredContent": "Required content",
       "optionalDependencies": "Optional dependencies",
       "compatibility": "Compatibility",
