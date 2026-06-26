@@ -719,15 +719,17 @@
 }
 .all-versions--table .version-button:last-child {
 	border-bottom: 0;
+	border-bottom-left-radius: var(--layout-island-border-radius);
+	border-bottom-right-radius: var(--layout-island-border-radius);
 }
-.all-versions--table .version-button:hover {
+.all-versions--table .version-button:hover,
+.all-versions--table .version-button:nth-of-type(odd):hover {
+	background-color: var(--theme-version-table-row-hover-background);
 	border-radius: 0;
 }
-.all-versions--table .version-button:hover:has(.version-table__game-versions:hover, .version-table__platforms:hover, .version__metadata:hover, .version__stats:hover) {
-	background-color: transparent;
-}
-.all-versions--table .version-button:nth-of-type(odd):hover:has(.version-table__game-versions:hover, .version-table__platforms:hover, .version__metadata:hover, .version__stats:hover) {
-	background-color: var(--theme-version-table-row-background);
+.all-versions--table .version-button:last-child:hover {
+	border-bottom-left-radius: var(--layout-island-border-radius);
+	border-bottom-right-radius: var(--layout-island-border-radius);
 }
 .all-versions--table .version-button:focus-visible {
 	outline: 2px solid var(--theme-color-signal-active-default);
