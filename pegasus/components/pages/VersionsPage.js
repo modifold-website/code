@@ -190,6 +190,23 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
         return date.toLocaleDateString(locale, { day: "numeric", month: "short" });
     };
 
+    const formatPublicationDateTooltip = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const options = {
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+        };
+
+        if(date.getFullYear() !== now.getFullYear()) {
+            options.year = "numeric";
+        }
+
+        return new Intl.DateTimeFormat(locale, options).format(date);
+    };
+
     const getPageButtons = () => {
         const maxButtons = 10;
         let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
@@ -383,7 +400,9 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                                                     {moderationBadge.label}
                                                 </span>
                                             ) : (
-                                                <span className="version_number">{formatDate(version.created_at)}</span>
+                                                <Tooltip content={formatPublicationDateTooltip(version.created_at)} delay={300}>
+                                                    <span className="version_number">{formatDate(version.created_at)}</span>
+                                                </Tooltip>
                                             )}
                                         </div>
                                     </div>
