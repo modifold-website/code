@@ -13,6 +13,7 @@ import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
 import RoleBadge from "../ui/RoleBadge";
 import ProfileSubscriptionsModal from "@/modal/ProfileSubscriptionsModal";
 import Tooltip from "@/components/ui/Tooltip";
+import ProfileAchievements from "@/components/ui/ProfileAchievements";
 
 if(typeof window !== "undefined") {
     Modal.setAppElement("body");
@@ -113,7 +114,7 @@ const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(M
 
 const getProjectDownloadsTotal = (projects) => projects.reduce((sum, project) => sum + Math.max(0, Number(project?.downloads) || 0), 0);
 
-export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], totalProjects = null, totalDownloads = null, organizations = [], currentPage = 1, totalPages = 1 }) {
+export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], totalProjects = null, totalDownloads = null, organizations = [], achievements = [], currentPage = 1, totalPages = 1 }) {
     const t = useTranslations("ProfilePage");
     const tLinks = useTranslations("Organizations.settings.links");
     const locale = useLocale();
@@ -352,6 +353,8 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                 </div>
                             </div>
                         </div>
+
+                        <ProfileAchievements achievements={achievements} isBanned={isBanned} />
 
                         {(user?.social_links?.discord || user?.social_links?.x || user?.social_links?.telegram || user?.social_links?.youtube) && (
                             <div className="content content--padding">

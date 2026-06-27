@@ -18,6 +18,7 @@ const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../util
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
 const { fanoutVersionReleaseNotifications } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
+const { awardFirstApprovedProjectAchievement, awardProjectDownloadAchievements } = require("../../utils/achievements");
 const router = express.Router();
 
 const parseJsonArrayField = (value) => {
@@ -2609,6 +2610,14 @@ const trackProjectDownload = async ({ slug, versionId, ipAddress, countryCode, u
         [projectSlug]
     );
 
+	if(shouldCount) {
+		await awardProjectDownloadAchievements(db, {
+			projectId: project[0].id,
+			userId: project[0].user_id,
+			totalDownloads,
+		});
+	}
+
     return {
         status: 200,
         body: {
@@ -2682,6 +2691,22 @@ router.post("/:id/moderate", auth, async (req, res) => {
     try {
         await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
         await bumpProjectCacheVersionById(db, id);
+
+		if(status === "approved") {
+			const [projectRows] = await db.query(
+				"SELECT id, user_id FROM projects WHERE id = ? LIMIT 1",
+				[id]
+			);
+
+			if(projectRows[0]) {
+				await awardFirstApprovedProjectAchievement(db, {
+					projectId: projectRows[0].id,
+					userId: projectRows[0].user_id,
+					awardedByUserId: req.user.id,
+				});
+			}
+		}
+
         res.json({ success: true });
     } catch (error) {
         console.error("Error moderating project:", error);

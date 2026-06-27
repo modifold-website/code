@@ -69,18 +69,23 @@ export default async function Page({ params, searchParams }) {
         next: { revalidate: 60, tags: [`user:${username}:projects:${currentProjectsPage}`] },
     };
 
-    const [banRes, projectsRes, organizationsRes] = await Promise.all([
+    const [banRes, projectsRes, organizationsRes, achievementsRes] = await Promise.all([
         fetch(`${apiBase}/bans/${user.id}`, banFetchOptions),
         fetch(`${apiBase}/users/${username}/projects?page=${currentProjectsPage}&limit=20`, projectsFetchOptions),
         fetch(`${apiBase}/users/${username}/organizations`, {
             headers: { Accept: "application/json" },
             next: { revalidate: 60, tags: [`user:${username}:organizations`] },
         }),
+        fetch(`${apiBase}/users/${username}/achievements`, {
+            headers: { Accept: "application/json" },
+            next: { revalidate: 60, tags: [`user:${username}:achievements`] },
+        }),
     ]);
 
     const banData = banRes.ok ? await banRes.json() : { isBanned: false };
     const projectsData = projectsRes.ok ? await projectsRes.json() : { projects: [], totalPages: 1, currentPage: currentProjectsPage };
     const organizationsData = organizationsRes.ok ? await organizationsRes.json() : { organizations: [] };
+    const achievementsData = achievementsRes.ok ? await achievementsRes.json() : { achievements: [] };
 
     let isSubscribed = false;
     let subscriptionId = null;
@@ -112,6 +117,7 @@ export default async function Page({ params, searchParams }) {
             totalProjects={projectsData.totalProjects}
             totalDownloads={projectsData.totalDownloads}
             organizations={organizationsData.organizations || []}
+            achievements={achievementsData.achievements || []}
             currentPage={projectsData.currentPage || currentProjectsPage}
             totalPages={projectsData.totalPages || 1}
         />

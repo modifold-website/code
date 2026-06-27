@@ -36,6 +36,44 @@
     color: var(--theme-color-text-primary);
     font-weight: 500;
 }
+.subsite-achievements h2 {
+    margin-bottom: 16px;
+}
+.subsite-achievements__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 56px);
+    gap: 12px;
+    align-items: start;
+    justify-content: start;
+}
+.subsite-achievements__item {
+    display: block;
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    overflow: hidden;
+    outline: none;
+}
+.subsite-achievements__item img {
+    display: block;
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+}
+.subsite-achievement-tooltip {
+    display: grid;
+    gap: 6px;
+    width: max-content;
+    max-width: 240px;
+    line-height: 1.25;
+    white-space: normal;
+}
+.subsite-achievement-tooltip strong,
+.subsite-achievement-tooltip span {
+    color: inherit;
+    font-weight: inherit;
+    overflow-wrap: anywhere;
+}
 .subsite-avatar {
     --size: 90px;
     width: var(--size);
@@ -223,6 +261,7 @@
     height: 1px;
 }
 .subsite-content {
+    height: fit-content;
     width: 300px;
     max-width: 300px;
     display: grid;

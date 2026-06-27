@@ -1008,6 +1008,30 @@
     "downloadsLabel": "{count, plural, one {descarga} other {descargas}}",
     "publishedProjectsTooltip": "Proyectos publicados",
     "downloadsTooltip": "Descargas de proyectos del autor",
+    "achievements": {
+      "title": "Logros",
+      "receivedAt": "Obtenido el: {date}",
+      "customTitle": "Logro único",
+      "customDescription": "Un logro único del creador.",
+      "items": {
+        "staff": {
+          "title": "Equipo de Modifold",
+          "description": "Se otorga a moderadores y administradores de Modifold."
+        },
+        "first_project": {
+          "title": "Primer proyecto",
+          "description": "Se otorga cuando el primer proyecto del creador es aprobado y publicado."
+        },
+        "downloads_100": {
+          "title": "100 descargas",
+          "description": "Se otorga cuando un proyecto del creador alcanza 100 descargas entre todas sus versiones."
+        },
+        "downloads_500": {
+          "title": "500 descargas",
+          "description": "Se otorga cuando un proyecto del creador alcanza 500 descargas entre todas sus versiones."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {suscriptor} other {suscriptores}}",
     "subscriptionsLabel": "{count, plural, one {suscripción} other {suscripciones}}",
     "followersModal": {

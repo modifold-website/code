@@ -1008,6 +1008,30 @@
     "downloadsLabel": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
     "publishedProjectsTooltip": "Опубликованные проекты",
     "downloadsTooltip": "Скачивания проектов автора",
+    "achievements": {
+      "title": "Ачивки",
+      "receivedAt": "Получена: {date}",
+      "customTitle": "Уникальная ачивка",
+      "customDescription": "Уникальная ачивка автора.",
+      "items": {
+        "staff": {
+          "title": "Команда Modifold",
+          "description": "Выдаётся модераторам и администраторам Modifold."
+        },
+        "first_project": {
+          "title": "Первый проект",
+          "description": "Выдаётся, когда первый проект автора был одобрен и опубликован."
+        },
+        "downloads_100": {
+          "title": "100 скачиваний",
+          "description": "Выдаётся, когда один проект автора набрал 100 скачиваний по всем версиям."
+        },
+        "downloads_500": {
+          "title": "500 скачиваний",
+          "description": "Выдаётся, когда один проект автора набрал 500 скачиваний по всем версиям."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {подписчик} other {подписчиков}}",
     "subscriptionsLabel": "{count, plural, one {подписка} other {подписок}}",
     "followersModal": {

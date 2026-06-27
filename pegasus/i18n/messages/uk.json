@@ -1009,6 +1009,30 @@
     "downloadsLabel": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}",
     "publishedProjectsTooltip": "Опубліковані проєкти",
     "downloadsTooltip": "Завантаження проєктів автора",
+    "achievements": {
+      "title": "Досягнення",
+      "receivedAt": "Отримано: {date}",
+      "customTitle": "Унікальне досягнення",
+      "customDescription": "Унікальне досягнення автора.",
+      "items": {
+        "staff": {
+          "title": "Команда Modifold",
+          "description": "Видається модераторам і адміністраторам Modifold."
+        },
+        "first_project": {
+          "title": "Перший проєкт",
+          "description": "Видається, коли перший проєкт автора схвалено й опубліковано."
+        },
+        "downloads_100": {
+          "title": "100 завантажень",
+          "description": "Видається, коли один проєкт автора набрав 100 завантажень по всіх версіях."
+        },
+        "downloads_500": {
+          "title": "500 завантажень",
+          "description": "Видається, коли один проєкт автора набрав 500 завантажень по всіх версіях."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {підписник} other {підписники}}",
     "subscriptionsLabel": "{count, plural, one {підписка} other {підписки}}",
     "followersModal": {

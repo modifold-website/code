@@ -1008,6 +1008,30 @@
     "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
     "publishedProjectsTooltip": "Yayınlanan projeler",
     "downloadsTooltip": "Yazarın proje indirmeleri",
+    "achievements": {
+      "title": "Başarımlar",
+      "receivedAt": "Kazanıldı: {date}",
+      "customTitle": "Benzersiz başarım",
+      "customDescription": "Yaratıcıya özel bir başarım.",
+      "items": {
+        "staff": {
+          "title": "Modifold Ekibi",
+          "description": "Modifold moderatörleri ve yöneticilerine verilir."
+        },
+        "first_project": {
+          "title": "İlk proje",
+          "description": "Yaratıcının ilk projesi onaylanıp yayınlandığında verilir."
+        },
+        "downloads_100": {
+          "title": "100 indirme",
+          "description": "Yaratıcının bir projesi tüm sürümler toplamında 100 indirmeye ulaştığında verilir."
+        },
+        "downloads_500": {
+          "title": "500 indirme",
+          "description": "Yaratıcının bir projesi tüm sürümler toplamında 500 indirmeye ulaştığında verilir."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {abone} other {aboneler}}",
     "subscriptionsLabel": "{count, plural, one {abonelik} other {abonelikler}}",
     "followersModal": {

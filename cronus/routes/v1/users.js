@@ -570,6 +570,52 @@ router.get("/:username/organizations", async (req, res) => {
     }
 });
 
+router.get("/:username/achievements", async (req, res) => {
+	try {
+		const { username } = req.params;
+		const [userRows] = await db.query("SELECT id FROM users WHERE slug = ? LIMIT 1", [username]);
+		if(!userRows.length) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		const [rows] = await db.query(
+			`SELECT
+			ua.id,
+			ua.awarded_at,
+			ua.context_type,
+			ua.context_id,
+			ua.note,
+			a.code,
+			a.name,
+			a.description,
+			a.icon_url
+			FROM user_achievements ua
+			INNER JOIN achievements a ON a.id = ua.achievement_id
+			WHERE ua.user_id = ?
+			AND a.is_active = 1
+			ORDER BY ua.awarded_at DESC, ua.id DESC`,
+			[userRows[0].id]
+		);
+
+		return res.json({
+			achievements: rows.map((row) => ({
+				id: row.id,
+				code: row.code,
+				name: row.name,
+				description: row.description,
+				icon_url: row.icon_url,
+				awarded_at: Number(row.awarded_at || 0),
+				context_type: row.context_type || null,
+				context_id: row.context_id || null,
+				note: row.note || null,
+			})),
+		});
+	} catch (error) {
+		console.error("Error fetching user achievements:", error);
+		return res.status(500).json({ message: "Error fetching user achievements", error: error.message });
+	}
+});
+
 router.get("/:username", async (req, res) => {
     try {
         const [user] = await db.query("SELECT id, username, slug, description, avatar, created_at, isVerified, isRole, social_links FROM users WHERE slug = ?", [req.params.username]);
