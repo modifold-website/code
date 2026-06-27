@@ -324,6 +324,7 @@ svg {
 
     --theme-sidebar-separator-color-background: rgb(0 0 0 / 5%);
     --theme-version-table-row-background: #f9f9f9;
+    --theme-version-table-row-hover-background: #fbfbfb;
     --theme-color-brand-primary: #067aff;
     --theme-color-brand-logo: #000;
     --theme-color-signal-active-default: #307df0;
@@ -403,6 +404,7 @@ body.dark {
     --theme-modal-overlay-background: rgb(0 0 0 / 50%);
     --theme-sidebar-separator-color-background: rgb(255 255 255 / 3%);
     --theme-version-table-row-background: #1d1d1e;
+    --theme-version-table-row-hover-background: #262626;
     --theme-color-brand-logo: #fff;
     --theme-color-brand-primary: #307df0;
     --theme-color-signal-active-default: #3375d6;
