@@ -1017,19 +1017,27 @@
       "items": {
         "staff": {
           "title": "Команда Modifold",
-          "description": "Видається модераторам і адміністраторам Modifold."
+          "description": "Для модераторів і адміністраторів Modifold."
         },
         "first_project": {
           "title": "Перший проєкт",
-          "description": "Видається, коли перший проєкт автора схвалено й опубліковано."
+          "description": "За перший опублікований проєкт."
         },
         "downloads_100": {
           "title": "100 завантажень",
-          "description": "Видається, коли один проєкт автора набрав 100 завантажень по всіх версіях."
+          "description": "За 100 завантажень одного проєкту."
         },
         "downloads_500": {
           "title": "500 завантажень",
-          "description": "Видається, коли один проєкт автора набрав 500 завантажень по всіх версіях."
+          "description": "За 500 завантажень одного проєкту."
+        },
+        "downloads_10000": {
+          "title": "10 000 завантажень",
+          "description": "За 10 000 завантажень одного проєкту."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Учасник Hytale x HytaleModding ModJam 2026."
         }
       }
     },

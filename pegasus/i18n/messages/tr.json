@@ -1016,19 +1016,27 @@
       "items": {
         "staff": {
           "title": "Modifold Ekibi",
-          "description": "Modifold moderatörleri ve yöneticilerine verilir."
+          "description": "Modifold moderatörleri ve yöneticileri için."
         },
         "first_project": {
           "title": "İlk proje",
-          "description": "Yaratıcının ilk projesi onaylanıp yayınlandığında verilir."
+          "description": "İlk yayınlanan proje için."
         },
         "downloads_100": {
           "title": "100 indirme",
-          "description": "Yaratıcının bir projesi tüm sürümler toplamında 100 indirmeye ulaştığında verilir."
+          "description": "Tek bir projede 100 indirme için."
         },
         "downloads_500": {
           "title": "500 indirme",
-          "description": "Yaratıcının bir projesi tüm sürümler toplamında 500 indirmeye ulaştığında verilir."
+          "description": "Tek bir projede 500 indirme için."
+        },
+        "downloads_10000": {
+          "title": "10.000 indirme",
+          "description": "Tek bir projede 10.000 indirme için."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Hytale x HytaleModding ModJam 2026 katılımcısı."
         }
       }
     },

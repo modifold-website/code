@@ -1016,19 +1016,27 @@
       "items": {
         "staff": {
           "title": "Equipo de Modifold",
-          "description": "Se otorga a moderadores y administradores de Modifold."
+          "description": "Para moderadores y administradores de Modifold."
         },
         "first_project": {
           "title": "Primer proyecto",
-          "description": "Se otorga cuando el primer proyecto del creador es aprobado y publicado."
+          "description": "Por publicar un primer proyecto."
         },
         "downloads_100": {
           "title": "100 descargas",
-          "description": "Se otorga cuando un proyecto del creador alcanza 100 descargas entre todas sus versiones."
+          "description": "Por 100 descargas en un proyecto."
         },
         "downloads_500": {
           "title": "500 descargas",
-          "description": "Se otorga cuando un proyecto del creador alcanza 500 descargas entre todas sus versiones."
+          "description": "Por 500 descargas en un proyecto."
+        },
+        "downloads_10000": {
+          "title": "10.000 descargas",
+          "description": "Por 10.000 descargas en un proyecto."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Participante de Hytale x HytaleModding ModJam 2026."
         }
       }
     },

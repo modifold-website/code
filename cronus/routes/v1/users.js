@@ -593,7 +593,7 @@ router.get("/:username/achievements", async (req, res) => {
 			INNER JOIN achievements a ON a.id = ua.achievement_id
 			WHERE ua.user_id = ?
 			AND a.is_active = 1
-			ORDER BY ua.awarded_at DESC, ua.id DESC`,
+			ORDER BY ua.id ASC`,
 			[userRows[0].id]
 		);
 

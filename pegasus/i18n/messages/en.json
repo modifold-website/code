@@ -1016,19 +1016,27 @@
       "items": {
         "staff": {
           "title": "Modifold Staff",
-          "description": "Awarded to Modifold moderators and administrators."
+          "description": "For Modifold moderators and administrators."
         },
         "first_project": {
           "title": "First project",
-          "description": "Awarded when the creator's first project is approved and published."
+          "description": "For publishing a first project."
         },
         "downloads_100": {
           "title": "100 downloads",
-          "description": "Awarded when one creator project reaches 100 downloads across all versions."
+          "description": "For 100 downloads on one project."
         },
         "downloads_500": {
           "title": "500 downloads",
-          "description": "Awarded when one creator project reaches 500 downloads across all versions."
+          "description": "For 500 downloads on one project."
+        },
+        "downloads_10000": {
+          "title": "10,000 downloads",
+          "description": "For 10,000 downloads on one project."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Participant of Hytale x HytaleModding ModJam 2026."
         }
       }
     },
