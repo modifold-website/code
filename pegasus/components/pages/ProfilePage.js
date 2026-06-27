@@ -123,7 +123,6 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
     const [subscriptionId, setSubscriptionId] = useState(initialSubId);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false);
-    const [isModifoldVerifiedModalOpen, setIsModifoldVerifiedModalOpen] = useState(false);
     const [activeFollowModal, setActiveFollowModal] = useState(null);
     const popoverRef = useRef(null);
     const buttonRef = useRef(null);
@@ -266,13 +265,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                 </div>
 
                                 <h1 className="subsite-header__name" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    {(user?.isRole === "admin" || user?.isRole === "moderator") && (                   
-                                        <svg width="20" height="20" style={{ marginRight: "2px", cursor: "pointer" }} viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={() => setIsModifoldVerifiedModalOpen(true)} role="button" aria-label="Verified by Modifold">
-                                            <path d="M56.6424 5.64827C60.6427 0.783909 68.0894 0.783909 72.0897 5.64827L82.8299 18.7088C84.696 20.9778 87.4657 22.311 90.4032 22.3553L107.311 22.6092C113.608 22.7042 118.251 28.527 116.942 34.6873L113.428 51.2274C112.817 54.1011 113.502 57.0975 115.299 59.4217L125.641 72.7996C129.493 77.782 127.836 85.0416 122.204 87.8592L107.081 95.4246C104.453 96.739 102.536 99.1419 101.84 101.996L97.8299 118.423C96.3363 124.541 89.6267 127.773 83.9119 125.126L68.5692 118.018C65.9033 116.784 62.8288 116.784 60.1629 118.018L44.8201 125.126C39.1054 127.773 32.3958 124.541 30.9022 118.423L26.8924 101.996C26.1956 99.1419 24.2787 96.739 21.6512 95.4246L6.52816 87.8592C0.896047 85.0416 -0.761059 77.782 3.09066 72.7996L13.4344 59.4217C15.2311 57.0976 15.915 54.1009 15.3045 51.2274L11.7899 34.6873C10.4809 28.5269 15.1245 22.7039 21.4217 22.6092L38.3289 22.3553C41.2665 22.3111 44.0361 20.977 45.9022 18.7078L56.6424 5.64827ZM65.1248 26.1942C64.6554 25.9221 64.0748 25.9221 63.6053 26.1942L28.7713 46.3856C28.3086 46.6538 28.0243 47.1465 28.0243 47.6785V86.0145C28.0244 86.549 28.3111 87.0431 28.7772 87.3104L63.6121 107.281C64.0783 107.548 64.6528 107.548 65.119 107.281L99.953 87.3104C100.419 87.0431 100.707 86.549 100.707 86.0145V47.6785C100.707 47.1465 100.422 46.6538 99.9588 46.3856L65.1248 26.1942ZM96.6912 49.0633V84.6336L64.3651 103.224L32.0399 84.6336V49.0633L64.3651 30.243L96.6912 49.0633ZM35.7537 50.9051V82.9071L64.3651 99.0799L92.9764 82.9071V50.9051L64.3651 34.3866L35.7537 50.9051ZM62.8582 68.1151V94.245L39.5584 81.0076V54.992L62.8582 68.1151ZM89.4041 80.9696L66.2196 94.1307V68.1532L89.4041 54.8768V80.9696ZM56.9461 87.5692L60.4237 89.5457V85.3817L56.9461 83.4256V87.5692ZM68.5379 85.3817V89.5457L72.0164 87.5692V83.4246L68.5379 85.3817ZM41.993 79.2811L45.5858 81.2381V77.0936L41.993 75.1375V79.2811ZM83.3758 77.0936V81.2381L86.9696 79.2811V75.1366L83.3758 77.0936ZM47.6727 75.2518L54.1639 78.8211V71.1082L47.6727 67.5399V75.2518ZM74.7977 71.1082V78.8201L81.2899 75.2518V67.5399L74.7977 71.1082ZM56.9461 72.4891L60.5399 74.4461V70.0721L56.9461 68.1151V72.4891ZM68.4227 70.0721V74.4461L72.0164 72.4891V68.1151L68.4227 70.0721ZM41.993 64.201L45.5858 66.158V62.0145L41.993 60.0575V64.201ZM83.3758 62.0145V66.158L86.9696 64.201V60.0575L83.3758 62.0145Z" fill="#307df0"/>
-                                        </svg>
-                                    )}
-
-                                    <UserName showVerifiedIcon={false} showModifoldVerifiedIcon={false} user={isBanned ? { username: authorTitle } : user} />
+                                    <UserName showVerifiedIcon={false} user={isBanned ? { username: authorTitle } : user} />
 
                                     {user.isVerified === 1 && (
                                         <img onClick={() => setIsVerifiedModalOpen(true)} src="/badges/creator.webp" alt="Verified" style={{ width: "20px", cursor: "pointer" }} />
@@ -511,27 +504,6 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                 </div>
             </Modal>
 
-            <Modal closeTimeoutMS={150} isOpen={isModifoldVerifiedModalOpen} onRequestClose={() => setIsModifoldVerifiedModalOpen(false)} className="modal active" overlayClassName="modal-overlay">
-                <div className="modal-window">
-                    <div className="modal-window__header">
-                        <button className="icon-button modal-window__close" type="button" onClick={() => setIsModifoldVerifiedModalOpen(false)} aria-label={t("close")}>
-                            <svg className="icon icon--cross" height="24" width="24">
-                                <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div className="modal-window__content">
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                            <svg width="72" height="72" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Verified by Modifold">
-                                <path d="M56.6424 5.64827C60.6427 0.783909 68.0894 0.783909 72.0897 5.64827L82.8299 18.7088C84.696 20.9778 87.4657 22.311 90.4032 22.3553L107.311 22.6092C113.608 22.7042 118.251 28.527 116.942 34.6873L113.428 51.2274C112.817 54.1011 113.502 57.0975 115.299 59.4217L125.641 72.7996C129.493 77.782 127.836 85.0416 122.204 87.8592L107.081 95.4246C104.453 96.739 102.536 99.1419 101.84 101.996L97.8299 118.423C96.3363 124.541 89.6267 127.773 83.9119 125.126L68.5692 118.018C65.9033 116.784 62.8288 116.784 60.1629 118.018L44.8201 125.126C39.1054 127.773 32.3958 124.541 30.9022 118.423L26.8924 101.996C26.1956 99.1419 24.2787 96.739 21.6512 95.4246L6.52816 87.8592C0.896047 85.0416 -0.761059 77.782 3.09066 72.7996L13.4344 59.4217C15.2311 57.0976 15.915 54.1009 15.3045 51.2274L11.7899 34.6873C10.4809 28.5269 15.1245 22.7039 21.4217 22.6092L38.3289 22.3553C41.2665 22.3111 44.0361 20.977 45.9022 18.7078L56.6424 5.64827ZM65.1248 26.1942C64.6554 25.9221 64.0748 25.9221 63.6053 26.1942L28.7713 46.3856C28.3086 46.6538 28.0243 47.1465 28.0243 47.6785V86.0145C28.0244 86.549 28.3111 87.0431 28.7772 87.3104L63.6121 107.281C64.0783 107.548 64.6528 107.548 65.119 107.281L99.953 87.3104C100.419 87.0431 100.707 86.549 100.707 86.0145V47.6785C100.707 47.1465 100.422 46.6538 99.9588 46.3856L65.1248 26.1942ZM96.6912 49.0633V84.6336L64.3651 103.224L32.0399 84.6336V49.0633L64.3651 30.243L96.6912 49.0633ZM35.7537 50.9051V82.9071L64.3651 99.0799L92.9764 82.9071V50.9051L64.3651 34.3866L35.7537 50.9051ZM62.8582 68.1151V94.245L39.5584 81.0076V54.992L62.8582 68.1151ZM89.4041 80.9696L66.2196 94.1307V68.1532L89.4041 54.8768V80.9696ZM56.9461 87.5692L60.4237 89.5457V85.3817L56.9461 83.4256V87.5692ZM68.5379 85.3817V89.5457L72.0164 87.5692V83.4246L68.5379 85.3817ZM41.993 79.2811L45.5858 81.2381V77.0936L41.993 75.1375V79.2811ZM83.3758 77.0936V81.2381L86.9696 79.2811V75.1366L83.3758 77.0936ZM47.6727 75.2518L54.1639 78.8211V71.1082L47.6727 67.5399V75.2518ZM74.7977 71.1082V78.8201L81.2899 75.2518V67.5399L74.7977 71.1082ZM56.9461 72.4891L60.5399 74.4461V70.0721L56.9461 68.1151V72.4891ZM68.4227 70.0721V74.4461L72.0164 72.4891V68.1151L68.4227 70.0721ZM41.993 64.201L45.5858 66.158V62.0145L41.993 60.0575V64.201ZM83.3758 62.0145V66.158L86.9696 64.201V60.0575L83.3758 62.0145Z" fill="#307df0"/>
-                            </svg>
-                            
-                            <p style={{ margin: 0, textAlign: "center" }}>{t("verifiedModal.officialBadgeText")}</p>
-                        </div>
-                    </div>
-                </div>
-            </Modal>
         </>
     );
 }
