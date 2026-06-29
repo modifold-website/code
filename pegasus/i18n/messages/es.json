@@ -1011,6 +1011,7 @@
     "uploadAvatar": "Subir avatar",
     "uploadCover": "Subir portada",
     "addCover": "Añadir portada",
+    "editCover": "Editar portada",
     "avatarUploadSuccess": "Avatar actualizado",
     "coverUploadSuccess": "Portada actualizada",
     "projectsLabel": "{count, plural, one {proyecto} other {proyectos}}",

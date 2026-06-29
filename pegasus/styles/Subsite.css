@@ -118,6 +118,16 @@
     transform: translate(-50%, -50%);
     z-index: 2;
 }
+.subsite-cover-editor__centered--hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease;
+}
+.profile-hero__cover-wrap:hover .subsite-cover-editor__centered--hidden,
+.profile-hero__cover-wrap:focus-within .subsite-cover-editor__centered--hidden {
+    opacity: 1;
+    pointer-events: auto;
+}
 .profile-hero__body {
     padding: 0 32px 8px;
 }

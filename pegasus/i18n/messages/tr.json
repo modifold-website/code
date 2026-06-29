@@ -1011,6 +1011,7 @@
     "uploadAvatar": "Avatar yükle",
     "uploadCover": "Kapak yükle",
     "addCover": "Kapak ekle",
+    "editCover": "Kapağı düzenle",
     "avatarUploadSuccess": "Avatar güncellendi",
     "coverUploadSuccess": "Kapak güncellendi",
     "projectsLabel": "{count, plural, one {proje} other {proje}}",

@@ -1012,6 +1012,7 @@
     "uploadAvatar": "Завантажити аватар",
     "uploadCover": "Завантажити обкладинку",
     "addCover": "Додати обкладинку",
+    "editCover": "Редагувати обкладинку",
     "avatarUploadSuccess": "Аватар оновлено",
     "coverUploadSuccess": "Обкладинку оновлено",
     "projectsLabel": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",

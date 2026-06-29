@@ -1011,6 +1011,7 @@
     "uploadAvatar": "Upload avatar",
     "uploadCover": "Upload cover",
     "addCover": "Add cover",
+    "editCover": "Edit cover",
     "avatarUploadSuccess": "Avatar updated",
     "coverUploadSuccess": "Cover updated",
     "projectsLabel": "{count, plural, one {project} other {projects}}",

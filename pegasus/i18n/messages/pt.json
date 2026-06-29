@@ -1011,6 +1011,7 @@
     "uploadAvatar": "Enviar avatar",
     "uploadCover": "Enviar capa",
     "addCover": "Adicionar capa",
+    "editCover": "Editar capa",
     "avatarUploadSuccess": "Avatar atualizado",
     "coverUploadSuccess": "Capa atualizada",
     "projectsLabel": "{count, plural, one {projeto} other {projetos}}",
