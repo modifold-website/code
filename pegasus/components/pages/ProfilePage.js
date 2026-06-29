@@ -350,11 +350,15 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                             <ProfileProjectFeedToolbar username={profileUser.slug} currentPage={currentPage} totalPages={totalPages} currentSort={currentSort} />
 
                             {projects.length > 0 ? (
-                                <div className="browse-project-list">
-                                    {projects.map((project) => (
-                                        <ProjectCard key={project.id} project={project} />
-                                    ))}
-                                </div>
+                                <>
+                                    <div className="browse-project-list">
+                                        {projects.map((project) => (
+                                            <ProjectCard key={project.id} project={project} />
+                                        ))}
+                                    </div>
+
+                                    <ProfileProjectFeedToolbar username={profileUser.slug} currentPage={currentPage} totalPages={totalPages} currentSort={currentSort} showSort={false} className="profile-project-feed__controls--bottom" />
+                                </>
                             ) : (
                                 <div className="content content--padding subsite-empty-feed">
                                     <p className="subsite-empty-feed__title">{t("noProjects")}</p>

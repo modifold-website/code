@@ -300,6 +300,16 @@
     margin-top: 0;
     margin-left: auto;
 }
+.profile-project-feed__controls--bottom {
+    margin-top: 18px;
+    padding: 0;
+}
+.profile-project-feed__controls--bottom .sort-controls__actions {
+    justify-content: flex-start;
+}
+.profile-project-feed__controls--bottom .profile-project-feed__pagination {
+    margin-left: 0;
+}
 .profile-project-feed__pagination svg {
     fill: none;
 }

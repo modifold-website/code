@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-export default function ProfileProjectFeedToolbar({ username, currentPage = 1, totalPages = 1, currentSort = "downloads" }) {
+export default function ProfileProjectFeedToolbar({ username, currentPage = 1, totalPages = 1, currentSort = "downloads", showSort = true, className = "" }) {
     const t = useTranslations("ProfilePage");
     const tBrowse = useTranslations("BrowsePage");
     const router = useRouter();
@@ -64,72 +64,76 @@ export default function ProfileProjectFeedToolbar({ username, currentPage = 1, t
         return buttons;
     };
 
+    const renderPagination = () => totalPages > 1 ? (
+        <div className="pagination-controls profile-project-feed__pagination">
+            {currentPage === 1 ? (
+                <button className="button button--size-m button--type-secondary button--icon-only" disabled aria-disabled="true" aria-label={t("previous")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m15 18-6-6 6-6"></path>
+                    </svg>
+                </button>
+            ) : (
+                <Link className="button button--size-m button--type-secondary button--icon-only" href={getProjectsHref(currentPage - 1)} aria-label={t("previous")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m15 18-6-6 6-6"></path>
+                    </svg>
+                </Link>
+            )}
+
+            {getPageButtons()}
+
+            {currentPage === totalPages ? (
+                <button className="button button--size-m button--type-secondary button--icon-only" disabled aria-disabled="true" aria-label={t("next")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </button>
+            ) : (
+                <Link className="button button--size-m button--type-secondary button--icon-only" href={getProjectsHref(currentPage + 1)} aria-label={t("next")}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </Link>
+            )}
+        </div>
+    ) : null;
+
     return (
-        <div className="sort-controls profile-project-feed__controls">
+        <div className={`sort-controls profile-project-feed__controls ${className}`}>
             <div className="sort-controls__actions">
-                <div className="sort-wrapper button button--size-m button--type-secondary" ref={sortRef}>
-                    <div className="dropdown">
-                        <button className="dropdown__label" onClick={() => setIsSortOpen((prev) => !prev)} aria-expanded={isSortOpen} type="button">
-                            {normalizedSort === "recent" ? tBrowse("sort.recent") : normalizedSort === "updated" ? tBrowse("sort.updated") : tBrowse("sort.downloads")}
+                {showSort && (
+                    <div className="sort-wrapper button button--size-m button--type-secondary" ref={sortRef}>
+                        <div className="dropdown">
+                            <button className="dropdown__label" onClick={() => setIsSortOpen((prev) => !prev)} aria-expanded={isSortOpen} type="button">
+                                {normalizedSort === "recent" ? tBrowse("sort.recent") : normalizedSort === "updated" ? tBrowse("sort.updated") : tBrowse("sort.downloads")}
 
-                            <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" className={`icon icon--chevron_up ${isSortOpen ? "open" : ""}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="m6 9 6 6 6-6"></path>
-                            </svg>
-                        </button>
-                    </div>
+                                <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" className={`icon icon--chevron_up ${isSortOpen ? "open" : ""}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m6 9 6 6 6-6"></path>
+                                </svg>
+                            </button>
+                        </div>
 
-                    {isSortOpen && (
-                        <div className="popover popover--sort">
-                            <div className="context-list" data-scrollable="" style={{ maxHeight: "none" }}>
-                                <div className={`context-list-option ${normalizedSort === "downloads" ? "context-list-option--selected" : ""}`} onClick={() => handleSortSelect("downloads")}>
-                                    <div className="context-list-option__label">{tBrowse("sort.downloads")}</div>
-                                </div>
+                        {isSortOpen && (
+                            <div className="popover popover--sort">
+                                <div className="context-list" data-scrollable="" style={{ maxHeight: "none" }}>
+                                    <div className={`context-list-option ${normalizedSort === "downloads" ? "context-list-option--selected" : ""}`} onClick={() => handleSortSelect("downloads")}>
+                                        <div className="context-list-option__label">{tBrowse("sort.downloads")}</div>
+                                    </div>
 
-                                <div className={`context-list-option ${normalizedSort === "recent" ? "context-list-option--selected" : ""}`} onClick={() => handleSortSelect("recent")}>
-                                    <div className="context-list-option__label">{tBrowse("sort.recent")}</div>
-                                </div>
+                                    <div className={`context-list-option ${normalizedSort === "recent" ? "context-list-option--selected" : ""}`} onClick={() => handleSortSelect("recent")}>
+                                        <div className="context-list-option__label">{tBrowse("sort.recent")}</div>
+                                    </div>
 
-                                <div className={`context-list-option ${normalizedSort === "updated" ? "context-list-option--selected" : ""}`} onClick={() => handleSortSelect("updated")}>
-                                    <div className="context-list-option__label">{tBrowse("sort.updated")}</div>
+                                    <div className={`context-list-option ${normalizedSort === "updated" ? "context-list-option--selected" : ""}`} onClick={() => handleSortSelect("updated")}>
+                                        <div className="context-list-option__label">{tBrowse("sort.updated")}</div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-
-                {totalPages > 1 && (
-                    <div className="pagination-controls profile-project-feed__pagination">
-                        {currentPage === 1 ? (
-                            <button className="button button--size-m button--type-secondary button--icon-only" disabled aria-disabled="true" aria-label={t("previous")}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="m15 18-6-6 6-6"></path>
-                                </svg>
-                            </button>
-                        ) : (
-                            <Link className="button button--size-m button--type-secondary button--icon-only" href={getProjectsHref(currentPage - 1)} aria-label={t("previous")}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="m15 18-6-6 6-6"></path>
-                                </svg>
-                            </Link>
-                        )}
-
-                        {getPageButtons()}
-
-                        {currentPage === totalPages ? (
-                            <button className="button button--size-m button--type-secondary button--icon-only" disabled aria-disabled="true" aria-label={t("next")}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="m9 18 6-6-6-6"></path>
-                                </svg>
-                            </button>
-                        ) : (
-                            <Link className="button button--size-m button--type-secondary button--icon-only" href={getProjectsHref(currentPage + 1)} aria-label={t("next")}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="m9 18 6-6-6-6"></path>
-                                </svg>
-                            </Link>
                         )}
                     </div>
                 )}
+
+                {renderPagination()}
             </div>
         </div>
     );
