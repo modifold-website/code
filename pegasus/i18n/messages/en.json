@@ -991,7 +991,10 @@
     "next": "Next",
     "errors": {
       "subscriptionChange": "Error changing subscription",
-      "loadingFollowList": "Error loading follow list"
+      "loadingFollowList": "Error loading follow list",
+      "profileImageTooLarge": "File is too large. Maximum size is 10 MB",
+      "invalidImageType": "Only JPG, PNG, WEBP, and GIF images are allowed",
+      "profileImageUpload": "Error uploading profile image"
     },
     "loginToSubscribe": "Log in to subscribe",
     "edit": "Edit",
@@ -1005,6 +1008,11 @@
     },
     "joined": "Joined:",
     "registrationDate": "Registered: {date}",
+    "uploadAvatar": "Upload avatar",
+    "uploadCover": "Upload cover",
+    "addCover": "Add cover",
+    "avatarUploadSuccess": "Avatar updated",
+    "coverUploadSuccess": "Cover updated",
     "projectsLabel": "{count, plural, one {project} other {projects}}",
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Published projects",

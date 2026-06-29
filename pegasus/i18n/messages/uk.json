@@ -992,7 +992,10 @@
     "next": "Наступний",
     "errors": {
       "subscriptionChange": "Помилка зміни підписки",
-      "loadingFollowList": "Помилка завантаження списку підписок"
+      "loadingFollowList": "Помилка завантаження списку підписок",
+      "profileImageTooLarge": "Файл завеликий. Максимум 10 МБ",
+      "invalidImageType": "Можна завантажувати лише JPG, PNG, WEBP і GIF",
+      "profileImageUpload": "Помилка завантаження зображення профілю"
     },
     "loginToSubscribe": "Увійдіть, щоб підписатися",
     "edit": "Редагувати",
@@ -1006,6 +1009,11 @@
     },
     "joined": "Приєднався:",
     "registrationDate": "Реєстрація: {date}",
+    "uploadAvatar": "Завантажити аватар",
+    "uploadCover": "Завантажити обкладинку",
+    "addCover": "Додати обкладинку",
+    "avatarUploadSuccess": "Аватар оновлено",
+    "coverUploadSuccess": "Обкладинку оновлено",
     "projectsLabel": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
     "downloadsLabel": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}",
     "publishedProjectsTooltip": "Опубліковані проєкти",

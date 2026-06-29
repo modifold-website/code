@@ -98,11 +98,25 @@
 .profile-hero {
     overflow: hidden;
 }
+.profile-hero__cover-wrap {
+    position: relative;
+    border-radius: 40px;
+    min-height: 230px;
+    background: var(--theme-color-background-content);
+    overflow: hidden;
+}
 .profile-hero__cover {
+    display: block;
     height: 230px;
     object-fit: cover;
-    border-radius: 40px;
     width: 100%;
+}
+.subsite-cover-editor__centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
 }
 .profile-hero__body {
     padding: 0 32px 8px;
@@ -356,10 +370,18 @@
     opacity: 0;
     cursor: pointer;
 }
+.subsite-avatar__overlay .icon--image {
+    fill: #fff;
+}
 @media (hover: hover) {
     .subsite-avatar__overlay:hover {
         opacity: 1;
     }
+}
+.subsite-avatar__overlay:focus-visible {
+    opacity: 1;
+    outline: 2px solid #fff;
+    outline-offset: -2px;
 }
 .subsite-header {
     height: fit-content;

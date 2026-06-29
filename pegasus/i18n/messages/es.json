@@ -991,7 +991,10 @@
     "next": "Siguiente",
     "errors": {
       "subscriptionChange": "Error al cambiar la suscripción",
-      "loadingFollowList": "Error al cargar la lista de seguimiento"
+      "loadingFollowList": "Error al cargar la lista de seguimiento",
+      "profileImageTooLarge": "El archivo es demasiado grande. El tamaño máximo es 10 MB",
+      "invalidImageType": "Solo se permiten imágenes JPG, PNG, WEBP y GIF",
+      "profileImageUpload": "Error al subir la imagen del perfil"
     },
     "loginToSubscribe": "Inicia sesión para suscribirte",
     "edit": "Editar",
@@ -1005,6 +1008,11 @@
     },
     "joined": "Se unió:",
     "registrationDate": "Registro: {date}",
+    "uploadAvatar": "Subir avatar",
+    "uploadCover": "Subir portada",
+    "addCover": "Añadir portada",
+    "avatarUploadSuccess": "Avatar actualizado",
+    "coverUploadSuccess": "Portada actualizada",
     "projectsLabel": "{count, plural, one {proyecto} other {proyectos}}",
     "downloadsLabel": "{count, plural, one {descarga} other {descargas}}",
     "publishedProjectsTooltip": "Proyectos publicados",

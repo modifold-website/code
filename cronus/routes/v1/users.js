@@ -20,18 +20,18 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if(allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error("Invalid file type. Only images (JPEG, PNG, GIF) are allowed."), false);
+        cb(new Error("Invalid file type. Only images (JPEG, PNG, GIF, WEBP) are allowed."), false);
     }
 };
 
 const upload = multer({
     storage,
     limits: {
-        fileSize: 20 * 1024 * 1024,
+        fileSize: 10 * 1024 * 1024,
     },
     fileFilter,
 });
@@ -132,13 +132,18 @@ const convertImageToWebp = async (file) => {
     };
 };
 
-router.put("/me", auth, upload.fields([{ name: "avatar" }]), async (req, res) => {
+router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), async (req, res) => {
     const { username, slug, description, social_links } = req.body;
     let avatarFile = req.files?.avatar?.[0];
+    let coverFile = req.files?.cover?.[0];
 
     try {
         if(avatarFile) {
             avatarFile = await convertImageToWebp(avatarFile);
+        }
+
+        if(coverFile) {
+            coverFile = await convertImageToWebp(coverFile);
         }
 
         const [currentUserRows] = await db.query("SELECT slug FROM users WHERE id = ? LIMIT 1", [req.user.id]);
@@ -156,6 +161,10 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }]), async (req, res) =>
 
         if(avatarFile) {
             updates.avatar = `https://media.modifold.com/${avatarFile.filename}`;
+        }
+
+        if(coverFile) {
+            updates.cover = `https://media.modifold.com/${coverFile.filename}`;
         }
 
         if(description !== undefined) {
@@ -192,7 +201,7 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }]), async (req, res) =>
 
         await db.query("UPDATE users SET ? WHERE id = ?", [updates, req.user.id]);
 
-        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, description, created_at, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(updatedUser[0]?.social_links) {
             updatedUser[0].social_links = JSON.parse(updatedUser[0].social_links);
@@ -625,7 +634,7 @@ router.get("/:username/achievements", async (req, res) => {
 
 router.get("/:username", async (req, res) => {
     try {
-        const [user] = await db.query("SELECT id, username, slug, description, avatar, created_at, isVerified, isRole, social_links FROM users WHERE slug = ?", [req.params.username]);
+        const [user] = await db.query("SELECT id, username, slug, description, avatar, cover, created_at, isVerified, isRole, social_links FROM users WHERE slug = ?", [req.params.username]);
 
         if(!user.length) {
             return res.status(404).json({ message: "User not found" });
@@ -642,6 +651,7 @@ router.get("/:username", async (req, res) => {
             slug: user[0].slug,
             description: user[0].description,
             avatar: user[0].avatar,
+            cover: user[0].cover,
             created_at: user[0].created_at,
             isVerified: user[0].isVerified,
             isRole: user[0].isRole,
