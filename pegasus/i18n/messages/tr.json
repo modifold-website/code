@@ -1004,6 +1004,7 @@
       "team": "Modifold Ekibi"
     },
     "joined": "Katılma:",
+    "registrationDate": "Kayıt: {date}",
     "projectsLabel": "{count, plural, one {proje} other {proje}}",
     "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
     "publishedProjectsTooltip": "Yayınlanan projeler",

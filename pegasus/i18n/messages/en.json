@@ -1004,6 +1004,7 @@
       "team": "Modifold Team"
     },
     "joined": "Joined:",
+    "registrationDate": "Registered: {date}",
     "projectsLabel": "{count, plural, one {project} other {projects}}",
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Published projects",

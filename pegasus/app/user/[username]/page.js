@@ -41,6 +41,8 @@ export default async function Page({ params, searchParams }) {
     const authToken = cookieStore.get("authToken")?.value;
     const requestedPage = Number(resolvedSearchParams?.page);
     const currentProjectsPage = Number.isFinite(requestedPage) && requestedPage > 0 ? Math.trunc(requestedPage) : 1;
+    const requestedSort = typeof resolvedSearchParams?.sort === "string" ? resolvedSearchParams.sort : "";
+    const currentProjectsSort = ["downloads", "recent", "updated"].includes(requestedSort) ? requestedSort : "downloads";
 
     const userRes = await fetch(`${apiBase}/users/${username}`, {
         headers: { Accept: "application/json" },
@@ -66,12 +68,12 @@ export default async function Page({ params, searchParams }) {
 
     const projectsFetchOptions = {
         headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`user:${username}:projects:${currentProjectsPage}`] },
+        next: { revalidate: 60, tags: [`user:${username}:projects:${currentProjectsPage}:${currentProjectsSort}`] },
     };
 
     const [banRes, projectsRes, organizationsRes, achievementsRes] = await Promise.all([
         fetch(`${apiBase}/bans/${user.id}`, banFetchOptions),
-        fetch(`${apiBase}/users/${username}/projects?page=${currentProjectsPage}&limit=20`, projectsFetchOptions),
+        fetch(`${apiBase}/users/${username}/projects?page=${currentProjectsPage}&limit=20&sort=${currentProjectsSort}`, projectsFetchOptions),
         fetch(`${apiBase}/users/${username}/organizations`, {
             headers: { Accept: "application/json" },
             next: { revalidate: 60, tags: [`user:${username}:organizations`] },
@@ -120,6 +122,7 @@ export default async function Page({ params, searchParams }) {
             achievements={achievementsData.achievements || []}
             currentPage={projectsData.currentPage || currentProjectsPage}
             totalPages={projectsData.totalPages || 1}
+            currentSort={projectsData.sort || currentProjectsSort}
         />
     );
 }

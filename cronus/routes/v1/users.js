@@ -369,6 +369,12 @@ router.get("/:username/projects", async (req, res) => {
     try {
         const { username } = req.params;
         const { page = 1, limit = 20 } = req.query;
+        const sort = ["downloads", "recent", "updated"].includes(req.query.sort) ? req.query.sort : "downloads";
+        const orderBy = {
+            downloads: "p.downloads DESC, p.updated_at DESC",
+            recent: "p.created_at DESC",
+            updated: "p.updated_at DESC",
+        }[sort];
 
         if(isNaN(page) || page < 1) {
             return res.status(400).json({ message: "Invalid page number" });
@@ -398,7 +404,7 @@ router.get("/:username/projects", async (req, res) => {
                     WHERE pm.project_id = p.id AND member_user.slug = ?
                 )
             )
-            ORDER BY p.downloads DESC
+            ORDER BY ${orderBy}
             LIMIT ? OFFSET ?
         `;
 
@@ -458,6 +464,7 @@ router.get("/:username/projects", async (req, res) => {
             totalProjects: Number(total || 0),
             totalDownloads: Number(totalDownloads || 0),
             currentPage: Number(page),
+            sort,
         });
     } catch (error) {
         console.error("Error fetching user projects:", error);

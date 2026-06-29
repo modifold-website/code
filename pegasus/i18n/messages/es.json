@@ -1004,6 +1004,7 @@
       "team": "Equipo Modifold"
     },
     "joined": "Se unió:",
+    "registrationDate": "Registro: {date}",
     "projectsLabel": "{count, plural, one {proyecto} other {proyectos}}",
     "downloadsLabel": "{count, plural, one {descarga} other {descargas}}",
     "publishedProjectsTooltip": "Proyectos publicados",

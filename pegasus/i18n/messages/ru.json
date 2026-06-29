@@ -1004,6 +1004,7 @@
       "team": "Команда Modifold"
     },
     "joined": "Дата регистрации:",
+    "registrationDate": "Регистрация: {date}",
     "projectsLabel": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
     "downloadsLabel": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
     "publishedProjectsTooltip": "Опубликованные проекты",

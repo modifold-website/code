@@ -6,14 +6,16 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import ProjectCard from "../project/ProjectCard";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import UserName from "../ui/UserName";
 import Modal from "react-modal";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
 import RoleBadge from "../ui/RoleBadge";
 import ProfileSubscriptionsModal from "@/modal/ProfileSubscriptionsModal";
-import Tooltip from "@/components/ui/Tooltip";
 import ProfileAchievements from "@/components/ui/ProfileAchievements";
+import ProfileLinks from "@/components/ui/ProfileLinks";
+import ProfileProjectFeedToolbar from "@/components/ui/ProfileProjectFeedToolbar";
+import ProfileStats from "@/components/ui/ProfileStats";
 
 if(typeof window !== "undefined") {
     Modal.setAppElement("body");
@@ -81,43 +83,10 @@ const renderDescription = (desc) => {
     });
 };
 
-const getDateFormatOptions = (date) => {
-    const now = new Date();
-    const options = {
-        day: "numeric",
-        month: "long",
-    };
-
-    if(date.getFullYear() !== now.getFullYear()) {
-        options.year = "numeric";
-    }
-
-    return options;
-};
-
-const formatJoinedDate = (timestamp, locale) => {
-    const date = new Date(timestamp);
-    return new Intl.DateTimeFormat(locale, getDateFormatOptions(date)).format(date);
-};
-
-const formatJoinedTooltip = (timestamp, locale) => {
-    const date = new Date(timestamp);
-
-    return new Intl.DateTimeFormat(locale, {
-        ...getDateFormatOptions(date),
-        hour: "2-digit",
-        minute: "2-digit",
-    }).format(date);
-};
-
-const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
-
 const getProjectDownloadsTotal = (projects) => projects.reduce((sum, project) => sum + Math.max(0, Number(project?.downloads) || 0), 0);
 
-export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], totalProjects = null, totalDownloads = null, organizations = [], achievements = [], currentPage = 1, totalPages = 1 }) {
+export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], totalProjects = null, totalDownloads = null, organizations = [], achievements = [], currentPage = 1, totalPages = 1, currentSort = "downloads" }) {
     const t = useTranslations("ProfilePage");
-    const tLinks = useTranslations("Organizations.settings.links");
-    const locale = useLocale();
     const { isLoggedIn, user: currentUser } = useAuth();
     const [isSubscribed, setIsSubscribed] = useState(initialSubscribed);
     const [subscriptionId, setSubscriptionId] = useState(initialSubId);
@@ -192,55 +161,42 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
     const authorDownloadsCount = Math.max(0, Number(totalDownloads ?? getProjectDownloadsTotal(projects)) || 0);
 
     const isOwnProfile = isLoggedIn && user.id === currentUser.id;
-
-    const getPageButtons = () => {
-        const maxButtons = 10;
-        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
-        if(endPage - startPage + 1 < maxButtons) {
-            startPage = Math.max(1, endPage - maxButtons + 1);
-        }
-
-        const buttons = [];
-        for(let i = startPage; i <= endPage; i++) {
-            buttons.push(
-                <Link key={i} href={i === 1 ? `/user/${user.slug}` : `/user/${user.slug}?page=${i}`} className={`button button--size-m pagination-button ${currentPage === i ? "button--type-primary" : "button--type-secondary"}`} aria-current={currentPage === i ? "page" : undefined}>
-                    {i}
-                </Link>
-            );
-        }
-
-        return buttons;
-    };
+    const hasSocialLinks = Boolean(
+        getSafeExternalUrl(user?.social_links?.discord) ||
+        getSafeExternalUrl(user?.social_links?.x) ||
+        getSafeExternalUrl(user?.social_links?.telegram) ||
+        getSafeExternalUrl(user?.social_links?.youtube)
+    );
+    const hasSidebar = (!isBanned && achievements.length > 0) || hasSocialLinks || organizations.length > 0;
 
     return (
         <>
-            <div className="layout">
-                <div className="browse-page">
-                    <div className="subsite-content">
-                        <div className="subsite-header">
-                            <div className="subsite-header__padding">
-                                <div className="subsite-header__header">
-                                    <div className="subsite-avatar subsite-header__avatar">
-                                        <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--cropped andropov-image andropov-image--zoom subsite-avatar__image" style={{ aspectRatio: "1.5 / 1", maxWidth: "none" }} aria-label={t("openAvatar")} {...getLightboxTriggerProps({ url: authorAva, title: authorTitle })}>
+            <div className="layout profile-layout">
+                <div className={`profile-page ${hasSidebar ? "" : "profile-page--single"}`}>
+                    <main className="profile-page__main">
+                        <section className="profile-hero">
+                            <img src="https://pbs.twimg.com/profile_banners/2009739561224867840/1781040806/1500x500" className="profile-hero__cover" aria-hidden="true" />
+
+                            <div className="profile-hero__body">
+                                <div className="profile-hero__topline">
+                                    <div className="subsite-avatar profile-hero__avatar">
+                                        <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--cropped andropov-image andropov-image--zoom subsite-avatar__image" aria-label={t("openAvatar")} {...getLightboxTriggerProps({ url: authorAva, title: authorTitle })}>
                                             <img className="magnify" src={authorAva} alt={authorTitle} />
                                         </div>
                                     </div>
 
                                     {isLoggedIn && (
-                                        <div className="subsite-header__controls">
+                                        <div className="profile-page-actions">
                                             {currentUser.id === user.id ? (
-                                                <Link href="/settings" className="button button--size-m button--type-minimal button--active-transform">{t("edit")}</Link>
+                                                <Link href="/settings" className="button button--size-l button--type-secondary button--active-transform">{t("edit")}</Link>
                                             ) : (
-                                                <>
-                                                    <button className="button button--size-m button--type-primary" style={{ display: isSubscribed ? "none" : "block" }} onClick={handleSubscribe}>{t("subscribe")}</button>
-
-                                                    <button className="button button--size-m button--type-minimal" style={{ display: isSubscribed ? "block" : "none" }} onClick={handleSubscribe}>{t("subscribed")}</button>
-                                                </>
+                                                <button className={`button button--size-l ${isSubscribed ? "button--type-secondary" : "button--type-primary"}`} type="button" onClick={handleSubscribe}>
+                                                    {isSubscribed ? t("subscribed") : t("subscribe")}
+                                                </button>
                                             )}
 
                                             {!isOwnProfile && (
-                                                <div className="content-header__actions" style={{ position: "relative", right: "0" }}>
+                                                <div className="profile-page-actions__more">
                                                     <button ref={buttonRef} className="icon-button content__etc" type="button" onClick={togglePopover} aria-label={t("moreActionsAria")}>
                                                         <svg viewBox="0 0 24 24" className="icon icon--dots" height="24" width="24">
                                                             <path fillRule="evenodd" clipRule="evenodd" d="M5 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM19 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" fill="currentColor" />
@@ -249,8 +205,8 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 
                                                     {isPopoverOpen && (
                                                         <div id="popover-overlay" className="popover-overlay">
-                                                            <div ref={popoverRef} className="popover" tabIndex={0} style={{ "--width": "207px", "--top": "45px", "--position": "absolute", "--left": "auto", "--right": "15px", "--bottom": "auto", "--distance": "8px" }}>
-                                                                <div className="popover__scrollable" style={{ "--max-height": "auto" }}>
+                                                            <div ref={popoverRef} className="popover profile-page-actions__popover" tabIndex={0}>
+                                                                <div className="popover__scrollable">
                                                                     <div className="context-list-option">
                                                                         <div className="context-list-option__label">{t("moreActionsPlaceholder")}</div>
                                                                     </div>
@@ -264,214 +220,81 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                     )}
                                 </div>
 
-                                <h1 className="subsite-header__name" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <UserName showVerifiedIcon={false} user={isBanned ? { username: authorTitle } : user} />
+                                <div className="profile-hero__identity">
+                                    <h1 className="profile-hero__name">
+                                        <UserName showVerifiedIcon={false} user={isBanned ? { username: authorTitle } : user} />
 
-                                    {user.isVerified === 1 && (
-                                        <img onClick={() => setIsVerifiedModalOpen(true)} src="/badges/creator.webp" alt="Verified" style={{ width: "20px", cursor: "pointer" }} />
-                                    )}
-                                </h1>
+                                        {user.isVerified === 1 && (
+                                            <button className="profile-hero__verified" type="button" onClick={() => setIsVerifiedModalOpen(true)} aria-label={t("verifiedModal.creatorBadgeAlt")}>
+                                                <img src="/badges/creator.webp" alt="" />
+                                            </button>
+                                        )}
+                                    </h1>
 
-                                <RoleBadge
-                                    role={user.isRole}
-                                    labels={{
-                                        developer: t("role.developer"),
-                                    }}
+                                    <RoleBadge
+                                        role={user.isRole}
+                                        labels={{
+                                            developer: t("role.developer"),
+                                        }}
+                                    />
+                                </div>
+
+                                <p className="profile-hero__description">{desc}</p>
+
+                                <ProfileStats
+                                    projectsCount={publishedProjectsCount}
+                                    downloadsCount={authorDownloadsCount}
+                                    subscribersCount={countSubs}
+                                    subscriptionsCount={countUserSubs}
+                                    timestamp={user.created_at}
+                                    onOpenFollowModal={handleOpenFollowModal}
                                 />
-
-                                <p className="subsite-header__description">{desc}</p>
-
-                                <div className="subsite-header__cols">
-                                    <div className="subsite-header__date-created">
-                                        <Tooltip content={formatJoinedTooltip(user.created_at, locale)}>
-                                            <span>{t("joined")} {formatJoinedDate(user.created_at, locale)}</span>
-                                        </Tooltip>
-                                    </div>
-                                </div>
-
-                                <div className="subsite-followers">
-                                    <Tooltip content={t("publishedProjectsTooltip")}>
-                                        <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-box-icon lucide-box" aria-hidden="true">
-                                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
-                                                <path d="m3.3 7 8.7 5 8.7-5"></path>
-                                                <path d="M12 22V12"></path>
-                                            </svg>
-
-                                            <span>{formatFullNumber(publishedProjectsCount, locale)}</span>
-                                            
-                                            {t("projectsLabel", { count: publishedProjectsCount })}
-                                        </button>
-                                    </Tooltip>
-
-                                    <Tooltip content={t("downloadsTooltip")}>
-                                        <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download-icon lucide-download" aria-hidden="true">
-                                                <path d="M12 15V3"></path>
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                <path d="m7 10 5 5 5-5"></path>
-                                            </svg>
-
-                                            <span>{formatFullNumber(authorDownloadsCount, locale)}</span>
-                                            
-                                            {t("downloadsLabel", { count: authorDownloadsCount })}
-                                        </button>
-                                    </Tooltip>
-
-                                    <button type="button" className={`subsite-followers__item subsite-followers__item--button ${countSubs < 1 ? "subsite-followers__item--disabled" : ""}`} onClick={() => handleOpenFollowModal("subscribers")} disabled={countSubs < 1}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-icon lucide-users" aria-hidden="true">
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                            <path d="M16 3.128a4 4 0 0 1 0 7.744"></path>
-                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                                            <circle cx="9" cy="7" r="4"></circle>
-                                        </svg>
-
-                                        <span>{formatFullNumber(countSubs, locale)}</span>
-                                        
-                                        {t("subscribersLabel", { count: countSubs })}
-                                    </button>
-
-                                    <button type="button" className={`subsite-followers__item subsite-followers__item--button ${countUserSubs < 1 ? "subsite-followers__item--disabled" : ""}`} onClick={() => handleOpenFollowModal("subscriptions")} disabled={countUserSubs < 1}>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-round-plus-icon lucide-user-round-plus" aria-hidden="true">
-                                            <path d="M2 21a8 8 0 0 1 13.292-6"></path>
-                                            <circle cx="10" cy="8" r="5"></circle>
-                                            <path d="M19 16v6"></path>
-                                            <path d="M22 19h-6"></path>
-                                        </svg>
-
-                                        <span>{formatFullNumber(countUserSubs, locale)}</span>
-                                        
-                                        {t("subscriptionsLabel", { count: countUserSubs })}
-                                    </button>
-                                </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <ProfileAchievements achievements={achievements} isBanned={isBanned} />
+                        <section className="profile-project-feed">
+                            <ProfileProjectFeedToolbar username={user.slug} currentPage={currentPage} totalPages={totalPages} currentSort={currentSort} />
 
-                        {(user?.social_links?.discord || user?.social_links?.x || user?.social_links?.telegram || user?.social_links?.youtube) && (
-                            <div className="content content--padding">
-                                <h2>{t("linksTitle")}</h2>
-
-                                <ul className="links-list">
-                                    {user?.social_links?.discord && (
-                                        <li>
-                                            <a href={getSafeExternalUrl(user?.social_links?.discord)} target="_blank" rel="noopener noreferrer">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="71" height="55" fill="none" viewBox="0 0 71 55" className="shrink" aria-hidden="true"><g clipPath="url(#a)"><path fill="currentColor" d="M60.105 4.898A58.6 58.6 0 0 0 45.653.415a.22.22 0 0 0-.233.11 41 41 0 0 0-1.8 3.697c-5.456-.817-10.885-.817-16.23 0-.485-1.164-1.201-2.587-1.828-3.697a.23.23 0 0 0-.233-.11 58.4 58.4 0 0 0-14.451 4.483.2.2 0 0 0-.095.082C1.578 18.73-.944 32.144.293 45.39a.24.24 0 0 0 .093.167c6.073 4.46 11.955 7.167 17.729 8.962a.23.23 0 0 0 .249-.082 42 42 0 0 0 3.627-5.9.225.225 0 0 0-.123-.312 39 39 0 0 1-5.539-2.64.228.228 0 0 1-.022-.378c.372-.279.744-.569 1.1-.862a.22.22 0 0 1 .23-.03c11.619 5.304 24.198 5.304 35.68 0a.22.22 0 0 1 .233.027c.356.293.728.586 1.103.865a.228.228 0 0 1-.02.378 36.4 36.4 0 0 1-5.54 2.637.227.227 0 0 0-.121.315 47 47 0 0 0 3.624 5.897.225.225 0 0 0 .249.084c5.801-1.794 11.684-4.502 17.757-8.961a.23.23 0 0 0 .092-.164c1.48-15.315-2.48-28.618-10.497-40.412a.18.18 0 0 0-.093-.084m-36.38 32.427c-3.497 0-6.38-3.211-6.38-7.156s2.827-7.156 6.38-7.156c3.583 0 6.438 3.24 6.382 7.156 0 3.945-2.827 7.156-6.381 7.156m23.593 0c-3.498 0-6.38-3.211-6.38-7.156s2.826-7.156 6.38-7.156c3.582 0 6.437 3.24 6.38 7.156 0 3.945-2.798 7.156-6.38 7.156"></path></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h71v55H0z"></path></clipPath></defs></svg>
-                                                
-                                                {tLinks("fields.discord")}
-                                                
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {user?.social_links?.x && (
-                                        <li>
-                                            <a href={getSafeExternalUrl(user?.social_links?.x)} target="_blank" rel="noopener noreferrer">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                                    <path fill="currentColor" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"></path>
-                                                </svg>
-
-                                                {tLinks("fields.twitter")}
-
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {user?.social_links?.telegram && (
-                                        <li>
-                                            <a href={getSafeExternalUrl(user?.social_links?.telegram)} target="_blank" rel="noopener noreferrer">
-                                                <svg width="24" height="24" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M22.122 10.040c0.006-0 0.014-0 0.022-0 0.209 0 0.403 0.065 0.562 0.177l-0.003-0.002c0.116 0.101 0.194 0.243 0.213 0.403l0 0.003c0.020 0.122 0.031 0.262 0.031 0.405 0 0.065-0.002 0.129-0.007 0.193l0-0.009c-0.225 2.369-1.201 8.114-1.697 10.766-0.21 1.123-0.623 1.499-1.023 1.535-0.869 0.081-1.529-0.574-2.371-1.126-1.318-0.865-2.063-1.403-3.342-2.246-1.479-0.973-0.52-1.51 0.322-2.384 0.221-0.23 4.052-3.715 4.127-4.031 0.004-0.019 0.006-0.040 0.006-0.062 0-0.078-0.029-0.149-0.076-0.203l0 0c-0.052-0.034-0.117-0.053-0.185-0.053-0.045 0-0.088 0.009-0.128 0.024l0.002-0.001q-0.198 0.045-6.316 4.174c-0.445 0.351-1.007 0.573-1.619 0.599l-0.006 0c-0.867-0.105-1.654-0.298-2.401-0.573l0.074 0.024c-0.938-0.306-1.683-0.467-1.619-0.985q0.051-0.404 1.114-0.827 6.548-2.853 8.733-3.761c1.607-0.853 3.47-1.555 5.429-2.010l0.157-0.031zM15.93 1.025c-8.302 0.020-15.025 6.755-15.025 15.060 0 8.317 6.742 15.060 15.060 15.060s15.060-6.742 15.060-15.060c0-8.305-6.723-15.040-15.023-15.060h-0.002q-0.035-0-0.070 0z" fill="currentColor"></path>
-                                                </svg>
-
-                                                {tLinks("fields.telegram")}
-
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                                            </a>
-                                        </li>
-                                    )}
-
-                                    {user?.social_links?.youtube && (
-                                        <li>
-                                            <a href={getSafeExternalUrl(user?.social_links?.youtube)} target="_blank" rel="noopener noreferrer">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M9.6 15.4988V8.50128L15.84 12L9.6 15.4988Z" fill="var(--theme-color-background-content)"></path>
-                                                    <path d="M23.4937 6.38795C23.3571 5.89505 23.0897 5.44564 22.7181 5.08471C22.3466 4.72377 21.884 4.46396 21.3766 4.33129C19.5082 3.84003 12 3.84003 12 3.84003C12 3.84003 4.49183 3.84003 2.62336 4.33129C2.11599 4.46396 1.6534 4.72377 1.28186 5.08471C0.910331 5.44564 0.642899 5.89505 0.506332 6.38795C0.157447 8.23915 -0.0118575 10.1181 0.00064491 12C-0.0118575 13.882 0.157447 15.7609 0.506332 17.6121C0.642899 18.105 0.910331 18.5544 1.28186 18.9153C1.6534 19.2763 2.11599 19.5361 2.62336 19.6688C4.49183 20.16 12 20.16 12 20.16C12 20.16 19.5082 20.16 21.3766 19.6688C21.884 19.5361 22.3466 19.2763 22.7181 18.9153C23.0897 18.5544 23.3571 18.105 23.4937 17.6121C23.8426 15.7609 24.0119 13.882 23.9994 12C24.0119 10.1181 23.8426 8.23915 23.4937 6.38795ZM9.60013 15.4972V8.50288L15.8312 12L9.60013 15.4972Z" fill="currentColor"></path>
-                                                </svg>
-
-                                                {tLinks("fields.youtube")}
-
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-                                            </a>
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
-                        )}
-
-                        {organizations.length > 0 && (
-                            <div className="content content--padding">
-                                <h2>{t("organizationsTitle")}</h2>
-                                
-                                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                                    {organizations.map((organization) => (
-                                        <Tooltip key={organization.id} content={organization.name}>
-                                            <Link href={`/organization/${organization.slug}`} className="button--active-transform" style={{ display: "inline-flex" }}>
-                                                <img src={organization.icon_url} alt={organization.name} style={{ width: "34px", height: "34px", borderRadius: "8px", objectFit: "cover" }} />
-                                            </Link>
-                                        </Tooltip>
+                            {projects.length > 0 ? (
+                                <div className="browse-project-list">
+                                    {projects.map((project) => (
+                                        <ProjectCard key={project.id} project={project} />
                                     ))}
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="content content--padding subsite-empty-feed">
+                                    <p className="subsite-empty-feed__title">{t("noProjects")}</p>
+                                </div>
+                            )}
+                        </section>
+                    </main>
 
-                        <ImageLightbox isOpen={lightboxOpen} image={lightboxImage} onClose={closeLightbox} dialogLabel={t("lightboxLabel")} closeLabel={t("close")} openInNewTabLabel={t("openInNewTab")} fallbackAlt={authorTitle} />
-                    </div>
+                    {hasSidebar && (
+                        <aside className="profile-page__aside">
+                            <ProfileAchievements achievements={achievements} isBanned={isBanned} />
 
-                    <div className="browse-content">
-                        {projects.length > 0 ? (
-                            <div className="browse-project-list">
-                                {projects.map((project) => (
-                                    <ProjectCard key={project.id} project={project} />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="subsite-empty-feed">
-                                <p className="subsite-empty-feed__title">{t("noProjects")}</p>
-                            </div>
-                        )}
+                            <ProfileLinks socialLinks={user?.social_links} />
 
-                        {totalPages > 1 && (
-                            <div className="pagination-controls">
-                                {currentPage === 1 ? (
-                                    <button className="button button--size-m button--type-secondary" disabled aria-disabled="true">
-                                        {t("previous")}
-                                    </button>
-                                ) : (
-                                    <Link className="button button--size-m button--type-secondary" href={currentPage - 1 === 1 ? `/user/${user.slug}` : `/user/${user.slug}?page=${currentPage - 1}`}>
-                                        {t("previous")}
-                                    </Link>
-                                )}
+                            {organizations.length > 0 && (
+                                <section className="content content--padding profile-sidebar-card">
+                                    <h2>{t("organizationsTitle")}</h2>
 
-                                {getPageButtons()}
-
-                                {currentPage === totalPages ? (
-                                    <button className="button button--size-m button--type-secondary" disabled aria-disabled="true">
-                                        {t("next")}
-                                    </button>
-                                ) : (
-                                    <Link className="button button--size-m button--type-secondary" href={`/user/${user.slug}?page=${currentPage + 1}`}>
-                                        {t("next")}
-                                    </Link>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                                    <div className="profile-organization-list">
+                                        {organizations.map((organization) => (
+                                            <Link key={organization.id} href={`/organization/${organization.slug}`} className="profile-organization-item button--active-transform">
+                                                <img src={organization.icon_url} alt={organization.name} />
+                                                <span>{organization.name}</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+                        </aside>
+                    )}
                 </div>
             </div>
+
+            <ImageLightbox isOpen={lightboxOpen} image={lightboxImage} onClose={closeLightbox} dialogLabel={t("lightboxLabel")} closeLabel={t("close")} openInNewTabLabel={t("openInNewTab")} fallbackAlt={authorTitle} />
 
             <ProfileSubscriptionsModal
                 isOpen={Boolean(activeFollowModal)}
@@ -503,7 +326,6 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 					</div>
                 </div>
             </Modal>
-
         </>
     );
 }
