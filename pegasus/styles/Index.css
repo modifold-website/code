@@ -3594,7 +3594,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 20;
+    z-index: 30;
 }
 .expanded-image-modal .expanded-image-content {
     height: calc(100vh - 1.5rem * 2);
