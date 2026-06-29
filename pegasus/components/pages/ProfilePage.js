@@ -365,9 +365,9 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 
                     {hasSidebar && (
                         <aside className="profile-page__aside">
-                            <ProfileAchievements achievements={achievements} isBanned={isBanned} />
-
                             <ProfileLinks socialLinks={user?.social_links} />
+
+                            <ProfileAchievements achievements={achievements} isBanned={isBanned} />
 
                             {organizations.length > 0 && (
                                 <section className="content content--padding profile-sidebar-card">

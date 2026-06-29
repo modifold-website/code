@@ -175,9 +175,10 @@
 }
 .profile-hero__identity {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     flex-wrap: wrap;
-    gap: 8px 12px;
+    align-items: flex-start;
+    gap: 8px;
     min-width: 0;
 }
 .profile-hero__name {
@@ -287,7 +288,7 @@
     }
 }
 .profile-project-feed {
-    margin-top: 16px;
+    margin-top: 8px;
 }
 .profile-project-feed__controls {
     padding: 0 32px;
@@ -563,6 +564,9 @@
     .profile-hero__cover {
         height: 170px;
     }
+    .profile-hero__cover-wrap {
+        min-height: 170px;
+    }
     .profile-hero__body {
         padding: 0 18px 22px;
     }
@@ -570,14 +574,16 @@
         min-height: 64px;
         gap: 12px;
     }
+    .profile-project-feed__controls {
+        padding: 0;
+    }
     .profile-hero__avatar {
-        --size: 104px;
-        margin-top: -52px;
-        box-shadow: 0 0 0 8px var(--theme-color-background);
+        --size: 90px !important;
+        box-shadow: 0 0 0 8px var(--theme-color-background) !important;
+        margin-top: -52px !important;
     }
     .profile-page-actions {
         margin-top: 12px;
-        flex-wrap: wrap;
     }
     .profile-hero__name {
         font-size: 30px;
