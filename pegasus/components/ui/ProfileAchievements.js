@@ -80,12 +80,21 @@ export default function ProfileAchievements({ achievements = [], isBanned = fals
                 {visibleAchievements.map((achievement) => {
                     const title = getAchievementTitle(achievement);
                     const iconUrl = achievement.icon_url || "/badges/creator.webp";
+                    const achievementIcon = (
+                        <img src={iconUrl} alt={title} width="56" height="56" />
+                    );
 
                     return (
                         <Tooltip key={achievement.id || achievement.code} content={getAchievementTooltip(achievement)}>
-                            <span className="subsite-achievements__item" tabIndex={0}>
-                                <img src={iconUrl} alt={title} width="56" height="56" />
-                            </span>
+                            {achievement.code === "hytalemodjam_2026" ? (
+                                <a className="subsite-achievements__item subsite-achievements__item--link" href="https://hytalemodjam.com/submissions?modjam=hm-26.2" target="_blank" rel="noopener noreferrer" aria-label={title}>
+                                    {achievementIcon}
+                                </a>
+                            ) : (
+                                <span className="subsite-achievements__item" tabIndex={0}>
+                                    {achievementIcon}
+                                </span>
+                            )}
                         </Tooltip>
                     );
                 })}
