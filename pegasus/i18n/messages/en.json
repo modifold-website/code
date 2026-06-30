@@ -991,7 +991,10 @@
     "next": "Next",
     "errors": {
       "subscriptionChange": "Error changing subscription",
-      "loadingFollowList": "Error loading follow list"
+      "loadingFollowList": "Error loading follow list",
+      "profileImageTooLarge": "File is too large. Maximum size is 10 MB",
+      "invalidImageType": "Only JPG, PNG, WEBP, and GIF images are allowed",
+      "profileImageUpload": "Error uploading profile image"
     },
     "loginToSubscribe": "Log in to subscribe",
     "edit": "Edit",
@@ -1004,10 +1007,50 @@
       "team": "Modifold Team"
     },
     "joined": "Joined:",
+    "registrationDate": "Registered: {date}",
+    "uploadAvatar": "Upload avatar",
+    "uploadCover": "Upload cover",
+    "addCover": "Add cover",
+    "editCover": "Edit cover",
+    "newProfileBadge": "This is your new profile!",
+    "avatarUploadSuccess": "Avatar updated",
+    "coverUploadSuccess": "Cover updated",
     "projectsLabel": "{count, plural, one {project} other {projects}}",
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Published projects",
     "downloadsTooltip": "Author project downloads",
+    "achievements": {
+      "title": "Achievements",
+      "receivedAt": "Earned on: {date}",
+      "customTitle": "Unique achievement",
+      "customDescription": "A unique creator achievement.",
+      "items": {
+        "staff": {
+          "title": "Modifold Staff",
+          "description": "For Modifold moderators and administrators."
+        },
+        "first_project": {
+          "title": "First project",
+          "description": "For publishing a first project."
+        },
+        "downloads_100": {
+          "title": "100 downloads",
+          "description": "For 100 downloads on one project."
+        },
+        "downloads_500": {
+          "title": "500 downloads",
+          "description": "For 500 downloads on one project."
+        },
+        "downloads_10000": {
+          "title": "10,000 downloads",
+          "description": "For 10,000 downloads on one project."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Participant of Hytale x HytaleModding ModJam 2026."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {subscriber} other {subscribers}}",
     "subscriptionsLabel": "{count, plural, one {subscription} other {subscriptions}}",
     "followersModal": {
@@ -1034,7 +1077,6 @@
     "verifiedModal": {
       "creatorBadgeAlt": "Creator badge",
       "creatorBadgeText": "This creator has earned the Creator Badge on Modifold.",
-      "officialBadgeText": "This account is verified as official by Modifold representatives.",
       "learnMore": "Learn more"
     }
   },

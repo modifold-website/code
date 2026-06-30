@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -20,7 +20,6 @@ const getEmptySocialLinks = () => ({
 const getInitialFormData = (user) => ({
     username: user?.username || "",
     slug: user?.slug || "",
-    avatar: null,
     description: user?.description || "",
     social_links: user?.social_links || getEmptySocialLinks(),
 });
@@ -49,9 +48,6 @@ export default function SettingsBlogPage({ initialUser = null }) {
     const [savedSettings, setSavedSettings] = useState(() => getSettingsSnapshot(getInitialFormData(effectiveUser)));
     const [isSaving, setIsSaving] = useState(false);
 
-    const [previewAvatar, setPreviewAvatar] = useState(effectiveUser?.avatar || "");
-    const avatarInputRef = useRef(null);
-
     useEffect(() => {
         if(!isLoggedIn && !initialUser) {
             router.push("/403");
@@ -65,7 +61,6 @@ export default function SettingsBlogPage({ initialUser = null }) {
 
         setFormData(getInitialFormData(effectiveUser));
         setSavedSettings(getSettingsSnapshot(getInitialFormData(effectiveUser)));
-        setPreviewAvatar(effectiveUser.avatar || "");
     }, [effectiveUser]);
 
     const handleInputChange = (e) => {
@@ -80,23 +75,6 @@ export default function SettingsBlogPage({ initialUser = null }) {
             setFormData((prev) => ({ ...prev, slug: normalizeSlugInput(value) }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
-        }
-    };
-
-    const handleFileChange = (e) => {
-        const { name, files } = e.target;
-        const file = files[0];
-
-        if(file && file.size > 20 * 1024 * 1024) {
-            toast.error(t("errors.fileTooLarge"));
-            return;
-        }
-
-        setFormData((prev) => ({ ...prev, [name]: file }));
-
-        const previewUrl = URL.createObjectURL(file);
-        if(name === "avatar") {
-            setPreviewAvatar(previewUrl);
         }
     };
 
@@ -119,10 +97,6 @@ export default function SettingsBlogPage({ initialUser = null }) {
         data.append("username", formData.username);
         data.append("slug", validation.normalized);
 
-        if(formData.avatar) {
-            data.append("avatar", formData.avatar);
-        }
-
         data.append("description", formData.description);
         data.append("social_links", JSON.stringify(formData.social_links));
 
@@ -132,7 +106,7 @@ export default function SettingsBlogPage({ initialUser = null }) {
                 headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
             });
 
-            setUser(res.data);
+            setUser((prev) => ({ ...prev, ...res.data }));
             setSavedSettings(getSettingsSnapshot(formData));
             toast.success(t("success"));
         } catch (err) {
@@ -142,49 +116,25 @@ export default function SettingsBlogPage({ initialUser = null }) {
         }
     };
 
-    const handleAvatarOverlayClick = () => {
-        avatarInputRef.current?.click();
-    };
-
     if(!isLoggedIn && !effectiveUser) {
         return null;
     }
 
     const isTextSettingsDirty = !areSnapshotsEqual(getSettingsSnapshot(formData), savedSettings);
-    const isAvatarDirty = !!formData.avatar;
-    const isDirty = isTextSettingsDirty || isAvatarDirty;
+    const isDirty = isTextSettingsDirty;
 
     const handleReset = () => {
         setFormData((prev) => ({
             ...prev,
             ...savedSettings,
             social_links: { ...savedSettings.social_links },
-            avatar: null,
         }));
-        setPreviewAvatar(effectiveUser?.avatar || "");
     };
 
     return (
         <>
             <form className="settings-wrapper blog-settings settings-wrapper--narrow" onSubmit={handleSubmit}>
                 <div className="blog-settings__body">
-                    <div className="subsite-header">
-                        <div className="subsite-avatar subsite-header__avatar">
-                            <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--has-preview subsite-avatar__image andropov-image andropov-image--zoom" style={{ aspectRatio: "1 / 1", width: "90px", height: "90px", maxWidth: "none", "--background-color": "#30382d" }} data-loaded="true">
-                                {previewAvatar && <img id="create_image_url_avatar" src={previewAvatar} alt={t("avatarPreviewAlt")} />}
-                            </div>
-
-                            <div className="subsite-avatar__overlay" onClick={handleAvatarOverlayClick} aria-label={t("uploadAvatar")}>
-                                <svg className="icon icon--image" width="40" height="40" viewBox="0 0 24 24">
-                                    <path d="M8 9.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"></path>
-                                    <path fillRule="evenodd" clipRule="evenodd" d="M7 3a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4H7ZM5 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5.252l-1.478-1.477a2 2 0 0 0-3.014.214L8.5 19H7a2 2 0 0 1-2-2V7Zm11.108 5.19L19 15.08V17a2 2 0 0 1-2 2h-6l5.108-6.81Z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <input type="file" id="avatar" name="avatar" accept="image/jpeg,image/png,image/gif" onChange={handleFileChange} ref={avatarInputRef} style={{ display: "none" }} />
-
                     <p className="blog-settings__field-title">{t("username")}</p>
                     <div className="field field--default blog-settings__input">
                         <label style={{ marginBottom: "10px" }} className="field__wrapper">

@@ -992,7 +992,10 @@
     "next": "Наступний",
     "errors": {
       "subscriptionChange": "Помилка зміни підписки",
-      "loadingFollowList": "Помилка завантаження списку підписок"
+      "loadingFollowList": "Помилка завантаження списку підписок",
+      "profileImageTooLarge": "Файл завеликий. Максимум 10 МБ",
+      "invalidImageType": "Можна завантажувати лише JPG, PNG, WEBP і GIF",
+      "profileImageUpload": "Помилка завантаження зображення профілю"
     },
     "loginToSubscribe": "Увійдіть, щоб підписатися",
     "edit": "Редагувати",
@@ -1005,10 +1008,50 @@
       "team": "Команда Modifold"
     },
     "joined": "Приєднався:",
+    "registrationDate": "Реєстрація: {date}",
+    "uploadAvatar": "Завантажити аватар",
+    "uploadCover": "Завантажити обкладинку",
+    "addCover": "Додати обкладинку",
+    "editCover": "Редагувати обкладинку",
+    "newProfileBadge": "Це ваш новий профіль!",
+    "avatarUploadSuccess": "Аватар оновлено",
+    "coverUploadSuccess": "Обкладинку оновлено",
     "projectsLabel": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
     "downloadsLabel": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}",
     "publishedProjectsTooltip": "Опубліковані проєкти",
     "downloadsTooltip": "Завантаження проєктів автора",
+    "achievements": {
+      "title": "Досягнення",
+      "receivedAt": "Отримано: {date}",
+      "customTitle": "Унікальне досягнення",
+      "customDescription": "Унікальне досягнення автора.",
+      "items": {
+        "staff": {
+          "title": "Команда Modifold",
+          "description": "Для модераторів і адміністраторів Modifold."
+        },
+        "first_project": {
+          "title": "Перший проєкт",
+          "description": "За перший опублікований проєкт."
+        },
+        "downloads_100": {
+          "title": "100 завантажень",
+          "description": "За 100 завантажень одного проєкту."
+        },
+        "downloads_500": {
+          "title": "500 завантажень",
+          "description": "За 500 завантажень одного проєкту."
+        },
+        "downloads_10000": {
+          "title": "10 000 завантажень",
+          "description": "За 10 000 завантажень одного проєкту."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Учасник Hytale x HytaleModding ModJam 2026."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {підписник} other {підписники}}",
     "subscriptionsLabel": "{count, plural, one {підписка} other {підписки}}",
     "followersModal": {
@@ -1035,7 +1078,6 @@
     "verifiedModal": {
       "creatorBadgeAlt": "Значок автора",
       "creatorBadgeText": "Цей автор отримав значок автора на Modifold.",
-      "officialBadgeText": "Цей акаунт підтверджено як офіційний представниками Modifold.",
       "learnMore": "Детальніше"
     }
   },

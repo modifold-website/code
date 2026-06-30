@@ -991,7 +991,10 @@
     "next": "Вперёд",
     "errors": {
       "subscriptionChange": "Ошибка изменения подписки",
-      "loadingFollowList": "Ошибка загрузки списка подписок"
+      "loadingFollowList": "Ошибка загрузки списка подписок",
+      "profileImageTooLarge": "Файл слишком большой. Максимум 10 МБ",
+      "invalidImageType": "Можно загружать только JPG, PNG, WEBP и GIF",
+      "profileImageUpload": "Ошибка загрузки изображения профиля"
     },
     "loginToSubscribe": "Войдите, чтобы подписаться",
     "edit": "Редактировать",
@@ -1004,10 +1007,50 @@
       "team": "Команда Modifold"
     },
     "joined": "Дата регистрации:",
+    "registrationDate": "Регистрация: {date}",
+    "uploadAvatar": "Загрузить аватар",
+    "uploadCover": "Загрузить обложку",
+    "addCover": "Добавить обложку",
+    "editCover": "Редактировать обложку",
+    "newProfileBadge": "Это ваш новый профиль!",
+    "avatarUploadSuccess": "Аватар обновлен",
+    "coverUploadSuccess": "Обложка обновлена",
     "projectsLabel": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
     "downloadsLabel": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
     "publishedProjectsTooltip": "Опубликованные проекты",
     "downloadsTooltip": "Скачивания проектов автора",
+    "achievements": {
+      "title": "Ачивки",
+      "receivedAt": "Получена: {date}",
+      "customTitle": "Уникальная ачивка",
+      "customDescription": "Уникальная ачивка автора.",
+      "items": {
+        "staff": {
+          "title": "Команда Modifold",
+          "description": "Для модераторов и администраторов Modifold."
+        },
+        "first_project": {
+          "title": "Первый проект",
+          "description": "За первый опубликованный проект."
+        },
+        "downloads_100": {
+          "title": "100 скачиваний",
+          "description": "За 100 скачиваний на одном проекте."
+        },
+        "downloads_500": {
+          "title": "500 скачиваний",
+          "description": "За 500 скачиваний на одном проекте."
+        },
+        "downloads_10000": {
+          "title": "10 000 скачиваний",
+          "description": "За 10 000 скачиваний на одном проекте."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Участник Hytale x HytaleModding ModJam 2026."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {подписчик} other {подписчиков}}",
     "subscriptionsLabel": "{count, plural, one {подписка} other {подписок}}",
     "followersModal": {
@@ -1034,7 +1077,6 @@
     "verifiedModal": {
       "creatorBadgeAlt": "Значок автора",
       "creatorBadgeText": "Этот автор получил значок автора на Modifold.",
-      "officialBadgeText": "Этот аккаунт подтвержден как официальный представителями Modifold.",
       "learnMore": "Подробнее"
     }
   },

@@ -907,7 +907,7 @@ router.get("/github-callback", async (req, res) => {
 
 router.get("/user", auth, async (req, res) => {
     try {
-        const [users] = await db.query("SELECT id, username, slug, avatar, description, created_at, isVerified, telegram_id, github_id, isRole, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, github_id, isRole, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(!users.length) {
             return res.status(404).json({ message: "User not found" });

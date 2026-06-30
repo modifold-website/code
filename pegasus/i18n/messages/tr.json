@@ -991,7 +991,10 @@
     "next": "Sonraki",
     "errors": {
       "subscriptionChange": "Abonelik değiştirilemedi",
-      "loadingFollowList": "Takip listesi yüklenemedi"
+      "loadingFollowList": "Takip listesi yüklenemedi",
+      "profileImageTooLarge": "Dosya çok büyük. Maksimum boyut 10 MB",
+      "invalidImageType": "Yalnızca JPG, PNG, WEBP ve GIF görsellerine izin verilir",
+      "profileImageUpload": "Profil görseli yüklenirken hata oluştu"
     },
     "loginToSubscribe": "Abone olmak için giriş yapın",
     "edit": "Düzenle",
@@ -1004,10 +1007,50 @@
       "team": "Modifold Ekibi"
     },
     "joined": "Katılma:",
+    "registrationDate": "Kayıt: {date}",
+    "uploadAvatar": "Avatar yükle",
+    "uploadCover": "Kapak yükle",
+    "addCover": "Kapak ekle",
+    "editCover": "Kapağı düzenle",
+    "newProfileBadge": "Bu yeni profiliniz!",
+    "avatarUploadSuccess": "Avatar güncellendi",
+    "coverUploadSuccess": "Kapak güncellendi",
     "projectsLabel": "{count, plural, one {proje} other {proje}}",
     "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
     "publishedProjectsTooltip": "Yayınlanan projeler",
     "downloadsTooltip": "Yazarın proje indirmeleri",
+    "achievements": {
+      "title": "Başarımlar",
+      "receivedAt": "Kazanıldı: {date}",
+      "customTitle": "Benzersiz başarım",
+      "customDescription": "Yaratıcıya özel bir başarım.",
+      "items": {
+        "staff": {
+          "title": "Modifold Ekibi",
+          "description": "Modifold moderatörleri ve yöneticileri için."
+        },
+        "first_project": {
+          "title": "İlk proje",
+          "description": "İlk yayınlanan proje için."
+        },
+        "downloads_100": {
+          "title": "100 indirme",
+          "description": "Tek bir projede 100 indirme için."
+        },
+        "downloads_500": {
+          "title": "500 indirme",
+          "description": "Tek bir projede 500 indirme için."
+        },
+        "downloads_10000": {
+          "title": "10.000 indirme",
+          "description": "Tek bir projede 10.000 indirme için."
+        },
+        "hytalemodjam_2026": {
+          "title": "Hytale x HytaleModding ModJam 2026",
+          "description": "Hytale x HytaleModding ModJam 2026 katılımcısı."
+        }
+      }
+    },
     "subscribersLabel": "{count, plural, one {abone} other {aboneler}}",
     "subscriptionsLabel": "{count, plural, one {abonelik} other {abonelikler}}",
     "followersModal": {
@@ -1034,7 +1077,6 @@
     "verifiedModal": {
       "creatorBadgeAlt": "Creator rozeti",
       "creatorBadgeText": "Bu üretici Modifold’da Creator Rozeti aldı.",
-      "officialBadgeText": "Bu hesap, Modifold temsilcileri tarafından resmi olarak doğrulanmıştır.",
       "learnMore": "Daha fazla bilgi"
     }
   },

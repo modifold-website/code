@@ -20,18 +20,18 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if(allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error("Invalid file type. Only images (JPEG, PNG, GIF) are allowed."), false);
+        cb(new Error("Invalid file type. Only images (JPEG, PNG, GIF, WEBP) are allowed."), false);
     }
 };
 
 const upload = multer({
     storage,
     limits: {
-        fileSize: 20 * 1024 * 1024,
+        fileSize: 10 * 1024 * 1024,
     },
     fileFilter,
 });
@@ -132,13 +132,18 @@ const convertImageToWebp = async (file) => {
     };
 };
 
-router.put("/me", auth, upload.fields([{ name: "avatar" }]), async (req, res) => {
+router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), async (req, res) => {
     const { username, slug, description, social_links } = req.body;
     let avatarFile = req.files?.avatar?.[0];
+    let coverFile = req.files?.cover?.[0];
 
     try {
         if(avatarFile) {
             avatarFile = await convertImageToWebp(avatarFile);
+        }
+
+        if(coverFile) {
+            coverFile = await convertImageToWebp(coverFile);
         }
 
         const [currentUserRows] = await db.query("SELECT slug FROM users WHERE id = ? LIMIT 1", [req.user.id]);
@@ -156,6 +161,10 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }]), async (req, res) =>
 
         if(avatarFile) {
             updates.avatar = `https://media.modifold.com/${avatarFile.filename}`;
+        }
+
+        if(coverFile) {
+            updates.cover = `https://media.modifold.com/${coverFile.filename}`;
         }
 
         if(description !== undefined) {
@@ -192,7 +201,7 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }]), async (req, res) =>
 
         await db.query("UPDATE users SET ? WHERE id = ?", [updates, req.user.id]);
 
-        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, description, created_at, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(updatedUser[0]?.social_links) {
             updatedUser[0].social_links = JSON.parse(updatedUser[0].social_links);
@@ -369,6 +378,12 @@ router.get("/:username/projects", async (req, res) => {
     try {
         const { username } = req.params;
         const { page = 1, limit = 20 } = req.query;
+        const sort = ["downloads", "recent", "updated"].includes(req.query.sort) ? req.query.sort : "downloads";
+        const orderBy = {
+            downloads: "p.downloads DESC, p.updated_at DESC",
+            recent: "p.created_at DESC",
+            updated: "p.updated_at DESC",
+        }[sort];
 
         if(isNaN(page) || page < 1) {
             return res.status(400).json({ message: "Invalid page number" });
@@ -398,7 +413,7 @@ router.get("/:username/projects", async (req, res) => {
                     WHERE pm.project_id = p.id AND member_user.slug = ?
                 )
             )
-            ORDER BY p.downloads DESC
+            ORDER BY ${orderBy}
             LIMIT ? OFFSET ?
         `;
 
@@ -458,6 +473,7 @@ router.get("/:username/projects", async (req, res) => {
             totalProjects: Number(total || 0),
             totalDownloads: Number(totalDownloads || 0),
             currentPage: Number(page),
+            sort,
         });
     } catch (error) {
         console.error("Error fetching user projects:", error);
@@ -570,9 +586,55 @@ router.get("/:username/organizations", async (req, res) => {
     }
 });
 
+router.get("/:username/achievements", async (req, res) => {
+	try {
+		const { username } = req.params;
+		const [userRows] = await db.query("SELECT id FROM users WHERE slug = ? LIMIT 1", [username]);
+		if(!userRows.length) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		const [rows] = await db.query(
+			`SELECT
+			ua.id,
+			ua.awarded_at,
+			ua.context_type,
+			ua.context_id,
+			ua.note,
+			a.code,
+			a.name,
+			a.description,
+			a.icon_url
+			FROM user_achievements ua
+			INNER JOIN achievements a ON a.id = ua.achievement_id
+			WHERE ua.user_id = ?
+			AND a.is_active = 1
+			ORDER BY ua.id ASC`,
+			[userRows[0].id]
+		);
+
+		return res.json({
+			achievements: rows.map((row) => ({
+				id: row.id,
+				code: row.code,
+				name: row.name,
+				description: row.description,
+				icon_url: row.icon_url,
+				awarded_at: Number(row.awarded_at || 0),
+				context_type: row.context_type || null,
+				context_id: row.context_id || null,
+				note: row.note || null,
+			})),
+		});
+	} catch (error) {
+		console.error("Error fetching user achievements:", error);
+		return res.status(500).json({ message: "Error fetching user achievements", error: error.message });
+	}
+});
+
 router.get("/:username", async (req, res) => {
     try {
-        const [user] = await db.query("SELECT id, username, slug, description, avatar, created_at, isVerified, isRole, social_links FROM users WHERE slug = ?", [req.params.username]);
+        const [user] = await db.query("SELECT id, username, slug, description, avatar, cover, created_at, isVerified, isRole, social_links FROM users WHERE slug = ?", [req.params.username]);
 
         if(!user.length) {
             return res.status(404).json({ message: "User not found" });
@@ -589,6 +651,7 @@ router.get("/:username", async (req, res) => {
             slug: user[0].slug,
             description: user[0].description,
             avatar: user[0].avatar,
+            cover: user[0].cover,
             created_at: user[0].created_at,
             isVerified: user[0].isVerified,
             isRole: user[0].isRole,

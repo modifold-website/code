@@ -4,6 +4,7 @@ const { clickhouse } = require("../../config/clickhouse");
 const auth = require("../../middleware/auth");
 const { sanitizePlainText } = require("../../utils/sanitize");
 const { fanoutVersionReleaseNotifications, sendVersionApprovedOwnerNotification } = require("../../utils/versionNotifications");
+const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const router = express.Router();
 
 const isModeratorRole = (role) => role === "admin" || role === "moderator";
@@ -582,7 +583,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
         if(status === "approved") {
             try {
                 const [projectRows] = await db.query(
-                    `SELECT p.slug, p.title, p.summary, p.icon_url, u.username
+                    `SELECT p.id, p.user_id, p.slug, p.title, p.summary, p.icon_url, u.username
                     FROM projects p
                     LEFT JOIN users u ON p.user_id = u.id
                     WHERE p.id = ?
@@ -595,6 +596,12 @@ router.post("/:id/moderate", auth, async (req, res) => {
                 if(!project) {
                     console.warn(`Project ${id} not found after approval, skipping published-mod notification`);
                 } else {
+					await awardFirstApprovedProjectAchievement(db, {
+						projectId: project.id,
+						userId: project.user_id,
+						awardedByUserId: moderatorId,
+					});
+
                     await fetch("https://api.hytalemodd.ing/published-mod", {
                         method: "POST",
                         headers: {
