@@ -1012,6 +1012,7 @@
     "uploadCover": "Загрузить обложку",
     "addCover": "Добавить обложку",
     "editCover": "Редактировать обложку",
+    "newProfileBadge": "Это ваш новый профиль!",
     "avatarUploadSuccess": "Аватар обновлен",
     "coverUploadSuccess": "Обложка обновлена",
     "projectsLabel": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",

@@ -1012,6 +1012,7 @@
     "uploadCover": "Enviar capa",
     "addCover": "Adicionar capa",
     "editCover": "Editar capa",
+    "newProfileBadge": "Este é o seu novo perfil!",
     "avatarUploadSuccess": "Avatar atualizado",
     "coverUploadSuccess": "Capa atualizada",
     "projectsLabel": "{count, plural, one {projeto} other {projetos}}",

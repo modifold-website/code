@@ -245,6 +245,10 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                 )}
 
                                 {isOwnProfile && (
+                                    <div className="profile-hero__new-badge">{t("newProfileBadge")}</div>
+                                )}
+
+                                {isOwnProfile && (
                                     <button className={`button button--size-m button--type-minimal button--with-icon subsite-cover-editor__centered ${authorCover ? "subsite-cover-editor__centered--hidden" : ""}`} type="button" onClick={() => coverInputRef.current?.click()}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-icon lucide-image">
                                             <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>

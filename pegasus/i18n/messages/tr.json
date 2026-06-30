@@ -1012,6 +1012,7 @@
     "uploadCover": "Kapak yükle",
     "addCover": "Kapak ekle",
     "editCover": "Kapağı düzenle",
+    "newProfileBadge": "Bu yeni profiliniz!",
     "avatarUploadSuccess": "Avatar güncellendi",
     "coverUploadSuccess": "Kapak güncellendi",
     "projectsLabel": "{count, plural, one {proje} other {proje}}",

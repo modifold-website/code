@@ -1012,6 +1012,7 @@
     "uploadCover": "Upload cover",
     "addCover": "Add cover",
     "editCover": "Edit cover",
+    "newProfileBadge": "This is your new profile!",
     "avatarUploadSuccess": "Avatar updated",
     "coverUploadSuccess": "Cover updated",
     "projectsLabel": "{count, plural, one {project} other {projects}}",

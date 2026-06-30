@@ -1013,6 +1013,7 @@
     "uploadCover": "Завантажити обкладинку",
     "addCover": "Додати обкладинку",
     "editCover": "Редагувати обкладинку",
+    "newProfileBadge": "Це ваш новий профіль!",
     "avatarUploadSuccess": "Аватар оновлено",
     "coverUploadSuccess": "Обкладинку оновлено",
     "projectsLabel": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
