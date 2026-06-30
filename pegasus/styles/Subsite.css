@@ -200,6 +200,9 @@
     gap: 8px;
     min-width: 0;
 }
+.profile-hero__identity .badge--developer {
+    background: var(--theme-color-background-content);
+}
 .profile-hero__name {
     align-items: center;
     gap: 6px;
@@ -348,9 +351,9 @@
     gap: 10px;
     color: var(--theme-color-text-primary);
     text-decoration: none;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 22px;
-    font-weight: 600;
+    font-weight: 500;
 }
 .profile-organization-item span {
     min-width: 0;

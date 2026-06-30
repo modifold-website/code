@@ -4525,7 +4525,7 @@ body.light div .image-container::before {
     border-radius: 999px;
 }
 .badge--developer {
-    background: var(--theme-color-background-content);
+    background: var(--theme-color-background);
     font-size: 14px;
     line-height: 22px;
     padding: 2px 10px;
