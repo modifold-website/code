@@ -54,6 +54,12 @@
     overflow: hidden;
     outline: none;
 }
+.subsite-achievements__item--link {
+    cursor: pointer;
+}
+.subsite-achievements__item--link img:hover {
+    opacity: 0.9;
+}
 .subsite-achievements__item img {
     display: block;
     width: 56px;
