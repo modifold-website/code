@@ -600,10 +600,10 @@
 }
 @media (max-width: 720px) {
     .profile-hero__cover {
-        height: 170px;
+        height: 140px;
     }
     .profile-hero__cover-wrap {
-        min-height: 170px;
+        min-height: 140px;
     }
     .profile-hero__new-badge {
         top: -10px;
@@ -628,9 +628,6 @@
     }
     .profile-page-actions {
         margin-top: 12px;
-    }
-    .profile-hero__name {
-        font-size: 30px;
     }
     .profile-stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
