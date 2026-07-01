@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 import ProjectCard from "../project/ProjectCard";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import UserName from "../ui/UserName";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
 import RoleBadge from "../ui/RoleBadge";
@@ -87,6 +88,7 @@ const isAllowedProfileImageFile = (file) => file?.type === "image/jpeg" || file?
 
 export default function ProfilePage({ user, isBanned, isSubscribed: initialSubscribed, subscriptionId: initialSubId, authToken, projects = [], totalProjects = null, totalDownloads = null, organizations = [], achievements = [], currentPage = 1, totalPages = 1, currentSort = "downloads" }) {
     const t = useTranslations("ProfilePage");
+    const router = useRouter();
     const { isLoggedIn, user: currentUser, setUser } = useAuth();
     const [profileUser, setProfileUser] = useState(user);
     const [isSubscribed, setIsSubscribed] = useState(initialSubscribed);
@@ -156,6 +158,10 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
         setIsPopoverOpen((prev) => !prev);
     };
 
+    const refreshProfileData = () => {
+        router.refresh();
+    };
+
     const handleProfileImageChange = async (field, event) => {
         if(uploadingProfileImage) {
             return;
@@ -195,6 +201,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 
             setProfileUser((prev) => ({ ...prev, ...updatedUser }));
             setUser((prev) => ({ ...prev, ...updatedUser }));
+            refreshProfileData();
             toast.success(t(field === "cover" ? "coverUploadSuccess" : "avatarUploadSuccess"));
         } catch (err) {
             toast.error(err.response?.data?.message || t("errors.profileImageUpload"));
@@ -218,6 +225,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
             setProfileUser((prev) => ({ ...prev, ...updatedUser }));
             setUser((prev) => ({ ...prev, ...updatedUser }));
             setIsBadgePopoverOpen(false);
+            refreshProfileData();
             toast.success(t("profileBadgeSaveSuccess"));
         } catch (err) {
             toast.error(err.response?.data?.message || t("errors.profileBadgeUpdate"));
