@@ -995,7 +995,8 @@
       "loadingFollowList": "Помилка завантаження списку підписок",
       "profileImageTooLarge": "Файл завеликий. Максимум 10 МБ",
       "invalidImageType": "Можна завантажувати лише JPG, PNG, WEBP і GIF",
-      "profileImageUpload": "Помилка завантаження зображення профілю"
+      "profileImageUpload": "Помилка завантаження зображення профілю",
+      "profileBadgeUpdate": "Помилка оновлення значка профілю"
     },
     "loginToSubscribe": "Увійдіть, щоб підписатися",
     "edit": "Редагувати",
@@ -1016,6 +1017,9 @@
     "newProfileBadge": "Це ваш новий профіль!",
     "avatarUploadSuccess": "Аватар оновлено",
     "coverUploadSuccess": "Обкладинку оновлено",
+    "profileBadgeSaveSuccess": "Значок профілю оновлено",
+    "profileBadgePickerAria": "Вибрати значок профілю",
+    "profileBadgeClearAria": "Прибрати значок профілю",
     "projectsLabel": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
     "downloadsLabel": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}",
     "publishedProjectsTooltip": "Опубліковані проєкти",

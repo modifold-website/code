@@ -46,7 +46,7 @@ export default async function Page({ params, searchParams }) {
 
     const userRes = await fetch(`${apiBase}/users/${username}`, {
         headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`user:${username}`] },
+        cache: "no-store",
     });
 
     if(!userRes.ok) {
@@ -63,12 +63,12 @@ export default async function Page({ params, searchParams }) {
 
     const banFetchOptions = {
         headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`user:${username}:ban`] },
+        cache: "no-store",
     };
 
     const projectsFetchOptions = {
         headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`user:${username}:projects:${currentProjectsPage}:${currentProjectsSort}`] },
+        cache: "no-store",
     };
 
     const [banRes, projectsRes, organizationsRes, achievementsRes] = await Promise.all([
@@ -76,11 +76,11 @@ export default async function Page({ params, searchParams }) {
         fetch(`${apiBase}/users/${username}/projects?page=${currentProjectsPage}&limit=20&sort=${currentProjectsSort}`, projectsFetchOptions),
         fetch(`${apiBase}/users/${username}/organizations`, {
             headers: { Accept: "application/json" },
-            next: { revalidate: 60, tags: [`user:${username}:organizations`] },
+            cache: "no-store",
         }),
         fetch(`${apiBase}/users/${username}/achievements`, {
             headers: { Accept: "application/json" },
-            next: { revalidate: 60, tags: [`user:${username}:achievements`] },
+            cache: "no-store",
         }),
     ]);
 

@@ -70,6 +70,7 @@ const getMemberView = (row) => ({
     slug: row.slug,
     avatar: row.avatar,
     isVerified: row.isVerified,
+    activeProfileBadge: row.activeProfileBadge,
     role: row.role,
     status: row.status,
     project_permissions: parsePermissions(row.project_permissions),
@@ -331,7 +332,8 @@ router.get("/:slug", async (req, res) => {
             u.username,
             u.slug,
             u.avatar,
-            u.isVerified
+            u.isVerified,
+            u.active_profile_badge AS activeProfileBadge
             FROM organization_members om
             INNER JOIN users u ON u.id = om.user_id
             WHERE om.organization_id = ?
@@ -396,7 +398,8 @@ router.get("/:slug/settings", auth, async (req, res) => {
             u.username,
             u.slug,
             u.avatar,
-            u.isVerified
+            u.isVerified,
+            u.active_profile_badge AS activeProfileBadge
             FROM organization_members om
             INNER JOIN users u ON u.id = om.user_id
             WHERE om.organization_id = ?
@@ -407,7 +410,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
         const [pendingInvites] = await db.query(
             `SELECT oi.id, oi.invited_user_id, oi.invited_by_user_id, oi.role,
             oi.project_permissions, oi.organization_permissions, oi.created_at,
-            u.username, u.slug, u.avatar, u.isVerified
+            u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
             FROM organization_invitations oi
             INNER JOIN users u ON u.id = oi.invited_user_id
             WHERE oi.organization_id = ? AND oi.status = 'pending'
@@ -439,6 +442,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
                 slug: invite.slug,
                 avatar: invite.avatar,
                 isVerified: invite.isVerified,
+                activeProfileBadge: invite.activeProfileBadge,
                 role: invite.role,
                 project_permissions: parsePermissions(invite.project_permissions),
                 organization_permissions: parsePermissions(invite.organization_permissions),

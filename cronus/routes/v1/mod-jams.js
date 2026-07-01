@@ -336,6 +336,7 @@ const formatJam = (jam) => {
 			slug: jam.owner_slug,
 			avatar: jam.owner_avatar,
 			isVerified: jam.owner_isVerified,
+			activeProfileBadge: jam.owner_activeProfileBadge,
 		} : null,
 		submissions_count: Number(jam.submissions_count) || 0,
 		votes_count: Number(jam.votes_count) || 0,
@@ -344,7 +345,7 @@ const formatJam = (jam) => {
 
 const getJamBySlug = async (slug) => {
 	const [rows] = await db.query(
-		`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified,
+		`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge,
 		(SELECT COUNT(*) FROM mod_jam_submissions mjs WHERE mjs.jam_id = mj.id AND mjs.status = 'submitted') AS submissions_count,
 		${PARTICIPANTS_COUNT_SELECT} AS participants_count,
 		(SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.jam_id = mj.id) AS votes_count
@@ -386,7 +387,7 @@ const getParticipantsCount = async (jamId) => {
 
 const getJamJury = async (jamId) => {
 	const [rows] = await db.query(
-		`SELECT mjj.id, mjj.user_id, mjj.created_at, u.username, u.slug, u.avatar, u.isVerified
+		`SELECT mjj.id, mjj.user_id, mjj.created_at, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
 		FROM mod_jam_jury mjj
 		LEFT JOIN users u ON u.id = mjj.user_id
 		WHERE mjj.jam_id = ?
@@ -404,6 +405,7 @@ const getJamJury = async (jamId) => {
 			slug: row.slug,
 			avatar: row.avatar,
 			isVerified: row.isVerified,
+			activeProfileBadge: row.activeProfileBadge,
 		},
 	}));
 };
@@ -473,7 +475,7 @@ const getSubmissions = async ({ jamId, userId, resultsOnly = false }) => {
 		p.slug AS project_slug, p.title AS project_title, p.summary AS project_summary, p.icon_url AS project_icon_url,
 		p.downloads AS project_downloads, p.followers AS project_followers, p.updated_at AS project_updated_at, p.tags AS project_tags,
 		p.color AS project_color,
-		u.username AS submitter_username, u.slug AS submitter_slug, u.avatar AS submitter_avatar, u.isVerified AS submitter_isVerified,
+		u.username AS submitter_username, u.slug AS submitter_slug, u.avatar AS submitter_avatar, u.isVerified AS submitter_isVerified, u.active_profile_badge AS submitter_activeProfileBadge,
 		COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) AS votes_count,
 		(SELECT user_vote.submission_id FROM mod_jam_votes user_vote WHERE user_vote.jam_id = mjs.jam_id AND user_vote.user_id = ? AND COALESCE(user_vote.nomination_id, 0) = 0 LIMIT 1) AS user_voted_submission_id
 		FROM mod_jam_submissions mjs
@@ -540,6 +542,7 @@ const getSubmissions = async ({ jamId, userId, resultsOnly = false }) => {
 			slug: row.submitter_slug,
 			avatar: row.submitter_avatar,
 			isVerified: row.submitter_isVerified,
+			activeProfileBadge: row.submitter_activeProfileBadge,
 		},
 		votes_count: Number(row.votes_count) || 0,
 		nomination_votes: nominationScoresBySubmissionId.get(Number(row.id)) || {},
@@ -558,7 +561,7 @@ const getUserBySlug = async (slug) => {
 	}
 
 	const [rows] = await db.query(
-		"SELECT id, username, slug, avatar, isVerified FROM users WHERE slug = ? LIMIT 1",
+		"SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge FROM users WHERE slug = ? LIMIT 1",
 		[normalizedSlug]
 	);
 
@@ -727,7 +730,7 @@ router.get("/moderation", auth, async (req, res) => {
 
 	try {
 		const [rows] = await db.query(
-			`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified
+			`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge
 			FROM mod_jams mj
 			LEFT JOIN users u ON u.id = mj.owner_user_id
 			WHERE mj.status = 'pending_review'
@@ -744,7 +747,7 @@ router.get("/moderation", auth, async (req, res) => {
 router.get("/mine", auth, async (req, res) => {
 	try {
 		const [rows] = await db.query(
-			`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified,
+			`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge,
 			(SELECT COUNT(*) FROM mod_jam_submissions mjs WHERE mjs.jam_id = mj.id AND mjs.status = 'submitted') AS submissions_count,
 			${PARTICIPANTS_COUNT_SELECT} AS participants_count,
 			(SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.jam_id = mj.id) AS votes_count
@@ -790,7 +793,7 @@ router.get("/", async (req, res) => {
 		}
 
 		const [rows] = await db.query(
-			`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified,
+			`SELECT mj.*, u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar, u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge,
 			(SELECT COUNT(*) FROM mod_jam_submissions mjs WHERE mjs.jam_id = mj.id AND mjs.status = 'submitted') AS submissions_count,
 			${PARTICIPANTS_COUNT_SELECT} AS participants_count,
 			(SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.jam_id = mj.id) AS votes_count

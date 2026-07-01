@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "../providers/AuthProvider";
 import LoginModal from "../../modal/LoginModal";
+import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
+import { getProfileBadgeCode } from "@/utils/profileBadges";
 
 export default function HeaderMobile({ authToken }) {
     const t = useTranslations("Header");
@@ -20,6 +22,7 @@ export default function HeaderMobile({ authToken }) {
     const [theme, setThemeState] = useState("system");
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
+    const activeProfileBadgeCode = getProfileBadgeCode(user);
 
     const applyTheme = (nextTheme) => {
         const resolvedTheme = nextTheme === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : nextTheme === "dark" ? "dark" : "light";
@@ -280,8 +283,8 @@ export default function HeaderMobile({ authToken }) {
                                     <div className="account-menu__name">
                                         <div className="account-menu__name-label">{user?.username}</div>
                                     
-                                        {user?.isVerified === 1 && (
-                                            <img src="/badges/creator.webp" alt="Verified" style={{ width: "18px", pointerEvents: "none" }} />
+                                        {activeProfileBadgeCode && (
+                                            <ProfileBadgeIcon badge={activeProfileBadgeCode} alt="" style={{ width: "18px", pointerEvents: "none" }} />
                                         )}
                                     </div>
                                 </Link>
