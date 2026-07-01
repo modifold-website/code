@@ -282,6 +282,18 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
             availableCodes.add("first_project");
         }
 
+        if(achievementCodes.has("downloads_100")) {
+            availableCodes.add("downloads_100");
+        }
+
+        if(achievementCodes.has("downloads_500")) {
+            availableCodes.add("downloads_500");
+        }
+
+        if(achievementCodes.has("downloads_10000")) {
+            availableCodes.add("downloads_10000");
+        }
+
         return PROFILE_BADGES.filter((badge) => availableCodes.has(badge.code));
     }, [achievementCodes, profileUser?.isRole, profileUser?.isVerified]);
     const activeProfileBadgeCode = getProfileBadgeCode(profileUser);

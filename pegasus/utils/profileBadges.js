@@ -15,6 +15,18 @@ export const PROFILE_BADGES = [
 		code: "first_project",
 		icon: "/badges/first_project_badge.png",
 	},
+	{
+		code: "downloads_100",
+		icon: "/badges/100_downloads_badge.png",
+	},
+	{
+		code: "downloads_500",
+		icon: "/badges/500_downloads_badge.png",
+	},
+	{
+		code: "downloads_10000",
+		icon: "/badges/10000_downloads_badge.png",
+	},
 ];
 
 export const PROFILE_BADGE_BY_CODE = PROFILE_BADGES.reduce((acc, badge) => {
