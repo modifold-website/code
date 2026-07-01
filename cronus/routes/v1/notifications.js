@@ -188,7 +188,8 @@ router.get("/", auth, async (req, res) => {
                 u.username,
                 u.slug,
                 u.avatar,
-                u.isVerified
+                u.isVerified,
+                u.active_profile_badge AS activeProfileBadge
                 FROM notification_events ne
                 INNER JOIN users u ON u.id = ne.actor_user_id
                 WHERE ne.recipient_user_id = ?
@@ -237,6 +238,7 @@ router.get("/", auth, async (req, res) => {
                     slug: actor.slug,
                     avatar: actor.avatar,
                     isVerified: Number(actor.isVerified || 0),
+                    activeProfileBadge: actor.activeProfileBadge,
                     createdAt: Number(actor.created_at),
                 })),
                 project: row.object_type === "project" ? (projectMap.get(String(row.object_id)) || null) : null,

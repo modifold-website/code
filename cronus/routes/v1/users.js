@@ -11,6 +11,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const { sanitizePlainText, sanitizeSocialLinks } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
+const { getUnlockedProfileBadges, getVisibleProfileBadge, normalizeProfileBadgeCode } = require("../../utils/profileBadges");
 
 const storage = multer.diskStorage({
     destination: process.env.MEDIA_ROOT,
@@ -201,17 +202,61 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
         await db.query("UPDATE users SET ? WHERE id = ?", [updates, req.user.id]);
 
-        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(updatedUser[0]?.social_links) {
             updatedUser[0].social_links = JSON.parse(updatedUser[0].social_links);
         }
+
+        updatedUser[0].activeProfileBadge = await getVisibleProfileBadge(db, updatedUser[0]);
+        delete updatedUser[0].active_profile_badge;
 
         res.json(updatedUser[0]);
     } catch (error) {
         console.error("Error updating user:", error);
         res.status(500).json({ message: "Error updating user", error: error.message });
     }
+});
+
+router.put("/me/profile-badge", auth, async (req, res) => {
+	try {
+		const rawBadge = req.body?.badge;
+		const hasBadgeValue = rawBadge !== null && rawBadge !== undefined && String(rawBadge).trim() !== "";
+		const nextBadge = normalizeProfileBadgeCode(rawBadge);
+
+		if(hasBadgeValue && !nextBadge) {
+			return res.status(400).json({ message: "Invalid profile badge" });
+		}
+
+		const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, social_links FROM users WHERE id = ? LIMIT 1", [req.user.id]);
+		const user = users[0];
+
+		if(!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		if(nextBadge) {
+			const unlockedBadges = await getUnlockedProfileBadges(db, user);
+			if(!unlockedBadges.includes(nextBadge)) {
+				return res.status(403).json({ message: "Profile badge is not available" });
+			}
+		}
+
+		await db.query("UPDATE users SET active_profile_badge = ? WHERE id = ?", [nextBadge, req.user.id]);
+
+		const updatedUser = {
+			...user,
+			activeProfileBadge: nextBadge,
+			social_links: user.social_links ? JSON.parse(user.social_links) : {},
+		};
+
+		delete updatedUser.active_profile_badge;
+
+		return res.json(updatedUser);
+	} catch (error) {
+		console.error("Error updating profile badge:", error);
+		return res.status(500).json({ message: "Error updating profile badge", error: error.message });
+	}
 });
 
 router.get("/slug-availability/:slug", auth, async (req, res) => {
@@ -296,6 +341,7 @@ router.get("/me/likes", auth, async (req, res) => {
 				u.slug AS user_slug,
 				u.avatar,
 				u.isVerified,
+				u.active_profile_badge AS activeProfileBadge,
 				o.id AS organization_id,
 				o.slug AS organization_slug,
 				o.name AS organization_name,
@@ -358,6 +404,7 @@ router.get("/me/likes", auth, async (req, res) => {
 					slug: project.user_slug,
 					avatar: project.avatar,
 					isVerified: project.isVerified,
+					activeProfileBadge: project.activeProfileBadge,
 					type: "user",
 					profile_url: `/user/${project.user_slug}`,
 				},
@@ -397,7 +444,7 @@ router.get("/:username/projects", async (req, res) => {
 
         let query = `
             SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.downloads, p.created_at, p.updated_at, p.project_type, p.tags,
-            u.username, u.slug AS user_slug, u.avatar, u.isVerified,
+            u.username, u.slug AS user_slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge,
             o.id AS organization_id, o.slug AS organization_slug, o.name AS organization_name, o.icon_url AS organization_icon_url, o.summary AS organization_summary,
             (SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 LIMIT 1) AS featured_image
             FROM projects p
@@ -465,6 +512,7 @@ router.get("/:username/projects", async (req, res) => {
                     slug: project.user_slug,
                     avatar: project.avatar,
                     isVerified: project.isVerified,
+                    activeProfileBadge: project.activeProfileBadge,
                     type: "user",
                     profile_url: `/user/${project.user_slug}`,
                 },
@@ -507,7 +555,7 @@ router.get("/:username/follows", async (req, res) => {
         const whereColumn = type === "subscribers" ? "s.userid" : "s.author_id";
 
         const [rows] = await db.query(
-            `SELECT u.id, u.username, u.slug, u.avatar, u.isVerified
+            `SELECT u.id, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
             FROM subs s
             INNER JOIN users u ON u.id = ${joinColumn}
             WHERE ${whereColumn} = ? AND s.type = 'user'
@@ -523,6 +571,7 @@ router.get("/:username/follows", async (req, res) => {
             slug: item.slug,
             avatar: item.avatar,
             isVerified: item.isVerified,
+            activeProfileBadge: item.activeProfileBadge,
         }));
 
         const responseData = {
@@ -634,7 +683,7 @@ router.get("/:username/achievements", async (req, res) => {
 
 router.get("/:username", async (req, res) => {
     try {
-        const [user] = await db.query("SELECT id, username, slug, description, avatar, cover, created_at, isVerified, isRole, social_links FROM users WHERE slug = ?", [req.params.username]);
+        const [user] = await db.query("SELECT id, username, slug, description, avatar, cover, created_at, isVerified, isRole, active_profile_badge, social_links FROM users WHERE slug = ?", [req.params.username]);
 
         if(!user.length) {
             return res.status(404).json({ message: "User not found" });
@@ -645,6 +694,7 @@ router.get("/:username", async (req, res) => {
         const [subs] = await db.query("SELECT COUNT(*) as count FROM subs WHERE userid = ?", [userId]);
         const [userSubs] = await db.query("SELECT COUNT(*) as count FROM subs WHERE author_id = ?", [userId]);
 
+        const activeProfileBadge = await getVisibleProfileBadge(db, user[0]);
         const userWithoutSensitiveData = {
             id: user[0].id,
             username: user[0].username,
@@ -655,6 +705,7 @@ router.get("/:username", async (req, res) => {
             created_at: user[0].created_at,
             isVerified: user[0].isVerified,
             isRole: user[0].isRole,
+            activeProfileBadge,
             subscribers: subs[0].count,
             subscriptions: userSubs[0].count,
             social_links: user[0].social_links ? JSON.parse(user[0].social_links) : {},

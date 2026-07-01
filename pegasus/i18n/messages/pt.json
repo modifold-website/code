@@ -994,7 +994,8 @@
       "loadingFollowList": "Erro ao carregar a lista de seguidores",
       "profileImageTooLarge": "O arquivo é muito grande. O tamanho máximo é 10 MB",
       "invalidImageType": "Somente imagens JPG, PNG, WEBP e GIF são permitidas",
-      "profileImageUpload": "Erro ao enviar imagem do perfil"
+      "profileImageUpload": "Erro ao enviar imagem do perfil",
+      "profileBadgeUpdate": "Erro ao atualizar selo do perfil"
     },
     "loginToSubscribe": "Faça login para se inscrever",
     "edit": "Editar",
@@ -1015,6 +1016,9 @@
     "newProfileBadge": "Este é o seu novo perfil!",
     "avatarUploadSuccess": "Avatar atualizado",
     "coverUploadSuccess": "Capa atualizada",
+    "profileBadgeSaveSuccess": "Selo do perfil atualizado",
+    "profileBadgePickerAria": "Escolher selo do perfil",
+    "profileBadgeClearAria": "Remover selo do perfil",
     "projectsLabel": "{count, plural, one {projeto} other {projetos}}",
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Projetos publicados",

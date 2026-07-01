@@ -8,6 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
+import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
+import { getProfileBadgeCode } from "@/utils/profileBadges";
 
 export default function Header({ authToken }) {
     const t = useTranslations("Header");
@@ -21,6 +23,7 @@ export default function Header({ authToken }) {
     const buttonRef = useRef(null);
     const browseWrapperRef = useRef(null);
     const browseCloseTimeoutRef = useRef(null);
+    const activeProfileBadgeCode = getProfileBadgeCode(user);
 
 
     useEffect(() => {
@@ -296,8 +299,8 @@ export default function Header({ authToken }) {
                                                 <div className="account-menu__name">
                                                     <div className="account-menu__name-label">{user?.username}</div>
                                                 
-                                                    {user?.isVerified === 1 && (
-                                                        <img src="/badges/creator.webp" alt="Verified" style={{ width: "18px", pointerEvents: "none" }} />
+                                                    {activeProfileBadgeCode && (
+                                                        <ProfileBadgeIcon badge={activeProfileBadgeCode} alt="" style={{ width: "18px", pointerEvents: "none" }} />
                                                     )}
                                                 </div>
                                             </Link>

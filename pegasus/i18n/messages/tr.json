@@ -994,7 +994,8 @@
       "loadingFollowList": "Takip listesi yüklenemedi",
       "profileImageTooLarge": "Dosya çok büyük. Maksimum boyut 10 MB",
       "invalidImageType": "Yalnızca JPG, PNG, WEBP ve GIF görsellerine izin verilir",
-      "profileImageUpload": "Profil görseli yüklenirken hata oluştu"
+      "profileImageUpload": "Profil görseli yüklenirken hata oluştu",
+      "profileBadgeUpdate": "Profil rozeti güncellenirken hata oluştu"
     },
     "loginToSubscribe": "Abone olmak için giriş yapın",
     "edit": "Düzenle",
@@ -1015,6 +1016,9 @@
     "newProfileBadge": "Bu yeni profiliniz!",
     "avatarUploadSuccess": "Avatar güncellendi",
     "coverUploadSuccess": "Kapak güncellendi",
+    "profileBadgeSaveSuccess": "Profil rozeti güncellendi",
+    "profileBadgePickerAria": "Profil rozeti seç",
+    "profileBadgeClearAria": "Profil rozetini kaldır",
     "projectsLabel": "{count, plural, one {proje} other {proje}}",
     "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
     "publishedProjectsTooltip": "Yayınlanan projeler",

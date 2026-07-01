@@ -994,7 +994,8 @@
       "loadingFollowList": "Ошибка загрузки списка подписок",
       "profileImageTooLarge": "Файл слишком большой. Максимум 10 МБ",
       "invalidImageType": "Можно загружать только JPG, PNG, WEBP и GIF",
-      "profileImageUpload": "Ошибка загрузки изображения профиля"
+      "profileImageUpload": "Ошибка загрузки изображения профиля",
+      "profileBadgeUpdate": "Ошибка обновления бейджа профиля"
     },
     "loginToSubscribe": "Войдите, чтобы подписаться",
     "edit": "Редактировать",
@@ -1015,6 +1016,9 @@
     "newProfileBadge": "Это ваш новый профиль!",
     "avatarUploadSuccess": "Аватар обновлен",
     "coverUploadSuccess": "Обложка обновлена",
+    "profileBadgeSaveSuccess": "Бейдж профиля обновлен",
+    "profileBadgePickerAria": "Выбрать бейдж профиля",
+    "profileBadgeClearAria": "Убрать бейдж профиля",
     "projectsLabel": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
     "downloadsLabel": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}",
     "publishedProjectsTooltip": "Опубликованные проекты",

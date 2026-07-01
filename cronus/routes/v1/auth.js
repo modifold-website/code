@@ -8,6 +8,7 @@ const { authenticator } = require("otplib");
 const { sendMail } = require("../../utils/smtpMailer");
 const router = express.Router();
 const auth = require("../../middleware/auth");
+const { getVisibleProfileBadge } = require("../../utils/profileBadges");
 const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;
@@ -907,7 +908,7 @@ router.get("/github-callback", async (req, res) => {
 
 router.get("/user", auth, async (req, res) => {
     try {
-        const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, github_id, isRole, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, github_id, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(!users.length) {
             return res.status(404).json({ message: "User not found" });
@@ -915,8 +916,10 @@ router.get("/user", auth, async (req, res) => {
 
         const userData = {
             ...users[0],
+            activeProfileBadge: await getVisibleProfileBadge(db, users[0]),
             social_links: users[0].social_links ? JSON.parse(users[0].social_links) : {},
         };
+        delete userData.active_profile_badge;
 
         res.json({ user: userData, success: true });
     } catch (error) {

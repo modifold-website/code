@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Fragment, useState, useRef, useEffect } from "react";
+import { Fragment, useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "../providers/AuthProvider";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -8,7 +8,6 @@ import Link from "next/link";
 import ProjectCard from "../project/ProjectCard";
 import { useTranslations } from "next-intl";
 import UserName from "../ui/UserName";
-import Modal from "react-modal";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
 import RoleBadge from "../ui/RoleBadge";
 import ProfileSubscriptionsModal from "@/modal/ProfileSubscriptionsModal";
@@ -16,10 +15,8 @@ import ProfileAchievements from "@/components/ui/ProfileAchievements";
 import ProfileLinks from "@/components/ui/ProfileLinks";
 import ProfileProjectFeedToolbar from "@/components/ui/ProfileProjectFeedToolbar";
 import ProfileStats from "@/components/ui/ProfileStats";
-
-if(typeof window !== "undefined") {
-    Modal.setAppElement("body");
-}
+import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
+import { PROFILE_BADGES, getProfileBadgeCode } from "@/utils/profileBadges";
 
 const DESCRIPTION_URL_RE = /\bhttps?:\/\/[^\s<]+/gi;
 const PROFILE_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
@@ -95,11 +92,14 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
     const [isSubscribed, setIsSubscribed] = useState(initialSubscribed);
     const [subscriptionId, setSubscriptionId] = useState(initialSubId);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [isVerifiedModalOpen, setIsVerifiedModalOpen] = useState(false);
+    const [isBadgePopoverOpen, setIsBadgePopoverOpen] = useState(false);
+    const [isProfileBadgeSaving, setIsProfileBadgeSaving] = useState(false);
     const [activeFollowModal, setActiveFollowModal] = useState(null);
     const [uploadingProfileImage, setUploadingProfileImage] = useState(null);
     const popoverRef = useRef(null);
     const buttonRef = useRef(null);
+    const badgePopoverRef = useRef(null);
+    const badgeButtonRef = useRef(null);
     const avatarInputRef = useRef(null);
     const coverInputRef = useRef(null);
     const { lightboxOpen, lightboxImage, closeLightbox, getLightboxTriggerProps } = useImageLightbox();
@@ -118,11 +118,15 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                 setIsPopoverOpen(false);
             }
 
+            if(isBadgePopoverOpen && badgePopoverRef.current && !badgePopoverRef.current.contains(event.target) && badgeButtonRef.current && !badgeButtonRef.current.contains(event.target)) {
+                setIsBadgePopoverOpen(false);
+            }
+
         };
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isPopoverOpen]);
+    }, [isPopoverOpen, isBadgePopoverOpen]);
 
     const handleSubscribe = async () => {
         if(!isLoggedIn || !authToken) {
@@ -199,6 +203,29 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
         }
     };
 
+    const handleProfileBadgeChange = async (badgeCode) => {
+        if(!authToken || isProfileBadgeSaving) {
+            return;
+        }
+
+        try {
+            setIsProfileBadgeSaving(true);
+            const res = await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/users/me/profile-badge`, { badge: badgeCode }, {
+                headers: { Authorization: `Bearer ${authToken}` },
+            });
+            const updatedUser = res.data || {};
+
+            setProfileUser((prev) => ({ ...prev, ...updatedUser }));
+            setUser((prev) => ({ ...prev, ...updatedUser }));
+            setIsBadgePopoverOpen(false);
+            toast.success(t("profileBadgeSaveSuccess"));
+        } catch (err) {
+            toast.error(err.response?.data?.message || t("errors.profileBadgeUpdate"));
+        } finally {
+            setIsProfileBadgeSaving(false);
+        }
+    };
+
     const handleOpenFollowModal = (type) => {
         const count = type === "subscribers" ? countSubs : countUserSubs;
         if(count < 1) {
@@ -227,6 +254,31 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
         getSafeExternalUrl(profileUser?.social_links?.youtube)
     );
     const hasSidebar = (!isBanned && achievements.length > 0) || hasSocialLinks || organizations.length > 0;
+    const achievementCodes = useMemo(() => new Set((Array.isArray(achievements) ? achievements : []).map((achievement) => achievement?.code).filter(Boolean)), [achievements]);
+    const availableProfileBadges = useMemo(() => {
+        const availableCodes = new Set();
+
+        if(Number(profileUser?.isVerified || 0) === 1) {
+            availableCodes.add("creator_badge");
+        }
+
+        if(profileUser?.isRole === "admin" || profileUser?.isRole === "moderator" || profileUser?.isRole === "staff") {
+            availableCodes.add("staff");
+        }
+
+        if(achievementCodes.has("hytalemodjam_2026")) {
+            availableCodes.add("hytalemodjam_2026");
+        }
+
+        if(achievementCodes.has("first_project")) {
+            availableCodes.add("first_project");
+        }
+
+        return PROFILE_BADGES.filter((badge) => availableCodes.has(badge.code));
+    }, [achievementCodes, profileUser?.isRole, profileUser?.isVerified]);
+    const activeProfileBadgeCode = getProfileBadgeCode(profileUser);
+    const canChooseProfileBadge = isOwnProfile && !isBanned && availableProfileBadges.length > 0;
+    const showProfileBadgeButton = Boolean(activeProfileBadgeCode || canChooseProfileBadge);
 
     return (
         <>
@@ -320,12 +372,44 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 
                                 <div className="profile-hero__identity">
                                     <h1 className="profile-hero__name">
-                                        <UserName showVerifiedIcon={false} user={isBanned ? { username: authorTitle } : user} />
+                                        <UserName showVerifiedIcon={false} user={isBanned ? { username: authorTitle } : profileUser} />
 
-                                        {profileUser.isVerified === 1 && (
-                                            <button className="profile-hero__verified" type="button" onClick={() => setIsVerifiedModalOpen(true)} aria-label={t("verifiedModal.creatorBadgeAlt")}>
-                                                <img src="/badges/creator.webp" alt="" />
-                                            </button>
+                                        {showProfileBadgeButton && (
+                                            <span className="profile-hero__badge-picker">
+                                                <button ref={badgeButtonRef} className="profile-hero__verified" type="button" onClick={canChooseProfileBadge ? () => setIsBadgePopoverOpen((prev) => !prev) : undefined} aria-label={t("profileBadgePickerAria")} aria-haspopup={canChooseProfileBadge ? "menu" : undefined} aria-expanded={canChooseProfileBadge ? isBadgePopoverOpen : undefined}>
+                                                    {activeProfileBadgeCode ? (
+                                                        <ProfileBadgeIcon badge={activeProfileBadgeCode} alt="" />
+                                                    ) : (
+                                                        <div className="profile-hero__badge-placeholder">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-smile-icon lucide-smile" aria-hidden="true">
+                                                                <circle cx="12" cy="12" r="10"></circle>
+                                                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                                                <line x1="9" x2="9.01" y1="9" y2="9"></line>
+                                                                <line x1="15" x2="15.01" y1="9" y2="9"></line>
+                                                            </svg>
+                                                        </div>
+                                                    )}
+                                                </button>
+
+                                                {canChooseProfileBadge && isBadgePopoverOpen && (
+                                                    <span ref={badgePopoverRef} className="popover profile-hero__badge-popover" role="menu">
+                                                        <span className="profile-badge-picker__grid">
+                                                            <button className={`profile-badge-picker__option ${!activeProfileBadgeCode ? "profile-badge-picker__option--selected" : ""}`} type="button" onClick={() => handleProfileBadgeChange(null)} disabled={isProfileBadgeSaving} aria-label={t("profileBadgeClearAria")}>
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-x-icon lucide-x" aria-hidden="true">
+                                                                    <path d="M18 6 6 18"></path>
+                                                                    <path d="m6 6 12 12"></path>
+                                                                </svg>
+                                                            </button>
+
+                                                            {availableProfileBadges.map((badge) => (
+                                                                <button key={badge.code} className={`profile-badge-picker__option ${activeProfileBadgeCode === badge.code ? "profile-badge-picker__option--selected" : ""}`} type="button" onClick={() => handleProfileBadgeChange(badge.code)} disabled={isProfileBadgeSaving} aria-label={badge.code}>
+                                                                    <ProfileBadgeIcon badge={badge.code} alt="" />
+                                                                </button>
+                                                            ))}
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            </span>
                                         )}
                                     </h1>
 
@@ -404,30 +488,6 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                 username={profileUser.slug}
                 type={activeFollowModal}
             />
-
-            <Modal closeTimeoutMS={150} isOpen={isVerifiedModalOpen} onRequestClose={() => setIsVerifiedModalOpen(false)} className="modal active" overlayClassName="modal-overlay">
-                <div className="modal-window">
-                    <div className="modal-window__header">
-                        <button className="icon-button modal-window__close" type="button" onClick={() => setIsVerifiedModalOpen(false)} aria-label={t("close")}>
-                            <svg className="icon icon--cross" height="24" width="24">
-                                <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-					<div className="modal-window__content">
-						<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-							<img src="/badges/creator.webp" alt={t("verifiedModal.creatorBadgeAlt")} style={{ width: "72px" }} />
-							
-                            <p style={{ margin: "0px", textAlign: "center" }}>{t("verifiedModal.creatorBadgeText")}</p>
-							
-                            <Link href="/news/creator-badge-launch" className="button button--size-xl button--type-minimal button--active-transform" style={{ width: "100%" }}>
-								{t("verifiedModal.learnMore")}
-							</Link>
-						</div>
-					</div>
-                </div>
-            </Modal>
         </>
     );
 }

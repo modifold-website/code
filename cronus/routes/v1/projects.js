@@ -1201,7 +1201,7 @@ router.get("/", async (req, res) => {
 
         let query = `
             SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.color, p.downloads, p.followers, p.created_at, p.updated_at, p.project_type, p.tags, p.license_id, p.license_name, p.show_players_last_14d,
-            ANY_VALUE(u.username) AS username, ANY_VALUE(u.slug) AS user_slug, ANY_VALUE(u.avatar) AS avatar, ANY_VALUE(u.id) AS user_id, ANY_VALUE(u.isVerified) AS isVerified,
+            ANY_VALUE(u.username) AS username, ANY_VALUE(u.slug) AS user_slug, ANY_VALUE(u.avatar) AS avatar, ANY_VALUE(u.id) AS user_id, ANY_VALUE(u.isVerified) AS isVerified, ANY_VALUE(u.active_profile_badge) AS activeProfileBadge,
             ANY_VALUE(o.id) AS organization_id, ANY_VALUE(o.slug) AS organization_slug, ANY_VALUE(o.name) AS organization_name, ANY_VALUE(o.icon_url) AS organization_icon_url, ANY_VALUE(o.summary) AS organization_summary,
             ANY_VALUE(pv.game_versions) AS game_versions, ANY_VALUE(pv.loaders) AS loaders,
             (SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 LIMIT 1) AS featured_image
@@ -1327,6 +1327,7 @@ router.get("/", async (req, res) => {
                     slug: project.user_slug,
                     avatar: project.avatar,
                     isVerified: project.isVerified,
+                    activeProfileBadge: project.activeProfileBadge,
                     type: "user",
                     profile_url: `/user/${project.user_slug}`,
                 },
@@ -1422,6 +1423,7 @@ router.get('/user/projects', auth, async (req, res) => {
             u.slug AS user_slug,
             u.avatar,
             u.isVerified,
+            u.active_profile_badge AS activeProfileBadge,
             o.id AS organization_id,
             o.slug AS organization_slug,
             o.name AS organization_name,
@@ -1482,6 +1484,7 @@ router.get('/user/projects', auth, async (req, res) => {
                     slug: project.user_slug,
                     avatar: project.avatar,
                     isVerified: project.isVerified,
+                    activeProfileBadge: project.activeProfileBadge,
                     type: "user",
                     profile_url: profileUrl,
                 },
@@ -2191,7 +2194,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 
         const [project] = await db.query(
             `SELECT p.*, 
-            u.username, u.slug AS user_slug, u.avatar, u.id AS user_id, u.isVerified AS isVerified,
+            u.username, u.slug AS user_slug, u.avatar, u.id AS user_id, u.isVerified AS isVerified, u.active_profile_badge AS activeProfileBadge,
             (SELECT COUNT(*) FROM project_likes pl WHERE pl.project_id = p.id) AS followers_count,
             (SELECT 1 FROM project_likes pl WHERE pl.project_id = p.id AND pl.user_id = ?) AS is_liked
             FROM projects p
@@ -2220,7 +2223,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         );
 
         const [members] = await db.query(
-            `SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified
+            `SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
             FROM project_members pm 
             LEFT JOIN users u ON pm.user_id = u.id 
             WHERE pm.project_id = ?`,
@@ -2320,6 +2323,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 slug: projectData.user_slug,
                 avatar: projectData.avatar,
                 isVerified: projectData.isVerified,
+                activeProfileBadge: projectData.activeProfileBadge,
                 type: "user",
                 profile_url: `/user/${projectData.user_slug}`,
             },
@@ -2338,6 +2342,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 slug: member.slug,
                 avatar: member.avatar,
                 isVerified: member.isVerified,
+                activeProfileBadge: member.activeProfileBadge,
             })),
             mod_jam_participations: modJamParticipations.map((jam) => ({
                 ...(() => {
@@ -3056,7 +3061,7 @@ router.get('/:slug/members', async (req, res) => {
         }
 
         const [members] = await db.query(`
-            SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified
+            SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
             FROM project_members pm 
             LEFT JOIN users u ON pm.user_id = u.id 
             WHERE pm.project_id = ?
@@ -3110,7 +3115,7 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
         const params = [project.id];
         let query = `
             SELECT i.id, i.title, i.status, i.created_at, i.updated_at, i.author_user_id, i.is_pinned,
-            u.username, u.slug, u.avatar, u.isVerified, u.isRole,
+            u.username, u.slug, u.avatar, u.isVerified, u.isRole, u.active_profile_badge AS activeProfileBadge,
             (
                 SELECT COUNT(*) FROM project_issue_comments ic
                 WHERE ic.issue_id = i.id AND ic.status = 'visible'
@@ -3177,6 +3182,7 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
                 avatar: issue.avatar,
                 isVerified: issue.isVerified,
                 isRole: issue.isRole,
+                activeProfileBadge: issue.activeProfileBadge,
             } : null,
         }));
 
@@ -3669,7 +3675,7 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
 
         const [issues] = await db.query(
             `SELECT i.id, i.title, i.body, i.status, i.created_at, i.updated_at, i.closed_at, i.closed_by, i.template_id,
-            i.author_user_id, u.username, u.slug, u.avatar, u.isVerified, u.isRole
+            i.author_user_id, u.username, u.slug, u.avatar, u.isVerified, u.isRole, u.active_profile_badge AS activeProfileBadge
             FROM project_issues i
             LEFT JOIN users u ON u.id = i.author_user_id
             WHERE i.project_id = ? AND i.id = ? LIMIT 1`,
@@ -3702,7 +3708,7 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
 
         const commentsQuery = `
             SELECT c.id, c.parent_id, c.content, c.created_at, c.updated_at, c.status, c.user_id,
-            u.username, u.slug, u.avatar, u.isVerified, u.isRole
+            u.username, u.slug, u.avatar, u.isVerified, u.isRole, u.active_profile_badge AS activeProfileBadge
             FROM project_issue_comments c
             LEFT JOIN users u ON c.user_id = u.id
             WHERE c.issue_id = ?
@@ -3728,13 +3734,14 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
                     avatar: comment.avatar,
                     isVerified: comment.isVerified,
                     isRole: comment.isRole,
+                    activeProfileBadge: comment.activeProfileBadge,
                 },
             };
         });
 
         const [eventRows] = await db.query(
             `SELECT e.id, e.event_type, e.created_at, e.actor_user_id, e.meta,
-            u.username, u.slug, u.avatar, u.isVerified, u.isRole
+            u.username, u.slug, u.avatar, u.isVerified, u.isRole, u.active_profile_badge AS activeProfileBadge
             FROM project_issue_events e
             LEFT JOIN users u ON u.id = e.actor_user_id
             WHERE e.issue_id = ?
@@ -3754,6 +3761,7 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
                 avatar: row.avatar,
                 isVerified: row.isVerified,
                 isRole: row.isRole,
+                activeProfileBadge: row.activeProfileBadge,
             } : null,
         }));
 
@@ -3787,6 +3795,7 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
                     avatar: issue.avatar,
                     isVerified: issue.isVerified,
                     isRole: issue.isRole,
+                    activeProfileBadge: issue.activeProfileBadge,
                 } : null,
             },
             canManage: !!access.canManage,
@@ -4274,7 +4283,7 @@ router.post("/:slug/issues/:issueId/comments", auth, async (req, res) => {
             [issueId, userId, parent_id || null, trimmed, now, now]
         );
 
-        const [users] = await db.query("SELECT id, username, slug, avatar, isVerified, isRole FROM users WHERE id = ? LIMIT 1", [userId]);
+        const [users] = await db.query("SELECT id, username, slug, avatar, isVerified, isRole, active_profile_badge AS activeProfileBadge FROM users WHERE id = ? LIMIT 1", [userId]);
         const author = users[0];
 
         return res.status(201).json({
@@ -4291,6 +4300,7 @@ router.post("/:slug/issues/:issueId/comments", auth, async (req, res) => {
                 avatar: author.avatar,
                 isVerified: author.isVerified,
                 isRole: author.isRole,
+                activeProfileBadge: author.activeProfileBadge,
             },
         });
     } catch (error) {
