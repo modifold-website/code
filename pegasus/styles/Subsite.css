@@ -672,3 +672,6 @@
     flex: 0 0 auto;
     position: relative;
 }
+.profile-hero__new-badge {
+    display: none;
+}
