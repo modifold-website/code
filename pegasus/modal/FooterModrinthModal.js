@@ -45,6 +45,7 @@ export default function FooterModrinthModal() {
                             <p>{t("quote1")}</p>
                             <p>{t("quote2")}</p>
                             <p>{t("quote3")}</p>
+                            <footer className="footer-modrinth-modal__quote-author">{t("quoteAuthor")}</footer>
                         </blockquote>
                     </div>
                 </div>
