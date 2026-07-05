@@ -7,6 +7,7 @@ import { useAuth } from "../providers/AuthProvider";
 import { useTranslations, useLocale } from "next-intl";
 import { toast } from "react-toastify";
 import IssueTemplatePickerModal from "@/modal/IssueTemplatePickerModal";
+import ConfirmModal from "@/modal/ConfirmModal";
 import { getProjectBasePath } from "@/utils/projectRoutes";
 
 const formatDate = (timestamp, locale) => {
@@ -44,6 +45,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
     const [issueItems, setIssueItems] = useState(initialIssues.issues || []);
     const [isPinUpdating, setIsPinUpdating] = useState(null);
     const [isDeleteUpdating, setIsDeleteUpdating] = useState(null);
+    const [pendingDeleteIssueId, setPendingDeleteIssueId] = useState(null);
 
     useEffect(() => {
         setIssueItems(initialIssues.issues || []);
@@ -153,7 +155,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
         }
     };
 
-    const handleDeleteIssue = async (event, issueId) => {
+    const handleDeleteIssue = (event, issueId) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -161,14 +163,18 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
             return;
         }
 
-        if(!confirm(t("actions.deleteConfirm"))) {
+        setPendingDeleteIssueId(issueId);
+    };
+
+    const confirmDeleteIssue = async () => {
+        if(!pendingDeleteIssueId || !initialIssues.canManage) {
             return;
         }
 
         try {
-            setIsDeleteUpdating(issueId);
+            setIsDeleteUpdating(pendingDeleteIssueId);
             const token = localStorage.getItem("authToken");
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/issues/${issueId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/issues/${pendingDeleteIssueId}`, {
                 method: "DELETE",
                 headers: token ? {
                     Accept: "application/json",
@@ -192,6 +198,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
             if(data?.issues) {
                 setIssueItems(data.issues);
             }
+            setPendingDeleteIssueId(null);
             toast.success(t("actions.deleteSuccess"));
         } catch (error) {
             toast.error(error.message || t("errors.delete"));
@@ -452,6 +459,19 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                     templates={templates}
                     onSelect={handleTemplateSelect}
                     onRequestClose={() => setIsPickerOpen(false)}
+                />
+                <ConfirmModal
+                    isOpen={Boolean(pendingDeleteIssueId)}
+                    title={t("actions.deleteConfirm")}
+                    confirmLabel={t("actions.delete")}
+                    cancelLabel={t("common.cancel")}
+                    isLoading={Boolean(isDeleteUpdating)}
+                    onConfirm={confirmDeleteIssue}
+                    onRequestClose={() => {
+                        if(!isDeleteUpdating) {
+                            setPendingDeleteIssueId(null);
+                        }
+                    }}
                 />
             </div>
         </div>

@@ -17,6 +17,7 @@ import Tooltip from "../ui/Tooltip";
 import VersionEditMetadataModal from "../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
+import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 
 const loaders = [
@@ -127,6 +128,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     const [openEditActionsVersionId, setOpenEditActionsVersionId] = useState(null);
     const [editModalType, setEditModalType] = useState(null);
     const [editingVersionId, setEditingVersionId] = useState(null);
+    const [pendingDeleteVersionId, setPendingDeleteVersionId] = useState(null);
     const [editLoading, setEditLoading] = useState(false);
     const [editVersionFile, setEditVersionFile] = useState({ url: "", size: null });
     const [editFormData, setEditFormData] = useState({
@@ -497,23 +499,28 @@ export default function VersionPage({ project, version, authToken, gameVersions 
         }
     };
 
-    const handleDelete = async (versionId = editingVersionId) => {
+    const requestDelete = (versionId = editingVersionId) => {
         if(!versionId) {
             return;
         }
 
-        if(!confirm(t("confirmDeleteVersion"))) {
+        setPendingDeleteVersionId(versionId);
+    };
+
+    const handleDelete = async () => {
+        if(!pendingDeleteVersionId) {
             return;
         }
 
         setEditLoading(true);
 
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${versionId}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${pendingDeleteVersionId}`, {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
 
             toast.success(t("versionDeleted"));
+            setPendingDeleteVersionId(null);
             router.push(`${getProjectPath(project)}/versions`);
         } catch (err) {
             toast.error(err.response?.data?.message || t("errorOccurred"));
@@ -657,7 +664,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                                                                 <div className="context-list-option__label">{tSettings("versions.modal.editFilesTitle")}</div>
                                                             </button>
 
-                                                            <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art color--negative" onClick={() => handleDelete(currentVersion.id)}>
+                                                            <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art color--negative" onClick={() => requestDelete(currentVersion.id)}>
                                                                 <div className="context-list-option__art context-list-option__art--icon">
                                                                     <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2-icon lucide-trash-2">
                                                                         <path d="M10 11v6"/>
@@ -915,6 +922,19 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                 fileTooLargeMessage={tSettings("versions.errors.fileTooLarge")}
                 currentFileName={getFileNameFromUrl(editVersionFile.url)}
                 formatFileSize={formatFileSize}
+            />
+            <ConfirmModal
+                isOpen={Boolean(pendingDeleteVersionId)}
+                title={t("confirmDeleteVersion")}
+                confirmLabel={t("delete")}
+                cancelLabel={t("cancel")}
+                isLoading={editLoading}
+                onConfirm={handleDelete}
+                onRequestClose={() => {
+                    if(!editLoading) {
+                        setPendingDeleteVersionId(null);
+                    }
+                }}
             />
         </>
     );

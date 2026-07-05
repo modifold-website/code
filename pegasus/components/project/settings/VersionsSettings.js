@@ -12,6 +12,7 @@ import VersionUploadModal from "../../../modal/VersionUploadModal";
 import VersionEditMetadataModal from "../../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../../modal/VersionEditFilesModal";
+import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload, sortByKnownGameVersions } from "@/utils/gameVersions";
 
 const loaders = [
@@ -96,6 +97,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
     const [editModalType, setEditModalType] = useState(null);
     const [openEditActionsVersionId, setOpenEditActionsVersionId] = useState(null);
     const [editingVersionId, setEditingVersionId] = useState(null);
+    const [pendingDeleteVersionId, setPendingDeleteVersionId] = useState(null);
     const [editLoading, setEditLoading] = useState(false);
     const [editVersionFile, setEditVersionFile] = useState({ url: "", size: null });
     const [editFormData, setEditFormData] = useState({
@@ -638,29 +640,35 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
         }
     };
 
-    const handleDelete = async (versionId = editingVersionId) => {
+    const requestDelete = (versionId = editingVersionId) => {
         if(!versionId) {
             return;
         }
 
-        if(!confirm(tProject("confirmDeleteVersion"))) {
+        setPendingDeleteVersionId(versionId);
+    };
+
+    const handleDelete = async () => {
+        if(!pendingDeleteVersionId) {
             return;
         }
 
         setEditLoading(true);
 
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${versionId}`, {
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${pendingDeleteVersionId}`, {
                 headers: { Authorization: `Bearer ${authToken}` },
             });
 
             toast.success(tProject("versionDeleted"));
+            const deletedVersionId = pendingDeleteVersionId;
+            setPendingDeleteVersionId(null);
 
             if(editModalType) {
                 closeEditModal();
             } else {
                 setOpenEditActionsVersionId(null);
-                if(editingVersionId === versionId) {
+                if(editingVersionId === deletedVersionId) {
                     setEditingVersionId(null);
                 }
             }
@@ -962,7 +970,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                                                         <div className="context-list-option__label">{t("versions.modal.editFilesTitle")}</div>
                                                     </button>
 
-                                                    <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art color--negative" onClick={() => handleDelete(version.id)}>
+                                                    <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art color--negative" onClick={() => requestDelete(version.id)}>
                                                         <div className="context-list-option__art context-list-option__art--icon">
                                                             <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash2-icon lucide-trash-2">
                                                                 <path d="M10 11v6"/>
@@ -1119,6 +1127,19 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                 fileTooLargeMessage={t("versions.errors.fileTooLarge")}
                 currentFileName={getFileNameFromUrl(editVersionFile.url)}
                 formatFileSize={formatFileSize}
+            />
+            <ConfirmModal
+                isOpen={Boolean(pendingDeleteVersionId)}
+                title={tProject("confirmDeleteVersion")}
+                confirmLabel={tProject("delete")}
+                cancelLabel={tProject("cancel")}
+                isLoading={editLoading}
+                onConfirm={handleDelete}
+                onRequestClose={() => {
+                    if(!editLoading) {
+                        setPendingDeleteVersionId(null);
+                    }
+                }}
             />
         </>
     );

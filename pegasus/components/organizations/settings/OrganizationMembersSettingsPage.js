@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import OrganizationMemberCard from "@/components/organizations/settings/OrganizationMemberCard";
 import OrganizationSettingsSidebar from "@/components/organizations/settings/OrganizationSettingsSidebar";
+import ConfirmModal from "@/modal/ConfirmModal";
 
 const PROJECT_PERMISSION_KEYS = [
     "project_edit_details",
@@ -56,6 +57,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
     const [isInviting, setIsInviting] = useState(false);
     const [isSavingMembers, setIsSavingMembers] = useState(false);
     const [removingMemberId, setRemovingMemberId] = useState(null);
+    const [pendingRemoveMember, setPendingRemoveMember] = useState(null);
     const [memberItems, setMemberItems] = useState(members);
     const [draftMembers, setDraftMembers] = useState(buildDraftMap(members));
     const [expandedMemberId, setExpandedMemberId] = useState(null);
@@ -183,10 +185,6 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
             return;
         }
 
-        if(!window.confirm(t("settings.confirmRemoveMember", { username: member.username }))) {
-            return;
-        }
-
         setRemovingMemberId(member.user_id);
 
         try {
@@ -200,6 +198,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
             setMemberItems(nextMembers);
             setDraftMembers(buildDraftMap(nextMembers));
             setExpandedMemberId((prev) => (prev === member.__cardKey ? null : prev));
+            setPendingRemoveMember(null);
             toast.success(t("settings.successMemberRemoved", { username: member.username }));
         } catch (error) {
             toast.error(error.response?.data?.message || t("settings.errors.memberRemove"));
@@ -267,7 +266,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                     canExpand={canExpandCard}
                                     canRemove={canRemoveMember}
                                     isRemoving={Number(removingMemberId) === Number(member.user_id)}
-                                    onRemove={() => handleRemoveMember(member)}
+                                    onRemove={() => setPendingRemoveMember(member)}
                                     onChange={(nextDraft) => {
                                         if(member.__isPendingInvite) {
                                             return;
@@ -307,6 +306,19 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                     />
                 )}
             </div>
+            <ConfirmModal
+                isOpen={Boolean(pendingRemoveMember)}
+                title={pendingRemoveMember ? t("settings.confirmRemoveMember", { username: pendingRemoveMember.username }) : ""}
+                confirmLabel={t("settings.actions.removeMember")}
+                cancelLabel={t("settings.delete.cancel")}
+                isLoading={Boolean(removingMemberId)}
+                onConfirm={() => handleRemoveMember(pendingRemoveMember)}
+                onRequestClose={() => {
+                    if(!removingMemberId) {
+                        setPendingRemoveMember(null);
+                    }
+                }}
+            />
         </div>
     );
 }

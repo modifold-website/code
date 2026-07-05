@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
+import ConfirmModal from "@/modal/ConfirmModal";
 import { validateSlug } from "@/utils/slug";
 import { isWorldProjectType } from "@/utils/projectRoutes";
 
@@ -23,12 +24,15 @@ const getInitialFormData = (project) => ({
 
 export default function ProjectSettings({ project, organizationOptions: initialOrganizationOptions = [] }) {
     const t = useTranslations("SettingsProjectPage");
+    const tProject = useTranslations("ProjectPage");
     const { isLoggedIn } = useAuth();
     const router = useRouter();
 
     const [formData, setFormData] = useState(getInitialFormData(project));
     const [savedFormData, setSavedFormData] = useState(getInitialFormData(project));
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [isDeletingProject, setIsDeletingProject] = useState(false);
 
     const [previewIcon, setPreviewIcon] = useState("");
     const [savedPreviewIcon, setSavedPreviewIcon] = useState(project?.icon_url || "");
@@ -189,11 +193,8 @@ export default function ProjectSettings({ project, organizationOptions: initialO
     };
 
     const handleDelete = async () => {
-        if(!confirm(t("general.confirmDelete", { title: project.title }))) {
-            return;
-        }
-
         try {
+            setIsDeletingProject(true);
             await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -201,9 +202,12 @@ export default function ProjectSettings({ project, organizationOptions: initialO
             });
 
             toast.success(t("general.success.deleted"));
+            setIsDeleteConfirmOpen(false);
             router.push("/");
         } catch (err) {
             toast.error(err.response?.data?.message || t("general.errors.delete"));
+        } finally {
+            setIsDeletingProject(false);
         }
     };
 
@@ -410,7 +414,7 @@ export default function ProjectSettings({ project, organizationOptions: initialO
                                 </div>
 
                                 <div style={{ marginTop: "18px", display: "flex", gap: "10px" }}>
-                                    <button type="button" className="button button--size-m button--type-negative" onClick={handleDelete}>
+                                    <button type="button" className="button button--size-m button--type-negative" onClick={() => setIsDeleteConfirmOpen(true)}>
                                         {t("general.actions.delete")}
                                     </button>
                                 </div>
@@ -439,6 +443,19 @@ export default function ProjectSettings({ project, organizationOptions: initialO
                 saveLabel={t("general.actions.save")}
                 resetLabel={t("unsavedBar.reset")}
                 message={t("unsavedBar.message")}
+            />
+            <ConfirmModal
+                isOpen={isDeleteConfirmOpen}
+                title={t("general.confirmDelete", { title: project.title })}
+                confirmLabel={t("general.actions.delete")}
+                cancelLabel={tProject("cancel")}
+                isLoading={isDeletingProject}
+                onConfirm={handleDelete}
+                onRequestClose={() => {
+                    if(!isDeletingProject) {
+                        setIsDeleteConfirmOpen(false);
+                    }
+                }}
             />
         </>
     );

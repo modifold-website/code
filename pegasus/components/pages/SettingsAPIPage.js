@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import CreateApiTokenModal from "../../modal/CreateApiTokenModal";
+import ConfirmModal from "@/modal/ConfirmModal";
 
 export default function SettingsAPIPage({ initialUser = null, initialTokens = null, authToken = null }) {
     const t = useTranslations("SettingsAPIPage");
@@ -24,6 +25,8 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
     const [isTokensLoading, setIsTokensLoading] = useState(initialTokens === null);
     const [isCreatingToken, setIsCreatingToken] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [tokenPendingRevoke, setTokenPendingRevoke] = useState(null);
+    const [isRevokingToken, setIsRevokingToken] = useState(false);
 
     useEffect(() => {
         if(!isLoggedIn && !initialUser) {
@@ -58,7 +61,6 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
 
     const handleSelectDuration = (val) => {
         setForm((prev) => ({ ...prev, duration: val }));
-        setIsDurationPopoverOpen(false);
     };
 
     const handleCreateToken = async (e) => {
@@ -93,20 +95,24 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
         }
     };
 
-    const handleRevokeToken = async (tokenId) => {
-        if(!confirm(t("confirmRevoke"))) {
+    const handleRevokeToken = async () => {
+        if(!tokenPendingRevoke) {
             return;
         }
 
         try {
-            await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/api-tokens/${tokenId}`, {
+            setIsRevokingToken(true);
+            await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/api-tokens/${tokenPendingRevoke.id}`, {
                 headers: { Authorization: `Bearer ${authToken || localStorage.getItem("authToken")}` },
             });
 
             toast.success(t("success.revoked"));
-            loadTokens();
+            setTokenPendingRevoke(null);
+            await loadTokens();
         } catch (err) {
             toast.error(t("errors.revokeToken"));
+        } finally {
+            setIsRevokingToken(false);
         }
     };
 
@@ -192,7 +198,7 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
                                             {token.expires_at ? new Date(token.expires_at).toLocaleDateString() : t("never")}
                                         </td>
                                         <td>
-                                            <button onClick={() => handleRevokeToken(token.id)} className="button button--size-s button--type-danger">
+                                            <button onClick={() => setTokenPendingRevoke(token)} className="button button--size-s button--type-danger" disabled={isRevokingToken}>
                                                 {t("revoke")}
                                             </button>
                                         </td>
@@ -205,6 +211,20 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
             </div>
 
             <CreateApiTokenModal isOpen={isCreateModalOpen} onRequestClose={() => setIsCreateModalOpen(false)} form={form} onInputChange={handleInputChange} onSelectDuration={handleSelectDuration} onSubmit={handleCreateToken} isCreatingToken={isCreatingToken} />
+            <ConfirmModal
+                isOpen={Boolean(tokenPendingRevoke)}
+                title={t("confirmRevokeTitle")}
+                description={t("confirmRevoke")}
+                confirmLabel={isRevokingToken ? t("revoking") : t("revoke")}
+                cancelLabel={t("cancel")}
+                isLoading={isRevokingToken}
+                onConfirm={handleRevokeToken}
+                onRequestClose={() => {
+                    if(!isRevokingToken) {
+                        setTokenPendingRevoke(null);
+                    }
+                }}
+            />
         </>
     );
 }

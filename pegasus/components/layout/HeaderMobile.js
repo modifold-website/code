@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "../providers/AuthProvider";
 import LoginModal from "../../modal/LoginModal";
+import { useUnreadNotificationsCount } from "@/utils/notifications/hooks";
 import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
 import { getProfileBadgeCode } from "@/utils/profileBadges";
 
@@ -16,13 +17,14 @@ export default function HeaderMobile({ authToken }) {
     const { isLoggedIn, user, logout } = useAuth();
     const [loginModalOpen, setLoginModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
     const [animatingItem, setAnimatingItem] = useState(null);
     const [pendingActiveItem, setPendingActiveItem] = useState(null);
     const [theme, setThemeState] = useState("system");
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
     const activeProfileBadgeCode = getProfileBadgeCode(user);
+    const unreadCountQuery = useUnreadNotificationsCount({ authToken, isLoggedIn, user });
+    const unreadCount = unreadCountQuery.data || 0;
 
     const applyTheme = (nextTheme) => {
         const resolvedTheme = nextTheme === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : nextTheme === "dark" ? "dark" : "light";
@@ -50,66 +52,6 @@ export default function HeaderMobile({ authToken }) {
         setThemeState(savedTheme);
         applyTheme(savedTheme);
     }, []);
-
-    useEffect(() => {
-        if(!isLoggedIn) {
-            setUnreadCount(0);
-            return;
-        }
-
-        let isMounted = true;
-        let intervalId = null;
-        const getToken = () => authToken || localStorage.getItem("authToken");
-
-        const fetchUnreadCount = async () => {
-            const token = getToken();
-            if(!token) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/notifications/unread-count`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/json",
-                    },
-                });
-
-                if(!response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
-                if(isMounted) {
-                    setUnreadCount(Number(data?.unreadCount || 0));
-                }
-            } catch (error) {
-                console.error("Error fetching unread notifications count:", error);
-            }
-        };
-
-        const handleUnreadUpdate = (event) => {
-            const nextCount = Number(event?.detail?.unreadCount);
-            if(Number.isFinite(nextCount)) {
-                setUnreadCount(Math.max(0, nextCount));
-            } else {
-                fetchUnreadCount();
-            }
-        };
-
-        fetchUnreadCount();
-        intervalId = setInterval(fetchUnreadCount, 60000);
-        window.addEventListener("notifications:updated", handleUnreadUpdate);
-
-        return () => {
-            isMounted = false;
-            if(intervalId) {
-                clearInterval(intervalId);
-            }
-
-            window.removeEventListener("notifications:updated", handleUnreadUpdate);
-        };
-    }, [isLoggedIn, authToken]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {

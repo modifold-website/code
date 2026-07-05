@@ -44,27 +44,9 @@ export default function ProjectPage({ project, authToken, showInlineGallery = fa
     const isProjectAuthor = Boolean(user?.id && Number(project.user_id) === Number(user.id));
     const showStatusBanner = Boolean(bannerType && (isProjectAuthor || hasProjectEditPermission(project.permissions)));
     const moderationSettingsHref = getProjectPath(project, "/settings/moderation");
-    const structuredData = {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        name: project.title,
-        description: project.summary,
-        applicationCategory: "Game",
-        operatingSystem: "Hytale",
-        author: {
-            "@type": project.owner?.type === "organization" ? "Organization" : "Person",
-            name: project.owner.username,
-            url: `https://modifold.com${project.owner?.profile_url || `/user/${project.owner.slug}`}`,
-        },
-        datePublished: project.created_at,
-        image: project.icon_url,
-        url: `https://modifold.com${getProjectPath(project)}`,
-    };
 
     return (
         <>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-
             <div className="project__general">
                 <div>
                     {showStatusBanner ? (

@@ -1,15 +1,13 @@
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 ﻿import { getLocale, getTranslations } from "next-intl/server";
-import fs from "fs/promises";
-import path from "path";
-import matter from "gray-matter";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import Link from "next/link";
 import Image from "next/image";
 import ShareButtons from "@/components/ui/ShareButtons";
+import { getNewsArticle } from "@/utils/news/server";
 
 const getSafeMarkdownHref = (href) => {
     if(typeof href !== "string") {
@@ -36,23 +34,15 @@ export async function generateMetadata({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
     const t = await getTranslations({ locale: resolvedLocale, namespace: "NewsPage" });
-    const newsDir = path.join(process.cwd(), "data", "news");
 
     try {
-        const files = await fs.readdir(newsDir);
-        const file = files.find((f) => f.startsWith(`${slug}-${resolvedLocale}.md`)) || files.find((f) => f.startsWith(`${slug}-en.md`));
+        const article = await getNewsArticle(slug, resolvedLocale);
 
-        if(!file) {
+        if(!article) {
             return { title: `${t("notFound")} — Modifold` };
         }
 
-        const filePath = path.join(newsDir, file);
-        const fileContent = await fs.readFile(filePath, "utf-8");
-        const { data } = matter(fileContent);
-
-        if(data.slug !== `/news/${slug}`) {
-            return { title: `${t("notFound")} — Modifold` };
-        }
+        const { data } = article;
 
         return {
             title: `${data.title} — Modifold`,
@@ -91,23 +81,15 @@ export default async function NewsArticle({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
     const t = await getTranslations({ locale: resolvedLocale, namespace: "NewsPage" });
-    const newsDir = path.join(process.cwd(), "data", "news");
 
     try {
-        const files = await fs.readdir(newsDir);
-        const file = files.find((f) => f.startsWith(`${slug}-${resolvedLocale}.md`)) || files.find((f) => f.startsWith(`${slug}-en.md`));
+        const article = await getNewsArticle(slug, resolvedLocale);
 
-        if(!file) {
+        if(!article) {
             return <div>{t("notFound")}</div>;
         }
 
-        const filePath = path.join(newsDir, file);
-        const fileContent = await fs.readFile(filePath, "utf-8");
-        const { data, content } = matter(fileContent);
-
-        if(data.slug !== `/news/${slug}`) {
-            return <div>{t("notFound")}</div>;
-        }
+        const { data, content } = article;
 
         const authorSlugs = Array.isArray(data.author) ? data.author : [];
         const authors = [];

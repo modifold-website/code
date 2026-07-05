@@ -1,41 +1,17 @@
 ﻿import { cookies, headers } from "next/headers";
-import { notFound } from "next/navigation";
 import ProjectPage from "@/components/pages/ProjectPage";
 import { getLocale } from "next-intl/server";
 import Script from "next/script";
+import { getApplicationCategory, getProjectBySlug, getProjectMembersBySlug, getProjectTypeTitle, recordProjectView } from "@/utils/projects/server";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
-
-const getProjectTypeTitle = (projectType) => ({
-    mod: "Hytale Mod",
-    modpack: "Hytale Modpack",
-    world: "Hytale World",
-})[projectType] || "Hytale Project";
-
-const getApplicationCategory = (projectType) => ({
-    mod: "Game Mod",
-    modpack: "Modpack",
-    world: "Game Map",
-})[projectType] || String(projectType || "project").replace("_", " ").replace(/\b\w/g, l => l.toUpperCase());
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
-
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    });
-
-    if(!res.ok) {
-        notFound();
-    }
-
-    const project = await res.json();
+    const project = await getProjectBySlug(slug);
     const basePath = getProjectBasePath(project.project_type);
     const projectTypeTitle = getProjectTypeTitle(project.project_type);
-
-    const description = project.summary.length > 160 ? `${project.summary.substring(0, 157)}...` : project.summary;
+    const summary = project.summary || "";
+    const description = summary.length > 160 ? `${summary.substring(0, 157)}...` : summary;
 
     return {
         title: `${project.title} — ${projectTypeTitle} — Modifold`,
@@ -82,59 +58,13 @@ export default async function Page({ params }) {
     const resolvedLocale = await getLocale();
     const cookieStore = await cookies();
     const authToken = cookieStore.get("authToken")?.value;
-
-    const projectFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    };
-
-    const membersFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}:members`] },
-    };
-
-    let res;
-    try {
-        res = await fetch(`${serverApiBase}/projects/${slug}`, projectFetchOptions);
-    } catch {
-        notFound();
-    }
-
-    if(!res.ok) {
-        notFound();
-    }
-
-    const project = await res.json();
+    const project = await getProjectBySlug(slug, authToken || "");
     const basePath = getProjectBasePath(project.project_type);
     const applicationCategory = getApplicationCategory(project.project_type);
 
-    fetch(`${serverApiBase}/projects/${slug}/view`, {
-        method: "POST",
-        headers: {
-            ...(clientIp ? { "x-forwarded-for": clientIp } : {}),
-        },
-        cache: "no-store",
-    }).catch(console.error);
+    recordProjectView(slug, clientIp);
 
-    let members = [];
-    try {
-        const membersRes = await fetch(`${serverApiBase}/projects/${slug}/members`, membersFetchOptions);
-        if(membersRes.ok) {
-            members = await membersRes.json();
-        }
-    } catch {}
+    const members = await getProjectMembersBySlug(slug, authToken || "");
 
     return (
         <>
@@ -145,8 +75,13 @@ export default async function Page({ params }) {
                     "name": project.title,
                     "applicationCategory": applicationCategory,
                     "operatingSystem": "Hytale",
-                    "author": { "@type": "Person", "name": project.owner.username },
+                    "author": {
+                        "@type": project.owner?.type === "organization" ? "Organization" : "Person",
+                        "name": project.owner.username,
+                        "url": `https://modifold.com${project.owner?.profile_url || `/user/${project.owner.slug}`}`,
+                    },
                     "description": project.summary,
+                    "datePublished": project.created_at,
                     "url": `https://modifold.com${basePath}/${project.slug}`,
                     "image": project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
                     "inLanguage": resolvedLocale,
