@@ -19,11 +19,12 @@ export default function HeaderMobile({ authToken }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [animatingItem, setAnimatingItem] = useState(null);
     const [pendingActiveItem, setPendingActiveItem] = useState(null);
+    const [isMobileTabbarActive, setIsMobileTabbarActive] = useState(false);
     const [theme, setThemeState] = useState("system");
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
     const activeProfileBadgeCode = getProfileBadgeCode(user);
-    const unreadCountQuery = useUnreadNotificationsCount({ authToken, isLoggedIn, user });
+    const unreadCountQuery = useUnreadNotificationsCount({ authToken, enabled: isMobileTabbarActive, isLoggedIn, user });
     const unreadCount = unreadCountQuery.data || 0;
 
     const applyTheme = (nextTheme) => {
@@ -51,6 +52,18 @@ export default function HeaderMobile({ authToken }) {
 
         setThemeState(savedTheme);
         applyTheme(savedTheme);
+    }, []);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(max-width: 859px)");
+        const updateMobileTabbarState = () => setIsMobileTabbarActive(mediaQuery.matches);
+
+        updateMobileTabbarState();
+        mediaQuery.addEventListener("change", updateMobileTabbarState);
+
+        return () => {
+            mediaQuery.removeEventListener("change", updateMobileTabbarState);
+        };
     }, []);
 
     useEffect(() => {

@@ -67,13 +67,13 @@ const removeNotificationFromPages = (oldData, notificationId) => {
     };
 };
 
-export function useUnreadNotificationsCount({ authToken, isLoggedIn, user }) {
+export function useUnreadNotificationsCount({ authToken, enabled = true, isLoggedIn, user }) {
     const userKey = getNotificationUserKey(user);
 
     return useQuery({
         queryKey: notificationQueryKeys.unreadCount(userKey),
         queryFn: ({ signal }) => fetchUnreadNotificationsCount({ authToken, signal }),
-        enabled: Boolean(isLoggedIn),
+        enabled: Boolean(isLoggedIn && enabled),
         refetchInterval: 60 * 1000,
         staleTime: 30 * 1000,
         placeholderData: (previousData) => previousData ?? 0,
