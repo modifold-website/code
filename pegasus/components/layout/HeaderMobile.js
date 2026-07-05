@@ -152,10 +152,16 @@ export default function HeaderMobile({ authToken }) {
     };
 
     const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+    const userProfileHref = user?.slug ? `/user/${user.slug}` : null;
+    const isOwnProfileActive = Boolean(userProfileHref && pathname === userProfileHref);
     const isActive = (href) => pathname === href;
     const isItemActive = (itemKey, href) => {
         if(pendingActiveItem !== null) {
             return pendingActiveItem === itemKey;
+        }
+
+        if(itemKey === "account" && isOwnProfileActive) {
+            return true;
         }
 
         return isActive(href);
