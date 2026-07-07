@@ -1,32 +1,56 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 
 const AuthContext = createContext();
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function AuthProvider({ children, isLoggedIn, userData }) {
     const [isLoggedInState, setIsLoggedIn] = useState(isLoggedIn);
     const [user, setUser] = useState(userData);
 
-    const completeLogin = async (token) => {
+    const fetchCurrentUser = useCallback(async (token) => {
+        let lastError = null;
+
+        for(let attempt = 0; attempt < 3; attempt++) {
+            try {
+                const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/user`, {
+                    headers: {
+                        Accept: "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    cache: "no-store",
+                    credentials: "include",
+                });
+
+                const freshUserData = await userResponse.json().catch(() => ({}));
+                if(userResponse.ok && freshUserData.success) {
+                    return freshUserData.user;
+                }
+
+                lastError = new Error(freshUserData?.message || "Failed to fetch user data");
+            } catch (error) {
+                lastError = error;
+            }
+
+            await wait(150 * (attempt + 1));
+        }
+
+        throw lastError || new Error("Failed to fetch user data");
+    }, []);
+
+    const completeLogin = useCallback(async (token) => {
         Cookies.set("authToken", token, { expires: 30, path: "/", sameSite: "lax" });
         localStorage.setItem("authToken", token);
 
-        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/user`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const freshUser = await fetchCurrentUser(token);
+        setIsLoggedIn(true);
+        setUser(freshUser);
 
-        const freshUserData = await userResponse.json();
-        if(freshUserData.success) {
-            setIsLoggedIn(true);
-            setUser(freshUserData.user);
-            return freshUserData.user;
-        }
-
-        throw new Error("Не удалось получить данные пользователя");
-    };
+        return freshUser;
+    }, [fetchCurrentUser]);
 
     const telegramLogin = async (telegramData) => {
         try {

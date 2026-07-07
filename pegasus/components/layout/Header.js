@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
+import { useUnreadNotificationsCount } from "@/utils/notifications/hooks";
 import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
 import { getProfileBadgeCode } from "@/utils/profileBadges";
 
@@ -18,13 +19,13 @@ export default function Header({ authToken }) {
     const [projectModalOpen, setProjectModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isBrowseMenuOpen, setIsBrowseMenuOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
     const browseWrapperRef = useRef(null);
     const browseCloseTimeoutRef = useRef(null);
     const activeProfileBadgeCode = getProfileBadgeCode(user);
-
+    const unreadCountQuery = useUnreadNotificationsCount({ authToken, isLoggedIn, user });
+    const unreadCount = unreadCountQuery.data || 0;
 
     useEffect(() => {
         return () => {
@@ -34,66 +35,6 @@ export default function Header({ authToken }) {
             }
         };
     }, []);
-
-    useEffect(() => {
-        if(!isLoggedIn) {
-            setUnreadCount(0);
-            return;
-        }
-
-        let isMounted = true;
-        let intervalId = null;
-        const getToken = () => authToken || localStorage.getItem("authToken");
-
-        const fetchUnreadCount = async () => {
-            const token = getToken();
-            if(!token) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/notifications/unread-count`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/json",
-                    },
-                });
-
-                if(!response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
-                if(isMounted) {
-                    setUnreadCount(Number(data?.unreadCount || 0));
-                }
-            } catch (error) {
-                console.error("Error fetching unread notifications count:", error);
-            }
-        };
-
-        const handleUnreadUpdate = (event) => {
-            const nextCount = Number(event?.detail?.unreadCount);
-            if(Number.isFinite(nextCount)) {
-                setUnreadCount(Math.max(0, nextCount));
-            } else {
-                fetchUnreadCount();
-            }
-        };
-
-        fetchUnreadCount();
-        intervalId = setInterval(fetchUnreadCount, 60000);
-        window.addEventListener("notifications:updated", handleUnreadUpdate);
-
-        return () => {
-            isMounted = false;
-            if(intervalId) {
-                clearInterval(intervalId);
-            }
-
-            window.removeEventListener("notifications:updated", handleUnreadUpdate);
-        };
-    }, [isLoggedIn, authToken]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {

@@ -2,8 +2,25 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { makeQueryClient } from "@/utils/query/client";
+
+let browserQueryClient;
+
+function getQueryClient() {
+    if(typeof window === "undefined") {
+        return makeQueryClient();
+    }
+
+    if(!browserQueryClient) {
+        browserQueryClient = makeQueryClient();
+    }
+
+    return browserQueryClient;
+}
 
 export default function ClientProvider({ children }) {
+    const queryClient = getQueryClient();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const isPopstateRef = useRef(false);
@@ -26,5 +43,9 @@ export default function ClientProvider({ children }) {
         window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }, [pathname, searchParams]);
 
-    return <>{children}</>;
+    return (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    );
 }

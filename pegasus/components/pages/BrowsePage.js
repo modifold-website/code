@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import ProjectCard from "../project/ProjectCard";
 import ProjectCardMedia from "../project/ProjectCardMedia";
 import ProjectCardSkeleton from "../ui/ProjectCardSkeleton";
@@ -11,6 +11,8 @@ import BrowseToolbar from "./browse/BrowseToolbar";
 import BrowseRecommendedRail from "./browse/BrowseRecommendedRail";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { apiClient } from "@/utils/api/client";
+import { projectQueryKeys } from "@/utils/projects/queryKeys";
 import { getCategoryLabel } from "@/utils/categoryLabels";
 
 function parseQueryString(queryString) {
@@ -58,6 +60,20 @@ function normalizeInitialState(initialState) {
     };
 }
 
+async function fetchBrowseProjects({ queryKey, signal }) {
+    const [, , apiParams] = queryKey;
+    const res = await apiClient.get("/projects", {
+        params: apiParams,
+        signal,
+    });
+
+    return {
+        projects: res.data.projects || [],
+        totalPages: res.data.totalPages || 1,
+        timestamp: Date.now(),
+    };
+}
+
 export default function BrowsePage({ projectType, initialState = null, initialData = null, initialCardView = "list", tags = [], gameVersions = [], recommendedProjects = [], activeModJams = [], initialRecommendedCollapsed = false }) {
     const t = useTranslations("BrowsePage");
     const tLabels = useTranslations("CategoryLabels");
@@ -67,26 +83,14 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
     const urlQueryString = searchParams.toString();
     const normalizedInitialState = useMemo(() => normalizeInitialState(initialState), [initialState]);
-    const hasInitialData = Boolean(initialData?.apiKey);
 
-    const [projects, setProjects] = useState(() => initialData?.projects || []);
     const [sort, setSort] = useState(normalizedInitialState.sort);
     const [search, setSearch] = useState(normalizedInitialState.search);
     const [searchInput, setSearchInput] = useState(normalizedInitialState.search);
     const [selectedTags, setSelectedTags] = useState(normalizedInitialState.tags);
     const [selectedGameVersions, setSelectedGameVersions] = useState(normalizedInitialState.gameVersions);
-    const [loading, setLoading] = useState(!hasInitialData);
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
-    const [totalPages, setTotalPages] = useState(() => initialData?.totalPages || 1);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
-    const [relativeTimeBase, setRelativeTimeBase] = useState(() => initialData?.timestamp || Date.now());
-    const apiCacheRef = useRef(hasInitialData ? new Map([
-        [initialData.apiKey, {
-            projects: initialData.projects || [],
-            totalPages: initialData.totalPages || 1,
-            fetchedAt: initialData.timestamp || Date.now(),
-        }],
-    ]) : new Map());
 
     useEffect(() => {
         try {
@@ -143,64 +147,30 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     }), [projectType, sort, search, selectedTags, selectedGameVersions, currentPage]);
 
     const apiKey = useMemo(() => JSON.stringify(apiParams), [apiParams]);
+    const projectsQuery = useQuery({
+        queryKey: projectQueryKeys.browse(apiParams),
+        queryFn: fetchBrowseProjects,
+        staleTime: 30 * 1000,
+        placeholderData: (previousData) => previousData,
+        initialData: initialData?.apiKey === apiKey ? {
+            projects: initialData.projects || [],
+            totalPages: initialData.totalPages || 1,
+            timestamp: initialData.timestamp || Date.now(),
+        } : undefined,
+        initialDataUpdatedAt: initialData?.apiKey === apiKey ? initialData.timestamp : undefined,
+    });
 
     useEffect(() => {
-        const cached = apiCacheRef.current.get(apiKey);
-        const now = Date.now();
-        const cacheFresh = cached && now - cached.fetchedAt < 30000;
-
-        if(cached) {
-            setProjects(cached.projects);
-            setTotalPages(cached.totalPages);
-            setRelativeTimeBase(cached.fetchedAt);
-            setLoading(false);
-        } else {
-            setLoading(true);
+        if(projectsQuery.isError) {
+            console.error("Error fetching projects:", projectsQuery.error);
         }
+    }, [projectsQuery.error, projectsQuery.isError]);
 
-        if(cacheFresh) {
-            return;
-        }
-
-        const controller = new AbortController();
-
-        const fetchProjects = async () => {
-            try {
-                const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects`, {
-                    params: apiParams,
-                    signal: controller.signal,
-                });
-
-                const nextProjects = res.data.projects || [];
-                const nextTotalPages = res.data.totalPages || 1;
-                const fetchedAt = Date.now();
-
-                setProjects(nextProjects);
-                setTotalPages(nextTotalPages);
-                setRelativeTimeBase(fetchedAt);
-
-                apiCacheRef.current.set(apiKey, {
-                    projects: nextProjects,
-                    totalPages: nextTotalPages,
-                    fetchedAt,
-                });
-            } catch (err) {
-                if(!controller.signal.aborted && !cached) {
-                    console.error("Error fetching projects:", err);
-                }
-            } finally {
-                if(!controller.signal.aborted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        fetchProjects();
-
-        return () => {
-            controller.abort();
-        };
-    }, [apiKey, apiParams]);
+    const projectsData = projectsQuery.data;
+    const projects = projectsData?.projects || [];
+    const totalPages = projectsData?.totalPages || 1;
+    const relativeTimeBase = projectsData?.timestamp || Date.now();
+    const loading = projectsQuery.isPending;
 
     const toggleCardView = () => {
         setCardView((prev) => (prev === "media" ? "list" : "media"));

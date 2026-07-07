@@ -7,6 +7,7 @@ import Link from "next/link";
 import { getProjectPath } from "@/utils/projectRoutes";
 import { useTranslations } from "next-intl";
 import OrganizationSettingsSidebar from "@/components/organizations/settings/OrganizationSettingsSidebar";
+import ConfirmModal from "@/modal/ConfirmModal";
 
 const PROJECT_SETTINGS_PERMISSIONS = [
     "project_edit_details",
@@ -19,6 +20,7 @@ export default function OrganizationProjectsSettingsPage({ authToken, organizati
     const t = useTranslations("Organizations");
     const [projectItems, setProjectItems] = useState(Array.isArray(projects) ? projects : []);
     const [detachingProjectSlug, setDetachingProjectSlug] = useState(null);
+    const [pendingDetachProject, setPendingDetachProject] = useState(null);
 
     const canDetachProjects = Boolean(
         my_permissions?.is_owner ||
@@ -35,10 +37,6 @@ export default function OrganizationProjectsSettingsPage({ authToken, organizati
             return;
         }
 
-        if(!window.confirm(t("settings.confirmDetachProject", { title: project.title }))) {
-            return;
-        }
-
         setDetachingProjectSlug(project.slug);
 
         try {
@@ -51,6 +49,7 @@ export default function OrganizationProjectsSettingsPage({ authToken, organizati
             });
 
             setProjectItems((prev) => prev.filter((item) => item.slug !== project.slug));
+            setPendingDetachProject(null);
             toast.success(t("settings.successProjectDetached", { title: project.title }));
         } catch (error) {
             toast.error(error.response?.data?.message || t("settings.errors.projectDetach"));
@@ -105,7 +104,7 @@ export default function OrganizationProjectsSettingsPage({ authToken, organizati
                                     )}
 
                                     {canDetachProjects && (
-                                        <button type="button" className="button button--size-m button--type-danger" onClick={() => handleDetachProject(project)} disabled={detachingProjectSlug === project.slug}>
+                                        <button type="button" className="button button--size-m button--type-danger" onClick={() => setPendingDetachProject(project)} disabled={detachingProjectSlug === project.slug}>
                                             {detachingProjectSlug === project.slug ? t("settings.actions.detachingProject") : t("settings.actions.detachProject")}
                                         </button>
                                     )}
@@ -115,6 +114,19 @@ export default function OrganizationProjectsSettingsPage({ authToken, organizati
                     )}
                 </div>
             </div>
+            <ConfirmModal
+                isOpen={Boolean(pendingDetachProject)}
+                title={pendingDetachProject ? t("settings.confirmDetachProject", { title: pendingDetachProject.title }) : ""}
+                confirmLabel={t("settings.actions.detachProject")}
+                cancelLabel={t("settings.delete.cancel")}
+                isLoading={Boolean(detachingProjectSlug)}
+                onConfirm={() => handleDetachProject(pendingDetachProject)}
+                onRequestClose={() => {
+                    if(!detachingProjectSlug) {
+                        setPendingDetachProject(null);
+                    }
+                }}
+            />
         </div>
     );
 }

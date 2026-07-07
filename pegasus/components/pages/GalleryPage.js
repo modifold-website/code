@@ -7,6 +7,7 @@ import { useAuth } from "../providers/AuthProvider";
 import { useTranslations, useLocale } from "next-intl";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
 import ProjectSidebar from "../project/ProjectSidebar";
+import ConfirmModal from "@/modal/ConfirmModal";
 
 Modal.setAppElement("body");
 
@@ -25,6 +26,7 @@ export default function GalleryPage({ project, authToken }) {
     const { user } = useAuth();
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [pendingDeleteGalleryId, setPendingDeleteGalleryId] = useState(null);
     const [galleryImages, setGalleryImages] = useState(Array.isArray(project?.gallery) ? project.gallery : []);
     const trailerVideoId = project?.trailer_youtube_video_id || "";
     const hasTrailer = Boolean(trailerVideoId);
@@ -112,31 +114,33 @@ export default function GalleryPage({ project, authToken }) {
     };
 
     const handleDelete = async (galleryId) => {
-        if(confirm(t("gallery.deleteConfirm"))) {
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/${galleryId}`, {
-                    method: "DELETE",
-                    headers: { Authorization: `Bearer ${authToken}` },
-                });
+        try {
+            setEditLoading(true);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/${galleryId}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${authToken}` },
+            });
 
-                if(response.ok) {
-                    toast.success(t("gallery.deleteSuccess"));
-                    if(editModalOpen) {
-                        closeEditModal();
-                    }
-
-                    await refreshGallery();
-                } else {
-                    toast.error(t("gallery.deleteError"));
+            if(response.ok) {
+                toast.success(t("gallery.deleteSuccess"));
+                setPendingDeleteGalleryId(null);
+                if(editModalOpen) {
+                    closeEditModal();
                 }
-            } catch {
+
+                await refreshGallery();
+            } else {
                 toast.error(t("gallery.deleteError"));
             }
+        } catch {
+            toast.error(t("gallery.deleteError"));
+        } finally {
+            setEditLoading(false);
         }
     };
 
     const handleDeleteById = async (galleryId) => {
-        await handleDelete(galleryId);
+        setPendingDeleteGalleryId(galleryId);
     };
 
     const formatDate = (dateValue) => {
@@ -280,7 +284,7 @@ export default function GalleryPage({ project, authToken }) {
                                         <p className="gallery-modal-help">{tSettings("gallerySettings.featuredHint")}</p>
 
                                         <div className="gallery-modal-actions">
-                                            <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDelete(selectedImage.id)} disabled={editLoading}>
+                                            <button type="button" className="button button--size-m button--type-minimal" onClick={() => setPendingDeleteGalleryId(selectedImage.id)} disabled={editLoading}>
                                                 {t("delete")}
                                             </button>
                                             
@@ -297,6 +301,20 @@ export default function GalleryPage({ project, authToken }) {
 
                 <ProjectSidebar project={project} showLinks={true} showLicense={true} />
             </div>
+
+            <ConfirmModal
+                isOpen={Boolean(pendingDeleteGalleryId)}
+                title={t("gallery.deleteConfirm")}
+                confirmLabel={t("delete")}
+                cancelLabel={t("cancel")}
+                isLoading={editLoading}
+                onConfirm={() => handleDelete(pendingDeleteGalleryId)}
+                onRequestClose={() => {
+                    if(!editLoading) {
+                        setPendingDeleteGalleryId(null);
+                    }
+                }}
+            />
         </>
     );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 
@@ -28,14 +29,23 @@ function getSafeNextPath(nextPath) {
 
 export default function AuthCallbackClient() {
     const { completeLogin } = useAuth();
+    const router = useRouter();
+    const hasProcessedRef = useRef(false);
     const [errorMessage, setErrorMessage] = useState("");
 
     useEffect(() => {
+        if(hasProcessedRef.current) {
+            return;
+        }
+
+        hasProcessedRef.current = true;
+
         const params = parseHashParams();
         const token = params.get("token");
         const twoFactorRequired = params.get("twofactor");
         const twoFactorToken = params.get("twofactor_token");
         const error = params.get("error");
+        const hytaleLinked = params.get("hytale_linked");
         const nextPath = getSafeNextPath(params.get("next"));
 
         if(error) {
@@ -49,6 +59,11 @@ export default function AuthCallbackClient() {
             return;
         }
 
+        if(hytaleLinked) {
+            window.location.replace(nextPath);
+            return;
+        }
+
         if(!token) {
             setErrorMessage("Authentication result is missing.");
             return;
@@ -56,11 +71,11 @@ export default function AuthCallbackClient() {
 
         completeLogin(token).then(() => {
             commitPendingSignInProvider();
-            window.location.replace(nextPath);
+            router.replace(nextPath);
         }).catch((loginError) => {
             setErrorMessage(loginError?.message || "Authentication failed.");
         });
-    }, [completeLogin]);
+    }, [completeLogin, router]);
 
     return (
         <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", padding: "32px 16px" }}>
@@ -68,6 +83,7 @@ export default function AuthCallbackClient() {
                 {errorMessage ? (
                     <>
                         <h1 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "12px" }}>Authorization error</h1>
+                        
                         <p style={{ marginBottom: "16px" }}>{errorMessage}</p>
                         
                         <Link href="/" className="button button--size-l button--type-primary button--active-transform">
@@ -77,6 +93,7 @@ export default function AuthCallbackClient() {
                 ) : (
                     <>
                         <h1 style={{ fontSize: "24px", fontWeight: "600", marginBottom: "12px" }}>Completing sign-in</h1>
+                        
                         <p>Please wait a moment.</p>
                     </>
                 )}

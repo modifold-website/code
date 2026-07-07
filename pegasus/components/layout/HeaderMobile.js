@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "../providers/AuthProvider";
 import LoginModal from "../../modal/LoginModal";
+import { useUnreadNotificationsCount } from "@/utils/notifications/hooks";
 import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
 import { getProfileBadgeCode } from "@/utils/profileBadges";
 
@@ -16,13 +17,15 @@ export default function HeaderMobile({ authToken }) {
     const { isLoggedIn, user, logout } = useAuth();
     const [loginModalOpen, setLoginModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [unreadCount, setUnreadCount] = useState(0);
     const [animatingItem, setAnimatingItem] = useState(null);
     const [pendingActiveItem, setPendingActiveItem] = useState(null);
+    const [isMobileTabbarActive, setIsMobileTabbarActive] = useState(false);
     const [theme, setThemeState] = useState("system");
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
     const activeProfileBadgeCode = getProfileBadgeCode(user);
+    const unreadCountQuery = useUnreadNotificationsCount({ authToken, enabled: isMobileTabbarActive, isLoggedIn, user });
+    const unreadCount = unreadCountQuery.data || 0;
 
     const applyTheme = (nextTheme) => {
         const resolvedTheme = nextTheme === "system" ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") : nextTheme === "dark" ? "dark" : "light";
@@ -52,64 +55,16 @@ export default function HeaderMobile({ authToken }) {
     }, []);
 
     useEffect(() => {
-        if(!isLoggedIn) {
-            setUnreadCount(0);
-            return;
-        }
+        const mediaQuery = window.matchMedia("(max-width: 859px)");
+        const updateMobileTabbarState = () => setIsMobileTabbarActive(mediaQuery.matches);
 
-        let isMounted = true;
-        let intervalId = null;
-        const getToken = () => authToken || localStorage.getItem("authToken");
-
-        const fetchUnreadCount = async () => {
-            const token = getToken();
-            if(!token) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/notifications/unread-count`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        Accept: "application/json",
-                    },
-                });
-
-                if(!response.ok) {
-                    return;
-                }
-
-                const data = await response.json();
-                if(isMounted) {
-                    setUnreadCount(Number(data?.unreadCount || 0));
-                }
-            } catch (error) {
-                console.error("Error fetching unread notifications count:", error);
-            }
-        };
-
-        const handleUnreadUpdate = (event) => {
-            const nextCount = Number(event?.detail?.unreadCount);
-            if(Number.isFinite(nextCount)) {
-                setUnreadCount(Math.max(0, nextCount));
-            } else {
-                fetchUnreadCount();
-            }
-        };
-
-        fetchUnreadCount();
-        intervalId = setInterval(fetchUnreadCount, 60000);
-        window.addEventListener("notifications:updated", handleUnreadUpdate);
+        updateMobileTabbarState();
+        mediaQuery.addEventListener("change", updateMobileTabbarState);
 
         return () => {
-            isMounted = false;
-            if(intervalId) {
-                clearInterval(intervalId);
-            }
-
-            window.removeEventListener("notifications:updated", handleUnreadUpdate);
+            mediaQuery.removeEventListener("change", updateMobileTabbarState);
         };
-    }, [isLoggedIn, authToken]);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -210,10 +165,16 @@ export default function HeaderMobile({ authToken }) {
     };
 
     const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+    const userProfileHref = user?.slug ? `/user/${user.slug}` : null;
+    const isOwnProfileActive = Boolean(userProfileHref && pathname === userProfileHref);
     const isActive = (href) => pathname === href;
     const isItemActive = (itemKey, href) => {
         if(pendingActiveItem !== null) {
             return pendingActiveItem === itemKey;
+        }
+
+        if(itemKey === "account" && isOwnProfileActive) {
+            return true;
         }
 
         return isActive(href);

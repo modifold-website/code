@@ -202,7 +202,7 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
         await db.query("UPDATE users SET ? WHERE id = ?", [updates, req.user.id]);
 
-        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(updatedUser[0]?.social_links) {
             updatedUser[0].social_links = JSON.parse(updatedUser[0].social_links);
@@ -228,7 +228,7 @@ router.put("/me/profile-badge", auth, async (req, res) => {
 			return res.status(400).json({ message: "Invalid profile badge" });
 		}
 
-		const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, social_links FROM users WHERE id = ? LIMIT 1", [req.user.id]);
+		const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, social_links FROM users WHERE id = ? LIMIT 1", [req.user.id]);
 		const user = users[0];
 
 		if(!user) {
@@ -683,7 +683,7 @@ router.get("/:username/achievements", async (req, res) => {
 
 router.get("/:username", async (req, res) => {
     try {
-        const [user] = await db.query("SELECT id, username, slug, description, avatar, cover, created_at, isVerified, isRole, active_profile_badge, social_links FROM users WHERE slug = ?", [req.params.username]);
+        const [user] = await db.query("SELECT id, username, slug, description, avatar, cover, created_at, isVerified, isRole, active_profile_badge, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, social_links FROM users WHERE slug = ?", [req.params.username]);
 
         if(!user.length) {
             return res.status(404).json({ message: "User not found" });
@@ -706,6 +706,9 @@ router.get("/:username", async (req, res) => {
             isVerified: user[0].isVerified,
             isRole: user[0].isRole,
             activeProfileBadge,
+            hytale_profile_uuid: user[0].hytale_profile_uuid,
+            hytale_profile_username: user[0].hytale_profile_username,
+            hytale_linked_at: user[0].hytale_linked_at,
             subscribers: subs[0].count,
             subscriptions: userSubs[0].count,
             social_links: user[0].social_links ? JSON.parse(user[0].social_links) : {},

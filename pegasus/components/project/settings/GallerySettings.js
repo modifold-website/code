@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import GalleryUploadModal from "@/modal/GalleryUploadModal";
 import GalleryEditModal from "@/modal/GalleryEditModal";
 import GalleryTrailerModal from "@/modal/GalleryTrailerModal";
+import ConfirmModal from "@/modal/ConfirmModal";
 
 const GALLERY_STEPS = {
     FILES: "files",
@@ -56,6 +57,7 @@ export default function GallerySettings({ project, authToken }) {
 
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [pendingDeleteImageId, setPendingDeleteImageId] = useState(null);
     const [editLoading, setEditLoading] = useState(false);
     const [editStep, setEditStep] = useState(GALLERY_STEPS.FILES);
     const [editSelectedFile, setEditSelectedFile] = useState(null);
@@ -465,26 +467,25 @@ export default function GallerySettings({ project, authToken }) {
         }
     };
 
-    const handleDelete = async () => {
-        if(!selectedImage) {
-            return;
-        }
-
-        if(!confirm(tProject("gallery.deleteConfirm"))) {
+    const handleDelete = async (imageId = selectedImage?.id) => {
+        if(!imageId) {
             return;
         }
 
         setEditLoading(true);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/${selectedImage.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/${imageId}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${authToken}` },
             });
 
             if(response.ok) {
                 toast.success(tProject("gallery.deleteSuccess"));
-                closeEditModal();
+                setPendingDeleteImageId(null);
+                if(editModalOpen) {
+                    closeEditModal();
+                }
                 await refreshGallery();
             } else {
                 toast.error(tProject("gallery.deleteError"));
@@ -497,25 +498,7 @@ export default function GallerySettings({ project, authToken }) {
     };
 
     const handleDeleteById = async (imageId) => {
-        if(!confirm(tProject("gallery.deleteConfirm"))) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery/${imageId}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${authToken}` },
-            });
-
-            if(response.ok) {
-                toast.success(tProject("gallery.deleteSuccess"));
-                await refreshGallery();
-            } else {
-                toast.error(tProject("gallery.deleteError"));
-            }
-        } catch {
-            toast.error(tProject("gallery.deleteError"));
-        }
+        setPendingDeleteImageId(imageId);
     };
 
     const formatDate = (dateValue) => {
@@ -697,7 +680,7 @@ export default function GallerySettings({ project, authToken }) {
                     goToEditFilesStep={goToEditFilesStep}
                     goToEditMetadataStep={goToEditMetadataStep}
                     handleUpdate={handleUpdate}
-                    handleDelete={handleDelete}
+                    handleDelete={() => setPendingDeleteImageId(selectedImage.id)}
                     editFormData={editFormData}
                     handleEditInputChange={handleEditInputChange}
                     toggleEditFeatured={toggleEditFeatured}
@@ -705,6 +688,19 @@ export default function GallerySettings({ project, authToken }) {
                     tProject={tProject}
                 />
             )}
+            <ConfirmModal
+                isOpen={Boolean(pendingDeleteImageId)}
+                title={tProject("gallery.deleteConfirm")}
+                confirmLabel={tProject("delete")}
+                cancelLabel={tProject("cancel")}
+                isLoading={editLoading}
+                onConfirm={() => handleDelete(pendingDeleteImageId)}
+                onRequestClose={() => {
+                    if(!editLoading) {
+                        setPendingDeleteImageId(null);
+                    }
+                }}
+            />
         </>
     );
 }

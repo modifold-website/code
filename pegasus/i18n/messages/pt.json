@@ -363,7 +363,8 @@
       "paragraph3": "Em janeiro de 2026, pedimos permissão ao Modrinth e recebemos a confirmação de que a atribuição é opcional e fica a nosso critério.",
       "quote1": "Dito isso, quase tudo na internet é uma recriação de outra coisa, e eu não deixaria que isso te impedisse.",
       "quote2": "Inspire-se onde fizer sentido, reserve tempo para formar sua própria visão de como as coisas devem funcionar (o próprio Modrinth tem muitas áreas a melhorar) e foque em construir algo que valha a pena compartilhar!",
-      "quote3": "Cabe inteiramente a você decidir se vai ou não creditar o Modrinth."
+      "quote3": "Cabe inteiramente a você decidir se vai ou não creditar o Modrinth.",
+      "quoteAuthor": "Escrito por Josh, Team Lead do Modrinth."
     }
   },
   "Layout": {
@@ -858,6 +859,17 @@
       "title": "Segurança",
       "description": "Gerencie ações sensíveis da conta."
     },
+    "hytaleLink": {
+      "title": "Conta Hytale",
+      "description": "Vincule sua conta Hytale ao perfil Modifold e receba uma conquista no perfil.",
+      "linkedDescription": "Perfil Hytale vinculado: {username}",
+      "connect": "Vincular Hytale",
+      "connecting": "Abrindo...",
+      "linked": "Vinculado",
+      "errors": {
+        "generic": "Não foi possível iniciar a vinculação do Hytale"
+      }
+    },
     "passwordChange": {
       "title": "Alterar senha",
       "description": "Digite sua senha atual e uma nova senha para entrar com e-mail.",
@@ -1023,6 +1035,8 @@
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Projetos publicados",
     "downloadsTooltip": "Downloads dos projetos do autor",
+    "hytaleVerified": "Hytale verificado",
+    "hytaleVerifiedTooltip": "O usuário confirmou a propriedade de um perfil Hytale vinculando a conta.",
     "achievements": {
       "title": "Conquistas",
       "receivedAt": "Recebida em: {date}",
@@ -1052,6 +1066,10 @@
         "hytalemodjam_2026": {
           "title": "Hytale x HytaleModding ModJam",
           "description": "Participante do Hytale x HytaleModding ModJam 2026."
+        },
+        "hytale_linked": {
+          "title": "Conta Hytale vinculada",
+          "description": "Vinculou uma conta Hytale e recebeu uma bela conquista!"
         }
       }
     },
@@ -1570,6 +1588,7 @@
       "telegram": "Erro ao entrar com Telegram",
       "github": "Erro ao entrar com GitHub",
       "discord": "Erro ao entrar com Discord",
+      "hytale": "Erro ao entrar com Hytale",
       "telegramProcessing": "Erro ao processar o Telegram",
       "githubProcessing": "Erro ao processar o GitHub",
       "discordProcessing": "Erro ao processar o Discord"
@@ -1641,6 +1660,7 @@
     "close": "Fechar",
     "cancel": "Cancelar",
     "creating": "Criando...",
+    "revoking": "Revogando...",
     "newTokenTitle": "Novo token de API criado!",
     "copy": "Copiar",
     "importantLabel": "Importante:",
@@ -1651,6 +1671,7 @@
     "loadingTokens": "Carregando tokens...",
     "noTokens": "Você ainda não tem tokens de API.",
     "revoke": "Revogar",
+    "confirmRevokeTitle": "Revogar token de API?",
     "confirmRevoke": "Tem certeza de que deseja revogar este token?",
     "docsPrompt": "Precisa de ajuda? Veja nossa",
     "docsLink": "Documentação da API",

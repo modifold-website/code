@@ -1,7 +1,7 @@
 export const LAST_SIGN_IN_PROVIDER_KEY = "modifold:last-sign-in-provider";
 export const PENDING_SIGN_IN_PROVIDER_KEY = "modifold:pending-sign-in-provider";
 
-const SIGN_IN_PROVIDERS = new Set(["github", "discord", "telegram", "email"]);
+const SIGN_IN_PROVIDERS = new Set(["github", "discord", "telegram", "hytale", "email"]);
 
 export function isSignInProvider(provider) {
 	return SIGN_IN_PROVIDERS.has(provider);

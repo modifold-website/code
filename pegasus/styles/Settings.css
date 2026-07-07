@@ -464,10 +464,13 @@
     color: var(--theme-color-text-primary);
     padding: 8px 12px;
     border-radius: 12px;
+    max-width: min(280px, calc(100vw - 16px));
     font-size: 14px;
-    line-height: 1;
+    line-height: 1.35;
     font-weight: 500;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-align: center;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;

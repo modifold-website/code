@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import IssueLabelModal from "@/modal/IssueLabelModal";
+import ConfirmModal from "@/modal/ConfirmModal";
 import { getProjectPath } from "@/utils/projectRoutes";
 
 const applyLabelStyle = (label) => ({
@@ -20,6 +21,8 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
     const [activeLabel, setActiveLabel] = useState(null);
     const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
     const [isLabelSaving, setIsLabelSaving] = useState(false);
+    const [pendingDeleteItem, setPendingDeleteItem] = useState(null);
+    const [isDeletingItem, setIsDeletingItem] = useState(false);
     const [openLabelActionsId, setOpenLabelActionsId] = useState(null);
 
     const sortedLabels = useMemo(() => {
@@ -50,11 +53,8 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
     };
 
     const handleTemplateDelete = async (templateId) => {
-        if(!confirm(t("template.deleteConfirm"))) {
-            return;
-        }
-
         try {
+            setIsDeletingItem(true);
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/issues/templates/${templateId}`, {
                 method: "DELETE",
                 headers: {
@@ -68,9 +68,12 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
             }
 
             setTemplates((prev) => prev.filter((item) => item.id !== templateId));
+            setPendingDeleteItem(null);
             toast.success(t("template.deleted"));
         } catch (error) {
             toast.error(error.message || t("errors.templateDelete"));
+        } finally {
+            setIsDeletingItem(false);
         }
     };
 
@@ -111,11 +114,8 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
     };
 
     const handleLabelDelete = async (labelId) => {
-        if(!confirm(t("labels.deleteConfirm"))) {
-            return;
-        }
-
         try {
+            setIsDeletingItem(true);
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/issues/labels/${labelId}`, {
                 method: "DELETE",
                 headers: {
@@ -129,9 +129,20 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
             }
 
             setLabels((prev) => prev.filter((item) => item.id !== labelId));
+            setPendingDeleteItem(null);
             toast.success(t("labels.deleted"));
         } catch (error) {
             toast.error(error.message || t("errors.labelDelete"));
+        } finally {
+            setIsDeletingItem(false);
+        }
+    };
+
+    const confirmDeleteItem = () => {
+        if(pendingDeleteItem?.type === "template") {
+            handleTemplateDelete(pendingDeleteItem.id);
+        } else if(pendingDeleteItem?.type === "label") {
+            handleLabelDelete(pendingDeleteItem.id);
         }
     };
 
@@ -172,7 +183,7 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
                                             {t("template.edit")}
                                         </Link>
 
-                                        <button className="button button--size-m button--type-danger button--icon-only button--active-transform" onClick={() => handleTemplateDelete(template.id)}>
+                                        <button className="button button--size-m button--type-danger button--icon-only button--active-transform" onClick={() => setPendingDeleteItem({ type: "template", id: template.id })}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
                                                 <path d="M3 6h18"></path>
@@ -232,7 +243,7 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
                                                             <div className="context-list-option__label">{t("labels.edit")}</div>
                                                         </button>
 
-                                                        <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art color--negative" onClick={() => { setOpenLabelActionsId(null); handleLabelDelete(label.id); }}>
+                                                        <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art color--negative" onClick={() => { setOpenLabelActionsId(null); setPendingDeleteItem({ type: "label", id: label.id }); }}>
                                                             <div className="context-list-option__art context-list-option__art--icon">
                                                                 <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
@@ -261,6 +272,19 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
                 onSubmit={handleLabelSave}
                 onRequestClose={() => setIsLabelModalOpen(false)}
                 isSubmitting={isLabelSaving}
+            />
+            <ConfirmModal
+                isOpen={Boolean(pendingDeleteItem)}
+                title={pendingDeleteItem?.type === "label" ? t("labels.deleteConfirm") : t("template.deleteConfirm")}
+                confirmLabel={pendingDeleteItem?.type === "label" ? t("labels.delete") : t("template.delete")}
+                cancelLabel={t("common.cancel")}
+                isLoading={isDeletingItem}
+                onConfirm={confirmDeleteItem}
+                onRequestClose={() => {
+                    if(!isDeletingItem) {
+                        setPendingDeleteItem(null);
+                    }
+                }}
             />
         </div>
     );

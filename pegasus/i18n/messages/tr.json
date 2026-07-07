@@ -363,7 +363,8 @@
       "paragraph3": "Ocak 2026'da Modrinth'ten izin istedik ve atfın isteğe bağlı olduğu, kararın bize ait olduğu onayını aldık.",
       "quote1": "Bununla birlikte internetteki neredeyse her şey başka bir şeyin yeniden yapımıdır ve bunun seni durdurmasına izin vermezdim.",
       "quote2": "Mantıklı olduğunda ilham al, işlerin nasıl yürümesi gerektiğine dair kendi bakışını oluşturmak için zaman ayır (Modrinth'in kendisinde de geliştirilecek pek çok alan var) ve paylaşmaya değer bir şey inşa etmeye odaklan!",
-      "quote3": "Modrinth'e atıf yapıp yapmamak tamamen sana bağlı."
+      "quote3": "Modrinth'e atıf yapıp yapmamak tamamen sana bağlı.",
+      "quoteAuthor": "Josh, Modrinth Team Lead tarafından yazıldı."
     }
   },
   "Layout": {
@@ -858,6 +859,17 @@
       "title": "Güvenlik",
       "description": "Hassas hesap işlemlerini yönetin."
     },
+    "hytaleLink": {
+      "title": "Hytale hesabı",
+      "description": "Hytale hesabını Modifold profiline bağla ve profil başarımı kazan.",
+      "linkedDescription": "Bağlı Hytale profili: {username}",
+      "connect": "Hytale bağla",
+      "connecting": "Açılıyor...",
+      "linked": "Bağlandı",
+      "errors": {
+        "generic": "Hytale bağlama başlatılamadı"
+      }
+    },
     "passwordChange": {
       "title": "Parolayı değiştir",
       "description": "E-posta ile giriş için mevcut parolanızı ve yeni parolanızı girin.",
@@ -1023,6 +1035,8 @@
     "downloadsLabel": "{count, plural, one {indirme} other {indirme}}",
     "publishedProjectsTooltip": "Yayınlanan projeler",
     "downloadsTooltip": "Yazarın proje indirmeleri",
+    "hytaleVerified": "Hytale doğrulandı",
+    "hytaleVerifiedTooltip": "Kullanıcı, hesabını bağlayarak Hytale profilinin sahibi olduğunu doğruladı.",
     "achievements": {
       "title": "Başarımlar",
       "receivedAt": "Kazanıldı: {date}",
@@ -1052,6 +1066,10 @@
         "hytalemodjam_2026": {
           "title": "Hytale x HytaleModding ModJam",
           "description": "Hytale x HytaleModding ModJam 2026 katılımcısı."
+        },
+        "hytale_linked": {
+          "title": "Hytale hesabı bağlandı",
+          "description": "Hytale hesabını bağladı ve güzel bir başarım kazandı!"
         }
       }
     },
@@ -1570,6 +1588,7 @@
       "telegram": "Telegram ile giriş hatası",
       "github": "GitHub ile giriş hatası",
       "discord": "Discord ile giriş hatası",
+      "hytale": "Hytale ile giriş hatası",
       "telegramProcessing": "Telegram mesajı işlenirken hata oluştu",
       "githubProcessing": "GitHub mesajı işlenirken hata oluştu",
       "discordProcessing": "Discord mesajı işlenirken hata oluştu"
@@ -1604,7 +1623,7 @@
     },
     "dataModal": {
       "title": "Hangi verileri topluyoruz?",
-      "intro": "Gizliliğinize önem veriyoruz ve Modifold’da güvenli kimlik doğrulama için sosyal girişleri (Telegram, GitHub, Discord) kullanıyoruz. Yalnızca çalışması için gereken minimum veriyi toplarız:",
+      "intro": "Gizliliğinize önem veriyoruz ve Modifold’da güvenli kimlik doğrulama için sosyal girişleri (Hytale, Telegram, GitHub, Discord) kullanıyoruz. Yalnızca çalışması için gereken minimum veriyi toplarız:",
       "items": {
         "usernameAvatar": "Profilinizi tanımlamak için kullanıcı adı ve avatar.",
         "email": "İletişim ve kişiselleştirme için e-posta adresi (sosyal ağ sağlıyorsa)."
@@ -1641,6 +1660,7 @@
     "close": "Kapat",
     "cancel": "İptal",
     "creating": "Oluşturuluyor...",
+    "revoking": "İptal ediliyor...",
     "newTokenTitle": "Yeni API token’ı oluşturuldu!",
     "copy": "Kopyala",
     "importantLabel": "Önemli:",
@@ -1651,6 +1671,7 @@
     "loadingTokens": "Token’lar yükleniyor...",
     "noTokens": "Henüz API token’ınız yok.",
     "revoke": "İptal et",
+    "confirmRevokeTitle": "API token iptal edilsin mi?",
     "confirmRevoke": "Bu token’ı iptal etmek istediğinize emin misiniz?",
     "docsPrompt": "Yardım mı lazım? Şuraya göz atın:",
     "docsLink": "API Dokümantasyonu",

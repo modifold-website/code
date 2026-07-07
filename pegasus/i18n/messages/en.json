@@ -363,7 +363,8 @@
       "paragraph3": "In January 2026, we asked Modrinth for permission and received confirmation that attribution is optional and remains at our discretion.",
       "quote1": "That said, almost everything on the internet is a recreation of something else, and I wouldn't let that stop you.",
       "quote2": "Take inspiration where it makes sense, spend time forming your own perspective on how things should work (Modrinth itself has plenty of areas to improve), and focus on building something worth sharing!",
-      "quote3": "Whether or not you choose to credit Modrinth is entirely up to you."
+      "quote3": "Whether or not you choose to credit Modrinth is entirely up to you.",
+      "quoteAuthor": "Written by Josh, Team Lead at Modrinth."
     }
   },
   "Layout": {
@@ -858,6 +859,17 @@
       "title": "Security",
       "description": "Manage sensitive account actions."
     },
+    "hytaleLink": {
+      "title": "Hytale account",
+      "description": "Link your Hytale account to your Modifold profile and receive a profile achievement.",
+      "linkedDescription": "Linked Hytale profile: {username}",
+      "connect": "Link Hytale",
+      "connecting": "Opening...",
+      "linked": "Linked",
+      "errors": {
+        "generic": "Failed to start Hytale linking"
+      }
+    },
     "passwordChange": {
       "title": "Change password",
       "description": "Enter your current password and a new password for email sign-in.",
@@ -1023,6 +1035,8 @@
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Published projects",
     "downloadsTooltip": "Author project downloads",
+    "hytaleVerified": "Hytale verified",
+    "hytaleVerifiedTooltip": "The user verified ownership of a Hytale profile by linking their account.",
     "achievements": {
       "title": "Achievements",
       "receivedAt": "Earned on: {date}",
@@ -1052,6 +1066,10 @@
         "hytalemodjam_2026": {
           "title": "Hytale x HytaleModding ModJam",
           "description": "Participant of Hytale x HytaleModding ModJam 2026."
+        },
+        "hytale_linked": {
+          "title": "Hytale account linked",
+          "description": "Linked a Hytale account and earned a beautiful achievement!"
         }
       }
     },
@@ -1570,6 +1588,7 @@
       "telegram": "Telegram authorization error",
       "github": "GitHub authorization error",
       "discord": "Discord authorization error",
+      "hytale": "Hytale authorization error",
       "telegramProcessing": "Error processing Telegram message",
       "githubProcessing": "Error processing GitHub message",
       "discordProcessing": "Error processing Discord message"
@@ -1604,7 +1623,7 @@
     },
     "dataModal": {
       "title": "What data do we collect?",
-      "intro": "We value your privacy and use social logins (Telegram, GitHub, Discord) for secure authentication on Modifold. We only collect the minimum data necessary:",
+      "intro": "We value your privacy and use social logins (Hytale, Telegram, GitHub, Discord) for secure authentication on Modifold. We only collect the minimum data necessary:",
       "items": {
         "usernameAvatar": "Username and avatar to identify your profile.",
         "email": "Email address (if provided by the social network) for contact and personalization."
@@ -1641,6 +1660,7 @@
     "close": "Close",
     "cancel": "Cancel",
     "creating": "Creating...",
+    "revoking": "Revoking...",
     "newTokenTitle": "New API Token Created!",
     "copy": "Copy",
     "importantLabel": "Important:",
@@ -1651,6 +1671,7 @@
     "loadingTokens": "Loading tokens...",
     "noTokens": "You don't have any API tokens yet.",
     "revoke": "Revoke",
+    "confirmRevokeTitle": "Revoke API token?",
     "confirmRevoke": "Are you sure you want to revoke this token?",
     "docsPrompt": "Need help? Check our",
     "docsLink": "API Documentation",

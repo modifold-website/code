@@ -1350,6 +1350,10 @@ body.light .ripple-effect {
 .settings-twofactor-description {
     color: var(--theme-color-text-secondary);
 }
+.settings-twofactor-description--error {
+    color: var(--theme-color-signal-negative-default);
+    margin-top: 8px;
+}
 .settings-password-toggle {
     color: var(--theme-color-text-secondary-light);
     cursor: pointer;

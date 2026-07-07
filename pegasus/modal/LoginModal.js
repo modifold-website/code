@@ -412,6 +412,13 @@ export default function LoginModal({ isOpen, onClose }) {
         redirectTo(url, onClose);
     };
 
+    const handleHytaleClick = () => {
+        const url = `${process.env.NEXT_PUBLIC_API_BASE}/auth/hytale-start?next=${encodeURIComponent(getReturnPath())}`;
+        setPendingSignInProvider("hytale");
+
+        redirectTo(url, onClose);
+    };
+
     const openDataModal = () => {
         setIsDataModalOpen(true);
     };
@@ -480,12 +487,14 @@ export default function LoginModal({ isOpen, onClose }) {
                             </div>
 
                             <div className="auth__content auth__content--stretched" style={{ gap: "10px" }}>
-                                <button style={{ display: "none" }} className="button button--size-xl button--type-minimal button--with-icon button--active-transform oauth-provider-button" type="button">
+                                <button className="button button--size-xl button--type-minimal button--with-icon button--active-transform oauth-provider-button" type="button" onClick={handleHytaleClick}>
                                     <svg className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M13.7023 0.0130647V7.89884L10.3939 7.8908L10.3284 0L4 0.934093L6.017 4.71971L6.01898 17.2619L10.3761 20.4696L10.3786 11.685L13.6428 11.6985V24L17.9775 20.8063V4.72373L20 0.944142L13.7023 0.0130647Z" fill="black"/>
+                                        <path d="M13.7023 0.0130647V7.89884L10.3939 7.8908L10.3284 0L4 0.934093L6.017 4.71971L6.01898 17.2619L10.3761 20.4696L10.3786 11.685L13.6428 11.6985V24L17.9775 20.8063V4.72373L20 0.944142L13.7023 0.0130647Z" fill="currentColor"/>
                                     </svg>
 
-                                    Continue with Hytale
+                                    {t("continueWith", { provider: "Hytale" })}
+
+                                    {renderLastSignInBadge("hytale")}
                                 </button>
                                 
                                 <button className="button button--size-xl button--type-minimal button--with-icon button--active-transform oauth-provider-button" type="button" onClick={handleGitHubClick}>

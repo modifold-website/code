@@ -9,6 +9,8 @@ const { sendMail } = require("../../utils/smtpMailer");
 const router = express.Router();
 const auth = require("../../middleware/auth");
 const { getVisibleProfileBadge } = require("../../utils/profileBadges");
+const { ACHIEVEMENT_CODES, awardAchievementToUser } = require("../../utils/achievements");
+const { consumeHytaleOAuthState, createHytaleAuthorizationUrl, exchangeHytaleCode } = require("../../utils/hytaleOAuth");
 const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;
@@ -35,6 +37,14 @@ function normalizeReturnPath(nextPath) {
 
     return nextPath;
 }
+
+const awardHytaleLinkedAchievement = async (userId, hytaleProfileUuid = null) => awardAchievementToUser(db, {
+	userId,
+	code: ACHIEVEMENT_CODES.HYTALE_LINKED,
+	contextType: "hytale",
+	contextId: hytaleProfileUuid,
+	note: "Linked Hytale account",
+});
 
 const generateRandomSlug = () => Array.from({ length: 10 }, () => {
     const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -201,8 +211,10 @@ async function verifyPassword(password, hash) {
     return Bun.password.verify(password, hash);
 }
 
+// shit
 function redirectToFrontendAuth(res, params) {
     const hash = new URLSearchParams(params).toString();
+    //return res.redirect(`http://localhost:3000/auth/callback#${hash}`);
     return res.redirect(`https://modifold.com/auth/callback#${hash}`);
 }
 
@@ -213,6 +225,133 @@ function verifyTelegramData(data, botToken) {
 
     return hmac === data.hash;
 }
+
+router.get("/hytale-start", async (req, res) => {
+	try {
+		const url = await createHytaleAuthorizationUrl({
+			mode: "login",
+			next: normalizeReturnPath(req.query.next),
+		});
+
+		return res.redirect(url);
+	} catch (error) {
+		console.error("Hytale OAuth Start Error:", error);
+		return redirectToFrontendAuth(res, { error: error.message || "Error starting Hytale authorization", next: normalizeReturnPath(req.query.next) });
+	}
+});
+
+router.post("/hytale-link/start", auth, async (req, res) => {
+	try {
+		const url = await createHytaleAuthorizationUrl({
+			mode: "link",
+			next: normalizeReturnPath(req.body?.next),
+			userId: req.user.id,
+		});
+
+		return res.json({ success: true, url });
+	} catch (error) {
+		console.error("Hytale Link Start Error:", error);
+		return res.status(500).json({ success: false, message: error.message || "Error starting Hytale account linking" });
+	}
+});
+
+router.get("/hytale-callback", async (req, res) => {
+	const oauthState = await consumeHytaleOAuthState(req.query.state);
+	const nextPath = normalizeReturnPath(oauthState?.next);
+
+	try {
+		if(req.query.error) {
+			return redirectToFrontendAuth(res, { error: req.query.error_description || req.query.error, next: nextPath });
+		}
+
+		if(!req.query.code || !oauthState?.codeVerifier) {
+			return redirectToFrontendAuth(res, { error: "Hytale authorization state is missing or expired", next: nextPath });
+		}
+
+		const hytaleAccount = await exchangeHytaleCode({
+			code: req.query.code,
+			codeVerifier: oauthState.codeVerifier,
+		});
+
+		const linkedAt = Date.now();
+
+		if(oauthState.mode === "link") {
+			if(!oauthState.userId) {
+				return redirectToFrontendAuth(res, { error: "Unable to link Hytale account", next: nextPath });
+			}
+
+			const [existingLinkedUsers] = await db.query(
+				"SELECT id FROM users WHERE hytale_sub = ? AND id <> ? LIMIT 1",
+				[hytaleAccount.hytaleSub, oauthState.userId]
+			);
+
+			if(existingLinkedUsers.length > 0) {
+				return redirectToFrontendAuth(res, { error: "This Hytale account is already linked to another Modifold account", next: nextPath });
+			}
+
+			const [targetUsers] = await db.query("SELECT id FROM users WHERE id = ? LIMIT 1", [oauthState.userId]);
+			if(!targetUsers.length) {
+				return redirectToFrontendAuth(res, { error: "User not found", next: nextPath });
+			}
+
+			await db.query(
+				"UPDATE users SET hytale_sub = ?, hytale_profile_uuid = ?, hytale_profile_username = ?, hytale_linked_at = ? WHERE id = ?",
+				[hytaleAccount.hytaleSub, hytaleAccount.hytaleProfileUuid, hytaleAccount.hytaleProfileUsername, linkedAt, oauthState.userId]
+			);
+
+			await awardHytaleLinkedAchievement(oauthState.userId, hytaleAccount.hytaleProfileUuid);
+
+			return redirectToFrontendAuth(res, { hytale_linked: "1", next: nextPath });
+		}
+
+		const [existingUsers] = await db.query("SELECT id, username, slug FROM users WHERE hytale_sub = ? LIMIT 1", [hytaleAccount.hytaleSub]);
+		let user = existingUsers[0];
+
+		if(user) {
+			await db.query(
+				"UPDATE users SET hytale_profile_uuid = ?, hytale_profile_username = ?, hytale_linked_at = COALESCE(hytale_linked_at, ?) WHERE id = ?",
+				[hytaleAccount.hytaleProfileUuid, hytaleAccount.hytaleProfileUsername, linkedAt, user.id]
+			);
+
+			await awardHytaleLinkedAchievement(user.id, hytaleAccount.hytaleProfileUuid);
+		} else {
+			const displayName = hytaleAccount.hytaleProfileUsername || "Hytale Player";
+			const slug = await createUniqueSlug(displayName, hytaleAccount.hytaleProfileUuid || null);
+			const createdAt = Date.now();
+
+			const [result] = await db.query(
+				`INSERT INTO users
+				(username, slug, hytale_sub, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, created_at, avatar)
+				VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+				[
+					displayName,
+					slug,
+					hytaleAccount.hytaleSub,
+					hytaleAccount.hytaleProfileUuid,
+					hytaleAccount.hytaleProfileUsername,
+					linkedAt,
+					createdAt,
+					"https://modifold.com/images/user/default_ava.png",
+				]
+			);
+
+			user = { id: result.insertId, username: displayName, slug };
+			await awardHytaleLinkedAchievement(user.id, hytaleAccount.hytaleProfileUuid);
+		}
+
+		const twoFactorRow = await getTwoFactorRow(user.id);
+		if(isTwoFactorEnabled(twoFactorRow)) {
+			const twoFactorToken = issueTwoFactorToken(user.id);
+			return redirectToFrontendAuth(res, { twofactor: "1", twofactor_token: twoFactorToken, next: nextPath });
+		}
+
+		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+		return redirectToFrontendAuth(res, { token, next: nextPath });
+	} catch (error) {
+		console.error("Hytale Callback Error:", error);
+		return redirectToFrontendAuth(res, { error: error.message || "Error processing Hytale callback", next: nextPath });
+	}
+});
 
 router.post("/email-login", async (req, res) => {
     const email = normalizeEmail(req.body?.email);
@@ -908,7 +1047,7 @@ router.get("/github-callback", async (req, res) => {
 
 router.get("/user", auth, async (req, res) => {
     try {
-        const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, github_id, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
+        const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, github_id, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(!users.length) {
             return res.status(404).json({ message: "User not found" });

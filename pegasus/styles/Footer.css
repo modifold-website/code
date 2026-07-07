@@ -116,6 +116,9 @@
 .footer-modrinth-modal__content .footer-modrinth-modal__quote p + p {
     margin-top: 10px;
 }
+.footer-modrinth-modal__quote-author {
+    margin-top: 12px;
+}
 .footer-copyright {
     color: var(--theme-color-text-secondary);
 }

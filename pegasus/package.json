@@ -12,6 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.2",
     "axios": "^1.8.4",
     "eslint-config-next": "16.2.1",
     "gray-matter": "^4.0.3",
