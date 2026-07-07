@@ -19,7 +19,11 @@ export default function SettingsAccountSecurityPage({ initialUser = null, initia
     const [isPasswordOpen, setIsPasswordOpen] = useState(false);
     const [isSetupOpen, setIsSetupOpen] = useState(false);
     const [isDisableOpen, setIsDisableOpen] = useState(false);
+    const [isHytaleLinking, setIsHytaleLinking] = useState(false);
+    const [hytaleLinkError, setHytaleLinkError] = useState("");
     const token = authToken || (typeof window !== "undefined" ? localStorage.getItem("authToken") : null);
+    const hytaleProfileName = effectiveUser?.hytale_profile_username || "";
+    const hasHytaleLinked = Boolean(effectiveUser?.hytale_profile_uuid || hytaleProfileName);
 
     useEffect(() => {
         if(!isLoggedIn && !initialUser) {
@@ -68,6 +72,36 @@ export default function SettingsAccountSecurityPage({ initialUser = null, initia
             handleRefreshPasswordStatus();
         }
     }, [initialPassword]);
+
+    const handleLinkHytale = async () => {
+        if(!token || isHytaleLinking) {
+            return;
+        }
+
+        try {
+            setIsHytaleLinking(true);
+            setHytaleLinkError("");
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/hytale-link/start`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ next: "/settings/account-security" }),
+            });
+
+            const data = await res.json().catch(() => ({}));
+            if(!res.ok || !data?.url) {
+                throw new Error(data?.message || t("hytaleLink.errors.generic"));
+            }
+
+            window.location.href = data.url;
+        } catch (error) {
+            setHytaleLinkError(error?.message || t("hytaleLink.errors.generic"));
+            setIsHytaleLinking(false);
+        }
+    };
 
     return (
         <>
@@ -120,6 +154,40 @@ export default function SettingsAccountSecurityPage({ initialUser = null, initia
                                     </svg>
                                     
                                     {t("twoFactor.enable")}
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="settings-twofactor-card">
+                            <div>
+                                <div className="settings-twofactor-title">{t("hytaleLink.title")}</div>
+
+                                <div className="settings-twofactor-description">
+                                    {hasHytaleLinked ? t("hytaleLink.linkedDescription", { username: hytaleProfileName || effectiveUser?.hytale_profile_uuid }) : t("hytaleLink.description")}
+                                </div>
+
+                                {hytaleLinkError && (
+                                    <div className="settings-twofactor-description settings-twofactor-description--error">
+                                        {hytaleLinkError}
+                                    </div>
+                                )}
+                            </div>
+
+                            {hasHytaleLinked ? (
+                                <button type="button" className="button button--size-m button--with-icon button--type-minimal" disabled>
+                                    <svg className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13.7023 0.0130647V7.89884L10.3939 7.8908L10.3284 0L4 0.934093L6.017 4.71971L6.01898 17.2619L10.3761 20.4696L10.3786 11.685L13.6428 11.6985V24L17.9775 20.8063V4.72373L20 0.944142L13.7023 0.0130647Z" fill="currentColor"/>
+                                    </svg>
+
+                                    {t("hytaleLink.linked")}
+                                </button>
+                            ) : (
+                                <button type="button" className="button button--size-m button--with-icon button--type-minimal" onClick={handleLinkHytale} disabled={isHytaleLinking}>
+                                    <svg className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13.7023 0.0130647V7.89884L10.3939 7.8908L10.3284 0L4 0.934093L6.017 4.71971L6.01898 17.2619L10.3761 20.4696L10.3786 11.685L13.6428 11.6985V24L17.9775 20.8063V4.72373L20 0.944142L13.7023 0.0130647Z" fill="currentColor"/>
+                                    </svg>
+
+                                    {isHytaleLinking ? t("hytaleLink.connecting") : t("hytaleLink.connect")}
                                 </button>
                             )}
                         </div>

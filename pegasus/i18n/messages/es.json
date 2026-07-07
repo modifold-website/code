@@ -859,6 +859,17 @@
       "title": "Seguridad",
       "description": "Administra las acciones sensibles de la cuenta."
     },
+    "hytaleLink": {
+      "title": "Cuenta de Hytale",
+      "description": "Vincula tu cuenta de Hytale a tu perfil de Modifold y recibe un logro de perfil.",
+      "linkedDescription": "Perfil de Hytale vinculado: {username}",
+      "connect": "Vincular Hytale",
+      "connecting": "Abriendo...",
+      "linked": "Vinculado",
+      "errors": {
+        "generic": "No se pudo iniciar la vinculación de Hytale"
+      }
+    },
     "passwordChange": {
       "title": "Cambiar contraseña",
       "description": "Introduce tu contraseña actual y una nueva contraseña para iniciar sesión con correo.",
@@ -1024,6 +1035,8 @@
     "downloadsLabel": "{count, plural, one {descarga} other {descargas}}",
     "publishedProjectsTooltip": "Proyectos publicados",
     "downloadsTooltip": "Descargas de proyectos del autor",
+    "hytaleVerified": "Hytale verificado",
+    "hytaleVerifiedTooltip": "El usuario verificó que posee un perfil de Hytale vinculando su cuenta.",
     "achievements": {
       "title": "Logros",
       "receivedAt": "Obtenido el: {date}",
@@ -1053,6 +1066,10 @@
         "hytalemodjam_2026": {
           "title": "Hytale x HytaleModding ModJam",
           "description": "Participante de Hytale x HytaleModding ModJam 2026."
+        },
+        "hytale_linked": {
+          "title": "Cuenta de Hytale vinculada",
+          "description": "¡Vinculó una cuenta de Hytale y obtuvo un hermoso logro!"
         }
       }
     },
@@ -1571,6 +1588,7 @@
       "telegram": "Error al iniciar sesión con Telegram",
       "github": "Error al iniciar sesión con GitHub",
       "discord": "Error al iniciar sesión con Discord",
+      "hytale": "Error al iniciar sesión con Hytale",
       "telegramProcessing": "Error al procesar Telegram",
       "githubProcessing": "Error al procesar GitHub",
       "discordProcessing": "Error al procesar Discord"

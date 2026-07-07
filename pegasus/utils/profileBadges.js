@@ -12,6 +12,10 @@ export const PROFILE_BADGES = [
 		icon: "/badges/hytalemodjam_2026_badge.png",
 	},
 	{
+		code: "hytale_linked",
+		icon: "/badges/hytale_linked_badge.png",
+	},
+	{
 		code: "first_project",
 		icon: "/badges/first_project_badge.png",
 	},

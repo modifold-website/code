@@ -860,6 +860,17 @@
       "title": "Безпека",
       "description": "Керуйте важливими діями облікового запису."
     },
+    "hytaleLink": {
+      "title": "Акаунт Hytale",
+      "description": "Прив'яжіть акаунт Hytale до профілю Modifold і отримайте досягнення в профілі.",
+      "linkedDescription": "Прив'язаний профіль Hytale: {username}",
+      "connect": "Прив'язати Hytale",
+      "connecting": "Відкриваємо...",
+      "linked": "Прив'язано",
+      "errors": {
+        "generic": "Не вдалося почати прив'язку Hytale"
+      }
+    },
     "passwordChange": {
       "title": "Зміна пароля",
       "description": "Введіть поточний пароль і новий пароль для входу через пошту.",
@@ -1025,6 +1036,8 @@
     "downloadsLabel": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}",
     "publishedProjectsTooltip": "Опубліковані проєкти",
     "downloadsTooltip": "Завантаження проєктів автора",
+    "hytaleVerified": "Hytale підтверджено",
+    "hytaleVerifiedTooltip": "Користувач підтвердив володіння профілем Hytale через прив’язку акаунта.",
     "achievements": {
       "title": "Досягнення",
       "receivedAt": "Отримано: {date}",
@@ -1054,6 +1067,10 @@
         "hytalemodjam_2026": {
           "title": "Hytale x HytaleModding ModJam",
           "description": "Учасник Hytale x HytaleModding ModJam 2026."
+        },
+        "hytale_linked": {
+          "title": "Акаунт Hytale прив'язано",
+          "description": "Прив'язав акаунт Hytale і отримав гарне досягнення!"
         }
       }
     },
@@ -1572,6 +1589,7 @@
       "telegram": "Помилка авторизації Telegram",
       "github": "Помилка авторизації GitHub",
       "discord": "Помилка авторизації Discord",
+      "hytale": "Помилка авторизації Hytale",
       "telegramProcessing": "Помилка обробки повідомлення Telegram",
       "githubProcessing": "Помилка обробки повідомлення GitHub",
       "discordProcessing": "Помилка обробки повідомлення Discord"
@@ -1606,7 +1624,7 @@
     },
     "dataModal": {
       "title": "Які дані ми збираємо?",
-      "intro": "Ми цінуємо вашу приватність і використовуємо соціальні логіни (Telegram, GitHub, Discord) для безпечної автентифікації на Modifold. Ми збираємо лише мінімум даних, необхідний для роботи:",
+      "intro": "Ми цінуємо вашу приватність і використовуємо соціальні логіни (Hytale, Telegram, GitHub, Discord) для безпечної автентифікації на Modifold. Ми збираємо лише мінімум даних, необхідний для роботи:",
       "items": {
         "usernameAvatar": "Ім’я користувача та аватар для ідентифікації вашого профілю.",
         "email": "Email-адресу (якщо її надає соцмережа) для зв’язку та персоналізації."

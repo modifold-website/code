@@ -859,6 +859,17 @@
       "title": "Segurança",
       "description": "Gerencie ações sensíveis da conta."
     },
+    "hytaleLink": {
+      "title": "Conta Hytale",
+      "description": "Vincule sua conta Hytale ao perfil Modifold e receba uma conquista no perfil.",
+      "linkedDescription": "Perfil Hytale vinculado: {username}",
+      "connect": "Vincular Hytale",
+      "connecting": "Abrindo...",
+      "linked": "Vinculado",
+      "errors": {
+        "generic": "Não foi possível iniciar a vinculação do Hytale"
+      }
+    },
     "passwordChange": {
       "title": "Alterar senha",
       "description": "Digite sua senha atual e uma nova senha para entrar com e-mail.",
@@ -1024,6 +1035,8 @@
     "downloadsLabel": "{count, plural, one {download} other {downloads}}",
     "publishedProjectsTooltip": "Projetos publicados",
     "downloadsTooltip": "Downloads dos projetos do autor",
+    "hytaleVerified": "Hytale verificado",
+    "hytaleVerifiedTooltip": "O usuário confirmou a propriedade de um perfil Hytale vinculando a conta.",
     "achievements": {
       "title": "Conquistas",
       "receivedAt": "Recebida em: {date}",
@@ -1053,6 +1066,10 @@
         "hytalemodjam_2026": {
           "title": "Hytale x HytaleModding ModJam",
           "description": "Participante do Hytale x HytaleModding ModJam 2026."
+        },
+        "hytale_linked": {
+          "title": "Conta Hytale vinculada",
+          "description": "Vinculou uma conta Hytale e recebeu uma bela conquista!"
         }
       }
     },
@@ -1571,6 +1588,7 @@
       "telegram": "Erro ao entrar com Telegram",
       "github": "Erro ao entrar com GitHub",
       "discord": "Erro ao entrar com Discord",
+      "hytale": "Erro ao entrar com Hytale",
       "telegramProcessing": "Erro ao processar o Telegram",
       "githubProcessing": "Erro ao processar o GitHub",
       "discordProcessing": "Erro ao processar o Discord"

@@ -17,6 +17,7 @@ import ProfileLinks from "@/components/ui/ProfileLinks";
 import ProfileProjectFeedToolbar from "@/components/ui/ProfileProjectFeedToolbar";
 import ProfileStats from "@/components/ui/ProfileStats";
 import ProfileBadgeIcon from "@/components/ui/ProfileBadgeIcon";
+import Tooltip from "@/components/ui/Tooltip";
 import { PROFILE_BADGES, getProfileBadgeCode } from "@/utils/profileBadges";
 
 const DESCRIPTION_URL_RE = /\bhttps?:\/\/[^\s<]+/gi;
@@ -278,6 +279,10 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
             availableCodes.add("hytalemodjam_2026");
         }
 
+        if(achievementCodes.has("hytale_linked")) {
+            availableCodes.add("hytale_linked");
+        }
+
         if(achievementCodes.has("first_project")) {
             availableCodes.add("first_project");
         }
@@ -299,6 +304,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
     const activeProfileBadgeCode = getProfileBadgeCode(profileUser);
     const canChooseProfileBadge = isOwnProfile && !isBanned && availableProfileBadges.length > 0;
     const showProfileBadgeButton = Boolean(activeProfileBadgeCode || canChooseProfileBadge);
+    const hasHytaleLinked = !isBanned && Boolean(profileUser?.hytale_profile_uuid || profileUser?.hytale_profile_username || profileUser?.hytale_linked_at);
 
     return (
         <>
@@ -433,12 +439,26 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                         )}
                                     </h1>
 
-                                    <RoleBadge
-                                        role={profileUser.isRole}
-                                        labels={{
-                                            developer: t("role.developer"),
-                                        }}
-                                    />
+                                    <div className="profile-hero__badges">
+                                        <RoleBadge
+                                            role={profileUser.isRole}
+                                            labels={{
+                                                developer: t("role.developer"),
+                                            }}
+                                        />
+
+                                        {hasHytaleLinked && (
+                                            <Tooltip content={t("hytaleVerifiedTooltip")}>
+                                                <span className="badge--developer profile-hero__hytale-badge">
+                                                    <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                        <path d="M13.7023 0.0130647V7.89884L10.3939 7.8908L10.3284 0L4 0.934093L6.017 4.71971L6.01898 17.2619L10.3761 20.4696L10.3786 11.685L13.6428 11.6985V24L17.9775 20.8063V4.72373L20 0.944142L13.7023 0.0130647Z" fill="currentColor"></path>
+                                                    </svg>
+
+                                                    {t("hytaleVerified")}
+                                                </span>
+                                            </Tooltip>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <p className="profile-hero__description">{desc}</p>

@@ -3,6 +3,7 @@ const ACHIEVEMENT_CODES = {
 	DOWNLOADS_100: "downloads_100",
 	DOWNLOADS_500: "downloads_500",
 	DOWNLOADS_10000: "downloads_10000",
+	HYTALE_LINKED: "hytale_linked",
 };
 
 const DOWNLOAD_ACHIEVEMENT_THRESHOLDS = [

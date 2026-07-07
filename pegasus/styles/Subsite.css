@@ -209,6 +209,17 @@
 .profile-hero__identity .badge--developer {
     background: var(--theme-color-background-content);
 }
+.profile-hero__badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.profile-hero__identity .profile-hero__hytale-badge {
+    width: fit-content;
+    background: #16a34a;
+    color: #ffffff;
+}
 .profile-hero__name {
     align-items: center;
     gap: 6px;
