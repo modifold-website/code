@@ -5,7 +5,7 @@ author: ["bogdan"]
 date: 2026-06-24
 slug: /blog/worlds-and-latest-updates
 image: https://media.modifold.com/news/june_update_part1_cover.png
-featured: true
+featured: false
 locale: en
 ---
 
