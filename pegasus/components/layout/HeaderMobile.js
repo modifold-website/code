@@ -33,6 +33,7 @@ export default function HeaderMobile({ authToken }) {
         document.body.classList.remove("light", "dark", "system");
         document.body.classList.add(resolvedTheme);
         document.body.dataset.themePreference = nextTheme;
+        document.documentElement.style.colorScheme = resolvedTheme;
     };
 
     useEffect(() => {
