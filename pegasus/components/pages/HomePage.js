@@ -305,7 +305,7 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
                     </div>
 
                     <div className="view-all">
-                        <Link href="/news" className="button button--size-xl button--type-primary button--with-icon button--active-transform">
+                        <Link href="/blog" className="button button--size-xl button--type-primary button--with-icon button--active-transform">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-newspaper-icon lucide-newspaper">
                                 <path d="M15 18h-5"/>
                                 <path d="M18 14h-8"/>

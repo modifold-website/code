@@ -3,7 +3,7 @@ title: "Модпаки, улучшения интерфейса, 2FA и друг
 description: "Сегодняшнее обновление приносит модпаки и пачку улучшений интерфейса. Ниже — всё самое основное."
 author: ["bogdan"]
 date: 2026-04-05
-slug: /news/april-update
+slug: /blog/april-update
 image: https://media.modifold.com/news/modpack_banner.png?v=2
 featured: false
 locale: ru

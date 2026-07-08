@@ -3,7 +3,7 @@ title: "Modpacks, UI improvements, 2FA, and more"
 description: "Today's update brings modpacks and a bundle of UI improvements. Below is the most important information."
 author: ["bogdan"]
 date: 2026-04-05
-slug: /news/april-update
+slug: /blog/april-update
 image: https://media.modifold.com/news/modpack_banner.png?v=2
 featured: false
 locale: en

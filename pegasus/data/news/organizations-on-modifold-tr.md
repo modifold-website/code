@@ -3,7 +3,7 @@ title: "Organizasyonları Tanıyın"
 description: "Modifold'da organizasyonlar: paylaşılan sahiplik, ekip rolleri ve ortak kimlikle proje yayını."
 author: ["modifold"]
 date: 2026-02-28
-slug: /news/organizations-on-modifold
+slug: /blog/organizations-on-modifold
 image: https://media.modifold.com/news/organizations banner.png
 featured: false
 locale: tr

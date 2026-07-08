@@ -3,7 +3,7 @@ title: "A New Creator Status on Modifold: Creator Badge"
 description: "We removed the old verification flow and launched Creator Badge — a new status for active and trusted mod creators."
 author: ["bogdan"]
 date: 2026-05-08
-slug: /news/creator-badge-launch
+slug: /blog/creator-badge-launch
 image: https://media.modifold.com/news/creator_badge.png?v=1
 featured: false
 locale: en

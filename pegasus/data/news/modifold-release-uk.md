@@ -3,7 +3,7 @@ title: "Modifold: повноцінний реліз"
 description: "Modifold виходить з бети у повноцінний реліз: відгуки спільноти, інтерфейс 6 мовами, верифікація профілю та коментарі до проєктів."
 author: ["modifold"]
 date: 2026-02-07
-slug: /news/modifold-release
+slug: /blog/modifold-release
 image: https://media.modifold.com/news/og_banner.png
 featured: false
 locale: uk

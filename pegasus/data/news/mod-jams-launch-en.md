@@ -3,7 +3,7 @@ title: "Introducing Mod Jams"
 description: "We are launching mod jams on Modifold: community events where creators build projects around a shared theme, and players vote for their favorites."
 author: ["bogdan"]
 date: 2026-05-15
-slug: /news/mod-jams-launch
+slug: /blog/mod-jams-launch
 image: https://media.modifold.com/news/modjams_update.png
 featured: false
 locale: en

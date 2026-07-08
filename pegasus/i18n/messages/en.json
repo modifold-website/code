@@ -349,7 +349,7 @@
     "copyrightPolicy": "Copyright Policy and DMCA",
     "notOfficial": "NOT AN OFFICIAL HYTALE SERVICE. NOT APPROVED BY OR ASSOCIATED WITH HYPIXEL STUDIOS CANADA INC.",
     "mods": "Mods",
-    "news": "News",
+    "news": "Blog",
     "openSourceSoon": "Modifold is open source.",
     "apiDocs": "API Docs",
     "inspiredBy": "Inspired by",
@@ -389,11 +389,11 @@
     "creatorsSpotlightDescription": "Meet the creators shaping the Hytale modding scene.",
     "noCreators": "No creators yet",
     "forPlayersTitle": "For Players",
-    "forPlayersDescription": "Find and download mods created by the community. Stay updated with the latest news and releases.",
+    "forPlayersDescription": "Find and download mods created by the community. Stay updated with the latest blog posts and releases.",
     "forCreatorsTitle": "For Creators",
     "forCreatorsDescription": "Upload your mods, share them with the world, and grow your audience on a platform built for Hytale.",
-    "latestNewsTitle": "Latest news from Modifold",
-    "viewAllNews": "View all news",
+    "latestNewsTitle": "Latest from the Modifold blog",
+    "viewAllNews": "View all blog posts",
     "commentsTitle": "Comments that help creators",
     "commentsDescription": "Discuss releases, leave feedback, and help mod authors improve their projects.",
     "localesDescription": "Interface available in English, Spanish, Portuguese, Russian, Turkish, and Ukrainian.",
@@ -1567,12 +1567,12 @@
     }
   },
   "NewsPage": {
-    "title": "News",
+    "title": "Blog",
     "featuredArticle": {
       "label": "Featured article"
     },
     "moreTitle": "More articles",
-    "notFound": "News article not found",
+    "notFound": "Blog post not found",
     "byline": {
       "and": "and",
       "team": "Modifold Team",

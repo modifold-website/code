@@ -3,7 +3,7 @@ title: "Представляємо Організації"
 description: "Організації в Modifold: спільна робота над проєктами, ролі учасників і публікація від імені команди."
 author: ["modifold"]
 date: 2026-02-28
-slug: /news/organizations-on-modifold
+slug: /blog/organizations-on-modifold
 image: https://media.modifold.com/news/organizations banner.png
 featured: false
 locale: uk

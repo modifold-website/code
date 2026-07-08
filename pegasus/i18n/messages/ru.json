@@ -349,7 +349,7 @@
     "copyrightPolicy": "Политика авторского права и DMCA",
     "notOfficial": "ЭТО НЕ ОФИЦИАЛЬНЫЙ СЕРВИС HYTALE. НЕ ОДОБРЕНО И НЕ СВЯЗАНО С HYPIXEL STUDIOS CANADA INC.",
     "mods": "Моды",
-    "news": "Новости",
+    "news": "Блог",
     "openSourceSoon": "Modifold — открытый проект.",
     "apiDocs": "Документация API",
     "inspiredBy": "Вдохновлено",
@@ -389,11 +389,11 @@
     "creatorsSpotlightDescription": "Создатели, которые формируют сцену моддинга Hytale.",
     "noCreators": "Пока нет авторов",
     "forPlayersTitle": "Для игроков",
-    "forPlayersDescription": "Находите и скачивайте моды, созданные сообществом. Следите за новостями и релизами.",
+    "forPlayersDescription": "Находите и скачивайте моды, созданные сообществом. Следите за публикациями в блоге и релизами.",
     "forCreatorsTitle": "Для создателей",
     "forCreatorsDescription": "Загружайте моды, делитесь ими с миром и развивайте аудиторию на платформе для Hytale.",
-    "latestNewsTitle": "Последние новости Modifold",
-    "viewAllNews": "Все новости",
+    "latestNewsTitle": "Последние записи в блоге Modifold",
+    "viewAllNews": "Все записи блога",
     "commentsTitle": "Комментарии для авторов",
     "commentsDescription": "Обсуждайте релизы, оставляйте фидбек и помогайте улучшать моды.",
     "localesDescription": "Интерфейс доступен на английском, испанском, португальском, русском, турецком и украинском.",
@@ -1567,12 +1567,12 @@
     }
   },
   "NewsPage": {
-    "title": "Новости",
+    "title": "Блог",
     "featuredArticle": {
       "label": "Главная статья"
     },
     "moreTitle": "Другие статьи",
-    "notFound": "Новость не найдена",
+    "notFound": "Запись блога не найдена",
     "byline": {
       "and": "и",
       "team": "Команда Modifold",

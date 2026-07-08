@@ -349,7 +349,7 @@
     "copyrightPolicy": "Telif Hakkı ve DMCA Politikası",
     "notOfficial": "RESMİ HYTALE HİZMETİ DEĞİLDİR. HYPIXEL STUDIOS CANADA INC. TARAFINDAN ONAYLANMAMIŞTIR VE HYTALE İLE BAĞLANTILI DEĞİLDİR.",
     "mods": "Modlar",
-    "news": "Haberler",
+    "news": "Blog",
     "openSourceSoon": "Modifold açık kaynaklıdır.",
     "apiDocs": "API Dokümantasyonu",
     "inspiredBy": "Şundan ilham alınmıştır:",
@@ -389,11 +389,11 @@
     "creatorsSpotlightDescription": "Hytale mod sahnesini şekillendiren üreticilerle tanışın.",
     "noCreators": "Henüz üretici yok",
     "forPlayersTitle": "Oyuncular için",
-    "forPlayersDescription": "Topluluğun ürettiği modları bulun ve indirin. En yeni haberleri ve sürümleri takip edin.",
+    "forPlayersDescription": "Topluluğun ürettiği modları bulun ve indirin. En yeni blog yazılarını ve sürümleri takip edin.",
     "forCreatorsTitle": "Üreticiler için",
     "forCreatorsDescription": "Modlarınızı yükleyin, dünyayla paylaşın ve Hytale için tasarlanmış bir platformda kitlenizle büyüyün.",
-    "latestNewsTitle": "Modifold’dan son haberler",
-    "viewAllNews": "Tüm haberleri görüntüle",
+    "latestNewsTitle": "Modifold blogundan son yazılar",
+    "viewAllNews": "Tüm blog yazılarını görüntüle",
     "commentsTitle": "Yorumlarla destek",
     "commentsDescription": "Sürümleri tartışın, geri bildirim bırakın ve modları geliştirmeye yardımcı olun.",
     "localesDescription": "Arayüz İngilizce, İspanyolca, Portekizce, Rusça, Türkçe ve Ukraynaca dillerinde.",
@@ -1567,12 +1567,12 @@
     }
   },
   "NewsPage": {
-    "title": "Haberler",
+    "title": "Blog",
     "featuredArticle": {
       "label": "Öne çıkan makale"
     },
     "moreTitle": "Daha fazla makale",
-    "notFound": "Makale bulunamadı",
+    "notFound": "Blog yazısı bulunamadı",
     "byline": {
       "and": "ve",
       "team": "Modifold Ekibi",

@@ -130,7 +130,7 @@ export default async function NewsArticle({ params }) {
         return (
             <div className="layout">
                 <section className="news">
-                    <Link href="/news">
+                    <Link href="/blog">
                         <h2 className="news-title news-title--hover" style={{ borderColor: "var(--theme-sidebar-separator-color-background)", borderStyle: "solid", borderBottomWidth: "1px", paddingBottom: "20px" }}>
                             {t("title")}
                         </h2>
@@ -168,9 +168,18 @@ export default async function NewsArticle({ params }) {
                                 <span style={{ fontWeight: "500" }}>{t("byline.team")}</span>
                             )}
 
-                            <span>{t("byline.separator")}</span>
+                            <span style={{ color: "var(--theme-color-text-secondary)" }}>{t("byline.separator")}</span>
 
-                            <time dateTime={data.date}>{formattedDate}</time>
+                            <time style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--theme-color-text-secondary)" }} dateTime={data.date}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: "none" }}>
+                                    <path d="M8 2v4"></path>
+                                    <path d="M16 2v4"></path>
+                                    <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                                    <path d="M3 10h18"></path>
+                                </svg>
+                                
+                                {formattedDate}
+                            </time>
                         </div>
 
                         <ShareButtons title={data.title} url={`https://modifold.com${data.slug}`} />

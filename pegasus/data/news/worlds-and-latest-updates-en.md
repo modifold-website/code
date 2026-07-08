@@ -3,7 +3,7 @@ title: "Worlds, trailers, analytics, and more"
 description: "Worlds are now on Modifold: you can publish horror maps, mini-games, adventures, and other projects to play with friends. And this is just the beginning!"
 author: ["bogdan"]
 date: 2026-06-24
-slug: /news/worlds-and-latest-updates
+slug: /blog/worlds-and-latest-updates
 image: https://media.modifold.com/news/june_update_part1_cover.png
 featured: true
 locale: en
