@@ -3,9 +3,9 @@ title: "Миры, трейлеры, аналитика и другое"
 description: "На Modifold появились миры: теперь можно публиковать хоррор-карты, мини-игры, приключения и другие проекты для игры с друзьями. И это только начало!"
 author: ["bogdan"]
 date: 2026-06-24
-slug: /news/worlds-and-latest-updates
+slug: /blog/worlds-and-latest-updates
 image: https://media.modifold.com/news/june_update_part1_cover.png
-featured: true
+featured: false
 locale: ru
 ---
 

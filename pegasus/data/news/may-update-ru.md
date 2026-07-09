@@ -3,7 +3,7 @@ title: "Майское обновление Modifold"
 description: "Значок автора, страница понравившихся проектов, уведомления о новых версиях, обновленный каталог модов, галерея проекта и другие улучшения."
 author: ["bogdan"]
 date: 2026-05-10
-slug: /news/may-update
+slug: /blog/may-update
 image: https://media.modifold.com/news/may_update_2026.png
 featured: false
 locale: ru

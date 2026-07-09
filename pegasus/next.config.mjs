@@ -8,6 +8,20 @@ const nextConfig = {
     allowedDevOrigins: ['staging.modifold.com'],
     output: 'standalone',
     devIndicators: false,
+    async redirects() {
+        return [
+            {
+                source: '/news',
+                destination: '/blog',
+                permanent: true,
+            },
+            {
+                source: '/news/:path*',
+                destination: '/blog/:path*',
+                permanent: true,
+            },
+        ];
+    },
     images: {
         remotePatterns: [
             {

@@ -3,7 +3,7 @@ title: "Аналитика и Issues в Modifold"
 description: "В Modifold появились графики игроков и серверов, а также Issues для сбора фидбека и баг-репортов прямо на странице проекта."
 author: ["bogdan"]
 date: 2026-04-16
-slug: /news/analytics-and-issues-update
+slug: /blog/analytics-and-issues-update
 image: https://media.modifold.com/news/analytics_2.png
 featured: false
 locale: ru

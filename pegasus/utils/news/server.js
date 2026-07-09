@@ -85,7 +85,7 @@ export const getNewsArticle = cache(async (slug, locale) => {
     const fileContent = await fs.readFile(path.join(newsDir, file), "utf-8");
     const { data, content } = matter(fileContent);
 
-    if(data.slug !== `/news/${slug}`) {
+    if(data.slug !== `/blog/${slug}`) {
         return null;
     }
 

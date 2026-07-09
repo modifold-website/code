@@ -3,7 +3,7 @@ title: "Integration with HytaleModding Wiki"
 description: "Connect HytaleModding Wiki to your project on Modifold: a dedicated Wiki tab, synced pages, and Markdown content."
 author: ["modifold"]
 date: 2026-03-15
-slug: /news/hytalemodding-wiki-integration
+slug: /blog/hytalemodding-wiki-integration
 image: https://media.modifold.com/news/wiki_hytalemodding_update_v3.png
 featured: false
 locale: en

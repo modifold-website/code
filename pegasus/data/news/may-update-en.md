@@ -3,7 +3,7 @@ title: "Modifold May Update"
 description: "Creator Badge, liked projects page, new version notifications, updated mods catalog, project gallery, and other improvements."
 author: ["bogdan"]
 date: 2026-05-10
-slug: /news/may-update
+slug: /blog/may-update
 image: https://media.modifold.com/news/may_update_2026.png
 featured: false
 locale: en

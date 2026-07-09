@@ -3,7 +3,7 @@ title: "Apresentando Organizações"
 description: "Organizações no Modifold: propriedade compartilhada, papéis da equipe e publicação sob uma identidade comum."
 author: ["modifold"]
 date: 2026-02-28
-slug: /news/organizations-on-modifold
+slug: /blog/organizations-on-modifold
 image: https://media.modifold.com/news/organizations banner.png
 featured: false
 locale: pt

@@ -3,7 +3,7 @@ title: "Modifold: полноценный релиз"
 description: "Modifold выходит из беты в полноценный релиз: отзывы сообщества, интерфейс на 6 языках, верификация профиля и комментарии к проектам."
 author: ["modifold"]
 date: 2026-02-07
-slug: /news/modifold-release
+slug: /blog/modifold-release
 image: https://media.modifold.com/news/og_banner.png
 featured: false
 locale: ru

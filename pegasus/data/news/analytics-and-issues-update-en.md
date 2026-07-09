@@ -3,7 +3,7 @@ title: "Analytics and Issues in Modifold"
 description: "Modifold now includes player and server charts, plus Issues so your community can share feedback and bug reports right on the project page."
 author: ["bogdan"]
 date: 2026-04-16
-slug: /news/analytics-and-issues-update
+slug: /blog/analytics-and-issues-update
 image: https://media.modifold.com/news/analytics_2.png
 featured: false
 locale: en
