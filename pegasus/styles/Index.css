@@ -3448,6 +3448,46 @@ input[type="file"]::-webkit-file-upload-button:hover {
     display: grid;
     gap: 12px;
 }
+.email-auth__code-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(44px, 1fr)) 12px repeat(3, minmax(44px, 1fr));
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+.email-auth__code-input {
+    width: 100%;
+    min-width: 0;
+    height: 58px;
+    padding: 0;
+    font: inherit;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 500;
+    text-align: center;
+    color: var(--theme-color-text-primary);
+    background-color: var(--theme-color-field-background-default);
+    border: 1px solid var(--theme-color-field-border-default);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    outline: none;
+    transition: background-color 0.1s linear, border-color 0.1s linear, box-shadow 0.1s linear;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.email-auth__code-input:focus {
+    background-color: var(--theme-color-field-background-hover);
+    border-color: var(--theme-color-signal-active-default);
+    box-shadow: 0 0 0 3px var(--theme-color-signal-active-lightest), 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.email-auth__code-separator {
+    display: block;
+    width: 12px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--theme-color-field-border-default);
+}
 .email-auth__password-toggle {
     color: var(--theme-color-text-secondary-light);
     cursor: pointer;
@@ -3467,6 +3507,20 @@ input[type="file"]::-webkit-file-upload-button:hover {
     font-size: 14px;
     line-height: 20px;
     color: var(--theme-color-text-secondary);
+}
+@media all and (max-width: 420px) {
+    .email-auth__code-fields {
+        grid-template-columns: repeat(3, minmax(36px, 1fr)) 8px repeat(3, minmax(36px, 1fr));
+        gap: 6px;
+    }
+    .email-auth__code-input {
+        height: 50px;
+        font-size: 24px;
+        border-radius: 14px;
+    }
+    .email-auth__code-separator {
+        width: 8px;
+    }
 }
 .sidebar-item .andropov-media {
     flex-shrink: 0;

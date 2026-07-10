@@ -25,6 +25,25 @@ function redirectTo(url, onClose) {
     window.location.assign(url);
 }
 
+function createEmptyCodeSlots() {
+    return Array.from({ length: 6 }, () => "");
+}
+
+function sanitizeVerificationCode(value) {
+    return String(value || "").replace(/\D/g, "").slice(0, 6);
+}
+
+function maskEmail(email) {
+    const trimmedEmail = String(email || "").trim();
+    const atIndex = trimmedEmail.indexOf("@");
+
+    if(atIndex <= 0) {
+        return trimmedEmail ? `${trimmedEmail.slice(0, 1)}****` : "";
+    }
+
+    return `${trimmedEmail.slice(0, 1)}****${trimmedEmail.slice(atIndex)}`;
+}
+
 function EmailAuthField({ children }) {
     return (
         <div className="field field--large">
@@ -59,11 +78,68 @@ function PasswordField({ autoComplete, name, placeholder, value, onChange, showP
     );
 }
 
+function VerificationCodeInput({ codeSlots, inputRefs, onChange, onKeyDown, onPaste, t }) {
+    return (
+        <div className="email-auth__code-fields" role="group" aria-label={t("codePlaceholder")}>
+            {codeSlots.slice(0, 3).map((digit, index) => (
+                <input
+                    key={index}
+                    ref={(element) => {
+                        inputRefs.current[index] = element;
+                    }}
+                    className="email-auth__code-input"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete={index === 0 ? "one-time-code" : "off"}
+                    maxLength={6}
+                    pattern="[0-9]*"
+                    value={digit}
+                    aria-label={`${t("codePlaceholder")} ${index + 1}`}
+                    onChange={(event) => onChange(index, event)}
+                    onFocus={(event) => event.target.select()}
+                    onKeyDown={(event) => onKeyDown(index, event)}
+                    onPaste={(event) => onPaste(index, event)}
+                    required
+                />
+            ))}
+
+            <span className="email-auth__code-separator" aria-hidden="true"></span>
+
+            {codeSlots.slice(3).map((digit, offset) => {
+                const index = offset + 3;
+
+                return (
+                    <input
+                        key={index}
+                        ref={(element) => {
+                            inputRefs.current[index] = element;
+                        }}
+                        className="email-auth__code-input"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        maxLength={6}
+                        pattern="[0-9]*"
+                        value={digit}
+                        aria-label={`${t("codePlaceholder")} ${index + 1}`}
+                        onChange={(event) => onChange(index, event)}
+                        onFocus={(event) => event.target.select()}
+                        onKeyDown={(event) => onKeyDown(index, event)}
+                        onPaste={(event) => onPaste(index, event)}
+                        required
+                    />
+                );
+            })}
+        </div>
+    );
+}
+
 function EmailLoginAuth({ isOpen, onBack, onClose }) {
     const t = useTranslations("LoginModal.emailAuth");
     const { completeLogin } = useAuth();
     const [mode, setMode] = useState("login");
-    const [form, setForm] = useState({ email: "", password: "", username: "", code: "" });
+    const [form, setForm] = useState({ email: "", password: "", username: "" });
+    const [codeSlots, setCodeSlots] = useState(createEmptyCodeSlots);
     const [captchaToken, setCaptchaToken] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -71,12 +147,109 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
     const [isModeTransitioning, setIsModeTransitioning] = useState(false);
     const captchaRef = useRef(null);
     const captchaWidgetRef = useRef(null);
+    const codeInputRefs = useRef([]);
     const transitionTimeoutRef = useRef(null);
     const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
+    const verificationCode = codeSlots.join("");
+    const maskedEmail = maskEmail(form.email);
 
     const updateField = (event) => {
         const { name, value } = event.target;
         setForm((currentForm) => ({ ...currentForm, [name]: value }));
+    };
+
+    const resetVerificationCode = () => {
+        setCodeSlots(createEmptyCodeSlots());
+    };
+
+    const focusCodeInput = (index) => {
+        codeInputRefs.current[index]?.focus();
+    };
+
+    const fillCodeSlots = (startIndex, value) => {
+        const digits = sanitizeVerificationCode(value);
+
+        if(!digits) {
+            return;
+        }
+
+        setCodeSlots((currentSlots) => {
+            const nextSlots = [...currentSlots];
+            digits.split("").forEach((digit, offset) => {
+                const targetIndex = startIndex + offset;
+
+                if(targetIndex < 6) {
+                    nextSlots[targetIndex] = digit;
+                }
+            });
+
+            return nextSlots;
+        });
+
+        const nextFocusIndex = Math.min(startIndex + digits.length, 5);
+        requestAnimationFrame(() => focusCodeInput(nextFocusIndex));
+    };
+
+    const updateCodeSlot = (index, event) => {
+        const digits = sanitizeVerificationCode(event.target.value);
+
+        if(digits.length > 1) {
+            if(event.nativeEvent?.inputType === "insertText") {
+                const digit = digits.slice(-1);
+                setCodeSlots((currentSlots) => {
+                    const nextSlots = [...currentSlots];
+                    nextSlots[index] = digit;
+                    return nextSlots;
+                });
+
+                if(index < 5) {
+                    requestAnimationFrame(() => focusCodeInput(index + 1));
+                }
+                return;
+            }
+
+            fillCodeSlots(index, digits);
+            return;
+        }
+
+        setCodeSlots((currentSlots) => {
+            const nextSlots = [...currentSlots];
+            nextSlots[index] = digits;
+            return nextSlots;
+        });
+
+        if(digits && index < 5) {
+            requestAnimationFrame(() => focusCodeInput(index + 1));
+        }
+    };
+
+    const handleCodeKeyDown = (index, event) => {
+        if(event.key === "Backspace" && !codeSlots[index] && index > 0) {
+            event.preventDefault();
+            setCodeSlots((currentSlots) => {
+                const nextSlots = [...currentSlots];
+                nextSlots[index - 1] = "";
+                return nextSlots;
+            });
+            requestAnimationFrame(() => focusCodeInput(index - 1));
+            return;
+        }
+
+        if(event.key === "ArrowLeft" && index > 0) {
+            event.preventDefault();
+            focusCodeInput(index - 1);
+            return;
+        }
+
+        if(event.key === "ArrowRight" && index < 5) {
+            event.preventDefault();
+            focusCodeInput(index + 1);
+        }
+    };
+
+    const handleCodePaste = (index, event) => {
+        event.preventDefault();
+        fillCodeSlots(index, event.clipboardData.getData("text"));
     };
 
     const resetCaptcha = () => {
@@ -104,12 +277,14 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
 
     const openRegister = () => {
         setStatusMessage("");
+        resetVerificationCode();
         resetCaptcha();
         switchMode("register");
     };
 
     const openLogin = () => {
         setStatusMessage("");
+        resetVerificationCode();
         resetCaptcha();
         switchMode("login");
     };
@@ -121,6 +296,7 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
         setIsSubmitting(false);
         setShowPassword(false);
         setIsModeTransitioning(false);
+        resetVerificationCode();
         resetCaptcha();
         onClose();
     };
@@ -132,6 +308,7 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
         setIsSubmitting(false);
         setShowPassword(false);
         setIsModeTransitioning(false);
+        resetVerificationCode();
         resetCaptcha();
         onBack();
     };
@@ -193,7 +370,10 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
                 throw new Error(data.message || t("errors.register"));
             }
 
-            switchMode("verify", () => setStatusMessage(t("codeSent")));
+            switchMode("verify", () => {
+                resetVerificationCode();
+                setStatusMessage(t("codeSent"));
+            });
         } catch (error) {
             toast.error(error.message || t("errors.register"));
             resetCaptcha();
@@ -204,6 +384,12 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
 
     const submitVerification = async (event) => {
         event.preventDefault();
+        const code = sanitizeVerificationCode(verificationCode);
+
+        if(code.length !== 6) {
+            return;
+        }
+
         setIsSubmitting(true);
         setStatusMessage("");
 
@@ -211,7 +397,7 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/auth/email-register/confirm`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: form.email, code: form.code }),
+                body: JSON.stringify({ email: form.email, code }),
             });
             const data = await response.json();
 
@@ -279,6 +465,14 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
         };
     }, []);
 
+    useEffect(() => {
+        if(!isOpen || mode !== "verify") {
+            return;
+        }
+
+        requestAnimationFrame(() => focusCodeInput(0));
+    }, [isOpen, mode]);
+
     return (
         <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={handleClose} className="modal active" overlayClassName="modal-overlay">
             <div className="modal-window">
@@ -342,14 +536,12 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
 
                         {mode === "verify" && (
                             <form className="email-auth__form" onSubmit={submitVerification}>
-                                <p className="email-auth__description">{t("verifyDescription", { email: form.email })}</p>
-                                <EmailAuthField>
-                                    <input className="text-input" name="code" type="text" inputMode="numeric" autoComplete="one-time-code" placeholder={t("codePlaceholder")} maxLength={6} value={form.code} onChange={updateField} required />
-                                </EmailAuthField>
+                                <p className="email-auth__description">{t("verifyDescription", { email: maskedEmail })}</p>
+                                <VerificationCodeInput codeSlots={codeSlots} inputRefs={codeInputRefs} onChange={updateCodeSlot} onKeyDown={handleCodeKeyDown} onPaste={handleCodePaste} t={t} />
                                 
                                 {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
                                 
-                                <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting || form.code.trim().length === 0}>
+                                <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting || verificationCode.length !== 6}>
                                     {isSubmitting ? t("submitting") : t("verifyButton")}
                                 </button>
                             </form>
