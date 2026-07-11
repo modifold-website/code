@@ -1582,8 +1582,8 @@
   },
   "LoginModal": {
     "close": "Закрити",
-    "continueWith": "Продовжити з {provider}",
-    "continueWithEmail": "Продовжити через пошту",
+    "title": "Вхід на Modifold",
+    "emailProvider": "Пошта",
     "lastSignIn": "Останній вхід",
     "errors": {
       "telegram": "Помилка авторизації Telegram",

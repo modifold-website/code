@@ -1893,17 +1893,33 @@ body[data-feature-flag-frosted-menus="true"] .popover {
     display: flex;
     flex-direction: column;
 }
+.auth--login-options {
+    max-width: 546px;
+}
+.auth__title {
+    text-align: center;
+    margin-bottom: 18px;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 30px;
+}
 .auth__content {
     width: 100%;
 }
 .auth__content--stretched {
     height: 100%;
     display: flex;
+    gap: 12px;
     flex-direction: column;
+    max-width: 320px;
+    margin: 0 auto;
     padding-bottom: 24px;
 }
 .oauth-provider-button {
     position: relative;
+    justify-content: center;
+    min-width: 0;
+    width: 100%;
 }
 .oauth-provider-last-sign-in-badge {
     display: inline-flex;
@@ -2569,12 +2585,17 @@ input[type="file"]::-webkit-file-upload-button:hover {
     margin-left: -6px;
 }
 .logreg__logo-container--padding {
-    padding-bottom: 18px;
+    padding-bottom: 12px;
 }
 .logreg__logo-container {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+@media all and (max-width: 520px) {
+    .auth--login-options {
+        max-width: 320px;
+    }
 }
 .not-found-page__dummy {
     display: flex;

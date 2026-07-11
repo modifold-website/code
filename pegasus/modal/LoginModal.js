@@ -663,7 +663,7 @@ export default function LoginModal({ isOpen, onClose }) {
                     </div>
 
                     <div className="modal-window__content">
-                        <div className="auth will-be-animated">
+                        <div className="auth auth--login-options will-be-animated">
                             <div className="logreg__logo-container logreg__logo-container--padding">
                                 <svg width="86" height="85" viewBox="0 0 86 85" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: "48px", height: "100%" }}>
                                     <path d="M0 36.788C0 6.49309 6.50029 0 36.8288 0H48.2655C78.594 0 85.0943 6.49309 85.0943 36.788V48.212C85.0943 78.5068 78.594 85 48.2655 85H36.8288C6.50029 85 0 78.5068 0 48.212V36.788Z" fill="url(#paint0_linear_6642_2)"></path>
@@ -678,13 +678,15 @@ export default function LoginModal({ isOpen, onClose }) {
                                 </svg>
                             </div>
 
-                            <div className="auth__content auth__content--stretched" style={{ gap: "10px" }}>
+                            <h2 className="auth__title">{t("title")}</h2>
+
+                            <div className="auth__content auth__content--stretched">
                                 <button className="button button--size-xl button--type-minimal button--with-icon button--active-transform oauth-provider-button" type="button" onClick={handleHytaleClick}>
                                     <svg className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M13.7023 0.0130647V7.89884L10.3939 7.8908L10.3284 0L4 0.934093L6.017 4.71971L6.01898 17.2619L10.3761 20.4696L10.3786 11.685L13.6428 11.6985V24L17.9775 20.8063V4.72373L20 0.944142L13.7023 0.0130647Z" fill="currentColor"/>
                                     </svg>
 
-                                    {t("continueWith", { provider: "Hytale" })}
+                                    Hytale
 
                                     {renderLastSignInBadge("hytale")}
                                 </button>
@@ -701,7 +703,7 @@ export default function LoginModal({ isOpen, onClose }) {
                                         </defs>
                                     </svg>
 
-                                    {t("continueWith", { provider: "GitHub" })}
+                                    GitHub
                                     
                                     {renderLastSignInBadge("github")}
                                 </button>
@@ -718,7 +720,7 @@ export default function LoginModal({ isOpen, onClose }) {
                                         </defs>
                                     </svg>
 
-                                    {t("continueWith", { provider: "Discord" })}
+                                    Discord
 
                                     {renderLastSignInBadge("discord")}
                                 </button>
@@ -728,7 +730,7 @@ export default function LoginModal({ isOpen, onClose }) {
                                         <path d="M12 1.5C17.799 1.5 22.5 6.20101 22.5 12C22.5 17.799 17.799 22.5 12 22.5C6.20101 22.5 1.5 17.799 1.5 12C1.5 6.20101 6.20101 1.5 12 1.5ZM17.2402 7.65625C17.3334 7.05232 16.7587 6.57574 16.2217 6.81152L5.52344 11.5088C5.13847 11.678 5.16698 12.2615 5.56641 12.3887L7.77246 13.0908C8.19357 13.2249 8.64987 13.1554 9.01758 12.9014L13.9912 9.46484C14.1412 9.36146 14.3048 9.575 14.1768 9.70703L10.5957 13.3984C10.2487 13.7565 10.3178 14.363 10.7354 14.625L14.7441 17.1396C15.1937 17.4214 15.7723 17.138 15.8564 16.5947L17.2402 7.65625Z" fill="currentColor"/>
                                     </svg>
 
-                                    {t("continueWith", { provider: "Telegram" })}
+                                    Telegram
 
                                     {renderLastSignInBadge("telegram")}
                                 </button>
@@ -739,7 +741,7 @@ export default function LoginModal({ isOpen, onClose }) {
                                         <rect x="2" y="4" width="20" height="16" rx="2"/>
                                     </svg>
 
-                                    {t("continueWithEmail")}
+                                    {t("emailProvider")}
 
                                     {renderLastSignInBadge("email")}
                                 </button>

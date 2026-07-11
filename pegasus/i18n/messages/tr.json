@@ -1581,8 +1581,8 @@
   },
   "LoginModal": {
     "close": "Kapat",
-    "continueWith": "{provider} ile devam et",
-    "continueWithEmail": "E-posta ile devam et",
+    "title": "Modifold'a giriş yap",
+    "emailProvider": "E-posta",
     "lastSignIn": "Son giriş",
     "errors": {
       "telegram": "Telegram ile giriş hatası",

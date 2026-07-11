@@ -1581,8 +1581,8 @@
   },
   "LoginModal": {
     "close": "Cerrar",
-    "continueWith": "Continuar con",
-    "continueWithEmail": "Continuar con correo",
+    "title": "Entrar en Modifold",
+    "emailProvider": "Correo",
     "lastSignIn": "Último inicio",
     "errors": {
       "telegram": "Error al iniciar sesión con Telegram",
