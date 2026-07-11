@@ -75,7 +75,7 @@ export default function ProjectCreationModal({ isOpen, authToken, onRequestClose
                         <p className="blog-settings__field-title">{t("name")}</p>
                         <div className="field field--default">
                             <label className="field__wrapper">
-                                <input type="text" name="title" placeholder={t("placeholders.name")} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="text-input" maxLength="30" disabled={loading} />
+                                <input type="text" name="title" placeholder={t("placeholders.name")} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="text-input" maxLength="70" disabled={loading} />
                             </label>
                         </div>
 

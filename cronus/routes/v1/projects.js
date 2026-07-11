@@ -1522,6 +1522,10 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
             return res.status(400).json({ message: "Title and summary cannot be empty" });
         }
 
+        if(safeTitle.length > 70) {
+            return res.status(400).json({ message: "Title must be 70 characters or fewer" });
+        }
+
         if(safeSummary.length < 30) {
             return res.status(400).json({ message: `Summary must be at least 30 characters` });
         }
@@ -2465,6 +2469,10 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
 
         if(!safeTitle) {
             return res.status(400).json({ message: "Title cannot be empty" });
+        }
+
+        if(safeTitle.length > 70) {
+            return res.status(400).json({ message: "Title must be 70 characters or fewer" });
         }
 
         if(!safeSummary) {

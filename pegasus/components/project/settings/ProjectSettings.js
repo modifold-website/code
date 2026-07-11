@@ -261,8 +261,8 @@ export default function ProjectSettings({ project, organizationOptions: initialO
 
                                 <div className="field field--default blog-settings__input">
                                     <label style={{ marginBottom: "10px" }} className="field__wrapper">
-                                        <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder={t("general.placeholders.name")} className="text-input" maxLength="30" />
-                                        <div className="counter">{formData.title.length}</div>
+                                        <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder={t("general.placeholders.name")} className="text-input" maxLength="70" />
+                                        <div className="counter">{formData.title.length}/70</div>
                                     </label>
                                 </div>
 
