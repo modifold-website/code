@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { makeQueryClient } from "@/utils/query/client";
+import NavigationProgressBar from "@/components/ui/NavigationProgressBar";
 
 let browserQueryClient;
 
@@ -45,6 +46,8 @@ export default function ClientProvider({ children }) {
 
     return (
         <QueryClientProvider client={queryClient}>
+            <NavigationProgressBar />
+            
             {children}
         </QueryClientProvider>
     );
