@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { validateSlug } from "@/utils/slug";
-import { isWorldProjectType } from "@/utils/projectRoutes";
+import { getProjectPathByType, isWorldProjectType } from "@/utils/projectRoutes";
 
 const getInitialFormData = (project) => ({
     title: project?.title || "",
@@ -44,7 +44,8 @@ export default function ProjectSettings({ project, organizationOptions: initialO
     const [isIssuesMenuOpen, setIsIssuesMenuOpen] = useState(false);
     const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
     const [isPlayersCountMenuOpen, setIsPlayersCountMenuOpen] = useState(false);
-    const showPlayersCountSetting = !isWorldProjectType(project?.project_type || project?.projectType || project?.type);
+    const projectType = project?.project_type || project?.projectType || project?.type;
+    const showPlayersCountSetting = !isWorldProjectType(projectType);
     const organizationButtonRef = useRef(null);
     const organizationMenuRef = useRef(null);
     const issuesButtonRef = useRef(null);
@@ -158,15 +159,17 @@ export default function ProjectSettings({ project, organizationOptions: initialO
                 return;
             }
 
-            await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.id}`, data, {
+            const previousSlug = savedFormData.slug || project.slug;
+            const response = await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.id}`, data, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("authToken")}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
+            const nextSlug = response.data?.slug || slugValidation.normalized;
 
             if(selectedOrganizationSlug !== savedOrganizationSlug) {
-                await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${formData.slug || project.slug}/organization`, {
+                await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${nextSlug || project.slug}/organization`, {
                     organization_slug: selectedOrganizationSlug || null,
                 }, {
                     headers: {
@@ -179,12 +182,16 @@ export default function ProjectSettings({ project, organizationOptions: initialO
 
             setSavedFormData({
                 ...formData,
-                slug: slugValidation.normalized,
+                slug: nextSlug,
                 icon: null,
             });
-            setFormData((prev) => ({ ...prev, slug: slugValidation.normalized, icon: null }));
+            setFormData((prev) => ({ ...prev, slug: nextSlug, icon: null }));
             setSavedPreviewIcon(previewIcon);
             toast.success(t("general.success.saved"));
+            if(nextSlug !== previousSlug) {
+                router.replace(getProjectPathByType({ slug: nextSlug, projectType, suffix: "/settings" }));
+                router.refresh();
+            }
         } catch (err) {
             toast.error(err.response?.data?.message || t("general.errors.save"));
         } finally {
