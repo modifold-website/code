@@ -600,6 +600,7 @@
       "compatibility": "Compatibilidade",
       "statuses": {
         "approved": "Publicado",
+        "draft": "Rascunho",
         "pending": "Em revisão",
         "scanning": "Em revisão",
         "needs_review": "Em revisão",
@@ -1581,8 +1582,8 @@
   },
   "LoginModal": {
     "close": "Fechar",
-    "continueWith": "Continuar com",
-    "continueWithEmail": "Continuar com e-mail",
+    "title": "Entrar no Modifold",
+    "emailProvider": "E-mail",
     "lastSignIn": "Último login",
     "errors": {
       "telegram": "Erro ao entrar com Telegram",

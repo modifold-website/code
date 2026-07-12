@@ -44,6 +44,7 @@ const createEmptyDependencyDraft = () => ({
 });
 const VERSION_MODERATION_BADGE_TYPES = {
     approved: "success",
+    draft: "pending",
     pending: "pending",
     scanning: "pending",
     needs_review: "pending",

@@ -600,6 +600,7 @@
       "compatibility": "Совместимость",
       "statuses": {
         "approved": "Опубликована",
+        "draft": "Черновик",
         "pending": "На проверке",
         "scanning": "На проверке",
         "needs_review": "На проверке",
@@ -1581,8 +1582,8 @@
   },
   "LoginModal": {
     "close": "Закрыть",
-    "continueWith": "Продолжить через {provider}",
-    "continueWithEmail": "Продолжить через почту",
+    "title": "Вход на Modifold",
+    "emailProvider": "Почта",
     "lastSignIn": "Последний вход",
     "errors": {
       "telegram": "Ошибка авторизации Telegram",

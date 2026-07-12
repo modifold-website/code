@@ -284,12 +284,35 @@ svg {
     display: block;
     fill: currentColor;
 }
+.navigation-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--layout-z-navigation-progress);
+    height: var(--navigation-progress-height);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+.navigation-progress--visible {
+    opacity: 1;
+}
+.navigation-progress__bar {
+    width: 100%;
+    height: 100%;
+    background: var(--navigation-progress-color);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    transition: transform 180ms cubic-bezier(.22, 1, .36, 1);
+}
 :root {
     --color-black: #000;
     --color-white: #fff;
     --layout-z-index-header: 30;
     --layout-z-index-navbar: 2;
     --layout-z-modal-overlay: 100;
+    --layout-z-navigation-progress: 1000;
     --layout-island-border-radius: 22px;
     --layout-tabbar-height: 50px;
     --layout-header-height: 82px;
@@ -300,6 +323,7 @@ svg {
     --layout-island-gap-y: 24px;
     --layout-modal-view-width: 520px;
     --layout-settings-input-max-width: 390px;
+    --navigation-progress-height: 2px;
 }
 @media all and (min-width: 925px) {
     :root {
@@ -327,6 +351,7 @@ svg {
     --theme-version-table-row-hover-background: #fbfbfb;
     --theme-color-brand-primary: #067aff;
     --theme-color-brand-logo: #000;
+    --navigation-progress-color: var(--theme-color-signal-active-default);
     --theme-color-signal-active-default: #307df0;
     --theme-color-signal-active-dark: #2d75e0;
     --theme-color-signal-active-light: #b3d1ff;
@@ -1893,17 +1918,33 @@ body[data-feature-flag-frosted-menus="true"] .popover {
     display: flex;
     flex-direction: column;
 }
+.auth--login-options {
+    max-width: 546px;
+}
+.auth__title {
+    text-align: center;
+    margin-bottom: 18px;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 30px;
+}
 .auth__content {
     width: 100%;
 }
 .auth__content--stretched {
     height: 100%;
     display: flex;
+    gap: 12px;
     flex-direction: column;
+    max-width: 320px;
+    margin: 0 auto;
     padding-bottom: 24px;
 }
 .oauth-provider-button {
     position: relative;
+    justify-content: center;
+    min-width: 0;
+    width: 100%;
 }
 .oauth-provider-last-sign-in-badge {
     display: inline-flex;
@@ -2569,12 +2610,17 @@ input[type="file"]::-webkit-file-upload-button:hover {
     margin-left: -6px;
 }
 .logreg__logo-container--padding {
-    padding-bottom: 18px;
+    padding-bottom: 12px;
 }
 .logreg__logo-container {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+@media all and (max-width: 520px) {
+    .auth--login-options {
+        max-width: 320px;
+    }
 }
 .not-found-page__dummy {
     display: flex;
@@ -3076,6 +3122,24 @@ input[type="file"]::-webkit-file-upload-button:hover {
     .modal-overlay {
         transition: none !important;
     }
+    .text-reveal__unit {
+        transform: none;
+        filter: none;
+        animation: text-reveal-fade-in .25s ease-out var(--text-reveal-delay, 0s) forwards;
+        will-change: opacity;
+    }
+    .hero-logo {
+        transform: none;
+        filter: none;
+        animation: text-reveal-fade-in .25s ease-out forwards;
+        will-change: opacity;
+    }
+    .hero-actions {
+        transform: none;
+        filter: none;
+        animation: text-reveal-fade-in .25s ease-out var(--hero-actions-delay, 1.8s) forwards;
+        will-change: opacity;
+    }
 }
 @media all and (min-width: 925px) {
     .modal-fullpage__inner {
@@ -3448,6 +3512,46 @@ input[type="file"]::-webkit-file-upload-button:hover {
     display: grid;
     gap: 12px;
 }
+.email-auth__code-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(44px, 1fr)) 12px repeat(3, minmax(44px, 1fr));
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+.email-auth__code-input {
+    width: 100%;
+    min-width: 0;
+    height: 58px;
+    padding: 0;
+    font: inherit;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 500;
+    text-align: center;
+    color: var(--theme-color-text-primary);
+    background-color: var(--theme-color-field-background-default);
+    border: 1px solid var(--theme-color-field-border-default);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    outline: none;
+    transition: background-color 0.1s linear, border-color 0.1s linear, box-shadow 0.1s linear;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.email-auth__code-input:focus {
+    background-color: var(--theme-color-field-background-hover);
+    border-color: var(--theme-color-signal-active-default);
+    box-shadow: 0 0 0 3px var(--theme-color-signal-active-lightest), 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.email-auth__code-separator {
+    display: block;
+    width: 12px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--theme-color-field-border-default);
+}
 .email-auth__password-toggle {
     color: var(--theme-color-text-secondary-light);
     cursor: pointer;
@@ -3467,6 +3571,20 @@ input[type="file"]::-webkit-file-upload-button:hover {
     font-size: 14px;
     line-height: 20px;
     color: var(--theme-color-text-secondary);
+}
+@media all and (max-width: 420px) {
+    .email-auth__code-fields {
+        grid-template-columns: repeat(3, minmax(36px, 1fr)) 8px repeat(3, minmax(36px, 1fr));
+        gap: 6px;
+    }
+    .email-auth__code-input {
+        height: 50px;
+        font-size: 24px;
+        border-radius: 14px;
+    }
+    .email-auth__code-separator {
+        width: 8px;
+    }
 }
 .sidebar-item .andropov-media {
     flex-shrink: 0;
@@ -3782,11 +3900,35 @@ input[type="file"]::-webkit-file-upload-button:hover {
     text-align: center;
     margin: 0 auto;
 }
+.hero-logo {
+    display: block;
+    width: 150px;
+    height: auto;
+    margin: 0 auto 16px;
+    opacity: 0;
+    transform: translateY(14px) scale(.94);
+    filter: blur(10px);
+    animation: hero-logo-reveal .55s cubic-bezier(.16, 1, .3, 1) .02s forwards;
+    will-change: transform, opacity, filter;
+}
 .hero-title {
     margin-bottom: 26px;
     font-size: 84px;
     font-weight: 800;
-    line-height: 100%;
+    line-height: 1.08;
+}
+.text-reveal__line {
+    display: block;
+}
+.text-reveal__unit {
+    display: inline-block;
+    padding-bottom: .08em;
+    margin-bottom: -.08em;
+    opacity: 0;
+    transform: translateY(var(--text-reveal-y, 40%));
+    filter: blur(var(--text-reveal-blur, 12px));
+    animation: text-reveal-in .68s cubic-bezier(.16, 1, .3, 1) var(--text-reveal-delay, 0s) forwards;
+    will-change: transform, opacity, filter;
 }
 .highlight-text {
     background: #307df0;
@@ -3810,6 +3952,60 @@ input[type="file"]::-webkit-file-upload-button:hover {
     display: flex;
     gap: 24px;
     justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(18px);
+    filter: blur(8px);
+    animation: hero-actions-reveal .48s cubic-bezier(.16, 1, .3, 1) var(--hero-actions-delay, 1.8s) forwards;
+    will-change: transform, opacity, filter;
+}
+@keyframes text-reveal-in {
+    0% {
+        opacity: 0;
+        transform: translateY(var(--text-reveal-y, 40%));
+        filter: blur(var(--text-reveal-blur, 12px));
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+@keyframes text-reveal-fade-in {
+    0% {
+        visibility: visible;
+        opacity: 0;
+    }
+    100% {
+        visibility: visible;
+        opacity: 1;
+    }
+}
+@keyframes hero-logo-reveal {
+    0% {
+        opacity: 0;
+        transform: translateY(14px) scale(.94);
+        filter: blur(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+@keyframes hero-actions-reveal {
+    0% {
+        visibility: visible;
+        opacity: 0;
+        transform: translateY(18px);
+        filter: blur(8px);
+    }
+    100% {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
 }
 .stats-header {
     text-align: center;

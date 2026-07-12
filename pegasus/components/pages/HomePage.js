@@ -9,6 +9,11 @@ import { useAuth } from "../providers/AuthProvider";
 import LoginModal from "../../modal/LoginModal";
 import HomeAnalyticsSection from "../ui/HomeAnalyticsSection";
 import HomeNotificationsSection from "../ui/HomeNotificationsSection";
+import TextReveal from "../motion/TextReveal";
+
+function getRevealUnitCount(text) {
+	return String(text || "").match(/\S+/g)?.length || 0;
+}
 
 export default function HomePage({ news = [], locale, projects = [], projectsLimit = 20 }) {
 	const t = useTranslations("HomePage");
@@ -34,8 +39,10 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
 
     const hytaleToken = "__HYTALE__";
     const heroTitle = t("heroTitle", { hytale: hytaleToken });
+    const heroDescription = t("heroDescription");
     const [heroTitleBefore, heroTitleAfter] = heroTitle.split(hytaleToken);
     const heroHasToken = heroTitle.includes(hytaleToken);
+    const heroActionsDelay = 0.38 + Math.max(getRevealUnitCount(heroDescription) - 1, 0) * 0.026 + 0.08;
 
     const displayedProjects = useMemo(() => {
         const sorted = [...projects];
@@ -54,33 +61,44 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
                 <section className="hero-section">
                     <div className="hero-container">
                         <div className="hero-content animated">
-                            <svg style={{ width: "150px", height: "100%", marginLeft: "auto", marginRight: "auto", marginBottom: "16px" }} xmlns="http://www.w3.org/2000/svg" width="86" height="85" viewBox="0 0 86 85" fill="none">
+                            <svg className="hero-logo" xmlns="http://www.w3.org/2000/svg" width="86" height="85" viewBox="0 0 86 85" fill="none">
                                 <path d="M0 36.788C0 6.49309 6.50029 0 36.8288 0H48.2655C78.594 0 85.0943 6.49309 85.0943 36.788V48.212C85.0943 78.5068 78.594 85 48.2655 85H36.8288C6.50029 85 0 78.5068 0 48.212V36.788Z" fill="url(#paint0_linear_6642_2)"></path>
                                 <path d="M42.1389 9.28913C42.5195 9.06622 42.9903 9.06622 43.3709 9.28913L71.6206 25.83C71.9958 26.0497 72.2266 26.4527 72.2266 26.8885V58.2922C72.2266 58.73 71.9937 59.1351 71.6156 59.354L43.3659 75.7139C42.9878 75.9328 42.522 75.9328 42.1439 75.7139L13.8943 59.354C13.5162 59.1351 13.2832 58.73 13.2832 58.2922V26.8885C13.2832 26.4527 13.514 26.0497 13.8892 25.83L42.1389 9.28913ZM16.5399 28.0235V57.161L42.7549 72.3901L68.9702 57.161V28.0235L42.7549 12.606L16.5399 28.0235ZM65.9578 29.5322V55.7467L42.7549 68.9955L19.5522 55.7467V29.5322L42.7549 16.0007L65.9578 29.5322ZM22.6372 54.191L41.5329 65.0349V43.6295L22.6372 32.8798V54.191ZM44.2592 43.661V64.9408L63.0609 54.1603V32.7855L44.2592 43.661ZM39.5587 57.7743V61.1851L36.7384 59.5659V56.1713L39.5587 57.7743ZM48.9593 59.5659L46.1392 61.1851V57.7743L48.9593 56.1713V59.5659ZM27.5256 50.9851V54.3797L24.6114 52.7767V49.3821L27.5256 50.9851ZM61.0867 52.7767L58.1723 54.3797V50.9851L61.0867 49.3821V52.7767ZM34.4822 46.0816V52.3994L29.2178 49.4762V43.1584L34.4822 46.0816ZM56.48 49.4762L51.2158 52.3994V46.0816L56.48 43.1584V49.4762ZM39.6527 45.2329V48.8161L36.7384 47.2131V43.6299L39.6527 45.2329ZM48.9593 47.2131L46.0454 48.8161V45.2329L48.9593 43.6299V47.2131ZM27.5256 38.6322V42.0269L24.6114 40.4238V37.0291L27.5256 38.6322ZM61.0867 40.4237L58.1723 42.0269V38.632L61.0867 37.029V40.4237Z" fill="white"></path>
                                 <defs>
                                     <linearGradient id="paint0_linear_6642_2" x1="-1.0674e-06" y1="4.00018e-06" x2="84.9999" y2="85.0943" gradientUnits="userSpaceOnUse">
-                                        <stop stop-color="#68A5FF"></stop>
-                                        <stop offset="0.5" stop-color="#307DF0"></stop>
-                                        <stop offset="1" stop-color="#307DF0"></stop>
+                                        <stop stopColor="#68A5FF"></stop>
+                                        <stop offset="0.5" stopColor="#307DF0"></stop>
+                                        <stop offset="1" stopColor="#307DF0"></stop>
                                     </linearGradient>
                                 </defs>
                             </svg>
 
-                            <h1 className="hero-title">
-                                {heroHasToken ? (
-                                    <>
-                                        {heroTitleBefore}
-                                        <span className="highlight-text">Hytale</span>
-                                        {heroTitleAfter}
-                                    </>
-                                ) : (
-                                    heroTitle
-                                )}
-                            </h1>
+                            <TextReveal
+                                as="h1"
+                                className="hero-title"
+                                delay={0.1}
+                                stagger={0.06}
+                                blur={10}
+                                yOffset="28%"
+                                segments={heroHasToken ? [
+                                    { text: heroTitleBefore },
+                                    { text: "Hytale", className: "highlight-text" },
+                                    { text: heroTitleAfter },
+                                ] : undefined}
+                                text={heroHasToken ? undefined : heroTitle}
+                            />
 
-                            <p className="hero-description">{t("heroDescription")}</p>
+                            <TextReveal
+                                as="p"
+                                text={heroDescription}
+                                className="hero-description"
+                                delay={0.38}
+                                stagger={0.026}
+                                blur={5}
+                                yOffset="14%"
+                            />
 
-                            <div className="hero-actions">
+                            <div className="hero-actions" style={{ "--hero-actions-delay": `${heroActionsDelay}s` }}>
                                 <Link href="/mods" className="button button--size-xl button--type-primary button--with-icon button--active-transform">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <circle cx="12" cy="12" r="10" />

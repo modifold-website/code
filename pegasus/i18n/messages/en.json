@@ -600,6 +600,7 @@
       "compatibility": "Compatibility",
       "statuses": {
         "approved": "Published",
+        "draft": "Draft",
         "pending": "Under review",
         "scanning": "Under review",
         "needs_review": "Under review",
@@ -1581,8 +1582,8 @@
   },
   "LoginModal": {
     "close": "Close",
-    "continueWith": "Continue with {provider}",
-    "continueWithEmail": "Continue with email",
+    "title": "Sign into Modifold",
+    "emailProvider": "Email",
     "lastSignIn": "Last sign in",
     "errors": {
       "telegram": "Telegram authorization error",
