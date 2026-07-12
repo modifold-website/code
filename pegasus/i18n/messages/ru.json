@@ -600,6 +600,7 @@
       "compatibility": "Совместимость",
       "statuses": {
         "approved": "Опубликована",
+        "draft": "Черновик",
         "pending": "На проверке",
         "scanning": "На проверке",
         "needs_review": "На проверке",

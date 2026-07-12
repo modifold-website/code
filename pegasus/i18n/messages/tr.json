@@ -600,6 +600,7 @@
       "compatibility": "Uyumluluk",
       "statuses": {
         "approved": "Yayınlandı",
+        "draft": "Taslak",
         "pending": "İncelemede",
         "scanning": "İncelemede",
         "needs_review": "İncelemede",

@@ -600,6 +600,7 @@
       "compatibility": "Compatibility",
       "statuses": {
         "approved": "Published",
+        "draft": "Draft",
         "pending": "Under review",
         "scanning": "Under review",
         "needs_review": "Under review",

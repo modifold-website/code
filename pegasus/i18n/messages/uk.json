@@ -601,6 +601,7 @@
       "compatibility": "Сумісність",
       "statuses": {
         "approved": "Опублікована",
+        "draft": "Чернетка",
         "pending": "На перевірці",
         "scanning": "На перевірці",
         "needs_review": "На перевірці",

@@ -12,18 +12,8 @@ import Tooltip from "../ui/Tooltip";
 import { DEFAULT_GAME_VERSIONS, sortByKnownGameVersions } from "@/utils/gameVersions";
 
 const releaseChannels = ["release", "beta", "alpha"];
-const VERSION_ROW_NAVIGATION_EXCLUDE_SELECTOR = [
-	"a",
-	"button",
-	".version-table__download-action",
-	".download-button",
-	".version-table__game-versions",
-	".version-table__platforms",
-	".version-table__published",
-	".version__metadata",
-	".version__stats",
-].join(",");
 const VERSION_MODERATION_BADGE_TYPES = {
+    draft: "pending",
     pending: "pending",
     scanning: "pending",
     needs_review: "pending",
@@ -45,7 +35,11 @@ function parseVersionList(value) {
 }
 
 function shouldSkipVersionRowNavigation(target) {
-	return target instanceof Element && Boolean(target.closest(VERSION_ROW_NAVIGATION_EXCLUDE_SELECTOR));
+	if(!(target instanceof Element)) {
+		return false;
+	}
+
+	return Boolean(target.closest("a, button, .version-table__download-action, .download-button, .version-table__game-versions, .version-table__platforms, .version-table__published, .version__metadata, .version__stats"));
 }
 
 export default function VersionsPage({ project, authToken, gameVersions = DEFAULT_GAME_VERSIONS }) {

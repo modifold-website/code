@@ -660,17 +660,17 @@ const getUserRole = async (userId) => {
 };
 
 const getProjectBySlug = async (slug) => {
-    const [rows] = await db.query("SELECT id, user_id, slug FROM projects WHERE slug = ? LIMIT 1", [slug]);
+    const [rows] = await db.query("SELECT id, user_id, slug, status FROM projects WHERE slug = ? LIMIT 1", [slug]);
     return rows[0] || null;
 };
 
 const getProjectById = async (projectId) => {
-    const [rows] = await db.query("SELECT id, user_id, slug FROM projects WHERE id = ? LIMIT 1", [projectId]);
+    const [rows] = await db.query("SELECT id, user_id, slug, status FROM projects WHERE id = ? LIMIT 1", [projectId]);
     return rows[0] || null;
 };
 
 const VISIBLE_VERSION_STATUSES = ["approved"];
-const PRIVATE_VERSION_STATUSES = ["pending", "scanning", "needs_review", "blocked", "error"];
+const PRIVATE_VERSION_STATUSES = ["draft", "pending", "scanning", "needs_review", "blocked", "error"];
 
 const canViewPrivateProjectVersions = async (project, userId) => {
 	if(!project || !userId) {
@@ -688,9 +688,11 @@ const canViewPrivateProjectVersions = async (project, userId) => {
 
 const buildVisibleVersionWhereClause = async (project, userId) => {
 	if(await canViewPrivateProjectVersions(project, userId)) {
+		const statuses = [...VISIBLE_VERSION_STATUSES, ...PRIVATE_VERSION_STATUSES];
+
 		return {
-			sql: "v.moderation_status IN (?, ?, ?, ?, ?, ?)",
-			params: [...VISIBLE_VERSION_STATUSES, ...PRIVATE_VERSION_STATUSES],
+			sql: `v.moderation_status IN (${statuses.map(() => "?").join(", ")})`,
+			params: statuses,
 		};
 	}
 
@@ -751,6 +753,10 @@ const queueArgusScan = ({ versionId, project, fileUrl, fileName, fileSize }) => 
 			console.error("Error marking version for manual Argus review:", updateError);
 		}
 	});
+};
+
+const shouldHoldVersionForProjectModeration = (project) => {
+	return project?.status === "draft";
 };
 
 const VERSION_DEPENDENCY_TYPES = new Set(["required", "optional", "incompatible", "embedded"]);
@@ -1890,8 +1896,8 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
         }
 
         const versionId = generateId();
-        const createdAt = Math.floor(Date.now() / 1000);
         const fileUrl = `https://media.modifold.com/projects/${project.id}/${req.file.filename}`;
+        const moderationStatus = shouldHoldVersionForProjectModeration(project) ? "draft" : "pending";
         const connection = await db.getConnection();
 
         try {
@@ -1899,7 +1905,7 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
 
             const resolvedDependencies = await resolveVersionDependencies({ connection, dependenciesRaw: dependencies });
 
-            await connection.query("INSERT INTO project_versions (id, project_id, version_number, changelog, release_channel, file_url, file_size, game_versions, loaders, moderation_status, scan_requested_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())", [
+            await connection.query("INSERT INTO project_versions (id, project_id, version_number, changelog, release_channel, file_url, file_size, game_versions, loaders, moderation_status, scan_requested_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
                 versionId,
                 project.id,
                 safeVersionNumber,
@@ -1909,6 +1915,8 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
                 req.file.size,
                 JSON.stringify(normalizedGameVersions),
                 loaders,
+                moderationStatus,
+                moderationStatus === "pending" ? new Date() : null,
             ]);
 
             await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
@@ -1921,15 +1929,17 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
             connection.release();
         }
 
-        queueArgusScan({
-            versionId,
-            project,
-            fileUrl,
-            fileName: req.file.originalname || req.file.filename,
-            fileSize: req.file.size,
-        });
+        if(moderationStatus === "pending") {
+            queueArgusScan({
+                versionId,
+                project,
+                fileUrl,
+                fileName: req.file.originalname || req.file.filename,
+                fileSize: req.file.size,
+            });
+        }
 
-        res.json({ success: true, versionId, fileUrl, moderation_status: "pending" });
+        res.json({ success: true, versionId, fileUrl, moderation_status: moderationStatus });
     } catch (error) {
         console.error("Error creating version:", error);
         if(error?.statusCode === 400) {
@@ -2758,18 +2768,57 @@ router.post('/:slug/submit', auth, async (req, res) => {
 
         const projectMeta = projectMetaRows[0];
 
-        const [versions] = await db.query('SELECT id FROM project_versions WHERE project_id = ?', [project.id]);
+        const [versions] = await db.query('SELECT id, file_url, file_size, moderation_status FROM project_versions WHERE project_id = ?', [project.id]);
         if(!projectMeta.icon_url || !projectMeta.summary || !projectMeta.description || versions.length === 0) {
             return res.status(400).json({ message: 'Project missing required fields: icon, description, summary or versions' });
         }
 
-        await db.query("UPDATE projects SET status = ?, updated_at = NOW() WHERE id = ?", [status, project.id]);
+        const draftVersions = versions.filter((version) => version.moderation_status === "draft");
+        const connection = await db.getConnection();
 
-        await db.query(`
-            INSERT INTO project_moderation_logs 
-            (project_id, action, moderator_id, reason, created_at)
-            VALUES (?, ?, NULL, NULL, NOW())
-        `, [project.id, status]);
+        try {
+            await connection.beginTransaction();
+
+            await connection.query("UPDATE projects SET status = ?, updated_at = NOW() WHERE id = ?", [status, project.id]);
+
+            if(draftVersions.length > 0) {
+                await connection.query(
+                    `UPDATE project_versions
+                    SET moderation_status = 'pending',
+                    moderation_reason = NULL,
+                    moderated_by = NULL,
+                    moderated_at = NULL,
+                    scan_requested_at = NOW(),
+                    scanned_at = NULL,
+                    argus_report = NULL
+                    WHERE project_id = ? AND moderation_status = 'draft'`,
+                    [project.id]
+                );
+            }
+
+            await connection.query(`
+                INSERT INTO project_moderation_logs
+                (project_id, action, moderator_id, reason, created_at)
+                VALUES (?, ?, NULL, NULL, NOW())
+            `, [project.id, status]);
+
+            await connection.commit();
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+
+        draftVersions.forEach((version) => {
+            queueArgusScan({
+                versionId: version.id,
+                project,
+                fileUrl: version.file_url,
+                fileName: version.file_url?.split("/").pop() || version.id,
+                fileSize: version.file_size,
+            });
+        });
 
         res.json({ success: true });
     } catch (error) {
@@ -2799,7 +2848,7 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
             return;
         }
 
-        const [version] = await db.query('SELECT id FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
+        const [version] = await db.query('SELECT id, moderation_status FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: 'Version not found' });
         }
@@ -2811,6 +2860,10 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
         if(!(await validateGameVersions(normalizedGameVersions))) {
             return res.status(400).json({ message: "Invalid game versions" });
         }
+
+        const nextModerationStatus = fileUrl
+            ? shouldHoldVersionForProjectModeration(project) && version[0].moderation_status === "draft" ? "draft" : "pending"
+            : null;
 
         const updateData = {
             version_number: version_number ? sanitizePlainText(version_number) : version_number,
@@ -2838,11 +2891,11 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
                 file_size = COALESCE(?, file_size),
                 game_versions = ?,
                 loaders = ?,
-                moderation_status = IF(? IS NULL, moderation_status, 'pending'),
+                moderation_status = COALESCE(?, moderation_status),
                 moderation_reason = IF(? IS NULL, moderation_reason, NULL),
                 moderated_by = IF(? IS NULL, moderated_by, NULL),
                 moderated_at = IF(? IS NULL, moderated_at, NULL),
-                scan_requested_at = IF(? IS NULL, scan_requested_at, NOW()),
+                scan_requested_at = CASE WHEN ? IS NULL THEN scan_requested_at WHEN ? = 'draft' THEN NULL ELSE NOW() END,
                 scanned_at = IF(? IS NULL, scanned_at, NULL),
                 argus_report = IF(? IS NULL, argus_report, NULL)
                 WHERE id = ?`,
@@ -2854,11 +2907,12 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
                     updateData.file_size,
                     updateData.game_versions,
                     updateData.loaders,
+                    nextModerationStatus,
                     updateData.file_url,
                     updateData.file_url,
                     updateData.file_url,
-                    updateData.file_url,
-                    updateData.file_url,
+                    nextModerationStatus,
+                    nextModerationStatus,
                     updateData.file_url,
                     updateData.file_url,
                     versionId,
@@ -2875,7 +2929,7 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
             connection.release();
         }
 
-        if(fileUrl) {
+        if(fileUrl && nextModerationStatus === "pending") {
             queueArgusScan({
                 versionId,
                 project,
