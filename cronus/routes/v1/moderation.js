@@ -285,8 +285,15 @@ router.post("/argus/versions/:versionId/report", async (req, res) => {
 	}
 
 	const reason = sanitizePlainText(String(req.body?.reason || ""), { preserveNewlines: true }) || null;
-	const report = normalizeArgusReport(req.body?.report || null);
-	const status = verdict === "error" ? "error" : "needs_review";
+	const rawReport = req.body?.report || null;
+	const report = normalizeArgusReport(rawReport);
+	const notificationFailure = verdict === "error" && /Telegram notification failed/i.test([
+		reason,
+		typeof rawReport === "string" ? rawReport : null,
+		rawReport && typeof rawReport === "object" ? rawReport.error : null,
+	].filter(Boolean).join(" "));
+	const status = verdict === "error" && !notificationFailure ? "error" : "needs_review";
+	const moderationReason = notificationFailure ? "Argus notification failed after scan. Manual review is required." : reason;
 
 	try {
 		const version = await getVersionForModeration(versionId);
@@ -301,7 +308,7 @@ router.post("/argus/versions/:versionId/report", async (req, res) => {
 			argus_report = ?,
 			scanned_at = NOW()
 			WHERE id = ?`,
-			[status, reason, report, versionId]
+			[status, moderationReason, report, versionId]
 		);
 
 		return res.json({ success: true });
