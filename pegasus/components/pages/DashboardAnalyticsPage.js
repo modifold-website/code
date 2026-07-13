@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import NumberFlow from "@number-flow/react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "../providers/AuthProvider";
@@ -548,7 +549,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong>{Number(totals.downloads) || 0}</strong>
+										<strong><NumberFlow className="project-analytics-stat__number" value={Number(totals.downloads) || 0} /></strong>
 									</div>
 
 									<div className="content content--padding project-analytics-stat">
@@ -563,7 +564,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong>{activeServersNow}</strong>
+										<strong><NumberFlow className="project-analytics-stat__number" value={activeServersNow} /></strong>
 									</div>
 
 									<div className="content content--padding project-analytics-stat project-analytics-stat--online">
@@ -588,7 +589,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong>{playersOnlineNow}</strong>
+										<strong><NumberFlow className="project-analytics-stat__number" value={playersOnlineNow} /></strong>
 									</div>
 								</div>
 

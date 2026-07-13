@@ -9,11 +9,6 @@ import { useAuth } from "../providers/AuthProvider";
 import LoginModal from "../../modal/LoginModal";
 import HomeAnalyticsSection from "../ui/HomeAnalyticsSection";
 import HomeNotificationsSection from "../ui/HomeNotificationsSection";
-import TextReveal from "../motion/TextReveal";
-
-function getRevealUnitCount(text) {
-	return String(text || "").match(/\S+/g)?.length || 0;
-}
 
 export default function HomePage({ news = [], locale, projects = [], projectsLimit = 20 }) {
 	const t = useTranslations("HomePage");
@@ -39,10 +34,8 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
 
     const hytaleToken = "__HYTALE__";
     const heroTitle = t("heroTitle", { hytale: hytaleToken });
-    const heroDescription = t("heroDescription");
     const [heroTitleBefore, heroTitleAfter] = heroTitle.split(hytaleToken);
     const heroHasToken = heroTitle.includes(hytaleToken);
-    const heroActionsDelay = 0.38 + Math.max(getRevealUnitCount(heroDescription) - 1, 0) * 0.026 + 0.08;
 
     const displayedProjects = useMemo(() => {
         const sorted = [...projects];
@@ -73,32 +66,21 @@ export default function HomePage({ news = [], locale, projects = [], projectsLim
                                 </defs>
                             </svg>
 
-                            <TextReveal
-                                as="h1"
-                                className="hero-title"
-                                delay={0.1}
-                                stagger={0.06}
-                                blur={10}
-                                yOffset="28%"
-                                segments={heroHasToken ? [
-                                    { text: heroTitleBefore },
-                                    { text: "Hytale", className: "highlight-text" },
-                                    { text: heroTitleAfter },
-                                ] : undefined}
-                                text={heroHasToken ? undefined : heroTitle}
-                            />
+                            <h1 className="hero-title">
+                                {heroHasToken ? (
+                                    <>
+                                        {heroTitleBefore}
+                                        <span className="highlight-text">Hytale</span>
+                                        {heroTitleAfter}
+                                    </>
+                                ) : (
+                                    heroTitle
+                                )}
+                            </h1>
 
-                            <TextReveal
-                                as="p"
-                                text={heroDescription}
-                                className="hero-description"
-                                delay={0.38}
-                                stagger={0.026}
-                                blur={5}
-                                yOffset="14%"
-                            />
+                            <p className="hero-description">{t("heroDescription")}</p>
 
-                            <div className="hero-actions" style={{ "--hero-actions-delay": `${heroActionsDelay}s` }}>
+                            <div className="hero-actions">
                                 <Link href="/mods" className="button button--size-xl button--type-primary button--with-icon button--active-transform">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <circle cx="12" cy="12" r="10" />

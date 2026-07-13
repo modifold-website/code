@@ -14,6 +14,7 @@ import VersionEditDetailsModal from "../../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload, sortByKnownGameVersions } from "@/utils/gameVersions";
+import { getAuthHeaders } from "@/utils/api/client";
 
 const loaders = [
     "Vanilla",
@@ -399,7 +400,10 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
 
         try {
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${versionId}`, {
-                headers: { Accept: "application/json" },
+                headers: {
+                    Accept: "application/json",
+                    ...getAuthHeaders(authToken),
+                },
             });
 
             const version = res.data;
