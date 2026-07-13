@@ -4,6 +4,9 @@
     "modpacks": "Modpacks — Modifold",
     "worlds": "Mundos — Modifold"
   },
+  "Common": {
+    "downloadsTooltip": "{count, plural, one {# download} other {# downloads}}"
+  },
   "Header": {
     "home": "Início",
     "mods": "Mods",

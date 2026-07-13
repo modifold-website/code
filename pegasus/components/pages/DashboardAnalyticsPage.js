@@ -9,6 +9,7 @@ import { useAuth } from "../providers/AuthProvider";
 import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
 import DatePopover from "@/components/ui/DatePopover";
 import AnalyticsOnlineInfoModal from "@/modal/AnalyticsOnlineInfoModal";
+import DownloadCount from "@/components/ui/DownloadCount";
 import { AnalyticsChart, BarTooltipCursor, ChartTypeToggle, OnlineChart, formatChartDate } from "@/components/project/settings/ProjectAnalyticsSettingsPage";
 
 const FALLBACK_COLORS = ["#00af5c", "#307df0", "#ff4f5e", "#e6833f", "#8b5cf6", "#14b8a6", "#f97316", "#ec4899"];
@@ -549,7 +550,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong><NumberFlow className="project-analytics-stat__number" value={Number(totals.downloads) || 0} /></strong>
+										<strong><DownloadCount className="project-analytics-stat__number" value={totals.downloads} /></strong>
 									</div>
 
 									<div className="content content--padding project-analytics-stat">

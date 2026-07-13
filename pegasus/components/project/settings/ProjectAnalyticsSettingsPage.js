@@ -7,6 +7,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContai
 import { useLocale, useTranslations } from "next-intl";
 import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 import AnalyticsOnlineInfoModal from "@/modal/AnalyticsOnlineInfoModal";
+import DownloadCount from "@/components/ui/DownloadCount";
 
 const getTimeRangeHref = (project, range) => {
 	const base = getProjectPath(project, "/settings/analytics");
@@ -359,7 +360,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 						</svg>
 					</p>
 
-					<strong><NumberFlow className="project-analytics-stat__number" value={Number(totals.downloads) || 0} /></strong>
+					<strong><DownloadCount className="project-analytics-stat__number" value={totals.downloads} /></strong>
 				</div>
 
 				{isWorldProject ? (

@@ -7,6 +7,8 @@ import { useAuth } from "../providers/AuthProvider";
 import ImageLightbox, { useImageLightbox } from "@/components/ui/ImageLightbox";
 import UserName from "@/components/ui/UserName";
 import Tooltip from "@/components/ui/Tooltip";
+import DownloadCount from "@/components/ui/DownloadCount";
+import { normalizeDownloadCount } from "@/utils/formatDownloads";
 
 const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
 
@@ -15,6 +17,7 @@ const getProjectDownloadsTotal = (projects) => projects.reduce((sum, project) =>
 export default function OrganizationPage({ organization, members = [], projects = [], my_permissions = null }) {
     const t = useTranslations("Organizations");
     const tLinks = useTranslations("Organizations.settings.links");
+    const commonT = useTranslations("Common");
     const locale = useLocale();
     const { isLoggedIn, user } = useAuth();
     const { lightboxOpen, lightboxImage, closeLightbox, getLightboxTriggerProps } = useImageLightbox();
@@ -98,7 +101,7 @@ export default function OrganizationPage({ organization, members = [], projects 
                                         </button>
                                     </Tooltip>
 
-                                    <Tooltip content={t("page.downloadsTooltip")}>
+                                    <Tooltip content={commonT("downloadsTooltip", { count: normalizeDownloadCount(downloadsCount) })}>
                                         <button type="button" className="subsite-followers__item subsite-followers__item--button subsite-followers__item--disabled" disabled>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download-icon lucide-download" aria-hidden="true">
                                                 <path d="M12 15V3"></path>
@@ -106,7 +109,7 @@ export default function OrganizationPage({ organization, members = [], projects 
                                                 <path d="m7 10 5 5 5-5"></path>
                                             </svg>
 
-                                            <span>{formatFullNumber(downloadsCount, locale)}</span>
+                                            <DownloadCount value={downloadsCount} tooltip={false} />
                                             
                                             {t("page.downloadsCount", { count: downloadsCount })}
                                         </button>

@@ -4,6 +4,9 @@
     "modpacks": "Modpackler - Modifold",
     "worlds": "Dünyalar - Modifold"
   },
+  "Common": {
+    "downloadsTooltip": "{count, plural, one {# indirme} other {# indirme}}"
+  },
   "Header": {
     "home": "Ana sayfa",
     "mods": "Modlar",

@@ -14,6 +14,7 @@ import remarkGfm from "remark-gfm";
 import ProjectSidebar from "../project/ProjectSidebar";
 import VersionDownloadButton from "../project/VersionDownloadButton";
 import Tooltip from "../ui/Tooltip";
+import DownloadCount from "../ui/DownloadCount";
 import VersionEditMetadataModal from "../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
@@ -587,7 +588,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                                                 <path d="m7 10 5 5 5-5"/>
                                             </svg>
 
-                                            {currentVersion.downloads || 0}
+                                            <DownloadCount value={currentVersion.downloads} />
                                         </span>
                                     </div>
                                 </div>

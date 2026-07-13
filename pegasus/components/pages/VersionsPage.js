@@ -9,6 +9,7 @@ import { useTranslations, useLocale } from "next-intl";
 import ProjectSidebar from "../project/ProjectSidebar";
 import VersionDownloadButton from "../project/VersionDownloadButton";
 import Tooltip from "../ui/Tooltip";
+import DownloadCount from "../ui/DownloadCount";
 import { DEFAULT_GAME_VERSIONS, sortByKnownGameVersions } from "@/utils/gameVersions";
 
 const releaseChannels = ["release", "beta", "alpha"];
@@ -403,7 +404,7 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
 
                                     <div className="version__stats" data-label={t("versions.headers.downloads")}>
                                         <div className="version-table__value">
-                                            <span>{version.downloads}</span>
+                                            <DownloadCount value={version.downloads} />
                                         </div>
                                     </div>
                                 </div>

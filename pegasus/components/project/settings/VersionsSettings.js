@@ -13,6 +13,7 @@ import VersionEditMetadataModal from "../../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
+import DownloadCount from "@/components/ui/DownloadCount";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload, sortByKnownGameVersions } from "@/utils/gameVersions";
 import { getAuthHeaders } from "@/utils/api/client";
 
@@ -1022,7 +1023,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                                 </Link>
 
                                 <div className="version__stats">
-                                    <strong>{version.downloads}</strong>
+                                    <DownloadCount value={version.downloads} as="strong" />
                                     <span>{tProject("versions.downloads")}</span>
                                 </div>
                             </div>

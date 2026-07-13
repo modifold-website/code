@@ -3,6 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 import UserName from "../ui/UserName";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
+import DownloadCount from "../ui/DownloadCount";
 import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 
 export default function ProjectCard({ project, maxTags = 5, actions = null, relativeTimeBase = null }) {
@@ -46,18 +47,6 @@ export default function ProjectCard({ project, maxTags = 5, actions = null, rela
         }
 
         return rtf.format(years, "year");
-    };
-
-    const formatNumber = (num) => {
-        if(num >= 1000000) {
-            return `${(num / 1000000).toFixed(2)}M`;
-        }
-
-        if(num >= 1000) {
-            return `${(num / 1000).toFixed(2)}K`;
-        }
-
-        return num;
     };
 
     const formatFullNumber = (num) => {
@@ -109,9 +98,7 @@ export default function ProjectCard({ project, maxTags = 5, actions = null, rela
                                 <path d="m7 10 5 5 5-5"/>
                             </svg>
 
-                            <Tooltip content={`${formatNumber(project.downloads)} ${t("downloads")}`}>
-                                <span>{formatNumber(project.downloads)}</span>
-                            </Tooltip>
+                            <DownloadCount value={project.downloads} />
                         </div>
 
                         {showPlayersLast14Days && (
