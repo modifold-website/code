@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import NumberFlow from "@number-flow/react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
 import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
@@ -358,7 +359,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 						</svg>
 					</p>
 
-					<strong>{totals.downloads || 0}</strong>
+					<strong><NumberFlow className="project-analytics-stat__number" value={Number(totals.downloads) || 0} /></strong>
 				</div>
 
 				{isWorldProject ? (
@@ -372,7 +373,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 							</svg>
 						</p>
 
-						<strong>{totals.views || 0}</strong>
+						<strong><NumberFlow className="project-analytics-stat__number" value={Number(totals.views) || 0} /></strong>
 					</div>
 				) : (
 					<>
@@ -388,7 +389,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 								</svg>
 							</p>
 
-							<strong>{activeServersNow}</strong>
+							<strong><NumberFlow className="project-analytics-stat__number" value={activeServersNow} /></strong>
 						</div>
 
 						<div className="content content--padding project-analytics-stat project-analytics-stat--online">
@@ -413,7 +414,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 								</svg>
 							</p>
 
-							<strong>{playersOnlineNow}</strong>
+							<strong><NumberFlow className="project-analytics-stat__number" value={playersOnlineNow} /></strong>
 						</div>
 					</>
 				)}

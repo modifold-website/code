@@ -612,6 +612,13 @@
     font-size: 32px;
     line-height: 1;
 }
+.project-analytics-stat__number {
+	display: inline-block;
+	font: inherit;
+	line-height: inherit;
+	--number-flow-mask-height: 0px;
+	--number-flow-mask-width: 0.2em;
+}
 .project-analytics-card {
     background: var(--theme-color-background);
     overflow: hidden;
