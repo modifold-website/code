@@ -736,7 +736,7 @@
 	outline-offset: -2px;
 }
 .all-versions--table .version-table__game-versions,
-.all-versions--table .version-table__platforms,
+.all-versions--table .version-table__size,
 .all-versions--table .version-table__published,
 .all-versions--table .version-button .version__stats {
 	cursor: default;
@@ -765,7 +765,7 @@
 	text-decoration: underline;
 }
 .all-versions--table .version-table__game-versions,
-.all-versions--table .version-table__platforms {
+.all-versions--table .version-table__size {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
@@ -835,14 +835,14 @@
 	.all-versions--table .version-table__game-versions {
 		grid-area: game;
 	}
-	.all-versions--table .version-table__platforms {
-		grid-area: platforms;
+	.all-versions--table .version-table__size {
+		grid-area: size;
 	}
 	.all-versions--table .version-table__published {
 		grid-area: published;
 	}
 	.all-versions--table .version-table__game-versions,
-	.all-versions--table .version-table__platforms,
+	.all-versions--table .version-table__size,
 	.all-versions--table .version-table__published,
 	.all-versions--table .version-button .version__stats {
 		display: grid;
@@ -857,7 +857,7 @@
 		align-items: center;
 	}
 	.all-versions--table .version-table__game-versions::before,
-	.all-versions--table .version-table__platforms::before,
+	.all-versions--table .version-table__size::before,
 	.all-versions--table .version-table__published::before,
 	.all-versions--table .version-button .version__stats::before {
 		content: attr(data-label);

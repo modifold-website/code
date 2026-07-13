@@ -9,6 +9,7 @@ import { useAuth } from "../providers/AuthProvider";
 import { useLocale, useTranslations } from "next-intl";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
+import DownloadCount from "../ui/DownloadCount";
 import ProjectReportModal from "@/modal/ProjectReportModal";
 import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
 
@@ -31,18 +32,6 @@ export default function ProjectMasthead({ project, authToken }) {
     const hasTags = project.tags?.length > 0;
     const isProjectAuthor = Boolean(user?.id && Number(project.user_id) === Number(user.id));
     const actionsRef = useRef(null);
-
-    const formatNumber = (num) => {
-        if(num >= 1000000) {
-            return `${(num / 1000000).toFixed(2)}M`;
-        }
-
-        if(num >= 1000) {
-            return `${(num / 1000).toFixed(2)}K`;
-        }
-
-        return num;
-    };
 
     const formatFullNumber = (num) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
 
@@ -286,9 +275,7 @@ export default function ProjectMasthead({ project, authToken }) {
                                     <path d="m7 10 5 5 5-5"/>
                                 </svg>
 
-                                <Tooltip content={`${formatNumber(project.downloads)} ${cardT("downloads")}`}>
-                                    <span>{formatNumber(project.downloads)}</span>
-                                </Tooltip>
+                                <DownloadCount value={project.downloads} />
                             </div>
 
                             {showPlayersLast14Days && (

@@ -2,6 +2,8 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Tooltip from "@/components/ui/Tooltip";
+import DownloadCount from "@/components/ui/DownloadCount";
+import { normalizeDownloadCount } from "@/utils/formatDownloads";
 
 const formatFullNumber = (num, locale) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
 
@@ -36,6 +38,7 @@ const formatJoinedTooltip = (timestamp, locale) => {
 
 export default function ProfileStats({ projectsCount = 0, downloadsCount = 0, subscribersCount = 0, subscriptionsCount = 0, timestamp, onOpenFollowModal }) {
     const t = useTranslations("ProfilePage");
+    const commonT = useTranslations("Common");
     const locale = useLocale();
 
     return (
@@ -57,7 +60,7 @@ export default function ProfileStats({ projectsCount = 0, downloadsCount = 0, su
                     </button>
                 </Tooltip>
 
-                <Tooltip content={t("downloadsTooltip")}>
+                <Tooltip content={commonT("downloadsTooltip", { count: normalizeDownloadCount(downloadsCount) })}>
                     <button type="button" className="profile-stat profile-stat--disabled" disabled>
                         <span className="profile-stat__icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -67,7 +70,7 @@ export default function ProfileStats({ projectsCount = 0, downloadsCount = 0, su
                             </svg>
                         </span>
 
-                        <span className="profile-stat__value">{formatFullNumber(downloadsCount, locale)}</span>
+                        <DownloadCount value={downloadsCount} className="profile-stat__value" tooltip={false} />
                         
                         <span className="profile-stat__label">{t("downloadsLabel", { count: downloadsCount })}</span>
                     </button>

@@ -4,6 +4,9 @@
     "modpacks": "Modpackler - Modifold",
     "worlds": "Dünyalar - Modifold"
   },
+  "Common": {
+    "downloadsTooltip": "{count, plural, one {# indirme} other {# indirme}}"
+  },
   "Header": {
     "home": "Ana sayfa",
     "mods": "Modlar",
@@ -587,6 +590,7 @@
         "name": "Ad",
         "gameVersion": "Oyun sürümü",
         "platforms": "Platformlar",
+        "size": "Boyut",
         "published": "Yayınlandı",
         "downloads": "İndirmeler"
       },

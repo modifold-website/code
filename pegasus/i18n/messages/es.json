@@ -4,6 +4,9 @@
     "modpacks": "Modpacks — Modifold",
     "worlds": "Mundos — Modifold"
   },
+  "Common": {
+    "downloadsTooltip": "{count, plural, one {# descarga} other {# descargas}}"
+  },
   "Header": {
     "home": "Inicio",
     "mods": "Mods",
@@ -587,6 +590,7 @@
         "name": "Nombre",
         "gameVersion": "Versión del juego",
         "platforms": "Plataformas",
+        "size": "Tamaño",
         "published": "Publicado",
         "downloads": "Descargas"
       },

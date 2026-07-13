@@ -4,6 +4,9 @@
     "modpacks": "Модпаки — Modifold",
     "worlds": "Миры — Modifold"
   },
+  "Common": {
+    "downloadsTooltip": "{count, plural, one {# скачивание} few {# скачивания} many {# скачиваний} other {# скачивания}}"
+  },
   "Header": {
     "home": "Главная",
     "mods": "Моды",
@@ -587,6 +590,7 @@
         "name": "Название",
         "gameVersion": "Версия игры",
         "platforms": "Платформы",
+        "size": "Размер",
         "published": "Опубликовано",
         "downloads": "Скачивания"
       },
