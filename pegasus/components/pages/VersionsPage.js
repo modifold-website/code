@@ -40,7 +40,7 @@ function shouldSkipVersionRowNavigation(target) {
 		return false;
 	}
 
-	return Boolean(target.closest("a, button, .version-table__download-action, .download-button, .version-table__game-versions, .version-table__platforms, .version-table__published, .version__metadata, .version__stats"));
+	return Boolean(target.closest("a, button, .version-table__download-action, .download-button, .version-table__game-versions, .version-table__size, .version-table__published, .version__metadata, .version__stats"));
 }
 
 export default function VersionsPage({ project, authToken, gameVersions = DEFAULT_GAME_VERSIONS }) {
@@ -202,6 +202,19 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
         return new Intl.DateTimeFormat(locale, options).format(date);
     };
 
+    const formatFileSize = (size) => {
+        const bytes = Number(size);
+        if(!Number.isFinite(bytes) || bytes <= 0) {
+            return "0 B";
+        }
+
+        const units = ["B", "KB", "MB", "GB"];
+        const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        const value = bytes / (1024 ** unitIndex);
+
+        return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+    };
+
     const getPageButtons = () => {
         const maxButtons = 10;
         let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
@@ -334,7 +347,7 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             <div className="version-table__download-heading"></div>
                             <div>{t("versions.headers.name")}</div>
                             <div>{t("versions.headers.gameVersion")}</div>
-                            <div>{t("versions.headers.platforms")}</div>
+                            <div>{t("versions.headers.size")}</div>
                             <div>{t("versions.headers.published")}</div>
                             <div>{t("versions.headers.downloads")}</div>
                         </div>
@@ -345,7 +358,6 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             </div>
                         ) : currentVersions.map((version) => {
                             const moderationBadge = getVersionModerationBadge(version.moderation_status);
-                            const versionLoaders = parseVersionList(version.loaders);
                             const versionGameVersions = parseVersionList(version.game_versions);
                             const versionHref = `${getProjectPath(project)}/version/${version.id}`;
 
@@ -373,17 +385,9 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                                         </div>
                                     </div>
 
-                                    <div className="version-table__platforms" data-label={t("versions.headers.platforms")}>
+                                    <div className="version-table__size" data-label={t("versions.headers.size")}>
                                         <div className="version-table__value">
-                                            {versionLoaders.length > 0 ? (
-                                                versionLoaders.map((loader, index) => (
-                                                    <span key={index} className="version__game-platform">
-                                                        {loader}
-                                                    </span>
-                                                ))
-                                            ) : (
-                                                <span className="version__game-platform">{t("versions.notSpecified")}</span>
-                                            )}
+                                            <span className="version_number">{formatFileSize(version.file_size)}</span>
                                         </div>
                                     </div>
 

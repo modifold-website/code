@@ -590,6 +590,7 @@
         "name": "Nome",
         "gameVersion": "Versão do jogo",
         "platforms": "Plataformas",
+        "size": "Tamanho",
         "published": "Publicado",
         "downloads": "Downloads"
       },

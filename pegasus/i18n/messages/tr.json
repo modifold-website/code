@@ -590,6 +590,7 @@
         "name": "Ad",
         "gameVersion": "Oyun sürümü",
         "platforms": "Platformlar",
+        "size": "Boyut",
         "published": "Yayınlandı",
         "downloads": "İndirmeler"
       },
