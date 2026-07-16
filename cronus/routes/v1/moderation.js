@@ -244,8 +244,8 @@ const mapVersionReview = (version) => ({
 	scanned_at: version.scanned_at,
 });
 
-const notifyVersionApproved = async ({ version, actorUserId, createdAt }) => {
-	const actorId = actorUserId || version.project_owner_user_id;
+const notifyVersionApproved = async ({ version, createdAt }) => {
+	const actorId = version.project_owner_user_id;
 
 	try {
 		await sendVersionApprovedOwnerNotification({
@@ -469,7 +469,7 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 		);
 
 		if(decision === "approved") {
-			await notifyVersionApproved({ version, actorUserId: req.user.id, createdAt });
+			await notifyVersionApproved({ version, createdAt });
 		}
 
 		return res.json({ success: true });
