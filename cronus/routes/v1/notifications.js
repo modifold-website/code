@@ -159,9 +159,16 @@ router.get("/", auth, async (req, res) => {
                 p.slug AS project_slug,
                 p.title AS project_title,
                 p.icon_url AS project_icon_url,
-                p.project_type
+                p.project_type,
+                p.user_id AS project_owner_user_id,
+                u.username AS owner_username,
+                u.slug AS owner_slug,
+                u.avatar AS owner_avatar,
+                u.isVerified AS owner_is_verified,
+                u.active_profile_badge AS owner_active_profile_badge
                 FROM project_versions pv
                 INNER JOIN projects p ON p.id = pv.project_id
+                LEFT JOIN users u ON u.id = p.user_id
                 WHERE pv.id IN (?)`,
                 [projectVersionIds]
             );
@@ -177,7 +184,39 @@ router.get("/", auth, async (req, res) => {
                     iconUrl: version.project_icon_url,
                     project_type: version.project_type,
                 },
+                ownerActor: version.project_owner_user_id ? {
+                    id: version.project_owner_user_id,
+                    username: version.owner_username,
+                    slug: version.owner_slug,
+                    avatar: version.owner_avatar,
+                    isVerified: Number(version.owner_is_verified || 0),
+                    activeProfileBadge: version.owner_active_profile_badge,
+                    createdAt: Number(version.created_at || 0),
+                } : null,
             }]));
+        }
+
+        let currentUserActor = null;
+        if(groupRows.some((row) => row.event_type === "project_version_approved")) {
+            const [currentUserRows] = await db.query(
+                `SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge
+                FROM users
+                WHERE id = ?
+                LIMIT 1`,
+                [userId]
+            );
+
+            const currentUser = currentUserRows[0];
+            if(currentUser) {
+                currentUserActor = {
+                    id: currentUser.id,
+                    username: currentUser.username,
+                    slug: currentUser.slug,
+                    avatar: currentUser.avatar,
+                    isVerified: Number(currentUser.isVerified || 0),
+                    activeProfileBadge: currentUser.activeProfileBadge,
+                };
+            }
         }
 
         const notifications = await Promise.all(groupRows.map(async (row) => {
@@ -208,6 +247,37 @@ router.get("/", auth, async (req, res) => {
             actorQuery += " ORDER BY ne.created_at DESC LIMIT 3";
 
             const [actors] = await db.query(actorQuery, actorParams);
+            const projectVersion = row.object_type === "project_version" ? (projectVersionMap.get(String(row.object_id)) || null) : null;
+            let normalizedActors = actors.map((actor) => ({
+                id: actor.actor_user_id,
+                username: actor.username,
+                slug: actor.slug,
+                avatar: actor.avatar,
+                isVerified: Number(actor.isVerified || 0),
+                activeProfileBadge: actor.activeProfileBadge,
+                createdAt: Number(actor.created_at),
+            }));
+
+            if(row.event_type === "project_version_release" && projectVersion?.ownerActor) {
+                normalizedActors = [{
+                    ...projectVersion.ownerActor,
+                    createdAt: Number(row.latest_at),
+                }];
+            }
+
+            if(row.event_type === "project_version_approved" && currentUserActor) {
+                normalizedActors = [{
+                    ...currentUserActor,
+                    createdAt: Number(row.latest_at),
+                }];
+            }
+
+            const responseProjectVersion = projectVersion ? {
+                id: projectVersion.id,
+                versionNumber: projectVersion.versionNumber,
+                createdAt: projectVersion.createdAt,
+                project: projectVersion.project,
+            } : null;
 
             let inviteId = null;
             if(row.object_type === "organization" && row.event_type === "organization_invite") {
@@ -232,17 +302,9 @@ router.get("/", auth, async (req, res) => {
                 inviteId,
                 totalCount: Number(row.total_count),
                 latestAt: Number(row.latest_at),
-                actors: actors.map((actor) => ({
-                    id: actor.actor_user_id,
-                    username: actor.username,
-                    slug: actor.slug,
-                    avatar: actor.avatar,
-                    isVerified: Number(actor.isVerified || 0),
-                    activeProfileBadge: actor.activeProfileBadge,
-                    createdAt: Number(actor.created_at),
-                })),
+                actors: normalizedActors,
                 project: row.object_type === "project" ? (projectMap.get(String(row.object_id)) || null) : null,
-                projectVersion: row.object_type === "project_version" ? (projectVersionMap.get(String(row.object_id)) || null) : null,
+                projectVersion: responseProjectVersion,
                 organization: row.object_type === "organization" ? (organizationMap.get(String(row.object_id)) || null) : null,
             };
         }));

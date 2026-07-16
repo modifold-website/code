@@ -21,7 +21,14 @@ export default function NotificationsPage({ authToken, initialNotifications = []
         typeof window === "undefined" ? null : new Date().getTimezoneOffset()
     ), []);
 
-    const dateFormatter = useMemo(() => (
+    const currentYearDateFormatter = useMemo(() => (
+        new Intl.DateTimeFormat(locale || undefined, {
+            day: "numeric",
+            month: "short",
+        })
+    ), [locale]);
+
+    const dateFormatterWithYear = useMemo(() => (
         new Intl.DateTimeFormat(locale || undefined, {
             day: "numeric",
             month: "short",
@@ -71,6 +78,7 @@ export default function NotificationsPage({ authToken, initialNotifications = []
 
     const sections = useMemo(() => {
         const now = new Date();
+        const currentYear = now.getFullYear();
         const todayKey = getDayKey(now);
         const yesterday = new Date(now);
         yesterday.setDate(now.getDate() - 1);
@@ -82,7 +90,7 @@ export default function NotificationsPage({ authToken, initialNotifications = []
         for(const notification of notifications) {
             const date = new Date((notification.latestAt || 0) * 1000);
             const dayKey = getDayKey(date);
-            let label = dateFormatter.format(date);
+            let label = date.getFullYear() === currentYear ? currentYearDateFormatter.format(date) : dateFormatterWithYear.format(date);
 
             if(dayKey === todayKey) {
                 label = t("sections.today");
@@ -99,7 +107,7 @@ export default function NotificationsPage({ authToken, initialNotifications = []
         }
 
         return grouped;
-    }, [notifications, dateFormatter, t]);
+    }, [notifications, currentYearDateFormatter, dateFormatterWithYear, t]);
 
     const canLoadMore = notificationsQuery.hasNextPage;
 
