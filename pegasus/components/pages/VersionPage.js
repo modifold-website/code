@@ -20,6 +20,7 @@ import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
+import { getVersionDownloadUrl, getVersionPrimaryFile } from "@/utils/projects/downloads";
 
 const loaders = [
     "Vanilla",
@@ -246,7 +247,8 @@ export default function VersionPage({ project, version, authToken, gameVersions 
         return fileName;
     };
 
-    const primaryFile = currentVersion.files?.find((file) => file.primary) || currentVersion.files?.[0];
+    const primaryFile = getVersionPrimaryFile(currentVersion);
+    const primaryFileDownloadUrl = getVersionDownloadUrl(currentVersion);
     const versionDisplayName = currentVersion.name || currentVersion.version_number;
     const primaryFileTooltip = getFileTooltip({
         file: primaryFile,
@@ -268,7 +270,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
             title: dependency.project_title || dependency.project_slug || dependency.project_id || t("versions.dependencies.unknownDependency"),
             icon: dependency.project_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
             href: dependencyHref,
-            downloadHref: dependency.project_slug && dependency.version_id ? `${process.env.NEXT_PUBLIC_API_BASE}/projects/${dependency.project_slug}/versions/${dependency.version_id}/download` : (dependencyProjectPath ? `${dependencyProjectPath}/versions` : null),
+            downloadHref: getVersionDownloadUrl(dependency) || (dependencyProjectPath ? `${dependencyProjectPath}/versions` : null),
             downloadTooltip: getFileTooltip({
                 file: {
                     file_name: dependency.file_name,
@@ -594,9 +596,9 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                                 </div>
 
                                 <div className="version-page__actions">
-                                    {primaryFile && (
+                                    {primaryFileDownloadUrl && (
                                         <Tooltip content={primaryFileTooltip}>
-                                            <VersionDownloadButton project={project} version={currentVersion} className="button button--size-m button--type-download button--with-icon" href={`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${currentVersion.id}/download`}>
+                                            <VersionDownloadButton project={project} version={currentVersion} className="button button--size-m button--type-download button--with-icon" href={primaryFileDownloadUrl}>
                                                 <svg className="masthead-stats__icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M12 15V3" />
                                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -730,7 +732,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
                                                 {item.downloadHref && (
                                                     <Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-                                                        <a href={item.downloadHref} className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
+                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                                                 <path d="M12 15V3"/>
                                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -847,7 +849,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
                                                 {item.downloadHref && (
                                                     <Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-                                                        <a href={item.downloadHref} className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
+                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                                                 <path d="M12 15V3"/>
                                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>

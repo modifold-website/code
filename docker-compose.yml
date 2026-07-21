@@ -107,6 +107,10 @@ services:
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me-clickhouse-password}
       REDIS_URL: redis://:${REDIS_PASSWORD:-change-me-redis-password}@redis:6379
       MEDIA_ROOT: /app/media
+      MEDIA_PUBLIC_BASE: ${MEDIA_PUBLIC_BASE:-https://media.modifold.com}
+      INTERNAL_DOWNLOADS_SECRET: ${INTERNAL_DOWNLOADS_SECRET:-}
+      DOWNLOAD_DEDUPE_TTL_SECONDS: ${DOWNLOAD_DEDUPE_TTL_SECONDS:-21600}
+      DOWNLOAD_DEDUPE_LIMIT: ${DOWNLOAD_DEDUPE_LIMIT:-5}
       ARGUS_BASE_URL: ${ARGUS_BASE_URL:-}
     ports:
       - "127.0.0.1:${CRONUS_PORT:-4000}:4000"
