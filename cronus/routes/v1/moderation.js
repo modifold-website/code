@@ -3,7 +3,7 @@ const { db } = require("../../config/db");
 const { clickhouse } = require("../../config/clickhouse");
 const auth = require("../../middleware/auth");
 const { sanitizePlainText } = require("../../utils/sanitize");
-const { fanoutVersionReleaseNotifications, sendVersionApprovedOwnerNotification } = require("../../utils/versionNotifications");
+const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const router = express.Router();
 
@@ -248,10 +248,11 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 	const actorId = version.project_owner_user_id;
 
 	try {
-		await sendVersionApprovedOwnerNotification({
+		await sendVersionModerationOwnerNotification({
 			projectOwnerUserId: version.project_owner_user_id,
 			actorUserId: actorId,
 			versionId: version.id,
+			approved: true,
 			createdAt,
 		});
 	} catch (error) {
@@ -260,7 +261,6 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 
 	try {
 		await fanoutVersionReleaseNotifications({
-			projectOwnerUserId: version.project_owner_user_id,
 			actorUserId: actorId,
 			projectId: version.project_id,
 			versionId: version.id,
@@ -470,6 +470,14 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 		if(decision === "approved") {
 			await notifyVersionApproved({ version, createdAt });
+		} else {
+			await sendVersionModerationOwnerNotification({
+				projectOwnerUserId: version.project_owner_user_id,
+				actorUserId: version.project_owner_user_id,
+				versionId: version.id,
+				approved: false,
+				createdAt,
+			});
 		}
 
 		return res.json({ success: true });

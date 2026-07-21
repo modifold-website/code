@@ -20,6 +20,20 @@ const OrganizationLink = ({ organization, children }) => (
     )
 );
 
+const PROJECT_IMAGE_EVENT_TYPES = new Set(["project_approved", "project_rejected", "project_version_approved", "project_version_rejected"]);
+
+function getNotificationProject(notification) {
+    if(notification.objectType === "project") {
+        return notification.project || null;
+    }
+
+    if(notification.objectType === "project_version") {
+        return notification.projectVersion?.project || null;
+    }
+
+    return null;
+}
+
 function NotificationText({ notification, t }) {
     const firstActor = notification.actors?.[0];
     const firstActorView = firstActor ? (
@@ -61,6 +75,36 @@ function NotificationText({ notification, t }) {
         );
     }
 
+    if(notification.eventType === "project_release") {
+        const projectTitle = notification.project?.title || t("messages.projectFallback");
+
+        return (
+            <>
+                {firstActorView} {t("messages.projectReleaseMiddle")} <ProjectLink project={notification.project}>{projectTitle}</ProjectLink>
+            </>
+        );
+    }
+
+    if(notification.eventType === "project_approved") {
+        const projectTitle = notification.project?.title || t("messages.projectFallback");
+
+        return (
+            <>
+                {t("messages.projectApprovedMiddle")} <ProjectLink project={notification.project}>{projectTitle}</ProjectLink>
+            </>
+        );
+    }
+
+    if(notification.eventType === "project_rejected") {
+        const projectTitle = notification.project?.title || t("messages.projectFallback");
+
+        return (
+            <>
+                {t("messages.projectRejectedMiddle")} <ProjectLink project={notification.project}>{projectTitle}</ProjectLink>
+            </>
+        );
+    }
+
     if(notification.eventType === "project_version_approved") {
         const versionProject = notification.projectVersion?.project || null;
         const projectTitle = versionProject?.title || t("messages.projectFallback");
@@ -69,6 +113,18 @@ function NotificationText({ notification, t }) {
         return (
             <>
                 {t("messages.projectVersionApprovedMiddle", { version: versionNumber })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
+            </>
+        );
+    }
+
+    if(notification.eventType === "project_version_rejected") {
+        const versionProject = notification.projectVersion?.project || null;
+        const projectTitle = versionProject?.title || t("messages.projectFallback");
+        const versionNumber = notification.projectVersion?.versionNumber || t("messages.versionFallback");
+
+        return (
+            <>
+                {t("messages.projectVersionRejectedMiddle", { version: versionNumber })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
             </>
         );
     }
@@ -105,7 +161,7 @@ function NotificationIcon({ eventType, clipId }) {
         );
     }
 
-    if(eventType === "project_version_release") {
+    if(eventType === "project_version_release" || eventType === "project_release") {
         return (
             <svg className="notification-item__icon notification-item__icon--blue" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
                 <circle cx="8" cy="8" r="8" fill="currentColor"></circle>
@@ -114,7 +170,7 @@ function NotificationIcon({ eventType, clipId }) {
         );
     }
 
-    if(eventType === "project_version_approved") {
+    if(eventType === "project_approved" || eventType === "project_version_approved") {
         return (
             <svg className="notification-item__icon notification-item__icon--green" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <g clipPath={`url(#${clipId})`}>
@@ -126,6 +182,15 @@ function NotificationIcon({ eventType, clipId }) {
                         <rect width="16" height="16" fill="white"></rect>
                     </clipPath>
                 </defs>
+            </svg>
+        );
+    }
+
+    if(eventType === "project_rejected" || eventType === "project_version_rejected") {
+        return (
+            <svg className="notification-item__icon notification-item__icon--red" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="8" cy="8" r="8" fill="currentColor"></circle>
+                <path d="M5.2 5.2l5.6 5.6M10.8 5.2l-5.6 5.6" stroke="#fff" strokeWidth="1.8" strokeLinecap="round"></path>
             </svg>
         );
     }
@@ -178,15 +243,37 @@ function ProjectThumbnail({ project }) {
     );
 }
 
+function ProjectAvatar({ project }) {
+    if(!project?.iconUrl) {
+        return null;
+    }
+
+    const image = <img src={project.iconUrl} alt={project.title || ""} className="notification-avatars-stack__avatar" loading="lazy" />;
+
+    return project.slug ? (
+        <Link href={getProjectPath(project)} className="notification-avatars-stack__item">
+            {image}
+        </Link>
+    ) : (
+        <span className="notification-avatars-stack__item">
+            {image}
+        </span>
+    );
+}
+
 export default function NotificationItem({ notification, timeFormatter, t, onOrganizationInviteAction, isInviteActionPending = false }) {
     const approvedIconClipId = `notification-approved-icon-${notification.id}`;
     const thumbnailProject = notification.eventType === "project_like" ? notification.project : notification.eventType === "project_version_release" ? notification.projectVersion?.project : null;
+    const notificationProject = getNotificationProject(notification);
+    const shouldShowProjectAvatar = PROJECT_IMAGE_EVENT_TYPES.has(notification.eventType) && notificationProject?.iconUrl;
 
     return (
         <div className="notification-item">
             <div className="notification-item__image">
                 <div className="notification-avatars-stack">
-                    {notification.actors?.slice(0, 3).map((actor) => (
+                    {shouldShowProjectAvatar ? (
+                        <ProjectAvatar project={notificationProject} />
+                    ) : notification.actors?.slice(0, 3).map((actor) => (
                         actor.slug ? (
                             <Link key={actor.id} href={`/user/${actor.slug}`} className="notification-avatars-stack__item">
                                 <img src={actor.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />

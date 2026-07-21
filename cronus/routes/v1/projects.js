@@ -16,7 +16,7 @@ const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, resolveProje
 const optionalAuth = require('../../middleware/optionalAuth');
 const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
-const { fanoutVersionReleaseNotifications } = require("../../utils/versionNotifications");
+const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const router = express.Router();
@@ -2679,19 +2679,41 @@ router.post("/:id/moderate", auth, async (req, res) => {
     }
 
     try {
+		const [projectRowsBeforeUpdate] = await db.query(
+			"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1",
+			[id]
+		);
+		const projectBeforeUpdate = projectRowsBeforeUpdate[0] || null;
+		const statusChanged = projectBeforeUpdate && projectBeforeUpdate.status !== status;
+		const createdAt = Math.floor(Date.now() / 1000);
+
         await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
         await bumpProjectCacheVersionById(db, id);
 
-		if(status === "approved") {
-			const [projectRows] = await db.query(
-				"SELECT id, user_id FROM projects WHERE id = ? LIMIT 1",
-				[id]
-			);
+		if(projectBeforeUpdate && statusChanged) {
+			await sendProjectModerationOwnerNotification({
+				projectOwnerUserId: projectBeforeUpdate.user_id,
+				actorUserId: projectBeforeUpdate.user_id,
+				projectId: projectBeforeUpdate.id,
+				approved: status === "approved",
+				createdAt,
+			});
+		}
 
-			if(projectRows[0]) {
+		if(status === "approved" && projectBeforeUpdate) {
+			if(statusChanged) {
+				await fanoutProjectReleaseNotifications({
+					projectOwnerUserId: projectBeforeUpdate.user_id,
+					actorUserId: projectBeforeUpdate.user_id,
+					projectId: projectBeforeUpdate.id,
+					createdAt,
+				});
+			}
+
+			if(projectBeforeUpdate) {
 				await awardFirstApprovedProjectAchievement(db, {
-					projectId: projectRows[0].id,
-					userId: projectRows[0].user_id,
+					projectId: projectBeforeUpdate.id,
+					userId: projectBeforeUpdate.user_id,
 					awardedByUserId: req.user.id,
 				});
 			}
@@ -2965,7 +2987,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
         await db.query("DELETE FROM project_versions WHERE id = ?", [versionId]);
         await db.query(
             `DELETE FROM notification_events
-            WHERE event_type = 'project_version_release'
+            WHERE event_type IN ('project_version_release', 'project_version_approved', 'project_version_rejected')
             AND object_type = 'project_version'
             AND object_id = ?`,
             [String(versionId)]

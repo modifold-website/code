@@ -9,7 +9,7 @@ const cleanupStaleProjectVersionReleaseNotifications = async (userId) => {
         FROM notification_events ne
         LEFT JOIN project_versions pv ON BINARY pv.id = BINARY ne.object_id
         WHERE ne.recipient_user_id = ?
-        AND ne.event_type = 'project_version_release'
+        AND ne.event_type IN ('project_version_release', 'project_version_approved', 'project_version_rejected')
         AND ne.object_type = 'project_version'
         AND pv.id IS NULL`,
         [userId]
@@ -196,29 +196,6 @@ router.get("/", auth, async (req, res) => {
             }]));
         }
 
-        let currentUserActor = null;
-        if(groupRows.some((row) => row.event_type === "project_version_approved")) {
-            const [currentUserRows] = await db.query(
-                `SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge
-                FROM users
-                WHERE id = ?
-                LIMIT 1`,
-                [userId]
-            );
-
-            const currentUser = currentUserRows[0];
-            if(currentUser) {
-                currentUserActor = {
-                    id: currentUser.id,
-                    username: currentUser.username,
-                    slug: currentUser.slug,
-                    avatar: currentUser.avatar,
-                    isVerified: Number(currentUser.isVerified || 0),
-                    activeProfileBadge: currentUser.activeProfileBadge,
-                };
-            }
-        }
-
         const notifications = await Promise.all(groupRows.map(async (row) => {
             const actorParams = [userId, row.event_type, row.object_type, row.object_id];
             let actorQuery = `SELECT
@@ -261,13 +238,6 @@ router.get("/", auth, async (req, res) => {
             if(row.event_type === "project_version_release" && projectVersion?.ownerActor) {
                 normalizedActors = [{
                     ...projectVersion.ownerActor,
-                    createdAt: Number(row.latest_at),
-                }];
-            }
-
-            if(row.event_type === "project_version_approved" && currentUserActor) {
-                normalizedActors = [{
-                    ...currentUserActor,
                     createdAt: Number(row.latest_at),
                 }];
             }
