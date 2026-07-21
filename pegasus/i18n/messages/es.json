@@ -958,9 +958,26 @@
       "collapse": "Ocultar recomendaciones",
       "expand": "Mostrar recomendaciones"
     },
+    "discover": "Descubrir",
+    "browseAll": "Ver todo",
     "mods": "Mods",
     "modpacks": "Paquetes de mods",
     "worlds": "Mundos"
+  },
+  "DiscoverPage": {
+    "featured": "Destacados",
+    "weeklyPopular": "Popular esta semana",
+    "latest": "Publicados recientemente",
+    "popularCategories": "Categorías populares",
+    "viewAll": "Ver todo",
+    "go": "Ver",
+    "by": "Por",
+    "moreTitle": "¿Quieres más proyectos?",
+    "moreText": "Abre el catálogo completo con búsqueda, filtros y ordenación.",
+    "moreCta": "Ver catálogo",
+    "empty": "Aún no hay proyectos para descubrir",
+    "previous": "Anterior",
+    "next": "Siguiente"
   },
   "CategoryLabels": {
     "adventure": "Aventura",

@@ -958,9 +958,26 @@
       "collapse": "Önerileri daralt",
       "expand": "Önerileri genişlet"
     },
+    "discover": "Keşfet",
+    "browseAll": "Tümüne göz at",
     "mods": "Modlar",
     "modpacks": "Mod paketleri",
     "worlds": "Dünyalar"
+  },
+  "DiscoverPage": {
+    "featured": "Öne çıkanlar",
+    "weeklyPopular": "Bu hafta popüler",
+    "latest": "Yeni yayınlananlar",
+    "popularCategories": "Popüler kategoriler",
+    "viewAll": "Tümünü gör",
+    "go": "Aç",
+    "by": "Yazar",
+    "moreTitle": "Daha fazla proje mi gerekiyor?",
+    "moreText": "Arama, filtreler ve sıralama içeren tam kataloğu açın.",
+    "moreCta": "Kataloğa git",
+    "empty": "Keşfedilecek proje yok",
+    "previous": "Önceki",
+    "next": "Sonraki"
   },
   "CategoryLabels": {
     "adventure": "Macera",
