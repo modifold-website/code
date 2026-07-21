@@ -16,7 +16,6 @@ const PROJECT_TYPE_ALIASES = {
 };
 
 const DISCOVER_CACHE_TTL_SECONDS = 60 * 5;
-const PROJECT_ICON_FALLBACK = "https://media.modifold.com/static/no-project-icon.svg";
 
 const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;
 
@@ -33,7 +32,7 @@ const formatProject = (project, weeklyDownloadsBySlug = new Map()) => ({
 	slug: project.slug,
 	title: project.title,
 	summary: project.summary || "",
-	icon_url: project.icon_url || PROJECT_ICON_FALLBACK,
+	icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
 	color: project.color,
 	downloads: Number(project.downloads) || 0,
 	weekly_downloads: weeklyDownloadsBySlug.get(project.slug) || Number(project.weekly_downloads) || 0,
@@ -47,7 +46,7 @@ const formatProject = (project, weeklyDownloadsBySlug = new Map()) => ({
 		id: project.organization_id,
 		username: project.organization_name,
 		slug: project.organization_slug,
-		avatar: project.organization_icon_url || PROJECT_ICON_FALLBACK,
+		avatar: project.organization_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
 		summary: project.organization_summary || "",
 		isVerified: 0,
 		type: "organization",
@@ -56,7 +55,7 @@ const formatProject = (project, weeklyDownloadsBySlug = new Map()) => ({
 		id: project.user_id,
 		username: project.username,
 		slug: project.user_slug,
-		avatar: project.user_avatar || PROJECT_ICON_FALLBACK,
+		avatar: project.user_avatar || "https://media.modifold.com/static/no-project-icon.svg",
 		isVerified: project.isVerified,
 		activeProfileBadge: project.activeProfileBadge,
 		type: "user",
@@ -213,9 +212,7 @@ const fetchProjectsBySlugs = async ({ projectType, rankedDownloads, limit = 10 }
 	`, [projectType, slugs]);
 	const orderBySlug = new Map(rankedDownloads.map((row, index) => [row.slug, index]));
 
-	return projects
-		.sort((a, b) => (orderBySlug.get(a.slug) ?? 9999) - (orderBySlug.get(b.slug) ?? 9999))
-		.slice(0, limit);
+	return projects.sort((a, b) => (orderBySlug.get(a.slug) ?? 9999) - (orderBySlug.get(b.slug) ?? 9999)).slice(0, limit);
 };
 
 const fetchWeeklyPopularProjects = async (projectType) => {
@@ -249,10 +246,7 @@ const fetchPopularTags = async (projectType, limit = 6) => {
 		}
 	}
 
-	return [...countsByTag.entries()]
-		.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-		.slice(0, limit)
-		.map(([name, count]) => ({ name, count }));
+	return [...countsByTag.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([name, count]) => ({ name, count }));
 };
 
 router.get("/:type", async (req, res) => {

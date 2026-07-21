@@ -231,7 +231,6 @@
     margin-top: 10px;
 }
 .project-inline-gallery {
-	padding: 12px;
 	margin-bottom: 15px;
 }
 .project-inline-gallery__stage {
@@ -336,7 +335,7 @@
 	width: 46px;
 	height: 46px;
 	border-radius: 999px;
-	background: var(--theme-color-background);
+	background: var(--theme-color-background-content);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
