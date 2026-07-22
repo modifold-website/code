@@ -404,11 +404,6 @@ const getProjectOnlineSeriesForLast30Days = async (projectSlug) => {
 	})).filter((row) => Boolean(row.day));
 };
 
-router.use((req, res, next) => {
-	console.log("[analytics]", req.method, req.originalUrl, "body:", req.body || null);
-	next();
-});
-
 router.get("/user", auth, async (req, res) => {
 	try {
 		const userId = req.user.id;

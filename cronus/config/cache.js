@@ -13,6 +13,10 @@ const redis = new Redis(redisUrl, {
 	enableOfflineQueue: false,
 });
 
+redis.on("error", (error) => {
+	console.error("[redis] client error:", error);
+});
+
 let connectPromise = null;
 const ensureConnected = async () => {
 	if(redis.status === "ready") {
@@ -22,6 +26,7 @@ const ensureConnected = async () => {
 	if(!connectPromise) {
 		connectPromise = redis.connect().catch((error) => {
 			connectPromise = null;
+			console.error("[redis] connect failed:", error);
 			throw error;
 		});
 	}
@@ -29,27 +34,44 @@ const ensureConnected = async () => {
 	await connectPromise;
 };
 
+const runRedisOperation = async (operation, callback) => {
+	try {
+		return await callback();
+	} catch(error) {
+		console.error(`[redis] ${operation} failed:`, error);
+		throw error;
+	}
+};
+
 const cacheClient = {
 	get: async (key) => {
-		await ensureConnected();
-		const value = await redis.getBuffer(key);
-		return { value: value || null };
+		return runRedisOperation("get", async () => {
+			await ensureConnected();
+			const value = await redis.getBuffer(key);
+			return { value: value || null };
+		});
 	},
 	set: async (key, value, options = {}) => {
-		await ensureConnected();
-		const expires = Number(options.expires) || Number(process.env.REDIS_DEFAULT_TTL_SECONDS) || 60;
-		await redis.set(key, value, "EX", expires);
+		return runRedisOperation("set", async () => {
+			await ensureConnected();
+			const expires = Number(options.expires) || Number(process.env.REDIS_DEFAULT_TTL_SECONDS) || 60;
+			await redis.set(key, value, "EX", expires);
+		});
 	},
 	eval: async (script, keys = [], args = []) => {
-		await ensureConnected();
-		return redis.eval(script, keys.length, ...keys, ...args);
+		return runRedisOperation("eval", async () => {
+			await ensureConnected();
+			return redis.eval(script, keys.length, ...keys, ...args);
+		});
 	},
 	quit: async () => {
-		if(redis.status === "end") {
-			return;
-		}
+		return runRedisOperation("quit", async () => {
+			if(redis.status === "end") {
+				return;
+			}
 
-		await redis.quit();
+			await redis.quit();
+		});
 	},
 };
 
