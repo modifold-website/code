@@ -8,7 +8,7 @@ const { awardProjectDownloadAchievements } = require("./achievements");
 
 const DOWNLOAD_FILE_EXTENSIONS = new Set([".jar", ".zip", ".rar"]);
 const DOWNLOAD_DEDUPE_TTL_SECONDS = Number(process.env.DOWNLOAD_DEDUPE_TTL_SECONDS) || 6 * 60 * 60;
-const DOWNLOAD_DEDUPE_LIMIT = Number(process.env.DOWNLOAD_DEDUPE_LIMIT) || 5;
+const DOWNLOAD_DEDUPE_LIMIT = Number(process.env.DOWNLOAD_DEDUPE_LIMIT) || 1;
 const DEFAULT_DOWNLOAD_PAGE_ORIGINS = [
 	"https://modifold.com",
 	"http://localhost:3000",
