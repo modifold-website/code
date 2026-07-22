@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ProjectCard from "../project/ProjectCard";
 import ProjectCardMedia from "../project/ProjectCardMedia";
@@ -91,6 +91,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const resultsRef = useRef(null);
 
     const urlQueryString = searchParams.toString();
     const normalizedInitialState = useMemo(() => normalizeInitialState(initialState), [initialState]);
@@ -103,6 +104,15 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const [useDefaultGameVersions, setUseDefaultGameVersions] = useState(normalizedInitialState.useDefaultGameVersions);
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
+
+    const scrollToResults = useCallback(() => {
+        requestAnimationFrame(() => {
+            resultsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        });
+    }, []);
 
     useEffect(() => {
         try {
@@ -127,11 +137,12 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
             if(search !== searchInput) {
                 setCurrentPage(1);
                 setSearch(searchInput);
+                scrollToResults();
             }
         }, 350);
 
         return () => clearTimeout(timer);
-    }, [searchInput, search]);
+    }, [searchInput, search, scrollToResults]);
 
     const nextQueryString = useMemo(() => buildQueryString({
         sort,
@@ -201,12 +212,14 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const toggleTag = (tag) => {
         setSelectedTags((prev) => prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]);
         setCurrentPage(1);
+        scrollToResults();
     };
 
     const toggleGameVersion = (version) => {
         setSelectedGameVersions((prev) => useDefaultGameVersions ? [version] : prev.includes(version) ? prev.filter((item) => item !== version) : [...prev, version]);
         setUseDefaultGameVersions(false);
         setCurrentPage(1);
+        scrollToResults();
     };
 
 	const selectGameVersionGroup = (versions, options = {}) => {
@@ -225,9 +238,10 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
 			groupVersions.forEach((version) => selectedVersions.add(version));
 			return Array.from(selectedVersions);
-		});
+        });
         setUseDefaultGameVersions(false);
 		setCurrentPage(1);
+        scrollToResults();
 	};
 
     const clearFilters = () => {
@@ -238,6 +252,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setSearchInput("");
         setSort("downloads");
         setCurrentPage(1);
+        scrollToResults();
     };
 
     const formatCategoryLabel = (tag) => getCategoryLabel(tLabels, tag);
@@ -245,6 +260,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const handleSortSelect = (sortOption) => {
         setSort(sortOption);
         setCurrentPage(1);
+        scrollToResults();
     };
 
     const handleSearchChange = (event) => {
@@ -255,13 +271,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setSearchInput("");
         setSearch("");
         setCurrentPage(1);
-    };
-
-    const scrollToPageTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
+        scrollToResults();
     };
 
     const handlePageChange = (nextPage) => {
@@ -272,7 +282,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         }
 
         setCurrentPage(normalizedPage);
-        scrollToPageTop();
+        scrollToResults();
     };
 
     const getPageButtons = () => {
@@ -370,19 +380,19 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
                 )}
 
                 {loading ? (
-                    <div className={cardView === "media" ? "browse-project-grid" : "browse-project-list"} aria-label={t("loading")} aria-busy="true">
+                    <div ref={resultsRef} className={cardView === "media" ? "browse-project-grid" : "browse-project-list"} aria-label={t("loading")} aria-busy="true">
                         {Array.from({ length: 10 }).map((_, index) => (
                             cardView === "media" ? <ProjectCardMediaSkeleton key={index} /> : <ProjectCardSkeleton key={index} />
                         ))}
                     </div>
                 ) : projects.length > 0 ? (
-                    <div className={cardView === "media" ? "browse-project-grid" : "browse-project-list"}>
+                    <div ref={resultsRef} className={cardView === "media" ? "browse-project-grid" : "browse-project-list"}>
                         {projects.map((project) => (
                             cardView === "media" ? <ProjectCardMedia key={project.id} project={project} relativeTimeBase={relativeTimeBase} /> : <ProjectCard key={project.id} project={project} relativeTimeBase={relativeTimeBase} />
                         ))}
                     </div>
                 ) : (
-                    <div className="subsite-empty-feed">
+                    <div ref={resultsRef} className="subsite-empty-feed">
                         <img src="/images/kweebec.png" style={{ width: "200px" }} />
 
                         <p className="subsite-empty-feed__title">{t("noProjects")}</p>
