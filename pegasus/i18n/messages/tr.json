@@ -1797,8 +1797,7 @@
     },
     "actions": {
       "approve": "Onayla",
-      "reject": "Reddet",
-      "rejectPrompt": "Reddetme nedenini girin:"
+      "reject": "Reddet"
     },
     "approveModal": {
       "title": "Proje onaylansın mı?",
@@ -1806,6 +1805,15 @@
       "withoutDiscord": "Bildirim yok",
       "withDiscord": "Discord'a gönder",
       "cancel": "İptal",
+      "close": "Kapat"
+    },
+    "rejectModal": {
+      "title": "Proje reddedilsin mi?",
+      "description": "“{projectTitle}” için ret nedenini girin. Moderasyon geçmişine kaydedilecek.",
+      "reason": "Ret nedeni",
+      "reasonPlaceholder": "Örneğin: açıklama ekleyin, ikon yükleyin veya proje materyallerini düzeltin.",
+      "cancel": "İptal",
+      "confirm": "Reddet",
       "close": "Kapat"
     },
     "errors": {

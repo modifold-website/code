@@ -1797,8 +1797,7 @@
     },
     "actions": {
       "approve": "Aprobar",
-      "reject": "Rechazar",
-      "rejectPrompt": "Introduce el motivo del rechazo:"
+      "reject": "Rechazar"
     },
     "approveModal": {
       "title": "¿Aprobar proyecto?",
@@ -1806,6 +1805,15 @@
       "withoutDiscord": "Sin notificación",
       "withDiscord": "Enviar a Discord",
       "cancel": "Cancelar",
+      "close": "Cerrar"
+    },
+    "rejectModal": {
+      "title": "¿Rechazar proyecto?",
+      "description": "Introduce el motivo del rechazo para “{projectTitle}”. Se guardará en el historial de moderación.",
+      "reason": "Motivo del rechazo",
+      "reasonPlaceholder": "Por ejemplo: añade una descripción, sube un icono o corrige los materiales del proyecto.",
+      "cancel": "Cancelar",
+      "confirm": "Rechazar",
       "close": "Cerrar"
     },
     "errors": {

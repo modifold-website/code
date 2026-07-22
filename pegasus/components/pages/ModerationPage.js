@@ -21,6 +21,8 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
     const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
     const [isSortPopoverOpen, setIsSortPopoverOpen] = useState(false);
 	const [approvalProject, setApprovalProject] = useState(null);
+	const [rejectionProject, setRejectionProject] = useState(null);
+	const [rejectionReason, setRejectionReason] = useState("");
 	const [isSubmittingModeration, setIsSubmittingModeration] = useState(false);
     const typePopoverRef = useRef(null);
     const sortPopoverRef = useRef(null);
@@ -102,6 +104,8 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
 
             toast.success(t("success.rejected"));
             setProjects((currentProjects) => currentProjects.filter((p) => p.id !== projectId));
+			setRejectionProject(null);
+			setRejectionReason("");
         } catch (err) {
             toast.error(t("errors.reject"));
         } finally {
@@ -121,6 +125,16 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
         setPage(1);
     };
 
+	const openRejectModal = (project) => {
+		setRejectionProject(project);
+		setRejectionReason("");
+	};
+
+	const closeRejectModal = () => {
+		setRejectionProject(null);
+		setRejectionReason("");
+	};
+
     useEffect(() => {
         const timer = setTimeout(() => {
             if(search !== searchInput) {
@@ -134,6 +148,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
 
     const typeLabel = t(`filters.types.${projectType}`);
     const sortLabel = sort === "oldest" ? t("filters.sort.oldest") : t("filters.sort.newest");
+	const canSubmitRejection = rejectionReason.trim().length > 0;
 
     return (
         <>
@@ -238,7 +253,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                                                 {t("actions.approve")}
                                             </button>
 
-                                            <button className="button button--size-m button--type-minimal" type="button" onClick={() => { const reason = prompt(t("actions.rejectPrompt")); if (reason) handleReject(project.id, reason); }} disabled={isSubmittingModeration}>
+                                            <button className="button button--size-m button--type-minimal" type="button" onClick={() => openRejectModal(project)} disabled={isSubmittingModeration}>
                                                 {t("actions.reject")}
                                             </button>
                                         </div>
@@ -301,6 +316,52 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
 
 							<button className="button button--size-m button--type-primary" type="button" onClick={() => approvalProject && handleApprove(approvalProject.id, true)} disabled={isSubmittingModeration}>
 								{t("approveModal.withDiscord")}
+							</button>
+						</div>
+					</div>
+				</div>
+			</Modal>
+
+			<Modal closeTimeoutMS={150} isOpen={Boolean(rejectionProject)} onRequestClose={closeRejectModal} className="modal active" overlayClassName="modal-overlay">
+				<div className="modal-window">
+					<div className="modal-window__header">
+						<h2 className="modal-window__title">{t("rejectModal.title")}</h2>
+
+						<button className="icon-button modal-window__close" type="button" onClick={closeRejectModal} disabled={isSubmittingModeration} aria-label={t("rejectModal.close")}>
+							<svg className="icon icon--x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<path d="M18 6 6 18"></path>
+								<path d="m6 6 12 12"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div className="modal-window__content">
+						<p className="moderation-approval-modal__description">
+							{t("rejectModal.description", { projectTitle: rejectionProject?.title || "" })}
+						</p>
+
+						<p className="blog-settings__field-title" style={{ marginBottom: "8px" }}>{t("rejectModal.reason")}</p>
+
+						<div className="field field--default textarea moderation-rejection-modal__reason">
+							<label className="field__wrapper">
+								<textarea
+									name="reason"
+									placeholder={t("rejectModal.reasonPlaceholder")}
+									className="autosize textarea__input"
+									required
+									value={rejectionReason}
+									onChange={(event) => setRejectionReason(event.target.value)}
+								/>
+							</label>
+						</div>
+
+						<div className="moderation-approval-modal__actions" style={{ marginTop: "16px" }}>
+							<button className="button button--size-m button--type-minimal" type="button" onClick={closeRejectModal} disabled={isSubmittingModeration}>
+								{t("rejectModal.cancel")}
+							</button>
+
+							<button className="button button--size-m button--type-primary" type="button" onClick={() => rejectionProject && handleReject(rejectionProject.id, rejectionReason.trim())} disabled={isSubmittingModeration || !canSubmitRejection}>
+								{t("rejectModal.confirm")}
 							</button>
 						</div>
 					</div>

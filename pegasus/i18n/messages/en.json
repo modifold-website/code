@@ -1797,8 +1797,7 @@
     },
     "actions": {
       "approve": "Approve",
-      "reject": "Reject",
-      "rejectPrompt": "Enter reason for rejection:"
+      "reject": "Reject"
     },
     "approveModal": {
       "title": "Approve project?",
@@ -1806,6 +1805,15 @@
       "withoutDiscord": "No notification",
       "withDiscord": "Send to Discord",
       "cancel": "Cancel",
+      "close": "Close"
+    },
+    "rejectModal": {
+      "title": "Reject project?",
+      "description": "Enter a rejection reason for “{projectTitle}”. It will be saved in moderation history.",
+      "reason": "Rejection reason",
+      "reasonPlaceholder": "For example: add a description, upload an icon, or fix the project materials.",
+      "cancel": "Cancel",
+      "confirm": "Reject",
       "close": "Close"
     },
     "errors": {

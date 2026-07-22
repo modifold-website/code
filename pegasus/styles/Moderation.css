@@ -515,6 +515,17 @@
 	flex-wrap: wrap;
 	gap: 8px;
 }
+.moderation-rejection-modal__reason .field__wrapper {
+	height: auto;
+	min-height: 120px;
+	align-items: stretch;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.moderation-rejection-modal__reason .textarea__input {
+	min-height: 96px;
+	resize: vertical;
+}
 .bento-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
