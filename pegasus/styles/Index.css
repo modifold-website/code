@@ -4587,11 +4587,19 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	pointer-events: auto;
 }
 .discover-featured__eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 	color: rgb(255 255 255 / 76%);
 	font-size: 15px;
 	font-weight: 500;
 	line-height: 1;
 	text-transform: uppercase;
+}
+.discover-featured__eyebrow svg {
+	width: 18px;
+	height: 18px;
+	fill: none;
 }
 .discover-featured__title-link {
 	color: #fff;

@@ -32,7 +32,12 @@ export default function DiscoverProjectsPage({ data, projectType }) {
 		<div className="discover-page">
 			<FeaturedHero projects={data?.featured || []} t={t} />
 
-			<DiscoverProjectRail title={t("weeklyPopular")} projects={data?.weeklyPopular || []} t={t} tCategoryLabels={tCategoryLabels} viewAllHref={`${browseHref}?sort=downloads`} useWeeklyDownloads />
+			<DiscoverProjectRail title={t("weeklyPopular")} titleIcon={(
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up-icon lucide-trending-up">
+					<path d="M16 7h6v6"/>
+					<path d="m22 7-8.5 8.5-5-5L2 17"/>
+				</svg>
+			)} projects={data?.weeklyPopular || []} t={t} tCategoryLabels={tCategoryLabels} viewAllHref={`${browseHref}?sort=downloads`} useWeeklyDownloads />
 
 			{(data?.categorySections || []).map((section) => (
 				<DiscoverProjectRail key={section.tag} title={getCategoryLabel(tCategoryLabels, section.tag)} titleIcon={<CategoryIcon category={section.tag} />} projects={section.projects || []} t={t} tCategoryLabels={tCategoryLabels} viewAllHref={`${browseHref}?c=${encodeURIComponent(section.tag)}`} />
