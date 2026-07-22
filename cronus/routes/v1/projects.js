@@ -2586,60 +2586,6 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
     }
 });
 
-const getProjectVersionDownloadFile = async ({ slug, versionId, userId = null }) => {
-    const [project] = await db.query("SELECT id, slug, user_id FROM projects WHERE slug = ?", [slug]);
-    if(!project.length) {
-        return { status: 404, body: { message: "Project not found" } };
-    }
-
-    const [version] = await db.query(
-        "SELECT id, file_url, version_number, moderation_status FROM project_versions WHERE id = ? AND project_id = ?",
-        [versionId, project[0].id]
-    );
-
-    if(!version.length) {
-        return { status: 404, body: { message: "Version not found" } };
-    }
-
-    if(!version[0].file_url) {
-        return { status: 404, body: { message: "Version file not found" } };
-    }
-
-    if(version[0].moderation_status !== "approved" && !(await canViewPrivateProjectVersions(project[0], userId))) {
-        return { status: 404, body: { message: "Version not found" } };
-    }
-
-    const fileUrl = version[0].file_url;
-
-    return {
-        status: 200,
-        body: {
-            success: true,
-            counted: false,
-            reason: "redirect_only",
-            fileUrl,
-        },
-        fileUrl,
-    };
-};
-
-router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
-    const { slug, versionId } = req.params;
-
-    try {
-        // Compatibility only: download analytics are counted by the media/CDN mirror endpoint.
-        const result = await getProjectVersionDownloadFile({ slug, versionId, userId: req.user?.id || null });
-        if(result.status !== 200) {
-            return res.status(result.status).json(result.body);
-        }
-
-        return res.redirect(result.fileUrl);
-    } catch (error) {
-        console.error('Error handling download redirect:', error);
-        return res.status(500).json({ message: 'Error handling download redirect', error: error.message });
-    }
-});
-
 router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
     const { slug, versionId } = req.params;
 
