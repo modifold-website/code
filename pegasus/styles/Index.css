@@ -1,12 +1,20 @@
 html {
     line-height: 1.15;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
 }
 html, body, a, button, [role=button], [tabindex], input, textarea {
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 body {
     margin: 0;
+    overflow-x: hidden;
+}
+@supports (overflow-x: clip) {
+    html,
+    body {
+        overflow-x: clip;
+    }
 }
 main {
     display: block;
@@ -4453,21 +4461,82 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	padding-bottom: 48px;
 }
 .discover-featured {
+	--discover-featured-side-gap: 12px;
 	position: relative;
 	height: 350px;
-	border-top-left-radius: var(--layout-island-border-radius);
-	border-top-right-radius: var(--layout-island-border-radius);
 	overflow: visible;
+	isolation: isolate;
 	transition: transform .12s ease;
 }
 .discover-featured:has(.discover-featured__image-link:active) {
 	transform: scale(.99);
 }
+.discover-featured__stage {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+}
+.discover-featured__slide {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	bottom: 0;
+	display: none;
+	overflow: hidden;
+	will-change: transform;
+}
+.discover-featured__slide--previous,
+.discover-featured__slide--current,
+.discover-featured__slide--next,
+.discover-featured__slide--previous-exit,
+.discover-featured__slide--current-to-previous,
+.discover-featured__slide--next-to-current,
+.discover-featured__slide--next-enter,
+.discover-featured__slide--next-exit,
+.discover-featured__slide--current-to-next,
+.discover-featured__slide--previous-to-current,
+.discover-featured__slide--previous-enter {
+	display: block;
+}
+.discover-featured__slide--previous {
+	transform: translate3d(calc(-100% - var(--discover-featured-side-gap)), 0, 0);
+}
+.discover-featured__slide--current {
+	transform: translate3d(0, 0, 0);
+}
+.discover-featured__slide--next {
+	transform: translate3d(calc(100% + var(--discover-featured-side-gap)), 0, 0);
+}
+.discover-featured__slide--previous-exit {
+	animation: discover-featured-previous-exit .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--current-to-previous {
+	animation: discover-featured-current-to-previous .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--next-to-current {
+	animation: discover-featured-next-to-current .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--next-enter {
+	animation: discover-featured-next-enter .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--next-exit {
+	animation: discover-featured-next-exit .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--current-to-next {
+	animation: discover-featured-current-to-next .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--previous-to-current {
+	animation: discover-featured-previous-to-current .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+.discover-featured__slide--previous-enter {
+	animation: discover-featured-previous-enter .56s cubic-bezier(.22, 1, .36, 1) forwards;
+}
 .discover-featured__image-link {
 	position: absolute;
 	inset: 0;
+	z-index: 1;
 	display: block;
-	border-radius: inherit;
 	overflow: hidden;
 	transition: filter .18s ease;
 }
@@ -4478,6 +4547,8 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	display: block;
 	mask-image: linear-gradient(#000, #f000);
 	-webkit-mask-image: linear-gradient(#000, #0000);
+	border-top-left-radius: var(--layout-island-border-radius);
+	border-top-right-radius: var(--layout-island-border-radius);
 }
 .discover-featured__content {
 	position: relative;
@@ -4571,6 +4642,10 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 .discover-featured__preview:active {
 	transform: scale(.96);
+}
+.discover-featured__preview:disabled,
+.discover-featured__arrow:disabled {
+	cursor: default;
 }
 .discover-featured__preview img {
 	width: 100%;
@@ -4709,6 +4784,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	z-index: 5;
 	flex-shrink: 0;
 	transform: none;
+}
+.discover-featured .discover-featured__arrow:disabled {
+	opacity: 1;
+	pointer-events: none;
+	cursor: default;
 }
 .discover-featured .discover-featured__arrow:active {
 	transform: scale(.94);
@@ -5159,6 +5239,70 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	}
 	to {
 		--discover-featured-preview-progress: 100%;
+	}
+}
+@keyframes discover-featured-previous-exit {
+	0% {
+		transform: translate3d(calc(-100% - var(--discover-featured-side-gap)), 0, 0);
+	}
+	100% {
+		transform: translate3d(calc(-200% - (var(--discover-featured-side-gap) * 2)), 0, 0);
+	}
+}
+@keyframes discover-featured-current-to-previous {
+	0% {
+		transform: translate3d(0, 0, 0);
+	}
+	100% {
+		transform: translate3d(calc(-100% - var(--discover-featured-side-gap)), 0, 0);
+	}
+}
+@keyframes discover-featured-next-to-current {
+	0% {
+		transform: translate3d(calc(100% + var(--discover-featured-side-gap)), 0, 0);
+	}
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+}
+@keyframes discover-featured-next-enter {
+	0% {
+		transform: translate3d(calc(200% + (var(--discover-featured-side-gap) * 2)), 0, 0);
+	}
+	100% {
+		transform: translate3d(calc(100% + var(--discover-featured-side-gap)), 0, 0);
+	}
+}
+@keyframes discover-featured-next-exit {
+	0% {
+		transform: translate3d(calc(100% + var(--discover-featured-side-gap)), 0, 0);
+	}
+	100% {
+		transform: translate3d(calc(200% + (var(--discover-featured-side-gap) * 2)), 0, 0);
+	}
+}
+@keyframes discover-featured-current-to-next {
+	0% {
+		transform: translate3d(0, 0, 0);
+	}
+	100% {
+		transform: translate3d(calc(100% + var(--discover-featured-side-gap)), 0, 0);
+	}
+}
+@keyframes discover-featured-previous-to-current {
+	0% {
+		transform: translate3d(calc(-100% - var(--discover-featured-side-gap)), 0, 0);
+	}
+	100% {
+		transform: translate3d(0, 0, 0);
+	}
+}
+@keyframes discover-featured-previous-enter {
+	0% {
+		transform: translate3d(calc(-200% - (var(--discover-featured-side-gap) * 2)), 0, 0);
+	}
+	100% {
+		transform: translate3d(calc(-100% - var(--discover-featured-side-gap)), 0, 0);
 	}
 }
 @keyframes recommended-pane-enter-right {
