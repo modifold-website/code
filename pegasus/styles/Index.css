@@ -5101,6 +5101,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .discover-latest-card:hover {
 	filter: brightness(.98);
 }
+.discover-latest-card:hover .discover-latest-card__icon img {
+	transform: translate(0) rotate(1deg) skew(0) skewY(0) scaleX(1.05) scaleY(1.05);
+}
 .discover-latest-card:hover .discover-latest-card__title {
 	text-decoration: underline;
 }
@@ -5110,8 +5113,18 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .discover-latest-card__icon {
 	width: 100%;
 	aspect-ratio: 1 / 1;
-	object-fit: cover;
 	border-radius: 16px;
+	overflow: hidden;
+}
+.discover-latest-card__icon img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transform: translate(0) rotate(0) skew(0) skewY(0) scaleX(1) scaleY(1);
+	transition-property: transform;
+	transition-duration: .5s;
+	transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 .discover-latest-card__content {
 	display: flex;

@@ -10,7 +10,9 @@ function LatestProjectCard({ project }) {
 
 	return (
 		<Link href={getProjectPath(project)} className="discover-latest-card">
-			<img className="discover-latest-card__icon" src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" loading="lazy" />
+			<div className="discover-latest-card__icon">
+				<img src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" loading="lazy" />
+			</div>
 
 			<div className="discover-latest-card__content">
 				<span className="discover-latest-card__title">{project.title}</span>
