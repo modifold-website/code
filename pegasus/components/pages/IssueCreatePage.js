@@ -347,7 +347,7 @@ export default function IssueCreatePage({ project, authToken, template, labels =
                 </div>
             </div>
 
-            <ProjectSidebar project={project} showLicense={true} showLinks={true} />
+            <ProjectSidebar project={project} authToken={authToken} showLicense={true} showLinks={true} />
         </div>
     );
 }

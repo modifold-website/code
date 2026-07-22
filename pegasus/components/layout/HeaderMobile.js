@@ -83,9 +83,9 @@ export default function HeaderMobile({ authToken }) {
             setPendingActiveItem(null);
         }
 
-        if(pathname === "/mods" && pendingActiveItem === "mods") {
-            setPendingActiveItem(null);
-        }
+		if((pathname === "/mods" || pathname === "/discover/mods") && pendingActiveItem === "mods") {
+			setPendingActiveItem(null);
+		}
 
         if(pathname === "/notifications" && pendingActiveItem === "notifications") {
             setPendingActiveItem(null);
@@ -168,7 +168,7 @@ export default function HeaderMobile({ authToken }) {
     const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
     const userProfileHref = user?.slug ? `/user/${user.slug}` : null;
     const isOwnProfileActive = Boolean(userProfileHref && pathname === userProfileHref);
-    const isActive = (href) => pathname === href;
+	const isActive = (href) => Array.isArray(href) ? href.includes(pathname) : pathname === href;
     const isItemActive = (itemKey, href) => {
         if(pendingActiveItem !== null) {
             return pendingActiveItem === itemKey;
@@ -193,7 +193,7 @@ export default function HeaderMobile({ authToken }) {
                             </svg>
                         </Link>
 
-                        <Link href="/mods" className={`tabbar__item ${isItemActive("mods", "/mods") ? "tabbar__item--active" : ""} ${animatingItem === "mods" ? "tabbar__item--animating" : ""}`} onPointerDown={() => activateTab("mods")} aria-label={t("mods")} data-ripple="center">
+						<Link href="/discover/mods" className={`tabbar__item ${isItemActive("mods", ["/mods", "/discover/mods"]) ? "tabbar__item--active" : ""} ${animatingItem === "mods" ? "tabbar__item--animating" : ""}`} onPointerDown={() => activateTab("mods")} aria-label={t("mods")} data-ripple="center">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="tabbar__icon" onAnimationEnd={() => handleTabAnimationEnd("mods")}>
                                 <path d="m21 21-4.34-4.34"/>
                                 <circle cx="11" cy="11" r="8"/>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ProjectCard from "../project/ProjectCard";
 import ProjectCardMedia from "../project/ProjectCardMedia";
@@ -14,22 +14,27 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { apiClient } from "@/utils/api/client";
 import { projectQueryKeys } from "@/utils/projects/queryKeys";
 import { getCategoryLabel } from "@/utils/categoryLabels";
+import { getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
+
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 function parseQueryString(queryString) {
     const params = new URLSearchParams(queryString || "");
     const rawSort = params.get("sort");
     const rawPage = Number.parseInt(params.get("page"), 10);
+    const gameVersions = params.getAll("v");
 
     return {
         tags: params.getAll("c"),
-        gameVersions: params.getAll("v"),
+        gameVersions,
+        useDefaultGameVersions: gameVersions.length === 0 && params.get("versions") !== "all",
         sort: ["downloads", "recent", "updated"].includes(rawSort) ? rawSort : "downloads",
         search: params.get("q") || "",
         page: Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1,
     };
 }
 
-function buildQueryString({ sort, search, selectedTags, selectedGameVersions, currentPage }) {
+function buildQueryString({ sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, currentPage }) {
     const params = new URLSearchParams();
 
     if(search) {
@@ -46,14 +51,20 @@ function buildQueryString({ sort, search, selectedTags, selectedGameVersions, cu
 
     [...selectedTags].sort().forEach((tag) => params.append("c", tag));
     [...selectedGameVersions].sort().forEach((version) => params.append("v", version));
+    if(!useDefaultGameVersions && selectedGameVersions.length === 0) {
+        params.set("versions", "all");
+    }
 
     return params.toString();
 }
 
 function normalizeInitialState(initialState) {
+    const gameVersions = Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : [];
+
     return {
         tags: Array.isArray(initialState?.tags) ? initialState.tags : [],
-        gameVersions: Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : [],
+        gameVersions,
+        useDefaultGameVersions: gameVersions.length === 0 && initialState?.useDefaultGameVersions !== false,
         sort: ["downloads", "recent", "updated"].includes(initialState?.sort) ? initialState.sort : "downloads",
         search: typeof initialState?.search === "string" ? initialState.search : "",
         page: Number.isFinite(initialState?.page) && initialState.page > 0 ? initialState.page : 1,
@@ -80,6 +91,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const resultsRef = useRef(null);
 
     const urlQueryString = searchParams.toString();
     const normalizedInitialState = useMemo(() => normalizeInitialState(initialState), [initialState]);
@@ -89,8 +101,18 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const [searchInput, setSearchInput] = useState(normalizedInitialState.search);
     const [selectedTags, setSelectedTags] = useState(normalizedInitialState.tags);
     const [selectedGameVersions, setSelectedGameVersions] = useState(normalizedInitialState.gameVersions);
+    const [useDefaultGameVersions, setUseDefaultGameVersions] = useState(normalizedInitialState.useDefaultGameVersions);
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
+
+    const scrollToResults = useCallback(() => {
+        requestAnimationFrame(() => {
+            resultsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        });
+    }, []);
 
     useEffect(() => {
         try {
@@ -98,11 +120,12 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         } catch {}
     }, [projectType, cardView]);
 
-    useEffect(() => {
+    useBrowserLayoutEffect(() => {
         const parsed = parseQueryString(urlQueryString);
 
         setSelectedTags(parsed.tags);
         setSelectedGameVersions(parsed.gameVersions);
+        setUseDefaultGameVersions(parsed.useDefaultGameVersions);
         setSort(parsed.sort);
         setSearch(parsed.search);
         setSearchInput(parsed.search);
@@ -114,19 +137,21 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
             if(search !== searchInput) {
                 setCurrentPage(1);
                 setSearch(searchInput);
+                scrollToResults();
             }
         }, 350);
 
         return () => clearTimeout(timer);
-    }, [searchInput, search]);
+    }, [searchInput, search, scrollToResults]);
 
     const nextQueryString = useMemo(() => buildQueryString({
         sort,
         search,
         selectedTags,
         selectedGameVersions,
+        useDefaultGameVersions,
         currentPage,
-    }), [sort, search, selectedTags, selectedGameVersions, currentPage]);
+    }), [sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, currentPage]);
 
     useEffect(() => {
         if(nextQueryString === urlQueryString) {
@@ -136,15 +161,23 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         router.replace(`${pathname}${nextQueryString ? `?${nextQueryString}` : ""}`, { scroll: false });
     }, [nextQueryString, urlQueryString, router, pathname]);
 
-    const apiParams = useMemo(() => ({
-        type: projectType,
-        sort,
-        search,
-        tags: [...selectedTags].sort().join(","),
-        game_versions: [...selectedGameVersions].sort().join(","),
-        page: currentPage,
-        limit: 20,
-    }), [projectType, sort, search, selectedTags, selectedGameVersions, currentPage]);
+    const apiParams = useMemo(() => {
+		const effectiveGameVersions = getEffectiveBrowseGameVersions(selectedGameVersions, gameVersions, { useDefault: useDefaultGameVersions });
+		const nextApiParams = {
+			type: projectType,
+			sort,
+			search,
+			tags: [...selectedTags].sort().join(","),
+			page: currentPage,
+			limit: 20,
+		};
+
+		if(effectiveGameVersions.length > 0) {
+			nextApiParams.game_versions = [...effectiveGameVersions].sort().join(",");
+		}
+
+		return nextApiParams;
+	}, [projectType, sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, gameVersions, currentPage]);
 
     const apiKey = useMemo(() => JSON.stringify(apiParams), [apiParams]);
     const projectsQuery = useQuery({
@@ -179,20 +212,47 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const toggleTag = (tag) => {
         setSelectedTags((prev) => prev.includes(tag) ? prev.filter((item) => item !== tag) : [...prev, tag]);
         setCurrentPage(1);
+        scrollToResults();
     };
 
     const toggleGameVersion = (version) => {
-        setSelectedGameVersions((prev) => prev.includes(version) ? prev.filter((item) => item !== version) : [...prev, version]);
+        setSelectedGameVersions((prev) => useDefaultGameVersions ? [version] : prev.includes(version) ? prev.filter((item) => item !== version) : [...prev, version]);
+        setUseDefaultGameVersions(false);
         setCurrentPage(1);
+        scrollToResults();
     };
+
+	const selectGameVersionGroup = (versions, options = {}) => {
+		const groupVersions = [...new Set(Array.isArray(versions) ? versions : [])];
+		setSelectedGameVersions((prev) => {
+			if(useDefaultGameVersions && options.isDefault) {
+				return [];
+			}
+
+			const selectedVersions = new Set(prev);
+			const isGroupSelected = groupVersions.length > 0 && groupVersions.every((version) => selectedVersions.has(version));
+
+			if(isGroupSelected) {
+				return prev.filter((version) => !groupVersions.includes(version));
+			}
+
+			groupVersions.forEach((version) => selectedVersions.add(version));
+			return Array.from(selectedVersions);
+        });
+        setUseDefaultGameVersions(false);
+		setCurrentPage(1);
+        scrollToResults();
+	};
 
     const clearFilters = () => {
         setSelectedTags([]);
         setSelectedGameVersions([]);
+        setUseDefaultGameVersions(false);
         setSearch("");
         setSearchInput("");
         setSort("downloads");
         setCurrentPage(1);
+        scrollToResults();
     };
 
     const formatCategoryLabel = (tag) => getCategoryLabel(tLabels, tag);
@@ -200,6 +260,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const handleSortSelect = (sortOption) => {
         setSort(sortOption);
         setCurrentPage(1);
+        scrollToResults();
     };
 
     const handleSearchChange = (event) => {
@@ -210,13 +271,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setSearchInput("");
         setSearch("");
         setCurrentPage(1);
-    };
-
-    const scrollToPageTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
+        scrollToResults();
     };
 
     const handlePageChange = (nextPage) => {
@@ -227,7 +282,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         }
 
         setCurrentPage(normalizedPage);
-        scrollToPageTop();
+        scrollToResults();
     };
 
     const getPageButtons = () => {
@@ -277,7 +332,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
     return (
         <div className="browse-page">
-            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
+            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
                 {projectType === "mod" && (
@@ -325,19 +380,19 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
                 )}
 
                 {loading ? (
-                    <div className={cardView === "media" ? "browse-project-grid" : "browse-project-list"} aria-label={t("loading")} aria-busy="true">
+                    <div ref={resultsRef} className={cardView === "media" ? "browse-project-grid" : "browse-project-list"} aria-label={t("loading")} aria-busy="true">
                         {Array.from({ length: 10 }).map((_, index) => (
                             cardView === "media" ? <ProjectCardMediaSkeleton key={index} /> : <ProjectCardSkeleton key={index} />
                         ))}
                     </div>
                 ) : projects.length > 0 ? (
-                    <div className={cardView === "media" ? "browse-project-grid" : "browse-project-list"}>
+                    <div ref={resultsRef} className={cardView === "media" ? "browse-project-grid" : "browse-project-list"}>
                         {projects.map((project) => (
                             cardView === "media" ? <ProjectCardMedia key={project.id} project={project} relativeTimeBase={relativeTimeBase} /> : <ProjectCard key={project.id} project={project} relativeTimeBase={relativeTimeBase} />
                         ))}
                     </div>
                 ) : (
-                    <div className="subsite-empty-feed">
+                    <div ref={resultsRef} className="subsite-empty-feed">
                         <img src="/images/kweebec.png" style={{ width: "200px" }} />
 
                         <p className="subsite-empty-feed__title">{t("noProjects")}</p>

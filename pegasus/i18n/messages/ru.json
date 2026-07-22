@@ -535,6 +535,15 @@
     "creators": "Авторы",
     "owner": "Владелец",
     "organizationOwner": "Организация",
+    "subscribeCreator": "Подписаться",
+    "unsubscribeCreator": "Отписаться",
+    "loginToSubscribe": "Войдите, чтобы подписаться на автора",
+    "subscriptionChangeError": "Не удалось изменить подписку",
+    "creatorStats": {
+      "followers": "{count, plural, one {подписчик} few {подписчика} many {подписчиков} other {подписчика}}",
+      "projects": "{count, plural, one {проект} few {проекта} many {проектов} other {проекта}}",
+      "downloads": "{count, plural, one {скачивание} few {скачивания} many {скачиваний} other {скачивания}}"
+    },
     "created": "Создан",
     "updated": "Обновлён",
     "playersLast14dTooltip": "С этим модом за последние 14 дней сыграло {count} игроков",
@@ -958,9 +967,25 @@
       "collapse": "Свернуть блок рекомендаций",
       "expand": "Развернуть блок рекомендаций"
     },
+    "discover": "Обзор",
+    "browseAll": "Все проекты",
     "mods": "Моды",
     "modpacks": "Модпаки",
     "worlds": "Миры"
+  },
+  "DiscoverPage": {
+    "featured": "Рекомендуемое",
+    "weeklyPopular": "Популярное за неделю",
+    "latest": "Недавно опубликованные",
+    "popularCategories": "Популярные категории",
+    "viewAll": "Смотреть все",
+    "go": "Перейти",
+    "moreTitle": "Нужно больше проектов?",
+    "moreText": "Откройте полный каталог с поиском, фильтрами и сортировкой.",
+    "moreCta": "Перейти в каталог",
+    "empty": "Пока нет проектов для витрины",
+    "previous": "Назад",
+    "next": "Вперёд"
   },
   "CategoryLabels": {
     "adventure": "Приключения",
@@ -1780,8 +1805,24 @@
     },
     "actions": {
       "approve": "Одобрить",
-      "reject": "Отклонить",
-      "rejectPrompt": "Введите причину отклонения:"
+      "reject": "Отклонить"
+    },
+    "approveModal": {
+      "title": "Одобрить проект?",
+      "description": "Выберите, отправлять ли уведомление о публикации «{projectTitle}» в Discord-сервер HytaleModding.",
+      "withoutDiscord": "Без уведомления",
+      "withDiscord": "Отправить в Discord",
+      "cancel": "Отмена",
+      "close": "Закрыть"
+    },
+    "rejectModal": {
+      "title": "Отклонить проект?",
+      "description": "Укажите причину отклонения «{projectTitle}». Она сохранится в истории модерации.",
+      "reason": "Причина отклонения",
+      "reasonPlaceholder": "Например: нужно добавить описание, иконку или исправить материалы проекта.",
+      "cancel": "Отмена",
+      "confirm": "Отклонить",
+      "close": "Закрыть"
     },
     "errors": {
       "fetchProjects": "Ошибка загрузки проектов для модерации",
@@ -1952,8 +1993,12 @@
       "projectLikeMany": "{username} и ещё {count} пользователей поставили лайк вашему проекту {project}",
       "projectLikeOneMiddle": "поставил лайк вашему проекту",
       "projectLikeManyMiddle": "и ещё {count} пользователей поставили лайк вашему проекту",
+      "projectReleaseMiddle": "опубликовал(а) новый проект",
+      "projectApprovedMiddle": "Ваш проект прошёл модерацию и теперь доступен:",
+      "projectRejectedMiddle": "Ваш проект не прошёл модерацию:",
       "projectVersionReleaseMiddle": "выпустил версию {version} для",
       "projectVersionApprovedMiddle": "Ваша версия {version} прошла модерацию и теперь доступна для",
+      "projectVersionRejectedMiddle": "Ваша версия {version} не прошла модерацию для",
       "projectFallback": "вашему проекту",
       "versionFallback": "новую",
       "unknown": "Новое уведомление",

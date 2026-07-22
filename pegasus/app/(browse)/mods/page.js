@@ -1,7 +1,7 @@
 ﻿import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import BrowsePage from "@/components/pages/BrowsePage";
-import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { fetchGameVersionItems, getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
 
 const apiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -37,6 +37,7 @@ function parseBrowseSearchParams(searchParams) {
 
     const tags = getValues("c");
     const gameVersions = getValues("v");
+    const useDefaultGameVersions = gameVersions.length === 0 && getValues("versions")[0] !== "all";
     const search = getValues("q")[0] || "";
     const sortCandidate = getValues("sort")[0] || "";
     const sort = ["downloads", "recent", "updated"].includes(sortCandidate) ? sortCandidate : "downloads";
@@ -48,6 +49,7 @@ function parseBrowseSearchParams(searchParams) {
         search,
         tags,
         gameVersions,
+        useDefaultGameVersions,
         page,
     };
 }
@@ -84,20 +86,23 @@ export default async function ModsPage({ searchParams }) {
     const initialCardView = cookieStore.get("browse_card_view_mod")?.value === "media" ? "media" : "list";
     const initialRecommendedCollapsed = cookieStore.get("browse_recommended_collapsed_mod")?.value === "1";
     const sortedTags = [...initialState.tags].sort();
-    const sortedGameVersions = [...initialState.gameVersions].sort();
+    const gameVersions = await fetchGameVersionItems();
+    const effectiveGameVersions = getEffectiveBrowseGameVersions(initialState.gameVersions, gameVersions, { useDefault: initialState.useDefaultGameVersions });
+    const sortedGameVersions = [...effectiveGameVersions].sort();
     const apiParams = {
         type: "mod",
         sort: initialState.sort,
         search: initialState.search,
         tags: sortedTags.join(","),
-        game_versions: sortedGameVersions.join(","),
         page: initialState.page,
         limit: 20,
     };
+    if(sortedGameVersions.length > 0) {
+        apiParams.game_versions = sortedGameVersions.join(",");
+    }
     const initialApiKey = JSON.stringify(apiParams);
     let initialData = null;
     let initialTags = [];
-    let gameVersions = [];
     let recommendedProjects = [];
     let activeModJams = [];
 
@@ -107,10 +112,12 @@ export default async function ModsPage({ searchParams }) {
             sort: apiParams.sort,
             search: apiParams.search,
             tags: apiParams.tags,
-            game_versions: apiParams.game_versions,
             page: String(apiParams.page),
             limit: String(apiParams.limit),
         });
+        if(apiParams.game_versions) {
+            requestParams.set("game_versions", apiParams.game_versions);
+        }
 
         const response = await fetch(`${apiBase}/projects?${requestParams.toString()}`, {
             next: { revalidate: 60 },
@@ -143,8 +150,6 @@ export default async function ModsPage({ searchParams }) {
     } catch (error) {
         console.error("Failed to fetch mod tags:", error);
     }
-
-    gameVersions = await fetchGameVersionItems();
 
     try {
         const recommendedResponse = await fetch(`${apiBase}/recommended?type=mod`, {

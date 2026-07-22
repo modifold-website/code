@@ -3,9 +3,13 @@
 import { Fragment, useState } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
+import axios from "axios";
+import { toast } from "react-toastify";
 import LicenseModal from "../../modal/LicenseModal";
 import ModJamVoteButton from "@/components/mod-jams/ModJamVoteButton";
 import UserName from "../ui/UserName";
+import { useAuth } from "../providers/AuthProvider";
+import { formatDownloads } from "@/utils/formatDownloads";
 import { getProjectPath } from "@/utils/projectRoutes";
 import { LICENSES } from "../Licenses";
 
@@ -21,6 +25,195 @@ function getLicenseDisplayName(license, unknownLicense) {
 	});
 
 	return matchedLicense?.spdx || license?.spdx || license?.name || unknownLicense;
+}
+
+const getCreatorId = (creator) => creator?.id || creator?.user_id || null;
+const getCreatorHref = (creator) => creator?.profile_url || `/user/${creator?.slug}`;
+const getCreatorAvatar = (creator) => creator?.avatar || "https://cdn.modifold.com/default_avatar.png";
+const formatCompactNumber = (value, locale) => {
+	const count = Math.max(0, Number(value) || 0);
+
+	if(count < 10000) {
+		return new Intl.NumberFormat(locale).format(count);
+	}
+
+	return new Intl.NumberFormat(locale, {
+		notation: "compact",
+		maximumFractionDigits: 1,
+	}).format(count);
+};
+
+function ProjectCreatorStat({ icon, value, label }) {
+	return (
+		<div className="project-creator-card__stat">
+			<span className="project-creator-card__stat-icon" aria-hidden="true">{icon}</span>
+			<span className="project-creator-card__stat-text">
+				<span className="project-creator-card__stat-value">{value}</span>
+				<span>{label}</span>
+			</span>
+		</div>
+	);
+}
+
+function ProjectCreatorOrganizationLabel({ t }) {
+	return (
+		<div className="project-creator-card__organization">
+			<svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+				<path d="M10 12h4"/>
+				<path d="M10 8h4"/>
+				<path d="M14 21v-3a2 2 0 0 0-4 0v3"/>
+				<path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/>
+				<path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/>
+			</svg>
+
+			<span>{t("organizationOwner")}</span>
+		</div>
+	);
+}
+
+function ProjectCreatorCard({ creator, authToken, t, locale }) {
+	const { isLoggedIn, user: currentUser } = useAuth();
+	const creatorId = getCreatorId(creator);
+	const isOrganization = creator?.type === "organization";
+	const isOwnCreator = Boolean(currentUser?.id && creatorId && Number(currentUser.id) === Number(creatorId));
+	const [stats, setStats] = useState({
+		followers: Math.max(0, Number(creator?.subscribers) || 0),
+		projects: Math.max(0, Number(creator?.totalProjects) || 0),
+		downloads: Math.max(0, Number(creator?.totalDownloads) || 0),
+		userId: creatorId,
+	});
+	const [isSubscribed, setIsSubscribed] = useState(Boolean(creator?.isSubscribed));
+	const [subscriptionId, setSubscriptionId] = useState(creator?.subscriptionId || null);
+	const [isSaving, setIsSaving] = useState(false);
+
+	const handleSubscribe = async () => {
+		if(!isLoggedIn || !authToken) {
+			toast.error(t("loginToSubscribe"));
+			return;
+		}
+
+		if(isSaving || isOwnCreator || isOrganization) {
+			return;
+		}
+
+		try {
+			setIsSaving(true);
+
+			if(isSubscribed) {
+				await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/subscriptions/${subscriptionId}`, {
+					headers: { Authorization: `Bearer ${authToken}` },
+				});
+
+				setIsSubscribed(false);
+				setSubscriptionId(null);
+				setStats((currentStats) => ({
+					...currentStats,
+					followers: Math.max(0, Number(currentStats.followers) - 1),
+				}));
+			} else {
+				const userId = stats.userId || creatorId;
+				if(!userId) {
+					toast.error(t("subscriptionChangeError"));
+					return;
+				}
+
+				const res = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/subscriptions`, { userId }, {
+					headers: { Authorization: `Bearer ${authToken}` },
+				});
+
+				setIsSubscribed(true);
+				setSubscriptionId(res.data?.subscriptionId || null);
+				setStats((currentStats) => ({
+					...currentStats,
+					followers: Math.max(0, Number(currentStats.followers) || 0) + 1,
+				}));
+			}
+		} catch (err) {
+			toast.error(err.response?.data?.message || t("subscriptionChangeError"));
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
+	return (
+		<div className="project-creator-card">
+			<div className="project-creator-card__header">
+				<Link className="project-creator-card__avatar button--active-transform" href={getCreatorHref(creator)}>
+					<div className="andropov-media--cropped andropov-media andropov-media--rounded andropov-media--bordered andropov-image account-menu__avatar" style={{ aspectRatio: "480 / 320", width: "38px", height: "38px", maxWidth: "none", maxHeight: "none", backgroundColor: "var(--theme-color-background)" }}>
+						<img alt="" loading="lazy" width="38" height="38" decoding="async" data-nimg="1" style={{ color: "transparent" }} src={getCreatorAvatar(creator)} />
+					</div>
+				</Link>
+
+				<Link className={`project-creator-card__name ${isOrganization ? "project-creator-card__name--organization" : ""}`} href={getCreatorHref(creator)}>
+					<UserName user={creator} />
+
+					{isOrganization && <ProjectCreatorOrganizationLabel t={t} />}
+				</Link>
+			</div>
+
+			<div className="project-creator-card__stats">
+				{!isOrganization && (
+					<ProjectCreatorStat
+						icon={(
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+								<path d="M16 3.128a4 4 0 0 1 0 7.744"/>
+								<path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+								<circle cx="9" cy="7" r="4"/>
+							</svg>
+						)}
+						value={formatCompactNumber(stats.followers, locale)}
+						label={t("creatorStats.followers", { count: stats.followers })}
+					/>
+				)}
+
+				<ProjectCreatorStat
+					icon={(
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+							<path d="m3.3 7 8.7 5 8.7-5"/>
+							<path d="M12 22V12"/>
+						</svg>
+					)}
+					value={formatCompactNumber(stats.projects, locale)}
+					label={t("creatorStats.projects", { count: stats.projects })}
+				/>
+
+				<ProjectCreatorStat
+					icon={(
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M12 15V3"/>
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+							<path d="m7 10 5 5 5-5"/>
+						</svg>
+					)}
+					value={formatDownloads(stats.downloads, locale)}
+					label={t("creatorStats.downloads", { count: stats.downloads })}
+				/>
+			</div>
+
+			{!isOrganization && !isOwnCreator && (
+				<button className={`button button--size-m ${isSubscribed ? "button--type-secondary" : "button--type-primary"} button--with-icon project-creator-card__follow`} type="button" onClick={handleSubscribe} disabled={isSaving}>
+					{isSubscribed ? (
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<line x1="22" x2="16" y1="11" y2="11"/>
+						</svg>
+					) : (
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+							<circle cx="9" cy="7" r="4"/>
+							<line x1="19" x2="19" y1="8" y2="14"/>
+							<line x1="22" x2="16" y1="11" y2="11"/>
+						</svg>
+					)}
+
+					{isSubscribed ? t("unsubscribeCreator") : t("subscribeCreator")}
+				</button>
+			)}
+		</div>
+	);
 }
 
 export default function ProjectSidebar({ project, authToken, showLicense = true, showLinks = true }) {
@@ -91,91 +284,15 @@ export default function ProjectSidebar({ project, authToken, showLicense = true,
             <div className="content content--padding">
                 <h2>{t("creators")}</h2>
 
-                <div style={{ display: "flex", gap: "12px", flexDirection: "column" }}>
+                <div className="project-creators-list">
                     {project.owner?.type === "organization" ? (
-                        <div className="author author-card" style={{ "--1ebedaf6": "40px" }}>
-                            <Link className="author__avatar button--active-transform" href={project.owner?.profile_url || `/user/${project.owner?.slug}`}>
-                                <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none", borderRadius: "8px" }}>
-                                    <img src={project.owner.avatar} className="magnify" alt={t("ownerAvatarAlt", { username: project.owner.username })} />
-                                </div>
-                            </Link>
-
-                            <div className="author__main">
-                                <Link className="author__name" href={project.owner?.profile_url || `/user/${project.owner?.slug}`}>
-                                    <UserName user={project.owner} />
-                                </Link>
-                            </div>
-
-                            <div className="author__details">
-                                <div className="comment__detail" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-building2-icon lucide-building-2">
-                                        <path d="M10 12h4"></path>
-                                        <path d="M10 8h4"></path>
-                                        <path d="M14 21v-3a2 2 0 0 0-4 0v3"></path>
-                                        <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"></path>
-                                        <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"></path>
-                                    </svg>
-
-                                    <time style={{ lineHeight: "normal" }}>
-                                        {t("organizationOwner")}
-                                    </time>
-                                </div>
-                            </div>
-                        </div>
+                        <ProjectCreatorCard creator={project.owner} authToken={authToken} t={t} locale={locale} />
                     ) : project.members && project.members.length > 0 ? (
                         project.members.map((member) => (
-                            <div key={member.user_id} className="author author-card" style={{ "--1ebedaf6": "40px" }}>
-                                <Link className="author__avatar button--active-transform" href={`/user/${member.slug}`}>
-                                    <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none" }}>
-                                        <img src={member.avatar} className="magnify" alt={t("ownerAvatarAlt", { username: member.username })} />
-                                    </div>
-                                </Link>
-
-                                <div className="author__main">
-                                    <Link className="author__name" href={`/user/${member.slug}`}>
-                                        <UserName user={member} />
-                                    </Link>
-                                </div>
-
-                                <div className="author__details">
-                                    <div className="comment__detail" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                        <time style={{ lineHeight: "normal" }}>{member.role}</time>
-
-                                        {project.owner?.type !== "organization" && project.owner.slug === member.slug && (
-                                            <svg style={{ fill: "none", color: "#f0a530" }} xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-crown-icon lucide-crown">
-                                                <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                                                <path d="M5 21h14" />
-                                            </svg>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                            <ProjectCreatorCard key={member.user_id} creator={member} authToken={authToken} t={t} locale={locale} />
                         ))
                     ) : (
-                        <div className="author author-card" style={{ "--1ebedaf6": "40px" }}>
-                            <Link className="author__avatar button--active-transform" href={project.owner?.profile_url || `/user/${project.owner?.slug}`}>
-                                <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none" }}>
-                                    <img src={project.owner.avatar} className="magnify" alt={t("ownerAvatarAlt", { username: project.owner.username })} />
-                                </div>
-                            </Link>
-
-                            <div className="author__main">
-                                <Link className="author__name" href={project.owner?.profile_url || `/user/${project.owner?.slug}`}>
-                                    <UserName user={project.owner} />
-                                </Link>
-                            </div>
-
-                            <div className="author__details">
-                                <div className="comment__detail" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                    <time style={{ lineHeight: "normal" }}>{t("owner")}</time>
-
-                                    <svg style={{ fill: "none", color: "#f0a530" }} xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-crown-icon lucide-crown">
-                                        <path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z" />
-                                        <path d="M5 21h14" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
+                        <ProjectCreatorCard creator={project.owner} authToken={authToken} t={t} locale={locale} />
                     )}
                 </div>
             </div>

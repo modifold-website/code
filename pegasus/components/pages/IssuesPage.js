@@ -340,7 +340,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                     </div>
 
                     <div className="content content--padding">
-                        <div class="issues-sidebar-actions" style={{ gap: "8px" }}>
+                        <div className="issues-sidebar-actions" style={{ gap: "8px" }}>
                             <button className="button button--size-m button--type-primary button--active-transform button--with-icon" onClick={openPicker} data-ripple>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M5 12h14"></path>

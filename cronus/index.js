@@ -17,6 +17,7 @@ const bansRoutes = require("./routes/v1/bans");
 const notificationsRouter = require("./routes/v1/notifications");
 const projectRoutes = require("./routes/v1/projects");
 const versionRoutesV2 = require("./routes/v2/versions");
+const discoverRoutesV2 = require("./routes/v2/discover");
 const moderationTags = require("./routes/v1/moderation");
 const usersModerationRouter = require("./routes/v1/users_moderation");
 const ApiTokensRouter = require("./routes/v1/api-tokens");
@@ -26,6 +27,7 @@ const organizationsRoutes = require("./routes/v1/organizations");
 const mediaRoutes = require("./routes/v1/media");
 const tagsRoutes = require("./routes/v1/tags");
 const analyticsRoutes = require("./routes/v1/analytics");
+const internalDownloadsRoutes = require("./routes/internal/downloads");
 const SERVER_PORT = Number(process.env.SERVER_PORT) || 4000;
 const recommendedRoutes = require("./routes/v1/recommended");
 const modJamsRoutes = require("./routes/v1/mod-jams");
@@ -136,6 +138,8 @@ const startServer = () => {
 		res.status(200).json({ status: "OK", uptime: process.uptime() });
 	});
 
+	app.use("/internal/downloads", internalDownloadsRoutes);
+
 	app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, {
 		customCss: ".swagger-ui .topbar { display: none }",
 		customSiteTitle: "Modifold API Documentation",
@@ -155,6 +159,7 @@ const startServer = () => {
 	mountV1Route("/moderation", moderationTags);
 	mountV1Route("/projects", projectsLimiterMiddleware, projectRoutes);
 	app.use("/v2/version", projectsLimiterMiddleware, versionRoutesV2);
+	app.use("/v2/discover", projectsLimiterMiddleware, discoverRoutesV2);
 	mountV1Route("/auth", authRoutes);
 	mountV1Route("/users", usersRoutes);
 	mountV1Route("/subscriptions", subscriptionRoutes);

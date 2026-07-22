@@ -2,38 +2,48 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CategoryIcon from "@/utils/CategoryIcon";
+import { getBrowseGameVersionGroups, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 
 const normalizeTags = (tags) => tags.map((tag) => (typeof tag === "string" ? { name: tag } : tag)).filter((tag) => tag && typeof tag.name === "string");
-const normalizeGameVersionItems = (versions) => versions.map((item) => {
-    if(typeof item === "string") {
-        return { version: item, version_type: "release" };
-    }
 
-    if(item && typeof item.version === "string") {
-        return { version: item.version, version_type: item.version_type || "release" };
-    }
-
-    return null;
-}).filter(Boolean);
-
-export default function BrowseFiltersSidebar({ t, projectType, tags = [], selectedTags = [], onToggleTag, gameVersions = [], selectedGameVersions = [], onToggleGameVersion, onClearFilters, getCategoryLabel = (label) => label }) {
+export default function BrowseFiltersSidebar({ t, projectType, tags = [], selectedTags = [], onToggleTag, gameVersions = [], selectedGameVersions = [], useDefaultGameVersions = false, onToggleGameVersion, onSelectGameVersionGroup, onClearFilters, getCategoryLabel = (label) => label }) {
     const normalizedTags = normalizeTags(tags);
-    const normalizedGameVersions = useMemo(() => normalizeGameVersionItems(gameVersions), [gameVersions]);
+    const normalizedGameVersions = useMemo(() => normalizeGameVersionItemsPayload({ game_versions: gameVersions }), [gameVersions]);
+	const gameVersionGroups = useMemo(() => getBrowseGameVersionGroups(normalizedGameVersions), [normalizedGameVersions]);
     const [versionSearch, setVersionSearch] = useState("");
     const [showAllVersions, setShowAllVersions] = useState(false);
     const versionListRef = useRef(null);
     const hasSelectedFilters = selectedTags.length > 0 || selectedGameVersions.length > 0;
     const isWorldProjectType = projectType === "world";
+	const selectedGameVersionSet = useMemo(() => new Set(selectedGameVersions), [selectedGameVersions]);
+	const groupedVersionSet = useMemo(() => new Set(gameVersionGroups.flatMap((group) => group.versions)), [gameVersionGroups]);
+	const filteredGameVersionGroups = useMemo(() => {
+		const query = versionSearch.trim().toLowerCase();
+
+		if(!query) {
+			return gameVersionGroups;
+		}
+
+		return gameVersionGroups.filter((group) => (
+			group.label.toLowerCase().includes(query) ||
+			group.range_label.toLowerCase().includes(query) ||
+			group.versions.some((version) => version.toLowerCase().includes(query))
+		));
+	}, [gameVersionGroups, versionSearch]);
     const filteredGameVersions = useMemo(() => {
         const query = versionSearch.trim().toLowerCase();
-        const visibleVersions = normalizedGameVersions.filter((item) => showAllVersions || item.version_type === "release");
+        const visibleVersions = normalizedGameVersions.filter((item) => (
+			item.is_browse_visible !== false &&
+			!groupedVersionSet.has(item.version) &&
+			(showAllVersions || item.version_type === "release")
+		));
 
         if(!query) {
             return visibleVersions;
         }
 
         return visibleVersions.filter((item) => item.version.toLowerCase().includes(query));
-    }, [normalizedGameVersions, showAllVersions, versionSearch]);
+    }, [groupedVersionSet, normalizedGameVersions, showAllVersions, versionSearch]);
     const updateVersionListFade = useCallback(() => {
         const list = versionListRef.current;
         if(!list) {
@@ -49,7 +59,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
 
     useEffect(() => {
         updateVersionListFade();
-    }, [filteredGameVersions, updateVersionListFade]);
+    }, [filteredGameVersionGroups, filteredGameVersions, updateVersionListFade]);
 
     const gameVersionsSection = normalizedGameVersions.length > 0 ? (
         <div className="content content--padding">
@@ -65,6 +75,31 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
             </label>
 
             <ul ref={versionListRef} className="category-list browse-version-list" role="list" onScroll={updateVersionListFade}>
+				{filteredGameVersionGroups.map((group) => {
+					const isExplicitlySelected = group.versions.length > 0 && group.versions.every((version) => selectedGameVersionSet.has(version));
+					const isSelected = isExplicitlySelected || (useDefaultGameVersions && group.is_browse_default);
+
+					return (
+						<li key={group.key} className="category-list__item">
+							<button className={`category-option browse-version-option browse-version-group ${isSelected ? "category-option--active" : ""}`} type="button" onClick={() => onSelectGameVersionGroup?.(group.versions, { isDefault: group.is_browse_default })} aria-pressed={isSelected}>
+								<span className="browse-version-group__text">
+									<span className="category-option__label">{group.label}</span>
+
+									{group.range_label && (
+										<span className="browse-version-group__range">({group.range_label})</span>
+									)}
+								</span>
+
+								{isSelected && (
+									<svg className="category-option__check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+										<path d="M20 6 9 17l-5-5"/>
+									</svg>
+								)}
+							</button>
+						</li>
+					);
+				})}
+
                 {filteredGameVersions.map((item) => {
                     const isSelected = selectedGameVersions.includes(item.version);
 

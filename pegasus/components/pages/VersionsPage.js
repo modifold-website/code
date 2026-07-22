@@ -11,6 +11,7 @@ import VersionDownloadButton from "../project/VersionDownloadButton";
 import Tooltip from "../ui/Tooltip";
 import DownloadCount from "../ui/DownloadCount";
 import { DEFAULT_GAME_VERSIONS, sortByKnownGameVersions } from "@/utils/gameVersions";
+import { getVersionDownloadUrl } from "@/utils/projects/downloads";
 
 const releaseChannels = ["release", "beta", "alpha"];
 const VERSION_MODERATION_BADGE_TYPES = {
@@ -360,17 +361,20 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             const moderationBadge = getVersionModerationBadge(version.moderation_status);
                             const versionGameVersions = parseVersionList(version.game_versions);
                             const versionHref = `${getProjectPath(project)}/version/${version.id}`;
+                            const downloadHref = getVersionDownloadUrl(version);
 
                             return (
                                 <div key={version.id} className="version-button" role="link" tabIndex={0} onClick={(event) => handleVersionRowClick(event, versionHref)} onKeyDown={(event) => handleVersionRowKeyDown(event, versionHref)}>
                                     <span className="version-table__download-action">
-                                        <Tooltip content={t("versions.download")} delay={300}>
-                                            <VersionDownloadButton project={project} version={version} className={`download-button type--${version.release_channel || "release"}`} href={`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${version.id}/download`} ariaLabel={t("downloadVersionAria", { version: version.version_number })}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"></path>
-                                                </svg>
-                                            </VersionDownloadButton>
-                                        </Tooltip>
+                                        {downloadHref && (
+                                            <Tooltip content={t("versions.download")} delay={300}>
+                                                <VersionDownloadButton project={project} version={version} className={`download-button type--${version.release_channel || "release"}`} href={downloadHref} ariaLabel={t("downloadVersionAria", { version: version.version_number })}>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-4-4 4m0 0-4-4m4 4V4"></path>
+                                                    </svg>
+                                                </VersionDownloadButton>
+                                            </Tooltip>
+                                        )}
                                     </span>
 
                                     <Link href={versionHref} className="version-table__name">
@@ -431,7 +435,7 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                     )}
                 </div>
 
-                <ProjectSidebar project={project} />
+                <ProjectSidebar project={project} authToken={authToken} />
             </div>
         </>
     );

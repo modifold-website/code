@@ -536,6 +536,15 @@
     "creators": "Автори",
     "owner": "Власник",
     "organizationOwner": "Організація",
+    "subscribeCreator": "Підписатися",
+    "unsubscribeCreator": "Відписатися",
+    "loginToSubscribe": "Увійдіть, щоб підписатися на автора",
+    "subscriptionChangeError": "Не вдалося змінити підписку",
+    "creatorStats": {
+      "followers": "{count, plural, one {підписник} few {підписники} many {підписників} other {підписника}}",
+      "projects": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
+      "downloads": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}"
+    },
     "created": "Створено",
     "updated": "Оновлено",
     "playersLast14dTooltip": "За останнi 14 днiв з цим модом грало {count} гравцiв",
@@ -959,9 +968,25 @@
       "collapse": "Згорнути рекомендації",
       "expand": "Розгорнути рекомендації"
     },
+    "discover": "Огляд",
+    "browseAll": "Усі проєкти",
     "mods": "Моди",
     "modpacks": "Модпаки",
     "worlds": "Світи"
+  },
+  "DiscoverPage": {
+    "featured": "Рекомендоване",
+    "weeklyPopular": "Популярне за тиждень",
+    "latest": "Нещодавно опубліковані",
+    "popularCategories": "Популярні категорії",
+    "viewAll": "Дивитися всі",
+    "go": "Відкрити",
+    "moreTitle": "Потрібно більше проєктів?",
+    "moreText": "Відкрийте повний каталог із пошуком, фільтрами та сортуванням.",
+    "moreCta": "Перейти до каталогу",
+    "empty": "Поки немає проєктів для огляду",
+    "previous": "Попередній",
+    "next": "Наступний"
   },
   "CategoryLabels": {
     "adventure": "Пригоди",
@@ -1781,8 +1806,24 @@
     },
     "actions": {
       "approve": "Схвалити",
-      "reject": "Відхилити",
-      "rejectPrompt": "Введіть причину відхилення:"
+      "reject": "Відхилити"
+    },
+    "approveModal": {
+      "title": "Схвалити проєкт?",
+      "description": "Виберіть, чи надсилати сповіщення про публікацію «{projectTitle}» на Discord-сервер HytaleModding.",
+      "withoutDiscord": "Без сповіщення",
+      "withDiscord": "Надіслати в Discord",
+      "cancel": "Скасувати",
+      "close": "Закрити"
+    },
+    "rejectModal": {
+      "title": "Відхилити проєкт?",
+      "description": "Укажіть причину відхилення «{projectTitle}». Вона збережеться в історії модерації.",
+      "reason": "Причина відхилення",
+      "reasonPlaceholder": "Наприклад: додайте опис, завантажте іконку або виправте матеріали проєкту.",
+      "cancel": "Скасувати",
+      "confirm": "Відхилити",
+      "close": "Закрити"
     },
     "errors": {
       "fetchProjects": "Помилка отримання проєктів для модерації",
@@ -1953,8 +1994,12 @@
       "projectLikeMany": "{username} та ще {count} користувачів вподобали ваш проєкт {project}",
       "projectLikeOneMiddle": "вподобав ваш проєкт",
       "projectLikeManyMiddle": "та ще {count} користувачів вподобали ваш проєкт",
+      "projectReleaseMiddle": "опублікував(ла) новий проєкт",
       "projectVersionReleaseMiddle": "випустив(ла) версію {version} для",
       "projectVersionApprovedMiddle": "Ваша версія {version} пройшла модерацію і тепер доступна для",
+      "projectVersionRejectedMiddle": "Ваша версія {version} не пройшла модерацію для",
+      "projectApprovedMiddle": "Ваш проєкт пройшов модерацію і тепер доступний:",
+      "projectRejectedMiddle": "Ваш проєкт не пройшов модерацію:",
       "projectFallback": "ваш проєкт",
       "versionFallback": "нової",
       "unknown": "Нове сповіщення",

@@ -535,6 +535,15 @@
     "creators": "Üreticiler",
     "owner": "Sahip",
     "organizationOwner": "Organizasyon",
+    "subscribeCreator": "Takip et",
+    "unsubscribeCreator": "Takibi bırak",
+    "loginToSubscribe": "Üreticileri takip etmek için giriş yapın",
+    "subscriptionChangeError": "Abonelik değiştirilemedi",
+    "creatorStats": {
+      "followers": "takipçi",
+      "projects": "proje",
+      "downloads": "indirme"
+    },
     "created": "Oluşturulma",
     "updated": "Güncellendi",
     "playersLast14dTooltip": "Son 14 gunde bu modu {count} oyuncu kullandi",
@@ -958,9 +967,25 @@
       "collapse": "Önerileri daralt",
       "expand": "Önerileri genişlet"
     },
+    "discover": "Keşfet",
+    "browseAll": "Tümüne göz at",
     "mods": "Modlar",
     "modpacks": "Mod paketleri",
     "worlds": "Dünyalar"
+  },
+  "DiscoverPage": {
+    "featured": "Öne çıkanlar",
+    "weeklyPopular": "Bu hafta popüler",
+    "latest": "Yeni yayınlananlar",
+    "popularCategories": "Popüler kategoriler",
+    "viewAll": "Tümünü gör",
+    "go": "Aç",
+    "moreTitle": "Daha fazla proje mi gerekiyor?",
+    "moreText": "Arama, filtreler ve sıralama içeren tam kataloğu açın.",
+    "moreCta": "Kataloğa git",
+    "empty": "Keşfedilecek proje yok",
+    "previous": "Önceki",
+    "next": "Sonraki"
   },
   "CategoryLabels": {
     "adventure": "Macera",
@@ -1780,8 +1805,24 @@
     },
     "actions": {
       "approve": "Onayla",
-      "reject": "Reddet",
-      "rejectPrompt": "Reddetme nedenini girin:"
+      "reject": "Reddet"
+    },
+    "approveModal": {
+      "title": "Proje onaylansın mı?",
+      "description": "“{projectTitle}” için HytaleModding Discord sunucusuna yayın bildirimi gönderilip gönderilmeyeceğini seçin.",
+      "withoutDiscord": "Bildirim yok",
+      "withDiscord": "Discord'a gönder",
+      "cancel": "İptal",
+      "close": "Kapat"
+    },
+    "rejectModal": {
+      "title": "Proje reddedilsin mi?",
+      "description": "“{projectTitle}” için ret nedenini girin. Moderasyon geçmişine kaydedilecek.",
+      "reason": "Ret nedeni",
+      "reasonPlaceholder": "Örneğin: açıklama ekleyin, ikon yükleyin veya proje materyallerini düzeltin.",
+      "cancel": "İptal",
+      "confirm": "Reddet",
+      "close": "Kapat"
     },
     "errors": {
       "fetchProjects": "Moderasyon projeleri alınamadı",
@@ -1952,8 +1993,12 @@
       "projectLikeMany": "{username} ve {count} kişi daha {project} projenizi beğendi",
       "projectLikeOneMiddle": "projenizi beğendi",
       "projectLikeManyMiddle": "ve {count} kişi daha projenizi beğendi",
+      "projectReleaseMiddle": "yeni bir proje yayınladı",
       "projectVersionReleaseMiddle": "{version} sürümünü şu proje için yayınladı",
       "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "{version} sürümünüz şu proje için moderasyondan geçmedi",
+      "projectApprovedMiddle": "Projeniz moderasyondan geçti ve artık kullanılabilir:",
+      "projectRejectedMiddle": "Projeniz moderasyondan geçmedi:",
       "projectFallback": "projenizi",
       "versionFallback": "yeni",
       "unknown": "Yeni bildirim",

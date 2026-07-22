@@ -3,7 +3,7 @@ const { db } = require("../../config/db");
 const { clickhouse } = require("../../config/clickhouse");
 const auth = require("../../middleware/auth");
 const { sanitizePlainText } = require("../../utils/sanitize");
-const { fanoutVersionReleaseNotifications, sendVersionApprovedOwnerNotification } = require("../../utils/versionNotifications");
+const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const router = express.Router();
 
@@ -248,10 +248,11 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 	const actorId = version.project_owner_user_id;
 
 	try {
-		await sendVersionApprovedOwnerNotification({
+		await sendVersionModerationOwnerNotification({
 			projectOwnerUserId: version.project_owner_user_id,
 			actorUserId: actorId,
 			versionId: version.id,
+			approved: true,
 			createdAt,
 		});
 	} catch (error) {
@@ -260,7 +261,6 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 
 	try {
 		await fanoutVersionReleaseNotifications({
-			projectOwnerUserId: version.project_owner_user_id,
 			actorUserId: actorId,
 			projectId: version.project_id,
 			versionId: version.id,
@@ -470,6 +470,14 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 		if(decision === "approved") {
 			await notifyVersionApproved({ version, createdAt });
+		} else {
+			await sendVersionModerationOwnerNotification({
+				projectOwnerUserId: version.project_owner_user_id,
+				actorUserId: version.project_owner_user_id,
+				versionId: version.id,
+				approved: false,
+				createdAt,
+			});
 		}
 
 		return res.json({ success: true });
@@ -572,7 +580,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { status, reason } = req.body;
+    const { status, reason, sendDiscordNotification } = req.body;
     const moderatorId = req.user.id;
 
     if(!["approved", "rejected"].includes(status)) {
@@ -580,6 +588,9 @@ router.post("/:id/moderate", auth, async (req, res) => {
     }
 
     try {
+		const [[projectStatusBeforeUpdate]] = await db.query("SELECT status FROM projects WHERE id = ? LIMIT 1", [id]);
+		const shouldSendPublishedModNotification = status === "approved" && sendDiscordNotification === true && projectStatusBeforeUpdate?.status !== "approved";
+
         await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
 
         await db.query(
@@ -609,21 +620,23 @@ router.post("/:id/moderate", auth, async (req, res) => {
 						awardedByUserId: moderatorId,
 					});
 
-                    await fetch("https://api.hytalemodd.ing/published-mod", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            apiKey: process.env.HYTALE_MODDING_API_KEY,
-                            type: "New",
-                            title: project.title,
-                            description: project.summary,
-                            iconLink: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
-                            modLink: `https://modifold.com/mod/${project.slug}`,
-                            developerName: project.username || "Unknown",
-                        }),
-                    });
+					if(shouldSendPublishedModNotification) {
+						await fetch("https://api.hytalemodd.ing/published-mod", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								apiKey: process.env.HYTALE_MODDING_API_KEY,
+								type: "New",
+								title: project.title,
+								description: project.summary,
+								iconLink: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+								modLink: `https://modifold.com/mod/${project.slug}`,
+								developerName: project.username || "Unknown",
+							}),
+						});
+					}
                 }
             } catch (publishError) {
                 console.error("Error sending published-mod notification:", publishError);

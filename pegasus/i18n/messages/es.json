@@ -535,6 +535,15 @@
     "creators": "Creadores",
     "owner": "Propietario",
     "organizationOwner": "Organización",
+    "subscribeCreator": "Seguir",
+    "unsubscribeCreator": "Dejar de seguir",
+    "loginToSubscribe": "Inicia sesión para seguir creadores",
+    "subscriptionChangeError": "Error al cambiar la suscripción",
+    "creatorStats": {
+      "followers": "{count, plural, one {seguidor} other {seguidores}}",
+      "projects": "{count, plural, one {proyecto} other {proyectos}}",
+      "downloads": "{count, plural, one {descarga} other {descargas}}"
+    },
     "created": "Creado",
     "updated": "Actualizado",
     "playersLast14dTooltip": "{count} jugadores usaron este mod en los ultimos 14 dias",
@@ -958,9 +967,25 @@
       "collapse": "Ocultar recomendaciones",
       "expand": "Mostrar recomendaciones"
     },
+    "discover": "Descubrir",
+    "browseAll": "Ver todo",
     "mods": "Mods",
     "modpacks": "Paquetes de mods",
     "worlds": "Mundos"
+  },
+  "DiscoverPage": {
+    "featured": "Destacados",
+    "weeklyPopular": "Popular esta semana",
+    "latest": "Publicados recientemente",
+    "popularCategories": "Categorías populares",
+    "viewAll": "Ver todo",
+    "go": "Ver",
+    "moreTitle": "¿Quieres más proyectos?",
+    "moreText": "Abre el catálogo completo con búsqueda, filtros y ordenación.",
+    "moreCta": "Ver catálogo",
+    "empty": "Aún no hay proyectos para descubrir",
+    "previous": "Anterior",
+    "next": "Siguiente"
   },
   "CategoryLabels": {
     "adventure": "Aventura",
@@ -1780,8 +1805,24 @@
     },
     "actions": {
       "approve": "Aprobar",
-      "reject": "Rechazar",
-      "rejectPrompt": "Introduce el motivo del rechazo:"
+      "reject": "Rechazar"
+    },
+    "approveModal": {
+      "title": "¿Aprobar proyecto?",
+      "description": "Elige si quieres enviar una notificación de publicación para “{projectTitle}” al servidor de Discord de HytaleModding.",
+      "withoutDiscord": "Sin notificación",
+      "withDiscord": "Enviar a Discord",
+      "cancel": "Cancelar",
+      "close": "Cerrar"
+    },
+    "rejectModal": {
+      "title": "¿Rechazar proyecto?",
+      "description": "Introduce el motivo del rechazo para “{projectTitle}”. Se guardará en el historial de moderación.",
+      "reason": "Motivo del rechazo",
+      "reasonPlaceholder": "Por ejemplo: añade una descripción, sube un icono o corrige los materiales del proyecto.",
+      "cancel": "Cancelar",
+      "confirm": "Rechazar",
+      "close": "Cerrar"
     },
     "errors": {
       "fetchProjects": "Error al obtener proyectos para moderación",
@@ -1952,8 +1993,12 @@
       "projectLikeMany": "{username} y {count} personas más le dieron like a tu proyecto {project}",
       "projectLikeOneMiddle": "le dio like a tu proyecto",
       "projectLikeManyMiddle": "y {count} personas más le dieron like a tu proyecto",
+      "projectReleaseMiddle": "publicó un nuevo proyecto",
       "projectVersionReleaseMiddle": "publicó la versión {version} de",
       "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "Tu versión {version} no pasó la moderación para",
+      "projectApprovedMiddle": "Tu proyecto pasó la moderación y ya está disponible:",
+      "projectRejectedMiddle": "Tu proyecto no pasó la moderación:",
       "projectFallback": "tu proyecto",
       "versionFallback": "nueva",
       "unknown": "Nueva notificación",

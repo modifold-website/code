@@ -19,13 +19,9 @@ function getRequiredDependencies(version) {
 
 export default function VersionDownloadButton({ project, version, href, className, style, ariaLabel, children }) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [resolvedVersion, setResolvedVersion] = useState(null);
-	const [isCheckingDependencies, setIsCheckingDependencies] = useState(false);
 	const modalTimerRef = useRef(null);
-	const displayVersion = resolvedVersion || version;
-	const requiredDependencies = useMemo(() => getRequiredDependencies(displayVersion), [displayVersion]);
+	const requiredDependencies = useMemo(() => getRequiredDependencies(version), [version]);
 	const hasRequiredDependencies = requiredDependencies.length > 0;
-	const dependenciesKnown = Array.isArray(displayVersion?.dependencies);
 
 	useEffect(() => {
 		return () => {
@@ -34,11 +30,6 @@ export default function VersionDownloadButton({ project, version, href, classNam
 			}
 		};
 	}, []);
-
-	const startDownload = () => {
-		showOverTheTopDownloadAnimation();
-		window.location.href = href;
-	};
 
 	const openModalAfterDownloadAnimation = () => {
 		if(modalTimerRef.current) {
@@ -51,65 +42,21 @@ export default function VersionDownloadButton({ project, version, href, classNam
 		}, DOWNLOAD_MODAL_DELAY_MS);
 	};
 
-	const fetchVersionDetails = async () => {
-		const versionId = version?.id || version?.version_number;
-		if(!project?.slug || !versionId) {
-			return null;
-		}
-
-		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${versionId}`, {
-			headers: { Accept: "application/json" },
-		});
-
-		if(!response.ok) {
-			return null;
-		}
-
-		return response.json();
-	};
-
-	const handleClick = async (event) => {
-		if(hasRequiredDependencies) {
+	const handleClick = (event) => {
+		if(!href) {
 			event.preventDefault();
-			startDownload();
+			return;
+		}
+
+		showOverTheTopDownloadAnimation();
+		if(hasRequiredDependencies) {
 			openModalAfterDownloadAnimation();
-			return;
-		}
-
-		if(dependenciesKnown) {
-			showOverTheTopDownloadAnimation();
-			return;
-		}
-
-		event.preventDefault();
-		if(isCheckingDependencies) {
-			return;
-		}
-
-		setIsCheckingDependencies(true);
-
-		try {
-			const detailedVersion = await fetchVersionDetails();
-			const detailedRequiredDependencies = getRequiredDependencies(detailedVersion);
-
-			if(detailedVersion && detailedRequiredDependencies.length > 0) {
-				setResolvedVersion(detailedVersion);
-				startDownload();
-				openModalAfterDownloadAnimation();
-				return;
-			}
-
-			startDownload();
-		} catch {
-			startDownload();
-		} finally {
-			setIsCheckingDependencies(false);
 		}
 	};
 
 	return (
 		<>
-			<a className={className} style={style} href={href} onClick={handleClick} aria-label={ariaLabel} aria-busy={isCheckingDependencies}>
+			<a className={className} style={style} href={href || undefined} download onClick={handleClick} aria-label={ariaLabel}>
 				{children}
 			</a>
 
@@ -117,7 +64,7 @@ export default function VersionDownloadButton({ project, version, href, classNam
 				<VersionDownloadDependenciesModal
 					isOpen={isModalOpen}
 					project={project}
-					version={displayVersion}
+					version={version}
 					dependencies={requiredDependencies}
 					onRequestClose={() => setIsModalOpen(false)}
 				/>

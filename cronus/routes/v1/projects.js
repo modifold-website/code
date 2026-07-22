@@ -16,9 +16,9 @@ const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, resolveProje
 const optionalAuth = require('../../middleware/optionalAuth');
 const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
-const { fanoutVersionReleaseNotifications } = require("../../utils/versionNotifications");
+const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
-const { awardFirstApprovedProjectAchievement, awardProjectDownloadAchievements } = require("../../utils/achievements");
+const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const router = express.Router();
 
 const parseJsonArrayField = (value) => {
@@ -570,8 +570,7 @@ const fileFilter = (req, file, cb) => {
         'application/x-java-archive',
         'application/zip',
         'application/x-zip-compressed',
-        'application/x-rar-compressed',
-        'application/x-modrinth-modpack+zip'
+        'application/x-rar-compressed'
     ].map(type => type.toLowerCase());
 
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.jar', '.zip', '.rar'];
@@ -715,6 +714,12 @@ const sanitizeVersionForPublicResponse = (version, { includeModeration = false }
 
 	return safeVersion;
 };
+
+const getVersionFileFields = (version) => ({
+	download_url: version?.file_url || null,
+	primary_file: version?.file_url ? { url: version.file_url, size: version.file_size, primary: true } : null,
+	files: version?.file_url ? [{ url: version.file_url, size: version.file_size, primary: true }] : [],
+});
 
 const queueArgusScan = ({ versionId, project, fileUrl, fileName, fileSize }) => {
 	notifyArgusAboutVersion({
@@ -956,7 +961,9 @@ const getVersionDependencies = async (connection, versionId) => {
                 p.title AS project_title,
                 p.icon_url AS project_icon_url,
                 p.project_type AS project_type,
-                pv.version_number
+                pv.version_number,
+                pv.file_url,
+                pv.file_size
             FROM dependencies d
             LEFT JOIN projects p ON p.id = d.project_id
             LEFT JOIN project_versions pv ON pv.id = d.dependency_version_id
@@ -982,6 +989,11 @@ const getVersionDependencies = async (connection, versionId) => {
         project_icon_url: dependency.project_icon_url,
         project_type: dependency.project_type,
         version_number: dependency.version_number,
+        file_url: dependency.file_url,
+        file_size: dependency.file_size,
+        download_url: dependency.file_url || null,
+        primary_file: dependency.file_url ? { url: dependency.file_url, size: dependency.file_size, primary: true } : null,
+        files: dependency.file_url ? [{ url: dependency.file_url, size: dependency.file_size, primary: true }] : [],
     }));
 };
 
@@ -2280,6 +2292,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 ...version,
                 game_versions: gameVersions,
                 loaders: loaders,
+				...getVersionFileFields(version),
             }, { includeModeration: canViewModerationFields });
         });
 
@@ -2572,13 +2585,11 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
     }
 });
 
-const trackProjectDownload = async ({ slug, versionId, ipAddress, countryCode, userId = null }) => {
+const getProjectVersionDownloadFile = async ({ slug, versionId, userId = null }) => {
     const [project] = await db.query("SELECT id, slug, user_id FROM projects WHERE slug = ?", [slug]);
     if(!project.length) {
         return { status: 404, body: { message: "Project not found" } };
     }
-
-    const projectSlug = project[0].slug;
 
     const [version] = await db.query(
         "SELECT id, file_url, version_number, moderation_status FROM project_versions WHERE id = ? AND project_id = ?",
@@ -2599,55 +2610,13 @@ const trackProjectDownload = async ({ slug, versionId, ipAddress, countryCode, u
 
     const fileUrl = version[0].file_url;
 
-    if(!ipAddress) {
-        return {
-            status: 200,
-            body: { success: true, counted: false, reason: "no_ip" },
-            fileUrl,
-        };
-    }
-
-    const shouldCount = !(await hasRecentProjectEvent({
-        projectSlug,
-        eventType: "download",
-        ipAddress,
-        windowMinutes: 30,
-    }));
-
-    if(shouldCount) {
-        await insertProjectEvent({
-            projectSlug,
-            versionId: Number(versionId),
-            eventType: "download",
-            ipAddress,
-            countryCode,
-        });
-
-        await db.query("UPDATE project_versions SET downloads = downloads + 1 WHERE id = ?", [versionId]);
-        await db.query("UPDATE projects SET downloads = downloads + 1 WHERE slug = ?", [projectSlug]);
-        await bumpProjectCacheVersion(projectSlug);
-    }
-
-    const [[{ totalDownloads }]] = await db.query(
-        'SELECT downloads AS totalDownloads FROM projects WHERE slug = ?',
-        [projectSlug]
-    );
-
-	if(shouldCount) {
-		await awardProjectDownloadAchievements(db, {
-			projectId: project[0].id,
-			userId: project[0].user_id,
-			totalDownloads,
-		});
-	}
-
     return {
         status: 200,
         body: {
             success: true,
-            counted: shouldCount,
-            windowMinutes: 30,
-            totalDownloads,
+            counted: false,
+            reason: "redirect_only",
+            fileUrl,
         },
         fileUrl,
     };
@@ -2655,11 +2624,10 @@ const trackProjectDownload = async ({ slug, versionId, ipAddress, countryCode, u
 
 router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
     const { slug, versionId } = req.params;
-    const ipAddress = getRequestIpAddress(req);
-    const countryCode = getRequestCountryCode(req);
 
     try {
-        const result = await trackProjectDownload({ slug, versionId, ipAddress, countryCode, userId: req.user?.id || null });
+        // Compatibility only: download analytics are counted by the media/CDN mirror endpoint.
+        const result = await getProjectVersionDownloadFile({ slug, versionId, userId: req.user?.id || null });
         if(result.status !== 200) {
             return res.status(result.status).json(result.body);
         }
@@ -2673,15 +2641,14 @@ router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res)
 
 router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
     const { slug, versionId } = req.params;
-    const ipAddress = getRequestIpAddress(req);
-    const countryCode = getRequestCountryCode(req);
 
     try {
-        const result = await trackProjectDownload({ slug, versionId, ipAddress, countryCode, userId: req.user?.id || null });
+        // Compatibility only: this endpoint must not write download analytics.
+        const result = await getProjectVersionDownloadFile({ slug, versionId, userId: req.user?.id || null });
         return res.status(result.status).json(result.body);
     } catch (error) {
-        console.error('Error incrementing download count:', error);
-        return res.status(500).json({ message: 'Error incrementing download count', error: error.message });
+        console.error('Error resolving download file:', error);
+        return res.status(500).json({ message: 'Error resolving download file', error: error.message });
     }
 });
 
@@ -2712,19 +2679,41 @@ router.post("/:id/moderate", auth, async (req, res) => {
     }
 
     try {
+		const [projectRowsBeforeUpdate] = await db.query(
+			"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1",
+			[id]
+		);
+		const projectBeforeUpdate = projectRowsBeforeUpdate[0] || null;
+		const statusChanged = projectBeforeUpdate && projectBeforeUpdate.status !== status;
+		const createdAt = Math.floor(Date.now() / 1000);
+
         await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
         await bumpProjectCacheVersionById(db, id);
 
-		if(status === "approved") {
-			const [projectRows] = await db.query(
-				"SELECT id, user_id FROM projects WHERE id = ? LIMIT 1",
-				[id]
-			);
+		if(projectBeforeUpdate && statusChanged) {
+			await sendProjectModerationOwnerNotification({
+				projectOwnerUserId: projectBeforeUpdate.user_id,
+				actorUserId: projectBeforeUpdate.user_id,
+				projectId: projectBeforeUpdate.id,
+				approved: status === "approved",
+				createdAt,
+			});
+		}
 
-			if(projectRows[0]) {
+		if(status === "approved" && projectBeforeUpdate) {
+			if(statusChanged) {
+				await fanoutProjectReleaseNotifications({
+					projectOwnerUserId: projectBeforeUpdate.user_id,
+					actorUserId: projectBeforeUpdate.user_id,
+					projectId: projectBeforeUpdate.id,
+					createdAt,
+				});
+			}
+
+			if(projectBeforeUpdate) {
 				await awardFirstApprovedProjectAchievement(db, {
-					projectId: projectRows[0].id,
-					userId: projectRows[0].user_id,
+					projectId: projectBeforeUpdate.id,
+					userId: projectBeforeUpdate.user_id,
 					awardedByUserId: req.user.id,
 				});
 			}
@@ -2998,7 +2987,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
         await db.query("DELETE FROM project_versions WHERE id = ?", [versionId]);
         await db.query(
             `DELETE FROM notification_events
-            WHERE event_type = 'project_version_release'
+            WHERE event_type IN ('project_version_release', 'project_version_approved', 'project_version_rejected')
             AND object_type = 'project_version'
             AND object_id = ?`,
             [String(versionId)]
@@ -4739,7 +4728,7 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
             ...safeVersion,
             game_versions: version[0].game_versions ? JSON.parse(version[0].game_versions) : [],
             loaders: version[0].loaders ? JSON.parse(version[0].loaders) : [],
-            files: version[0].file_url ? [{ url: version[0].file_url, size: version[0].file_size, primary: true }] : [],
+			...getVersionFileFields(version[0]),
             dependencies,
         });
     } catch (error) {

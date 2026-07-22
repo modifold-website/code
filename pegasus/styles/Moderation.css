@@ -39,6 +39,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+	position: relative;
+	z-index: 10;
     margin-bottom: 14px;
     gap: 12px;
 }
@@ -48,6 +50,9 @@
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
+}
+.moderation-toolbar .popover {
+	z-index: 20;
 }
 .moderation-verification-filter {
     width: 220px;
@@ -74,6 +79,10 @@
     filter: none;
     transform: none;
     background: var(--theme-color-background-content);
+}
+.moderation-page .moderation-project-card:not(.skeleton):has(.new-project-stats .button:active) {
+	filter: none;
+	transform: none;
 }
 .moderation-page .technical-review-card:not(.skeleton):hover .new-project-title {
     text-decoration: none;
@@ -494,6 +503,28 @@
     text-align: center;
     padding: 2rem 1rem;
     font-style: italic;
+}
+.moderation-approval-modal__description {
+	margin: 0 0 16px;
+	color: var(--theme-color-text-secondary);
+	line-height: 1.45;
+}
+.moderation-approval-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.moderation-rejection-modal__reason .field__wrapper {
+	height: auto;
+	min-height: 120px;
+	align-items: stretch;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.moderation-rejection-modal__reason .textarea__input {
+	min-height: 96px;
+	resize: vertical;
 }
 .bento-grid {
     display: grid;

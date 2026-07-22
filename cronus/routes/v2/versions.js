@@ -57,7 +57,9 @@ const getVersionDependencies = async (versionId) => {
 			p.title AS project_title,
 			p.icon_url AS project_icon_url,
 			p.project_type,
-			pv.version_number
+			pv.version_number,
+			pv.file_url,
+			pv.file_size
 			FROM dependencies d
 			LEFT JOIN projects p ON p.id = d.project_id
 			LEFT JOIN project_versions pv ON pv.id = d.dependency_version_id
@@ -152,10 +154,17 @@ router.get("/:versionId", optionalAuth, async (req, res) => {
 			game_versions: parseJsonArray(version.game_versions),
 			loaders: parseJsonArray(version.loaders),
 			file_url: version.file_url,
+			download_url: version.file_url || null,
 			file_size: version.file_size,
 			created_at: version.created_at,
+			primary_file: version.file_url ? { url: version.file_url, size: version.file_size, primary: true } : null,
 			files: version.file_url ? [{ url: version.file_url, size: version.file_size, primary: true }] : [],
-			dependencies,
+			dependencies: dependencies.map((dependency) => ({
+				...dependency,
+				download_url: dependency.file_url || null,
+				primary_file: dependency.file_url ? { url: dependency.file_url, size: dependency.file_size, primary: true } : null,
+				files: dependency.file_url ? [{ url: dependency.file_url, size: dependency.file_size, primary: true }] : [],
+			})),
 		};
 
 		if(canViewModerationFields) {

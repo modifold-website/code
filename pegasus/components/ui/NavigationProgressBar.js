@@ -65,8 +65,10 @@ export default function NavigationProgressBar() {
 	const resetTimerRef = useRef(null);
 	const maxTimerRef = useRef(null);
 	const frameRef = useRef(null);
+	const startTimerRef = useRef(null);
 
 	const clearTimers = () => {
+		window.clearTimeout(startTimerRef.current);
 		window.clearTimeout(showTimerRef.current);
 		window.clearInterval(trickleTimerRef.current);
 		window.clearTimeout(finishTimerRef.current);
@@ -110,7 +112,20 @@ export default function NavigationProgressBar() {
 		}, 10000);
 	};
 
+	const scheduleStartNavigation = () => {
+		if(isLoadingRef.current || startTimerRef.current) {
+			return;
+		}
+
+		startTimerRef.current = window.setTimeout(() => {
+			startTimerRef.current = null;
+			startNavigation();
+		}, 0);
+	};
+
 	const finishNavigation = () => {
+		window.clearTimeout(startTimerRef.current);
+		startTimerRef.current = null;
 		window.clearTimeout(showTimerRef.current);
 		window.clearInterval(trickleTimerRef.current);
 		window.clearTimeout(maxTimerRef.current);
@@ -145,17 +160,17 @@ export default function NavigationProgressBar() {
 		const originalReplaceState = window.history.replaceState;
 		const handleClick = (event) => {
 			if(shouldStartNavigation(event)) {
-				startNavigation();
+				scheduleStartNavigation();
 			}
 		};
 
 		const handlePopState = () => {
-			startNavigation();
+			scheduleStartNavigation();
 		};
 
 		window.history.pushState = function pushState(state, title, url) {
 			if(shouldStartHistoryNavigation(url)) {
-				startNavigation();
+				scheduleStartNavigation();
 			}
 
 			return originalPushState.apply(this, arguments);
@@ -163,7 +178,7 @@ export default function NavigationProgressBar() {
 
 		window.history.replaceState = function replaceState(state, title, url) {
 			if(shouldStartHistoryNavigation(url)) {
-				startNavigation();
+				scheduleStartNavigation();
 			}
 
 			return originalReplaceState.apply(this, arguments);

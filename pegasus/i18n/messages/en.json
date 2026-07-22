@@ -535,6 +535,15 @@
     "creators": "Creators",
     "owner": "Owner",
     "organizationOwner": "Organization",
+    "subscribeCreator": "Follow",
+    "unsubscribeCreator": "Unfollow",
+    "loginToSubscribe": "Log in to follow creators",
+    "subscriptionChangeError": "Error changing subscription",
+    "creatorStats": {
+      "followers": "{count, plural, one {follower} other {followers}}",
+      "projects": "{count, plural, one {project} other {projects}}",
+      "downloads": "{count, plural, one {download} other {downloads}}"
+    },
     "created": "Created",
     "updated": "Updated",
     "playersLast14dTooltip": "{count} players used this mod in the last 14 days",
@@ -958,9 +967,25 @@
       "collapse": "Collapse recommendations",
       "expand": "Expand recommendations"
     },
+    "discover": "Discover",
+    "browseAll": "Browse All",
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Worlds"
+  },
+  "DiscoverPage": {
+    "featured": "Featured",
+    "weeklyPopular": "Popular this week",
+    "latest": "Recently published",
+    "popularCategories": "Popular categories",
+    "viewAll": "View all",
+    "go": "View",
+    "moreTitle": "Need more projects?",
+    "moreText": "Open the full catalog with search, filters, and sorting.",
+    "moreCta": "Browse all projects",
+    "empty": "No projects to discover yet",
+    "previous": "Previous",
+    "next": "Next"
   },
   "CategoryLabels": {
     "adventure": "Adventure",
@@ -1780,8 +1805,24 @@
     },
     "actions": {
       "approve": "Approve",
-      "reject": "Reject",
-      "rejectPrompt": "Enter reason for rejection:"
+      "reject": "Reject"
+    },
+    "approveModal": {
+      "title": "Approve project?",
+      "description": "Choose whether to send a publication notification for “{projectTitle}” to the HytaleModding Discord server.",
+      "withoutDiscord": "No notification",
+      "withDiscord": "Send to Discord",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "rejectModal": {
+      "title": "Reject project?",
+      "description": "Enter a rejection reason for “{projectTitle}”. It will be saved in moderation history.",
+      "reason": "Rejection reason",
+      "reasonPlaceholder": "For example: add a description, upload an icon, or fix the project materials.",
+      "cancel": "Cancel",
+      "confirm": "Reject",
+      "close": "Close"
     },
     "errors": {
       "fetchProjects": "Error fetching projects for moderation",
@@ -1952,8 +1993,12 @@
       "projectLikeMany": "{username} and {count} others liked your project {project}",
       "projectLikeOneMiddle": "liked your project",
       "projectLikeManyMiddle": "and {count} others liked your project",
+      "projectReleaseMiddle": "published a new project",
+      "projectApprovedMiddle": "Your project passed moderation and is now available:",
+      "projectRejectedMiddle": "Your project did not pass moderation:",
       "projectVersionReleaseMiddle": "released version {version} for",
       "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "Your version {version} did not pass moderation for",
       "projectFallback": "your project",
       "versionFallback": "new",
       "unknown": "New notification",

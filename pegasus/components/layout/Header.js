@@ -146,7 +146,7 @@ export default function Header({ authToken }) {
                                 
                                 <div className="account-menu__section">
                                     <div className="account-action">
-                                        <Link href="/mods" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
+										<Link href="/discover/mods" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
                                             <svg style={{ fill: "none", marginRight: "12px" }} className="icon icon--settings account-action__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
                                                 <path d="m3.3 7 8.7 5 8.7-5"></path>
@@ -158,7 +158,7 @@ export default function Header({ authToken }) {
                                     </div>
 
                                     <div className="account-action">
-                                        <Link href="/worlds" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
+										<Link href="/discover/worlds" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-map-icon lucide-map account-action__icon" style={{ fill: "none", marginRight: "12px" }}>
                                                 <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/>
                                                 <path d="M15 5.764v15"/>
@@ -170,7 +170,7 @@ export default function Header({ authToken }) {
                                     </div>
 
                                     <div className="account-action">
-                                        <Link href="/modpacks" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
+										<Link href="/discover/modpacks" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-package-open-icon lucide-package-open account-action__icon" style={{ fill: "none", marginRight: "12px" }}>
                                                 <path d="M12 22v-9"></path>
                                                 <path d="M15.17 2.21a1.67 1.67 0 0 1 1.63 0L21 4.57a1.93 1.93 0 0 1 0 3.36L8.82 14.79a1.655 1.655 0 0 1-1.64 0L3 12.43a1.93 1.93 0 0 1 0-3.36z"></path>
