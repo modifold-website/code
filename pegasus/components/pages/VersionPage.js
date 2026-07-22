@@ -21,6 +21,7 @@ import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 import { getVersionDownloadUrl, getVersionPrimaryFile } from "@/utils/projects/downloads";
+import { trackVersionDownload } from "@/utils/projects/downloadTracking";
 
 const loaders = [
     "Vanilla",
@@ -271,6 +272,8 @@ export default function VersionPage({ project, version, authToken, gameVersions 
             icon: dependency.project_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
             href: dependencyHref,
             downloadHref: getVersionDownloadUrl(dependency) || (dependencyProjectPath ? `${dependencyProjectPath}/versions` : null),
+            projectSlug: dependency.project_slug,
+            versionId: dependency.version_id,
             downloadTooltip: getFileTooltip({
                 file: {
                     file_name: dependency.file_name,
@@ -285,6 +288,16 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     };
     const requiredContent = dependencies.filter((dependency) => dependency.dependency_type === "required").map(buildDependencyContent);
     const optionalContent = dependencies.filter((dependency) => dependency.dependency_type === "optional").map(buildDependencyContent);
+    const handleDependencyDownloadClick = (item) => {
+        trackVersionDownload({
+            project: {
+                slug: item?.projectSlug,
+            },
+            version: {
+                id: item?.versionId,
+            },
+        });
+    };
     const gameVersionList = parseList(currentVersion.game_versions);
     const loaderList = parseList(currentVersion.loaders);
     const hasChangelog = Boolean(currentVersion.changelog);
@@ -732,7 +745,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
                                                 {item.downloadHref && (
                                                     <Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
+                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" onClick={() => handleDependencyDownloadClick(item)} aria-label={t("versions.downloadModal.downloadDependency")}>
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                                                 <path d="M12 15V3"/>
                                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -849,7 +862,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
                                                 {item.downloadHref && (
                                                     <Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
+                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" onClick={() => handleDependencyDownloadClick(item)} aria-label={t("versions.downloadModal.downloadDependency")}>
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                                                                 <path d="M12 15V3"/>
                                                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
