@@ -14,6 +14,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { apiClient } from "@/utils/api/client";
 import { projectQueryKeys } from "@/utils/projects/queryKeys";
 import { getCategoryLabel } from "@/utils/categoryLabels";
+import { getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
 
 function parseQueryString(queryString) {
     const params = new URLSearchParams(queryString || "");
@@ -136,15 +137,19 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         router.replace(`${pathname}${nextQueryString ? `?${nextQueryString}` : ""}`, { scroll: false });
     }, [nextQueryString, urlQueryString, router, pathname]);
 
-    const apiParams = useMemo(() => ({
-        type: projectType,
-        sort,
-        search,
-        tags: [...selectedTags].sort().join(","),
-        game_versions: [...selectedGameVersions].sort().join(","),
-        page: currentPage,
-        limit: 20,
-    }), [projectType, sort, search, selectedTags, selectedGameVersions, currentPage]);
+    const apiParams = useMemo(() => {
+		const effectiveGameVersions = getEffectiveBrowseGameVersions(selectedGameVersions, gameVersions);
+
+		return {
+			type: projectType,
+			sort,
+			search,
+			tags: [...selectedTags].sort().join(","),
+			game_versions: [...effectiveGameVersions].sort().join(","),
+			page: currentPage,
+			limit: 20,
+		};
+	}, [projectType, sort, search, selectedTags, selectedGameVersions, gameVersions, currentPage]);
 
     const apiKey = useMemo(() => JSON.stringify(apiParams), [apiParams]);
     const projectsQuery = useQuery({
@@ -185,6 +190,26 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setSelectedGameVersions((prev) => prev.includes(version) ? prev.filter((item) => item !== version) : [...prev, version]);
         setCurrentPage(1);
     };
+
+	const selectGameVersionGroup = (versions, options = {}) => {
+		const groupVersions = [...new Set(Array.isArray(versions) ? versions : [])];
+		setSelectedGameVersions((prev) => {
+			if(options.isDefault && prev.length === 0) {
+				return [];
+			}
+
+			const selectedVersions = new Set(prev);
+			const isGroupSelected = groupVersions.length > 0 && groupVersions.every((version) => selectedVersions.has(version));
+
+			if(isGroupSelected) {
+				return prev.filter((version) => !groupVersions.includes(version));
+			}
+
+			groupVersions.forEach((version) => selectedVersions.add(version));
+			return Array.from(selectedVersions);
+		});
+		setCurrentPage(1);
+	};
 
     const clearFilters = () => {
         setSelectedTags([]);
@@ -277,7 +302,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
     return (
         <div className="browse-page">
-            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
+            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
                 {projectType === "mod" && (

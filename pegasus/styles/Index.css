@@ -4186,6 +4186,28 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .browse-version-option {
     min-height: 34px;
 }
+.browse-version-group {
+	min-height: 36px;
+}
+.browse-version-group__text {
+	display: flex;
+	align-items: baseline;
+	gap: 5px;
+	min-width: 0;
+}
+.browse-version-group__range {
+	color: var(--theme-color-text-secondary);
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 20px;
+}
+.browse-version-group.category-option--active {
+	background: rgb(0 175 92 / 18%);
+}
+.category-option--active .browse-version-group__range {
+	color: inherit;
+	opacity: .68;
+}
 .browse-version-checkbox {
     display: flex;
     align-items: center;

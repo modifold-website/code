@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import BrowsePage from "@/components/pages/BrowsePage";
-import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { fetchGameVersionItems, getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
 
 const apiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -58,7 +58,9 @@ export default async function ModpacksPage({ searchParams }) {
     const initialState = parseBrowseSearchParams(resolvedSearchParams);
     const initialCardView = cookieStore.get("browse_card_view_modpack")?.value === "media" ? "media" : "list";
     const sortedTags = [...initialState.tags].sort();
-    const sortedGameVersions = [...initialState.gameVersions].sort();
+    const gameVersions = await fetchGameVersionItems();
+    const effectiveGameVersions = getEffectiveBrowseGameVersions(initialState.gameVersions, gameVersions);
+    const sortedGameVersions = [...effectiveGameVersions].sort();
     const apiParams = {
         type: "modpack",
         sort: initialState.sort,
@@ -71,7 +73,6 @@ export default async function ModpacksPage({ searchParams }) {
     const initialApiKey = JSON.stringify(apiParams);
     let initialData = null;
     let initialTags = [];
-    let gameVersions = [];
 
     try {
         const requestParams = new URLSearchParams({
@@ -114,8 +115,6 @@ export default async function ModpacksPage({ searchParams }) {
     } catch (error) {
         console.error("Failed to fetch modpack tags:", error);
     }
-
-    gameVersions = await fetchGameVersionItems();
 
     return <BrowsePage projectType="modpack" initialState={initialState} initialData={initialData} initialCardView={initialCardView} tags={initialTags} gameVersions={gameVersions} />;
 }

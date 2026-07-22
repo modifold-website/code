@@ -1,7 +1,7 @@
 ﻿import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import BrowsePage from "@/components/pages/BrowsePage";
-import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { fetchGameVersionItems, getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
 
 const apiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -84,7 +84,9 @@ export default async function ModsPage({ searchParams }) {
     const initialCardView = cookieStore.get("browse_card_view_mod")?.value === "media" ? "media" : "list";
     const initialRecommendedCollapsed = cookieStore.get("browse_recommended_collapsed_mod")?.value === "1";
     const sortedTags = [...initialState.tags].sort();
-    const sortedGameVersions = [...initialState.gameVersions].sort();
+    const gameVersions = await fetchGameVersionItems();
+    const effectiveGameVersions = getEffectiveBrowseGameVersions(initialState.gameVersions, gameVersions);
+    const sortedGameVersions = [...effectiveGameVersions].sort();
     const apiParams = {
         type: "mod",
         sort: initialState.sort,
@@ -97,7 +99,6 @@ export default async function ModsPage({ searchParams }) {
     const initialApiKey = JSON.stringify(apiParams);
     let initialData = null;
     let initialTags = [];
-    let gameVersions = [];
     let recommendedProjects = [];
     let activeModJams = [];
 
@@ -143,8 +144,6 @@ export default async function ModsPage({ searchParams }) {
     } catch (error) {
         console.error("Failed to fetch mod tags:", error);
     }
-
-    gameVersions = await fetchGameVersionItems();
 
     try {
         const recommendedResponse = await fetch(`${apiBase}/recommended?type=mod`, {
