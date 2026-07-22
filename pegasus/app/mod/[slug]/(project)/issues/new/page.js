@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import IssueCreatePage from "@/components/pages/IssueCreatePage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getProjectBySlug } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -39,31 +40,11 @@ export async function generateMetadata({ params, searchParams }) {
 
 export default async function Page({ params, searchParams }) {
     const { slug } = await params;
-    const resolvedLocale = await getLocale();
-    const tNotFound = await getTranslations({ locale: resolvedLocale, namespace: "NotFound" });
     const cookieStore = await cookies();
     const authToken = cookieStore.get("authToken")?.value;
     const templateId = (await searchParams)?.template;
 
-    const resProject = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: {
-            Accept: "application/json",
-            Authorization: authToken ? `Bearer ${authToken}` : undefined,
-        },
-        cache: "no-store",
-    });
-
-    if(!resProject.ok) {
-        return (
-            <div className="layout">
-                <div className="view">
-                    <div className="not-found-page__dummy">{tNotFound("message")}</div>
-                </div>
-            </div>
-        );
-    }
-
-    const project = await resProject.json();
+    const project = await getProjectBySlug(slug, authToken || "");
     if(!project.issues_enabled) {
         notFound();
     }

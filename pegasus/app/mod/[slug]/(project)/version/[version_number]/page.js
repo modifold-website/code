@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import VersionPage from "@/components/pages/VersionPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
 import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { getProjectBySlug, getProjectMembersBySlug } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -60,24 +61,8 @@ export default async function Page({ params }) {
 
     const version = await versionRes.json();
 
-    const projectRes = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: {
-            Accept: "application/json",
-            Authorization: authToken ? `Bearer ${authToken}` : undefined,
-        },
-    });
-
-    if(!projectRes.ok) {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    const project = await projectRes.json();
-
-    const membersRes = await fetch(`${serverApiBase}/projects/${slug}/members`, {
-        headers: { Accept: "application/json", Authorization: `Bearer ${authToken}` },
-    });
-
-    const members = membersRes.ok ? await membersRes.json() : [];
+    const project = await getProjectBySlug(slug, authToken || "");
+    const members = await getProjectMembersBySlug(slug, authToken || "");
     const settingsAccessRes = authToken ? await fetch(`${serverApiBase}/projects/${slug}/settings`, {
         headers: {
             Accept: "application/json",

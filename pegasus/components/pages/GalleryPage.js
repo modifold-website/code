@@ -299,7 +299,7 @@ export default function GalleryPage({ project, authToken }) {
                     )}
                 </div>
 
-                <ProjectSidebar project={project} showLinks={true} showLicense={true} />
+                <ProjectSidebar project={project} authToken={authToken} showLinks={true} showLicense={true} />
             </div>
 
             <ConfirmModal

@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import VersionsPage from "@/components/pages/VersionsPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
 import { fetchGameVersions } from "@/utils/gameVersions";
+import { getProjectBySlug, getProjectMembersBySlug } from "@/utils/projects/server";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
@@ -36,53 +37,11 @@ export async function generateMetadata({ params }) {
 
 export default async function Page({ params }) {
     const { slug } = await params;
-    const resolvedLocale = await getLocale();
-    const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
     const cookieStore = await cookies();
     const authToken = cookieStore.get("authToken")?.value;
 
-    const projectFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    };
-
-    const membersFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}:members`] },
-    };
-
-    let projectRes;
-    try {
-        projectRes = await fetch(`${serverApiBase}/projects/${slug}`, projectFetchOptions);
-    } catch {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    if(!projectRes.ok) {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    const project = await projectRes.json();
-
-    let members = [];
-    try {
-        const membersRes = await fetch(`${serverApiBase}/projects/${slug}/members`, membersFetchOptions);
-        if(membersRes.ok) {
-            members = await membersRes.json();
-        }
-    } catch {}
+    const project = await getProjectBySlug(slug, authToken || "");
+    const members = await getProjectMembersBySlug(slug, authToken || "");
 
     const gameVersions = await fetchGameVersions();
 

@@ -867,7 +867,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                     </div>
                 </div>
 
-                <ProjectSidebar project={project} />
+                <ProjectSidebar project={project} authToken={authToken} />
             </div>
 
             <VersionEditMetadataModal
