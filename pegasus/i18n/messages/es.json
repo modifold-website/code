@@ -1800,6 +1800,14 @@
       "reject": "Rechazar",
       "rejectPrompt": "Introduce el motivo del rechazo:"
     },
+    "approveModal": {
+      "title": "¿Aprobar proyecto?",
+      "description": "Elige si quieres enviar una notificación de publicación para “{projectTitle}” al servidor de Discord de HytaleModding.",
+      "withoutDiscord": "Sin notificación",
+      "withDiscord": "Enviar a Discord",
+      "cancel": "Cancelar",
+      "close": "Cerrar"
+    },
     "errors": {
       "fetchProjects": "Error al obtener proyectos para moderación",
       "fetchAnalytics": "Error al obtener datos de analítica",

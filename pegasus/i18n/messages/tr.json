@@ -1800,6 +1800,14 @@
       "reject": "Reddet",
       "rejectPrompt": "Reddetme nedenini girin:"
     },
+    "approveModal": {
+      "title": "Proje onaylansın mı?",
+      "description": "“{projectTitle}” için HytaleModding Discord sunucusuna yayın bildirimi gönderilip gönderilmeyeceğini seçin.",
+      "withoutDiscord": "Bildirim yok",
+      "withDiscord": "Discord'a gönder",
+      "cancel": "İptal",
+      "close": "Kapat"
+    },
     "errors": {
       "fetchProjects": "Moderasyon projeleri alınamadı",
       "fetchAnalytics": "Analitik veriler alınamadı",

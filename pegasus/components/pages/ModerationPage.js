@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import Modal from "react-modal";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -19,8 +20,14 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
     const [page, setPage] = useState(1);
     const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
     const [isSortPopoverOpen, setIsSortPopoverOpen] = useState(false);
+	const [approvalProject, setApprovalProject] = useState(null);
+	const [isSubmittingModeration, setIsSubmittingModeration] = useState(false);
     const typePopoverRef = useRef(null);
     const sortPopoverRef = useRef(null);
+
+	useEffect(() => {
+		Modal.setAppElement("body");
+	}, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -63,22 +70,29 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
         fetchProjects();
     }, [authToken, search, projectType, sort, page, t]);
 
-    const handleApprove = async (projectId) => {
+    const handleApprove = async (projectId, sendDiscordNotification) => {
+		setIsSubmittingModeration(true);
+
         try {
             await axios.post(
                 `${process.env.NEXT_PUBLIC_API_BASE}/moderation/${projectId}/moderate`,
-                { status: "approved", reason: "Approved by moderator" },
+                { status: "approved", reason: "Approved by moderator", sendDiscordNotification },
                 { headers: { Authorization: `Bearer ${authToken}` } }
             );
 
             toast.success(t("success.approved"));
-            setProjects(projects.filter((p) => p.id !== projectId));
+            setProjects((currentProjects) => currentProjects.filter((p) => p.id !== projectId));
+			setApprovalProject(null);
         } catch (err) {
             toast.error(t("errors.approve"));
-        }
+        } finally {
+			setIsSubmittingModeration(false);
+		}
     };
 
     const handleReject = async (projectId, reason) => {
+		setIsSubmittingModeration(true);
+
         try {
             await axios.post(
                 `${process.env.NEXT_PUBLIC_API_BASE}/moderation/${projectId}/moderate`,
@@ -87,10 +101,12 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
             );
 
             toast.success(t("success.rejected"));
-            setProjects(projects.filter((p) => p.id !== projectId));
+            setProjects((currentProjects) => currentProjects.filter((p) => p.id !== projectId));
         } catch (err) {
             toast.error(t("errors.reject"));
-        }
+        } finally {
+			setIsSubmittingModeration(false);
+		}
     };
 
     const handleTypeSelect = (type) => {
@@ -203,7 +219,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
 
                         return (
                             <div key={project.id} className="new-projects-list">
-                                <div className="new-project-card" id={project.slug}>
+                                <div className="new-project-card moderation-project-card" id={project.slug}>
                                     <div style={{ display: "flex", gap: "12px", borderBottom: hasTags ? "1px solid var(--theme-color-border)" : "none", paddingBottom: hasTags ? "12px" : "16px", paddingTop: "16px", paddingRight: "16px", paddingLeft: "16px" }}>
                                         <Link href={getProjectPath(project)} style={{ height: "96px" }}>
                                             <img className="new-project-icon" alt={project.title} src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} />
@@ -218,9 +234,13 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                                         </div>
                                         
                                         <div className="new-project-stats">
-                                            <button className="button button--size-m button--type-primary" onClick={() => handleApprove(project.id)}>{t("actions.approve")}</button>
+                                            <button className="button button--size-m button--type-primary" type="button" onClick={() => setApprovalProject(project)} disabled={isSubmittingModeration}>
+                                                {t("actions.approve")}
+                                            </button>
 
-                                            <button className="button button--size-m button--type-minimal" onClick={() => { const reason = prompt(t("actions.rejectPrompt")); if (reason) handleReject(project.id, reason); }}>{t("actions.reject")}</button>
+                                            <button className="button button--size-m button--type-minimal" type="button" onClick={() => { const reason = prompt(t("actions.rejectPrompt")); if (reason) handleReject(project.id, reason); }} disabled={isSubmittingModeration}>
+                                                {t("actions.reject")}
+                                            </button>
                                         </div>
                                     </div>
 
@@ -255,6 +275,37 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                     </button>
                 </div>
             )}
+
+			<Modal closeTimeoutMS={150} isOpen={Boolean(approvalProject)} onRequestClose={() => setApprovalProject(null)} className="modal active" overlayClassName="modal-overlay">
+				<div className="modal-window">
+					<div className="modal-window__header">
+						<h2 className="modal-window__title">{t("approveModal.title")}</h2>
+
+						<button className="icon-button modal-window__close" type="button" onClick={() => setApprovalProject(null)} disabled={isSubmittingModeration} aria-label={t("approveModal.close")}>
+							<svg className="icon icon--x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<path d="M18 6 6 18"></path>
+								<path d="m6 6 12 12"></path>
+							</svg>
+						</button>
+					</div>
+
+					<div className="modal-window__content">
+						<p className="moderation-approval-modal__description">
+							{t("approveModal.description", { projectTitle: approvalProject?.title || "" })}
+						</p>
+
+						<div className="moderation-approval-modal__actions">
+							<button className="button button--size-m button--type-minimal" type="button" onClick={() => approvalProject && handleApprove(approvalProject.id, false)} disabled={isSubmittingModeration}>
+								{t("approveModal.withoutDiscord")}
+							</button>
+
+							<button className="button button--size-m button--type-primary" type="button" onClick={() => approvalProject && handleApprove(approvalProject.id, true)} disabled={isSubmittingModeration}>
+								{t("approveModal.withDiscord")}
+							</button>
+						</div>
+					</div>
+				</div>
+			</Modal>
         </>
     );
 }

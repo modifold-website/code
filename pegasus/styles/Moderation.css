@@ -80,6 +80,10 @@
     transform: none;
     background: var(--theme-color-background-content);
 }
+.moderation-page .moderation-project-card:not(.skeleton):has(.new-project-stats .button:active) {
+	filter: none;
+	transform: none;
+}
 .moderation-page .technical-review-card:not(.skeleton):hover .new-project-title {
     text-decoration: none;
 }
@@ -499,6 +503,17 @@
     text-align: center;
     padding: 2rem 1rem;
     font-style: italic;
+}
+.moderation-approval-modal__description {
+	margin: 0 0 16px;
+	color: var(--theme-color-text-secondary);
+	line-height: 1.45;
+}
+.moderation-approval-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 .bento-grid {
     display: grid;

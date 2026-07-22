@@ -1800,6 +1800,14 @@
       "reject": "Reject",
       "rejectPrompt": "Enter reason for rejection:"
     },
+    "approveModal": {
+      "title": "Approve project?",
+      "description": "Choose whether to send a publication notification for “{projectTitle}” to the HytaleModding Discord server.",
+      "withoutDiscord": "No notification",
+      "withDiscord": "Send to Discord",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
     "errors": {
       "fetchProjects": "Error fetching projects for moderation",
       "fetchAnalytics": "Error fetching analytics data",

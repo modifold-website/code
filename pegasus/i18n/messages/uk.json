@@ -1801,6 +1801,14 @@
       "reject": "Відхилити",
       "rejectPrompt": "Введіть причину відхилення:"
     },
+    "approveModal": {
+      "title": "Схвалити проєкт?",
+      "description": "Виберіть, чи надсилати сповіщення про публікацію «{projectTitle}» на Discord-сервер HytaleModding.",
+      "withoutDiscord": "Без сповіщення",
+      "withDiscord": "Надіслати в Discord",
+      "cancel": "Скасувати",
+      "close": "Закрити"
+    },
     "errors": {
       "fetchProjects": "Помилка отримання проєктів для модерації",
       "fetchAnalytics": "Помилка отримання даних аналітики",

@@ -1800,6 +1800,14 @@
       "reject": "Отклонить",
       "rejectPrompt": "Введите причину отклонения:"
     },
+    "approveModal": {
+      "title": "Одобрить проект?",
+      "description": "Выберите, отправлять ли уведомление о публикации «{projectTitle}» в Discord-сервер HytaleModding.",
+      "withoutDiscord": "Без уведомления",
+      "withDiscord": "Отправить в Discord",
+      "cancel": "Отмена",
+      "close": "Закрыть"
+    },
     "errors": {
       "fetchProjects": "Ошибка загрузки проектов для модерации",
       "fetchAnalytics": "Ошибка загрузки аналитики",
