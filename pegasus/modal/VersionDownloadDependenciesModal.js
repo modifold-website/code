@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { getProjectPath } from "@/utils/projectRoutes";
 import showOverTheTopDownloadAnimation from "@/components/ui/showOverTheTopDownloadAnimation";
 import { getVersionDownloadUrl } from "@/utils/projects/downloads";
+import { trackVersionDownload } from "@/utils/projects/downloadTracking";
 
 Modal.setAppElement("body");
 
@@ -37,6 +38,18 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 	const t = useTranslations("ProjectPage.versions.downloadModal");
 	const tProject = useTranslations("ProjectPage");
 	const projectIconUrl = project?.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
+
+	const handleDependencyDownloadClick = (dependency) => {
+		trackVersionDownload({
+			project: {
+				slug: dependency?.project_slug,
+			},
+			version: {
+				id: dependency?.version_id,
+			},
+		});
+		showOverTheTopDownloadAnimation();
+	};
 
 	return (
 		<Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active version-download-modal" overlayClassName="modal-overlay">
@@ -79,7 +92,7 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 
 									<div className="version-download-modal__dependency-actions">
 										{dependencyDownloadHref && (
-											<a className="button button--size-m button--type-download button-with-icon button--active-transform" href={dependencyDownloadHref} download onClick={showOverTheTopDownloadAnimation}>
+											<a className="button button--size-m button--type-download button-with-icon button--active-transform" href={dependencyDownloadHref} download onClick={() => handleDependencyDownloadClick(dependency)}>
 												<svg className="masthead-stats__icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 													<path d="M12 15V3" />
 													<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />

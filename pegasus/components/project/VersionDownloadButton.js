@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import VersionDownloadDependenciesModal from "@/modal/VersionDownloadDependenciesModal";
 import showOverTheTopDownloadAnimation from "@/components/ui/showOverTheTopDownloadAnimation";
+import { trackVersionDownload } from "@/utils/projects/downloadTracking";
 
 const DOWNLOAD_MODAL_DELAY_MS = 2300;
 
@@ -48,6 +49,7 @@ export default function VersionDownloadButton({ project, version, href, classNam
 			return;
 		}
 
+		trackVersionDownload({ project, version });
 		showOverTheTopDownloadAnimation();
 		if(hasRequiredDependencies) {
 			openModalAfterDownloadAnimation();

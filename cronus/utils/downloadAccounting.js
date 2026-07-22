@@ -9,6 +9,11 @@ const { awardProjectDownloadAchievements } = require("./achievements");
 const DOWNLOAD_FILE_EXTENSIONS = new Set([".jar", ".zip", ".rar"]);
 const DOWNLOAD_DEDUPE_TTL_SECONDS = Number(process.env.DOWNLOAD_DEDUPE_TTL_SECONDS) || 6 * 60 * 60;
 const DOWNLOAD_DEDUPE_LIMIT = Number(process.env.DOWNLOAD_DEDUPE_LIMIT) || 5;
+const DEFAULT_DOWNLOAD_PAGE_ORIGINS = [
+	"https://modifold.com",
+	"http://localhost:3000",
+	"http://127.0.0.1:3000",
+];
 
 const DOWNLOAD_DEDUPE_SCRIPT = `
 local key = KEYS[1]
@@ -32,6 +37,47 @@ const getHeaderValue = (value) => {
 	}
 
 	return typeof value === "string" ? value : "";
+};
+
+const getTrustedDownloadPageOrigins = () => {
+	const configuredOrigins = String(process.env.DOWNLOAD_PAGE_ORIGINS || "")
+		.split(",")
+		.map((value) => value.trim())
+		.filter(Boolean);
+
+	return new Set([...configuredOrigins, ...DEFAULT_DOWNLOAD_PAGE_ORIGINS].map((value) => value.replace(/\/+$/, "")));
+};
+
+const getUrlOrigin = (value) => {
+	const rawValue = getHeaderValue(value).trim();
+	if(!rawValue) {
+		return null;
+	}
+
+	try {
+		return new URL(rawValue).origin.replace(/\/+$/, "");
+	} catch {
+		return null;
+	}
+};
+
+const getRequestOrigin = (req) => getUrlOrigin(req.headers.origin);
+
+const getRequestRefererOrigin = (req) => getUrlOrigin(req.headers.referer || req.headers.referrer);
+
+const hasTrustedDownloadPageOrigin = (req) => {
+	const trustedOrigins = getTrustedDownloadPageOrigins();
+	const origin = getRequestOrigin(req);
+	const refererOrigin = getRequestRefererOrigin(req);
+
+	return Boolean(origin && trustedOrigins.has(origin)) || Boolean(refererOrigin && trustedOrigins.has(refererOrigin));
+};
+
+const hasTrustedDownloadPageReferer = (req) => {
+	const trustedOrigins = getTrustedDownloadPageOrigins();
+	const refererOrigin = getRequestRefererOrigin(req);
+
+	return Boolean(refererOrigin && trustedOrigins.has(refererOrigin));
 };
 
 const extractIpAddress = (value) => {
@@ -162,6 +208,35 @@ const findApprovedVersionByFilePath = async (filePath) => {
 	return rows[0] || null;
 };
 
+const findApprovedVersionByProjectVersionId = async ({ slug, versionId }) => {
+	const normalizedSlug = String(slug || "").trim();
+	const normalizedVersionId = String(versionId || "").trim();
+	if(!normalizedSlug || !normalizedVersionId) {
+		return null;
+	}
+
+	const [rows] = await db.query(
+		`SELECT
+		v.id,
+		v.file_url,
+		v.moderation_status,
+		p.id AS project_id,
+		p.slug AS project_slug,
+		p.user_id AS project_user_id
+		FROM project_versions v
+		INNER JOIN projects p ON p.id = v.project_id
+		WHERE p.slug = ?
+		AND v.id = ?
+		AND v.file_url IS NOT NULL
+		AND v.file_url != ''
+		AND v.moderation_status = 'approved'
+		LIMIT 1`,
+		[normalizedSlug, normalizedVersionId]
+	);
+
+	return rows[0] || null;
+};
+
 const hasInternalSecret = (req) => {
 	const expectedSecret = process.env.INTERNAL_DOWNLOADS_SECRET;
 	const providedSecret = getHeaderValue(req.headers["x-internal-secret"]);
@@ -178,7 +253,7 @@ const insertProjectEvent = async ({ projectSlug, versionId, ipAddress, countryCo
 		table: "project_events",
 		values: [{
 			project_slug: projectSlug,
-			version_id: Number(versionId),
+			version_id: versionId,
 			event_type: "download",
 			ip_address: ipAddress,
 			country_code: countryCode,
@@ -203,31 +278,16 @@ const passDownloadDedupe = async ({ ipPrefix, projectId }) => {
 	};
 };
 
-const countCdnDownload = async (req) => {
-	if(!hasInternalSecret(req)) {
-		return { status: 403, body: { success: false, counted: false, reason: "forbidden" } };
-	}
-
-	const originalMethod = (getHeaderValue(req.headers["x-original-method"]) || req.method || "").toUpperCase();
-	if(originalMethod !== "GET") {
-		return { status: 200, body: { success: true, counted: false, reason: originalMethod === "HEAD" ? "head" : "method" } };
-	}
-
+const getBotCheckResult = (req) => {
 	const userAgent = getHeaderValue(req.headers["user-agent"]);
 	if(BOT_USER_AGENT_PATTERN.test(userAgent)) {
 		return { status: 200, body: { success: true, counted: false, reason: "bot" } };
 	}
 
-	const originalPath = getOriginalPath(req);
-	if(!isDownloadFilePath(originalPath)) {
-		return { status: 200, body: { success: true, counted: false, reason: "not_download_file" } };
-	}
+	return null;
+};
 
-	const version = await findApprovedVersionByFilePath(originalPath);
-	if(!version) {
-		return { status: 404, body: { success: false, counted: false, reason: "version_not_found" } };
-	}
-
+const countApprovedVersionDownload = async ({ req, version }) => {
 	const ipAddress = getRequestIpAddress(req);
 	const ipPrefix = getIpPrefix(ipAddress);
 	if(!ipAddress || !ipPrefix) {
@@ -283,6 +343,57 @@ const countCdnDownload = async (req) => {
 	};
 };
 
+const countCdnDownload = async (req) => {
+	if(!hasInternalSecret(req)) {
+		return { status: 403, body: { success: false, counted: false, reason: "forbidden" } };
+	}
+
+	const originalMethod = (getHeaderValue(req.headers["x-original-method"]) || req.method || "").toUpperCase();
+	if(originalMethod !== "GET") {
+		return { status: 200, body: { success: true, counted: false, reason: originalMethod === "HEAD" ? "head" : "method" } };
+	}
+
+	const botCheckResult = getBotCheckResult(req);
+	if(botCheckResult) {
+		return botCheckResult;
+	}
+
+	if(hasTrustedDownloadPageReferer(req)) {
+		return { status: 200, body: { success: true, counted: false, reason: "site_page_click" } };
+	}
+
+	const originalPath = getOriginalPath(req);
+	if(!isDownloadFilePath(originalPath)) {
+		return { status: 200, body: { success: true, counted: false, reason: "not_download_file" } };
+	}
+
+	const version = await findApprovedVersionByFilePath(originalPath);
+	if(!version) {
+		return { status: 404, body: { success: false, counted: false, reason: "version_not_found" } };
+	}
+
+	return countApprovedVersionDownload({ req, version });
+};
+
+const countProjectVersionDownload = async (req, { slug, versionId }) => {
+	if(!hasTrustedDownloadPageOrigin(req)) {
+		return { status: 403, body: { success: false, counted: false, reason: "untrusted_origin" } };
+	}
+
+	const botCheckResult = getBotCheckResult(req);
+	if(botCheckResult) {
+		return botCheckResult;
+	}
+
+	const version = await findApprovedVersionByProjectVersionId({ slug, versionId });
+	if(!version) {
+		return { status: 404, body: { success: false, counted: false, reason: "version_not_found" } };
+	}
+
+	return countApprovedVersionDownload({ req, version });
+};
+
 module.exports = {
 	countCdnDownload,
+	countProjectVersionDownload,
 };

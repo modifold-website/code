@@ -19,6 +19,7 @@ const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersion
 const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
+const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
 const router = express.Router();
 
 const parseJsonArrayField = (value) => {
@@ -2643,12 +2644,11 @@ router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res
     const { slug, versionId } = req.params;
 
     try {
-        // Compatibility only: this endpoint must not write download analytics.
-        const result = await getProjectVersionDownloadFile({ slug, versionId, userId: req.user?.id || null });
+        const result = await countProjectVersionDownload(req, { slug, versionId });
         return res.status(result.status).json(result.body);
     } catch (error) {
-        console.error('Error resolving download file:', error);
-        return res.status(500).json({ message: 'Error resolving download file', error: error.message });
+        console.error('Error counting download:', error);
+        return res.status(500).json({ message: 'Error counting download', error: error.message });
     }
 });
 
