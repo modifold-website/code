@@ -115,8 +115,12 @@ export function getDefaultBrowseGameVersions(gameVersions = []) {
 	return defaultGroup ? defaultGroup.versions : [];
 }
 
-export function getEffectiveBrowseGameVersions(selectedGameVersions = [], gameVersions = []) {
-	return selectedGameVersions.length > 0 ? selectedGameVersions : getDefaultBrowseGameVersions(gameVersions);
+export function getEffectiveBrowseGameVersions(selectedGameVersions = [], gameVersions = [], options = {}) {
+	if(selectedGameVersions.length > 0) {
+		return selectedGameVersions;
+	}
+
+	return options.useDefault ? getDefaultBrowseGameVersions(gameVersions) : [];
 }
 
 export async function fetchGameVersionItems() {

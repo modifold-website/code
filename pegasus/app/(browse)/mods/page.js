@@ -37,6 +37,7 @@ function parseBrowseSearchParams(searchParams) {
 
     const tags = getValues("c");
     const gameVersions = getValues("v");
+    const useDefaultGameVersions = gameVersions.length === 0 && getValues("versions")[0] !== "all";
     const search = getValues("q")[0] || "";
     const sortCandidate = getValues("sort")[0] || "";
     const sort = ["downloads", "recent", "updated"].includes(sortCandidate) ? sortCandidate : "downloads";
@@ -48,6 +49,7 @@ function parseBrowseSearchParams(searchParams) {
         search,
         tags,
         gameVersions,
+        useDefaultGameVersions,
         page,
     };
 }
@@ -85,17 +87,19 @@ export default async function ModsPage({ searchParams }) {
     const initialRecommendedCollapsed = cookieStore.get("browse_recommended_collapsed_mod")?.value === "1";
     const sortedTags = [...initialState.tags].sort();
     const gameVersions = await fetchGameVersionItems();
-    const effectiveGameVersions = getEffectiveBrowseGameVersions(initialState.gameVersions, gameVersions);
+    const effectiveGameVersions = getEffectiveBrowseGameVersions(initialState.gameVersions, gameVersions, { useDefault: initialState.useDefaultGameVersions });
     const sortedGameVersions = [...effectiveGameVersions].sort();
     const apiParams = {
         type: "mod",
         sort: initialState.sort,
         search: initialState.search,
         tags: sortedTags.join(","),
-        game_versions: sortedGameVersions.join(","),
         page: initialState.page,
         limit: 20,
     };
+    if(sortedGameVersions.length > 0) {
+        apiParams.game_versions = sortedGameVersions.join(",");
+    }
     const initialApiKey = JSON.stringify(apiParams);
     let initialData = null;
     let initialTags = [];
@@ -108,10 +112,12 @@ export default async function ModsPage({ searchParams }) {
             sort: apiParams.sort,
             search: apiParams.search,
             tags: apiParams.tags,
-            game_versions: apiParams.game_versions,
             page: String(apiParams.page),
             limit: String(apiParams.limit),
         });
+        if(apiParams.game_versions) {
+            requestParams.set("game_versions", apiParams.game_versions);
+        }
 
         const response = await fetch(`${apiBase}/projects?${requestParams.toString()}`, {
             next: { revalidate: 60 },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import ProjectCard from "../project/ProjectCard";
 import ProjectCardMedia from "../project/ProjectCardMedia";
@@ -16,21 +16,25 @@ import { projectQueryKeys } from "@/utils/projects/queryKeys";
 import { getCategoryLabel } from "@/utils/categoryLabels";
 import { getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
 
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 function parseQueryString(queryString) {
     const params = new URLSearchParams(queryString || "");
     const rawSort = params.get("sort");
     const rawPage = Number.parseInt(params.get("page"), 10);
+    const gameVersions = params.getAll("v");
 
     return {
         tags: params.getAll("c"),
-        gameVersions: params.getAll("v"),
+        gameVersions,
+        useDefaultGameVersions: gameVersions.length === 0 && params.get("versions") !== "all",
         sort: ["downloads", "recent", "updated"].includes(rawSort) ? rawSort : "downloads",
         search: params.get("q") || "",
         page: Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1,
     };
 }
 
-function buildQueryString({ sort, search, selectedTags, selectedGameVersions, currentPage }) {
+function buildQueryString({ sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, currentPage }) {
     const params = new URLSearchParams();
 
     if(search) {
@@ -47,14 +51,20 @@ function buildQueryString({ sort, search, selectedTags, selectedGameVersions, cu
 
     [...selectedTags].sort().forEach((tag) => params.append("c", tag));
     [...selectedGameVersions].sort().forEach((version) => params.append("v", version));
+    if(!useDefaultGameVersions && selectedGameVersions.length === 0) {
+        params.set("versions", "all");
+    }
 
     return params.toString();
 }
 
 function normalizeInitialState(initialState) {
+    const gameVersions = Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : [];
+
     return {
         tags: Array.isArray(initialState?.tags) ? initialState.tags : [],
-        gameVersions: Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : [],
+        gameVersions,
+        useDefaultGameVersions: gameVersions.length === 0 && initialState?.useDefaultGameVersions !== false,
         sort: ["downloads", "recent", "updated"].includes(initialState?.sort) ? initialState.sort : "downloads",
         search: typeof initialState?.search === "string" ? initialState.search : "",
         page: Number.isFinite(initialState?.page) && initialState.page > 0 ? initialState.page : 1,
@@ -90,6 +100,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const [searchInput, setSearchInput] = useState(normalizedInitialState.search);
     const [selectedTags, setSelectedTags] = useState(normalizedInitialState.tags);
     const [selectedGameVersions, setSelectedGameVersions] = useState(normalizedInitialState.gameVersions);
+    const [useDefaultGameVersions, setUseDefaultGameVersions] = useState(normalizedInitialState.useDefaultGameVersions);
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
 
@@ -99,11 +110,12 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         } catch {}
     }, [projectType, cardView]);
 
-    useEffect(() => {
+    useBrowserLayoutEffect(() => {
         const parsed = parseQueryString(urlQueryString);
 
         setSelectedTags(parsed.tags);
         setSelectedGameVersions(parsed.gameVersions);
+        setUseDefaultGameVersions(parsed.useDefaultGameVersions);
         setSort(parsed.sort);
         setSearch(parsed.search);
         setSearchInput(parsed.search);
@@ -126,8 +138,9 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         search,
         selectedTags,
         selectedGameVersions,
+        useDefaultGameVersions,
         currentPage,
-    }), [sort, search, selectedTags, selectedGameVersions, currentPage]);
+    }), [sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, currentPage]);
 
     useEffect(() => {
         if(nextQueryString === urlQueryString) {
@@ -138,18 +151,22 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     }, [nextQueryString, urlQueryString, router, pathname]);
 
     const apiParams = useMemo(() => {
-		const effectiveGameVersions = getEffectiveBrowseGameVersions(selectedGameVersions, gameVersions);
-
-		return {
+		const effectiveGameVersions = getEffectiveBrowseGameVersions(selectedGameVersions, gameVersions, { useDefault: useDefaultGameVersions });
+		const nextApiParams = {
 			type: projectType,
 			sort,
 			search,
 			tags: [...selectedTags].sort().join(","),
-			game_versions: [...effectiveGameVersions].sort().join(","),
 			page: currentPage,
 			limit: 20,
 		};
-	}, [projectType, sort, search, selectedTags, selectedGameVersions, gameVersions, currentPage]);
+
+		if(effectiveGameVersions.length > 0) {
+			nextApiParams.game_versions = [...effectiveGameVersions].sort().join(",");
+		}
+
+		return nextApiParams;
+	}, [projectType, sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, gameVersions, currentPage]);
 
     const apiKey = useMemo(() => JSON.stringify(apiParams), [apiParams]);
     const projectsQuery = useQuery({
@@ -187,14 +204,15 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     };
 
     const toggleGameVersion = (version) => {
-        setSelectedGameVersions((prev) => prev.includes(version) ? prev.filter((item) => item !== version) : [...prev, version]);
+        setSelectedGameVersions((prev) => useDefaultGameVersions ? [version] : prev.includes(version) ? prev.filter((item) => item !== version) : [...prev, version]);
+        setUseDefaultGameVersions(false);
         setCurrentPage(1);
     };
 
 	const selectGameVersionGroup = (versions, options = {}) => {
 		const groupVersions = [...new Set(Array.isArray(versions) ? versions : [])];
 		setSelectedGameVersions((prev) => {
-			if(options.isDefault && prev.length === 0) {
+			if(useDefaultGameVersions && options.isDefault) {
 				return [];
 			}
 
@@ -208,12 +226,14 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 			groupVersions.forEach((version) => selectedVersions.add(version));
 			return Array.from(selectedVersions);
 		});
+        setUseDefaultGameVersions(false);
 		setCurrentPage(1);
 	};
 
     const clearFilters = () => {
         setSelectedTags([]);
         setSelectedGameVersions([]);
+        setUseDefaultGameVersions(false);
         setSearch("");
         setSearchInput("");
         setSort("downloads");
@@ -302,7 +322,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
     return (
         <div className="browse-page">
-            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
+            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
                 {projectType === "mod" && (

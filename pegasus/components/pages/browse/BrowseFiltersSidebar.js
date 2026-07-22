@@ -6,7 +6,7 @@ import { getBrowseGameVersionGroups, normalizeGameVersionItemsPayload } from "@/
 
 const normalizeTags = (tags) => tags.map((tag) => (typeof tag === "string" ? { name: tag } : tag)).filter((tag) => tag && typeof tag.name === "string");
 
-export default function BrowseFiltersSidebar({ t, projectType, tags = [], selectedTags = [], onToggleTag, gameVersions = [], selectedGameVersions = [], onToggleGameVersion, onSelectGameVersionGroup, onClearFilters, getCategoryLabel = (label) => label }) {
+export default function BrowseFiltersSidebar({ t, projectType, tags = [], selectedTags = [], onToggleTag, gameVersions = [], selectedGameVersions = [], useDefaultGameVersions = false, onToggleGameVersion, onSelectGameVersionGroup, onClearFilters, getCategoryLabel = (label) => label }) {
     const normalizedTags = normalizeTags(tags);
     const normalizedGameVersions = useMemo(() => normalizeGameVersionItemsPayload({ game_versions: gameVersions }), [gameVersions]);
 	const gameVersionGroups = useMemo(() => getBrowseGameVersionGroups(normalizedGameVersions), [normalizedGameVersions]);
@@ -77,7 +77,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
             <ul ref={versionListRef} className="category-list browse-version-list" role="list" onScroll={updateVersionListFade}>
 				{filteredGameVersionGroups.map((group) => {
 					const isExplicitlySelected = group.versions.length > 0 && group.versions.every((version) => selectedGameVersionSet.has(version));
-					const isSelected = isExplicitlySelected || (selectedGameVersions.length === 0 && group.is_browse_default);
+					const isSelected = isExplicitlySelected || (useDefaultGameVersions && group.is_browse_default);
 
 					return (
 						<li key={group.key} className="category-list__item">
