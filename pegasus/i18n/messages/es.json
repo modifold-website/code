@@ -535,6 +535,15 @@
     "creators": "Creadores",
     "owner": "Propietario",
     "organizationOwner": "Organización",
+    "subscribeCreator": "Seguir",
+    "unsubscribeCreator": "Dejar de seguir",
+    "loginToSubscribe": "Inicia sesión para seguir creadores",
+    "subscriptionChangeError": "Error al cambiar la suscripción",
+    "creatorStats": {
+      "followers": "{count, plural, one {seguidor} other {seguidores}}",
+      "projects": "{count, plural, one {proyecto} other {proyectos}}",
+      "downloads": "{count, plural, one {descarga} other {descargas}}"
+    },
     "created": "Creado",
     "updated": "Actualizado",
     "playersLast14dTooltip": "{count} jugadores usaron este mod en los ultimos 14 dias",

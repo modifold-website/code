@@ -535,6 +535,15 @@
     "creators": "Üreticiler",
     "owner": "Sahip",
     "organizationOwner": "Organizasyon",
+    "subscribeCreator": "Takip et",
+    "unsubscribeCreator": "Takibi bırak",
+    "loginToSubscribe": "Üreticileri takip etmek için giriş yapın",
+    "subscriptionChangeError": "Abonelik değiştirilemedi",
+    "creatorStats": {
+      "followers": "takipçi",
+      "projects": "proje",
+      "downloads": "indirme"
+    },
     "created": "Oluşturulma",
     "updated": "Güncellendi",
     "playersLast14dTooltip": "Son 14 gunde bu modu {count} oyuncu kullandi",

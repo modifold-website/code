@@ -536,6 +536,15 @@
     "creators": "Автори",
     "owner": "Власник",
     "organizationOwner": "Організація",
+    "subscribeCreator": "Підписатися",
+    "unsubscribeCreator": "Відписатися",
+    "loginToSubscribe": "Увійдіть, щоб підписатися на автора",
+    "subscriptionChangeError": "Не вдалося змінити підписку",
+    "creatorStats": {
+      "followers": "{count, plural, one {підписник} few {підписники} many {підписників} other {підписника}}",
+      "projects": "{count, plural, one {проєкт} few {проєкти} many {проєктів} other {проєкта}}",
+      "downloads": "{count, plural, one {завантаження} few {завантаження} many {завантажень} other {завантаження}}"
+    },
     "created": "Створено",
     "updated": "Оновлено",
     "playersLast14dTooltip": "За останнi 14 днiв з цим модом грало {count} гравцiв",
