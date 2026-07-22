@@ -312,17 +312,25 @@ const countApprovedVersionDownload = async ({ req, version }) => {
 		};
 	}
 
-	const countryCode = getRequestCountryCode(req);
-	await insertProjectEvent({
-		projectSlug: version.project_slug,
-		versionId: version.id,
-		ipAddress,
-		countryCode,
-	});
-
 	await db.query("UPDATE project_versions SET downloads = downloads + 1 WHERE id = ?", [version.id]);
 	await db.query("UPDATE projects SET downloads = downloads + 1 WHERE id = ?", [version.project_id]);
 	await bumpProjectCacheVersion(version.project_slug);
+
+	const countryCode = getRequestCountryCode(req);
+	try {
+		await insertProjectEvent({
+			projectSlug: version.project_slug,
+			versionId: version.id,
+			ipAddress,
+			countryCode,
+		});
+	} catch(error) {
+		console.warn("Failed to insert download event:", {
+			projectSlug: version.project_slug,
+			versionId: version.id,
+			error: error.message,
+		});
+	}
 
 	const [[{ totalDownloads }]] = await db.query("SELECT downloads AS totalDownloads FROM projects WHERE id = ?", [version.project_id]);
 	await awardProjectDownloadAchievements(db, {
