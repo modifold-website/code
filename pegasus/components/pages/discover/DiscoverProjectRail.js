@@ -26,13 +26,14 @@ export function ProjectStatDownloads({ project, useWeekly = false }) {
 	);
 }
 
-function ProjectCardContent({ project, t, tCategoryLabels, useWeeklyDownloads = false }) {
+function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = false }) {
 	const locale = useLocale();
 	const tProjectCard = useTranslations("ProjectCard");
 	const relativeNow = new Date();
 	const updatedDate = project.updated_at || project.created_at;
 	const visibleTags = (project.tags || []).slice(0, 2);
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
+	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
 
 	const formatRelativeDate = (dateString) => {
 		const date = new Date(dateString);
@@ -103,6 +104,7 @@ function ProjectCardContent({ project, t, tCategoryLabels, useWeeklyDownloads = 
 
 			<div className="discover-project-card__head card-head">
 				<img className="discover-project-card__cover resource-cover" src={getProjectImage(project)} alt="" loading="lazy" />
+				
 				<img className="discover-project-card__logo resource-logo-lg" src={getProjectIcon(project)} alt="" loading="lazy" />
 			</div>
 
@@ -110,7 +112,11 @@ function ProjectCardContent({ project, t, tCategoryLabels, useWeeklyDownloads = 
 				<Link href={getProjectPath(project)} className="discover-project-card__title">{project.title}</Link>
 				
 				<span className="discover-project-card__author">
-					{t("by")} <Link href={getOwnerHref(project)}><UserName user={project.owner} /></Link>
+					<Link href={getOwnerHref(project)}>
+						<img className="discover-author__avatar" src={ownerAvatar} alt="" loading="lazy" />
+						
+						<UserName user={project.owner} className="discover-author__name" />
+					</Link>
 				</span>
 
 				{project.summary && <p className="discover-project-card__summary">{project.summary}</p>}
@@ -157,19 +163,19 @@ function ProjectCardContent({ project, t, tCategoryLabels, useWeeklyDownloads = 
 	);
 }
 
-function DiscoverProjectCard({ project, t, tCategoryLabels, useWeeklyDownloads = false, onPreviewOpen }) {
+function DiscoverProjectCard({ project, tCategoryLabels, useWeeklyDownloads = false, onPreviewOpen }) {
 	const openPreview = (event) => {
 		onPreviewOpen(project, event.currentTarget, useWeeklyDownloads);
 	};
 
 	return (
 		<article className="discover-project-card" onMouseEnter={openPreview} onFocus={openPreview}>
-			<ProjectCardContent project={project} t={t} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={useWeeklyDownloads} />
+			<ProjectCardContent project={project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={useWeeklyDownloads} />
 		</article>
 	);
 }
 
-function DiscoverProjectCardPreview({ preview, t, tCategoryLabels }) {
+function DiscoverProjectCardPreview({ preview, tCategoryLabels }) {
 	if(!preview) {
 		return null;
 	}
@@ -183,7 +189,7 @@ function DiscoverProjectCardPreview({ preview, t, tCategoryLabels }) {
 				width: `${preview.width}px`,
 			}}
 		>
-			<ProjectCardContent project={preview.project} t={t} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={preview.useWeeklyDownloads} />
+			<ProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={preview.useWeeklyDownloads} />
 		</article>
 	);
 }
@@ -360,11 +366,11 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 
 				<div ref={scrollerRef} className="discover-project-rail">
 					{projects.map((project) => (
-						<DiscoverProjectCard key={project.id || project.slug} project={project} t={t} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={useWeeklyDownloads} onPreviewOpen={openPreview} />
+						<DiscoverProjectCard key={project.id || project.slug} project={project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={useWeeklyDownloads} onPreviewOpen={openPreview} />
 					))}
 				</div>
 
-				<DiscoverProjectCardPreview preview={preview} t={t} tCategoryLabels={tCategoryLabels} />
+				<DiscoverProjectCardPreview preview={preview} tCategoryLabels={tCategoryLabels} />
 
 				<button type="button" className="discover-rail-arrow discover-rail-arrow--right" onClick={() => scroll(1)} aria-label={t("next")} disabled={!scrollState.canScrollNext} aria-disabled={!scrollState.canScrollNext}>
 					<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right-icon lucide-chevron-right">

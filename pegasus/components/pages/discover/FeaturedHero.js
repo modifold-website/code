@@ -91,6 +91,8 @@ function FeaturedPane({ project, t }) {
 		return null;
 	}
 
+	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
+
 	return (
 		<>
 			<Link href={getProjectPath(project)} className="discover-featured__image-link" aria-label={project.title}>
@@ -107,7 +109,9 @@ function FeaturedPane({ project, t }) {
 				</Link>
 
 				<Link href={getOwnerHref(project)} className="discover-featured__author">
-					{t("by")} <UserName user={project.owner} />
+					<img className="discover-author__avatar" src={ownerAvatar} alt="" loading="lazy" />
+					
+					<UserName user={project.owner} className="discover-author__name" />
 				</Link>
 			</div>
 		</>
