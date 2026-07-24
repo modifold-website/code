@@ -7,6 +7,7 @@ import UserName from "@/components/ui/UserName";
 import { getCategoryLabel } from "@/utils/categoryLabels";
 import { getProjectPath } from "@/utils/projectRoutes";
 import { ProjectStatDownloads } from "./DiscoverProjectRail";
+import { getOwnerHref } from "./discoverHelpers";
 
 function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" }) {
 	const projectIcon = project.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
@@ -16,6 +17,8 @@ function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "la
 
 	return (
 		<>
+			<Link className="discover-latest-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
+
 			<div className="discover-latest-card__icon">
 				<img key={`icon:${projectIcon}`} src={projectIcon} alt="" loading={imageLoading} />
 			</div>
@@ -23,11 +26,11 @@ function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "la
 			<div className="discover-latest-card__content">
 				<span className="discover-latest-card__title">{project.title}</span>
 				
-				<span className="discover-latest-card__author">
+				<Link href={getOwnerHref(project)} className="discover-latest-card__author">
 					<img key={`owner:${ownerAvatar}`} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 					
 					<UserName user={project.owner} className="discover-author__name" />
-				</span>
+				</Link>
 
 				{project.summary && <p className="discover-latest-card__summary">{project.summary}</p>}
 
@@ -57,9 +60,9 @@ function LatestProjectCard({ project, tCategoryLabels, onPreviewOpen }) {
 	};
 
 	return (
-		<Link href={getProjectPath(project)} className="discover-latest-card" onMouseEnter={openPreview} onFocus={openPreview}>
+		<article className="discover-latest-card" onMouseEnter={openPreview} onFocus={openPreview}>
 			<LatestProjectCardContent project={project} tCategoryLabels={tCategoryLabels} />
-		</Link>
+		</article>
 	);
 }
 
@@ -71,9 +74,8 @@ function LatestProjectCardPreview({ preview, tCategoryLabels }) {
 	const previewKey = preview.project.id || preview.project.slug;
 
 	return (
-		<Link
+		<article
 			key={previewKey}
-			href={getProjectPath(preview.project)}
 			className={`discover-latest-card discover-latest-card--preview ${preview.isClosing ? "is-closing" : ""}`}
 			style={{
 				left: `${preview.left}px`,
@@ -82,7 +84,7 @@ function LatestProjectCardPreview({ preview, tCategoryLabels }) {
 			}}
 		>
 			<LatestProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} imageLoading="eager" />
-		</Link>
+		</article>
 	);
 }
 

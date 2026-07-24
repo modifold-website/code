@@ -5116,6 +5116,12 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	text-decoration: none;
 	transition: filter .16s ease, transform .12s cubic-bezier(.23, 1, .32, 1);
 }
+.discover-latest-card__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	border-radius: inherit;
+}
 .discover-latest-card--preview {
 	position: absolute;
 	z-index: 30;
@@ -5139,10 +5145,15 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .discover-latest-card:hover .discover-latest-card__title {
 	text-decoration: underline;
 }
+.discover-latest-card:has(.discover-latest-card__author:hover) .discover-latest-card__title {
+	text-decoration: none;
+}
 .discover-latest-card:active {
 	transform: scale(.98);
 }
 .discover-latest-card__icon {
+	position: relative;
+	z-index: 1;
 	width: 100%;
 	aspect-ratio: 1 / 1;
 	border-radius: 16px;
@@ -5159,11 +5170,14 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	transition-timing-function: cubic-bezier(.4, 0, .2, 1);
 }
 .discover-latest-card__content {
+	position: relative;
+	z-index: 3;
 	display: flex;
 	min-width: 0;
 	flex: 1;
 	flex-direction: column;
 	gap: 10px;
+	pointer-events: none;
 }
 .discover-latest-card__title,
 .discover-latest-card__author {
@@ -5185,6 +5199,11 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	font-size: 16px;
 	font-weight: 500;
 	line-height: 1.2;
+	text-decoration: none;
+	pointer-events: auto;
+}
+.discover-latest-card__author:hover .discover-author__name {
+	text-decoration: underline;
 }
 .discover-latest-card__meta {
 	display: flex;
