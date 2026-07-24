@@ -17,7 +17,15 @@ const PROJECT_TYPE_ALIASES = {
 
 const DISCOVER_CACHE_TTL_SECONDS = 60 * 5;
 
+const DISCOVER_CATEGORY_TAGS = {
+	mod: ["Decoration", "Adventure", "Game Mechanics", "Minigame"],
+	modpack: ["Adventure", "Multiplayer", "Magic", "Optimization"],
+	world: ["Adventure", "Survival", "Parkour", "Puzzle"],
+};
+
 const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;
+
+const getDiscoverTags = (projectType) => DISCOVER_CATEGORY_TAGS[projectType] || [];
 
 const parseTags = (value) => {
 	if(typeof value !== "string") {
@@ -233,20 +241,28 @@ const fetchWeeklyPopularProjects = async (projectType) => {
 	};
 };
 
-const fetchPopularTags = async (projectType, limit = 6) => {
+const fetchDiscoverTags = async (projectType) => {
+	const discoverTags = getDiscoverTags(projectType);
+
+	if(discoverTags.length === 0) {
+		return [];
+	}
+
 	const [rows] = await db.query(
 		"SELECT tags FROM projects WHERE status = 'approved' AND project_type = ? AND tags IS NOT NULL AND tags != ''",
 		[projectType]
 	);
-	const countsByTag = new Map();
+	const countsByTag = new Map(discoverTags.map((tag) => [tag, 0]));
 
 	for(const row of rows) {
 		for(const tag of parseTags(row.tags)) {
-			countsByTag.set(tag, (countsByTag.get(tag) || 0) + 1);
+			if(countsByTag.has(tag)) {
+				countsByTag.set(tag, countsByTag.get(tag) + 1);
+			}
 		}
 	}
 
-	return [...countsByTag.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([name, count]) => ({ name, count }));
+	return discoverTags.map((name) => ({ name, count: countsByTag.get(name) || 0 }));
 };
 
 router.get("/:type", async (req, res) => {
@@ -257,7 +273,7 @@ router.get("/:type", async (req, res) => {
 			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-		const cacheSeed = JSON.stringify({ type: projectType, version: 1 });
+		const cacheSeed = JSON.stringify({ type: projectType, version: 2 });
 		const cacheHash = crypto.createHash("sha1").update(cacheSeed).digest("hex");
 		const cacheKey = `modifold_discover_v2_${cacheHash}`;
 		const cachedResponse = await getCacheJson(cacheKey);
@@ -267,14 +283,14 @@ router.get("/:type", async (req, res) => {
 			return res.json(cachedResponse);
 		}
 
-		const [featuredProjects, weeklyPopularResult, latestProjects, popularTags] = await Promise.all([
+		const [featuredProjects, weeklyPopularResult, latestProjects, discoverTags] = await Promise.all([
 			fetchRecommendedProjects(projectType),
 			fetchWeeklyPopularProjects(projectType),
 			fetchProjects({ projectType, orderBy: "p.created_at DESC, p.id DESC", limit: 12 }),
-			fetchPopularTags(projectType, 6),
+			fetchDiscoverTags(projectType),
 		]);
 
-		const categorySections = await Promise.all(popularTags.map(async (tag) => ({
+		const categorySections = await Promise.all(discoverTags.map(async (tag) => ({
 			tag: tag.name,
 			count: tag.count,
 			projects: (await fetchProjects({
@@ -291,7 +307,7 @@ router.get("/:type", async (req, res) => {
 			featured: featuredProjects.map((project) => formatProject(project)),
 			weeklyPopular: weeklyPopularResult.projects.map((project) => formatProject(project, weeklyPopularResult.weeklyDownloadsBySlug)),
 			categorySections,
-			popularCategories: popularTags,
+			popularCategories: discoverTags,
 			latest: latestProjects.map((project) => formatProject(project)),
 			generatedAt: new Date().toISOString(),
 		};
