@@ -105,9 +105,9 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 			<Link className="discover-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
 			<div className="discover-project-card__head card-head">
-				<img key={projectImage} className="discover-project-card__cover resource-cover" src={projectImage} alt="" loading={imageLoading} />
+				<img key={`cover:${projectImage}`} className="discover-project-card__cover resource-cover" src={projectImage} alt="" loading={imageLoading} />
 				
-				<img key={projectIcon} className="discover-project-card__logo resource-logo-lg" src={projectIcon} alt="" loading={imageLoading} />
+				<img key={`logo:${projectIcon}`} className="discover-project-card__logo resource-logo-lg" src={projectIcon} alt="" loading={imageLoading} />
 			</div>
 
 			<div className="discover-project-card__body">
@@ -115,7 +115,7 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 				
 				<span className="discover-project-card__author">
 					<Link href={getOwnerHref(project)}>
-						<img key={ownerAvatar} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
+						<img key={`owner:${ownerAvatar}`} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 						
 						<UserName user={project.owner} className="discover-author__name" />
 					</Link>

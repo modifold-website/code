@@ -17,14 +17,14 @@ function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "la
 	return (
 		<>
 			<div className="discover-latest-card__icon">
-				<img key={projectIcon} src={projectIcon} alt="" loading={imageLoading} />
+				<img key={`icon:${projectIcon}`} src={projectIcon} alt="" loading={imageLoading} />
 			</div>
 
 			<div className="discover-latest-card__content">
 				<span className="discover-latest-card__title">{project.title}</span>
 				
 				<span className="discover-latest-card__author">
-					<img key={ownerAvatar} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
+					<img key={`owner:${ownerAvatar}`} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 					
 					<UserName user={project.owner} className="discover-author__name" />
 				</span>
