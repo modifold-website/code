@@ -300,6 +300,22 @@ const fetchDiscoverTags = async (projectType) => {
 	return discoverTags.map((name) => ({ name, count: countsByTag.get(name) || 0 }));
 };
 
+const fetchPopularTags = async (projectType, limit = 6) => {
+	const [rows] = await db.query(
+		"SELECT tags FROM projects WHERE status = 'approved' AND project_type = ? AND tags IS NOT NULL AND tags != ''",
+		[projectType]
+	);
+	const countsByTag = new Map();
+
+	for(const row of rows) {
+		for(const tag of parseTags(row.tags)) {
+			countsByTag.set(tag, (countsByTag.get(tag) || 0) + 1);
+		}
+	}
+
+	return [...countsByTag.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([name, count]) => ({ name, count }));
+};
+
 router.get("/:type", async (req, res) => {
 	try {
 		const projectType = normalizeProjectType(req.params.type);
@@ -308,7 +324,7 @@ router.get("/:type", async (req, res) => {
 			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-		const cacheSeed = JSON.stringify({ type: projectType, version: 3 });
+		const cacheSeed = JSON.stringify({ type: projectType, version: 4 });
 		const cacheHash = crypto.createHash("sha1").update(cacheSeed).digest("hex");
 		const cacheKey = `modifold_discover_v2_${cacheHash}`;
 		const cachedResponse = await getCacheJson(cacheKey);
@@ -319,11 +335,12 @@ router.get("/:type", async (req, res) => {
 		}
 
 		const weeklyDownloadsPromise = getWeeklyDownloadCounts({ projectType, limit: 120 });
-		const [featuredProjects, rankedDownloads, latestProjects, discoverTags] = await Promise.all([
+		const [featuredProjects, rankedDownloads, latestProjects, discoverTags, popularTags] = await Promise.all([
 			fetchRecommendedProjects(projectType),
 			weeklyDownloadsPromise,
 			fetchProjects({ projectType, orderBy: "p.created_at DESC, p.id DESC", limit: 12 }),
 			fetchDiscoverTags(projectType),
+			fetchPopularTags(projectType, 6),
 		]);
 		const [weeklyPopularResult, weeklyNewPopularResult] = await Promise.all([
 			fetchWeeklyPopularProjects(projectType, rankedDownloads.slice(0, 60)),
@@ -348,7 +365,7 @@ router.get("/:type", async (req, res) => {
 			weeklyPopular: weeklyPopularResult.projects.map((project) => formatProject(project, weeklyPopularResult.weeklyDownloadsBySlug)),
 			weeklyNewPopular: weeklyNewPopularResult.projects.map((project) => formatProject(project, weeklyNewPopularResult.weeklyDownloadsBySlug)),
 			categorySections,
-			popularCategories: discoverTags,
+			popularCategories: popularTags,
 			latest: latestProjects.map((project) => formatProject(project)),
 			generatedAt: new Date().toISOString(),
 		};
