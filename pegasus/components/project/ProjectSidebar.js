@@ -145,7 +145,7 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 				</Link>
 
 				<Link className={`project-creator-card__name ${isOrganization ? "project-creator-card__name--organization" : ""}`} href={getCreatorHref(creator)}>
-					<UserName user={creator} />
+					<UserName user={creator} className="project-creator-card__name-text" />
 
 					{isOrganization && <ProjectCreatorOrganizationLabel t={t} />}
 				</Link>
