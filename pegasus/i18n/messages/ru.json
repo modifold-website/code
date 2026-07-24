@@ -976,6 +976,7 @@
   "DiscoverPage": {
     "featured": "Рекомендуемое",
     "weeklyPopular": "Популярное за неделю",
+    "weeklyNewPopular": "Популярные новинки недели",
     "latest": "Недавно опубликованные",
     "popularCategories": "Популярные категории",
     "viewAll": "Смотреть все",

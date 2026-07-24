@@ -7,7 +7,7 @@ import { getProjectPath } from "@/utils/projectRoutes";
 const SLIDE_DURATION_MS = 440;
 
 function getProjectImage(project) {
-	return project?.gallery?.find((image) => image?.featured === 1)?.url || project?.gallery?.[0]?.url || project?.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
+	return project?.custom_image_url || project?.gallery?.find((image) => image?.featured === 1)?.url || project?.gallery?.[0]?.url || project?.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
 }
 
 function getSlideHref(slide) {

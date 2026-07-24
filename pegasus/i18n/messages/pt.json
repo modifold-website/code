@@ -976,6 +976,7 @@
   "DiscoverPage": {
     "featured": "Destaques",
     "weeklyPopular": "Popular esta semana",
+    "weeklyNewPopular": "Novidades populares da semana",
     "latest": "Publicados recentemente",
     "popularCategories": "Categorias populares",
     "viewAll": "Ver tudo",

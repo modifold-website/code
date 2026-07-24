@@ -31,6 +31,8 @@ router.get("/", async (req, res) => {
         const [recommendedColumns] = await db.query("SHOW COLUMNS FROM recommended");
         const hasPositionColumn = recommendedColumns.some((column) => column?.Field === "position");
         const hasIdColumn = recommendedColumns.some((column) => column?.Field === "id");
+        const hasCustomImageColumn = recommendedColumns.some((column) => column?.Field === "custom_image_url");
+        const customImageSelect = hasCustomImageColumn ? "r.custom_image_url" : "NULL";
 
         if(hasPositionColumn && hasIdColumn) {
             orderClause = "ORDER BY r.position ASC, r.id ASC";
@@ -59,6 +61,7 @@ router.get("/", async (req, res) => {
             o.slug AS organization_slug,
             o.name AS organization_name,
             o.icon_url AS organization_icon_url,
+            ${customImageSelect} AS custom_image_url,
             (SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 LIMIT 1) AS featured_image
             FROM recommended r
             INNER JOIN projects p ON p.slug COLLATE utf8mb4_unicode_ci = r.slug COLLATE utf8mb4_unicode_ci
@@ -78,6 +81,7 @@ router.get("/", async (req, res) => {
                 title: project.title,
                 summary: project.summary,
                 icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                custom_image_url: project.custom_image_url || null,
                 gallery: project.featured_image ? [{ url: project.featured_image, featured: 1 }] : [],
                 owner: project.organization_slug ? {
                     username: project.organization_name,

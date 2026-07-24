@@ -976,6 +976,7 @@
   "DiscoverPage": {
     "featured": "Featured",
     "weeklyPopular": "Popular this week",
+    "weeklyNewPopular": "Popular new this week",
     "latest": "Recently published",
     "popularCategories": "Popular categories",
     "viewAll": "View all",
