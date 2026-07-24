@@ -50,6 +50,7 @@ const formatProject = (project, weeklyDownloadsBySlug = new Map()) => ({
 	updated_at: project.updated_at,
 	project_type: project.project_type,
 	tags: parseTags(project.tags),
+	custom_image_url: project.custom_image_url || null,
 	gallery: project.cover_url ? [{ url: project.cover_url, featured: Number(project.cover_featured) || 0 }] : [],
 	owner: project.organization_slug ? {
 		id: project.organization_id,
@@ -72,7 +73,7 @@ const formatProject = (project, weeklyDownloadsBySlug = new Map()) => ({
 	},
 });
 
-const getProjectSelect = () => `
+const getProjectSelect = (extraSelect = "") => `
 	SELECT
 	p.id,
 	p.slug,
@@ -86,6 +87,7 @@ const getProjectSelect = () => `
 	p.updated_at,
 	p.project_type,
 	p.tags,
+	${extraSelect}
 	u.id AS user_id,
 	u.username,
 	u.slug AS user_slug,
@@ -134,6 +136,8 @@ const fetchRecommendedProjects = async (projectType) => {
 	const [recommendedColumns] = await db.query("SHOW COLUMNS FROM recommended");
 	const hasPositionColumn = recommendedColumns.some((column) => column?.Field === "position");
 	const hasIdColumn = recommendedColumns.some((column) => column?.Field === "id");
+	const hasCustomImageColumn = recommendedColumns.some((column) => column?.Field === "custom_image_url");
+	const customImageSelect = hasCustomImageColumn ? "r.custom_image_url AS custom_image_url," : "NULL AS custom_image_url,";
 	let orderClause = "r.slug ASC";
 
 	if(hasPositionColumn && hasIdColumn) {
@@ -145,7 +149,7 @@ const fetchRecommendedProjects = async (projectType) => {
 	}
 
 	const [projects] = await db.query(`
-		${getProjectSelect()}
+		${getProjectSelect(customImageSelect)}
 		INNER JOIN recommended r ON p.slug COLLATE utf8mb4_unicode_ci = r.slug COLLATE utf8mb4_unicode_ci
 		WHERE p.status = 'approved'
 		AND p.project_type = ?
