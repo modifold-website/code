@@ -5142,10 +5142,12 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .discover-latest-card:hover .discover-latest-card__icon img {
 	transform: translate(0) rotate(1deg) skew(0) skewY(0) scaleX(1.05) scaleY(1.05);
 }
-.discover-latest-card:hover .discover-latest-card__title {
+.discover-latest-card__overlay:hover ~ .discover-latest-card__content .discover-latest-card__title,
+.discover-latest-card__overlay:focus-visible ~ .discover-latest-card__content .discover-latest-card__title {
 	text-decoration: underline;
 }
-.discover-latest-card:has(.discover-latest-card__author:hover) .discover-latest-card__title {
+.discover-latest-card:has(.discover-latest-card__author:hover) .discover-latest-card__title,
+.discover-latest-card:has(.discover-latest-card__author:focus-visible) .discover-latest-card__title {
 	text-decoration: none;
 }
 .discover-latest-card:active {
@@ -5202,7 +5204,10 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	text-decoration: none;
 	pointer-events: auto;
 }
-.discover-latest-card__author:hover .discover-author__name {
+.discover-latest-card__author:hover .discover-author__name,
+.discover-latest-card__author:hover .discover-author__name span,
+.discover-latest-card__author:focus-visible .discover-author__name,
+.discover-latest-card__author:focus-visible .discover-author__name span {
 	text-decoration: underline;
 }
 .discover-latest-card__meta {
