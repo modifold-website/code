@@ -16,6 +16,7 @@ const PROJECT_TYPE_ALIASES = {
 };
 
 const DISCOVER_CACHE_TTL_SECONDS = 60 * 5;
+const NEW_PROJECT_WINDOW_DAYS = 7;
 
 const DISCOVER_CATEGORY_TAGS = {
 	mod: ["Decoration", "Adventure", "Game Mechanics", "Minigame"],
@@ -206,7 +207,7 @@ const getWeeklyDownloadCounts = async ({ projectType, limit = 40 }) => {
 	}
 };
 
-const fetchProjectsBySlugs = async ({ projectType, rankedDownloads, limit = 10 }) => {
+const fetchProjectsBySlugs = async ({ projectType, rankedDownloads, where = "", params = [], limit = 10 }) => {
 	const slugs = rankedDownloads.map((row) => row.slug).filter(Boolean);
 	if(slugs.length === 0) {
 		return [];
@@ -217,14 +218,15 @@ const fetchProjectsBySlugs = async ({ projectType, rankedDownloads, limit = 10 }
 		WHERE p.status = 'approved'
 		AND p.project_type = ?
 		AND p.slug IN (?)
-	`, [projectType, slugs]);
+		${where}
+	`, [projectType, slugs, ...params]);
 	const orderBySlug = new Map(rankedDownloads.map((row, index) => [row.slug, index]));
 
 	return projects.sort((a, b) => (orderBySlug.get(a.slug) ?? 9999) - (orderBySlug.get(b.slug) ?? 9999)).slice(0, limit);
 };
 
-const fetchWeeklyPopularProjects = async (projectType) => {
-	const rankedDownloads = await getWeeklyDownloadCounts({ projectType, limit: 60 });
+const fetchWeeklyPopularProjects = async (projectType, rankedDownloads = null) => {
+	rankedDownloads = rankedDownloads || await getWeeklyDownloadCounts({ projectType, limit: 60 });
 	const weeklyDownloadsBySlug = new Map(rankedDownloads.map((row) => [row.slug, row.count]));
 	const projects = await fetchProjectsBySlugs({ projectType, rankedDownloads, limit: 10 });
 
@@ -237,6 +239,39 @@ const fetchWeeklyPopularProjects = async (projectType) => {
 
 	return {
 		projects: await fetchProjects({ projectType, limit: 10 }),
+		weeklyDownloadsBySlug,
+	};
+};
+
+const fetchWeeklyNewPopularProjects = async (projectType, rankedDownloads = null) => {
+	rankedDownloads = rankedDownloads || await getWeeklyDownloadCounts({ projectType, limit: 120 });
+	const weeklyDownloadsBySlug = new Map(rankedDownloads.map((row) => [row.slug, row.count]));
+	let projects = await fetchProjectsBySlugs({
+		projectType,
+		rankedDownloads,
+		where: `AND p.created_at >= DATE_SUB(NOW(), INTERVAL ${NEW_PROJECT_WINDOW_DAYS} DAY)`,
+		limit: 10,
+	});
+
+	if(projects.length < 10) {
+		const existingSlugs = projects.map((project) => project.slug).filter(Boolean);
+		const fallbackWhere = [
+			`AND p.created_at >= DATE_SUB(NOW(), INTERVAL ${NEW_PROJECT_WINDOW_DAYS} DAY)`,
+			existingSlugs.length > 0 ? "AND p.slug NOT IN (?)" : "",
+		].filter(Boolean).join(" ");
+		const fallbackProjects = await fetchProjects({
+			projectType,
+			where: fallbackWhere,
+			params: existingSlugs.length > 0 ? [existingSlugs] : [],
+			orderBy: "p.downloads DESC, p.created_at DESC, p.id DESC",
+			limit: 10 - projects.length,
+		});
+
+		projects = projects.concat(fallbackProjects);
+	}
+
+	return {
+		projects,
 		weeklyDownloadsBySlug,
 	};
 };
@@ -273,7 +308,7 @@ router.get("/:type", async (req, res) => {
 			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-		const cacheSeed = JSON.stringify({ type: projectType, version: 2 });
+		const cacheSeed = JSON.stringify({ type: projectType, version: 3 });
 		const cacheHash = crypto.createHash("sha1").update(cacheSeed).digest("hex");
 		const cacheKey = `modifold_discover_v2_${cacheHash}`;
 		const cachedResponse = await getCacheJson(cacheKey);
@@ -283,11 +318,16 @@ router.get("/:type", async (req, res) => {
 			return res.json(cachedResponse);
 		}
 
-		const [featuredProjects, weeklyPopularResult, latestProjects, discoverTags] = await Promise.all([
+		const weeklyDownloadsPromise = getWeeklyDownloadCounts({ projectType, limit: 120 });
+		const [featuredProjects, rankedDownloads, latestProjects, discoverTags] = await Promise.all([
 			fetchRecommendedProjects(projectType),
-			fetchWeeklyPopularProjects(projectType),
+			weeklyDownloadsPromise,
 			fetchProjects({ projectType, orderBy: "p.created_at DESC, p.id DESC", limit: 12 }),
 			fetchDiscoverTags(projectType),
+		]);
+		const [weeklyPopularResult, weeklyNewPopularResult] = await Promise.all([
+			fetchWeeklyPopularProjects(projectType, rankedDownloads.slice(0, 60)),
+			fetchWeeklyNewPopularProjects(projectType, rankedDownloads),
 		]);
 
 		const categorySections = await Promise.all(discoverTags.map(async (tag) => ({
@@ -306,6 +346,7 @@ router.get("/:type", async (req, res) => {
 			type: projectType,
 			featured: featuredProjects.map((project) => formatProject(project)),
 			weeklyPopular: weeklyPopularResult.projects.map((project) => formatProject(project, weeklyPopularResult.weeklyDownloadsBySlug)),
+			weeklyNewPopular: weeklyNewPopularResult.projects.map((project) => formatProject(project, weeklyNewPopularResult.weeklyDownloadsBySlug)),
 			categorySections,
 			popularCategories: discoverTags,
 			latest: latestProjects.map((project) => formatProject(project)),
