@@ -31,7 +31,7 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 	const tProjectCard = useTranslations("ProjectCard");
 	const relativeNow = new Date();
 	const updatedDate = project.updated_at || project.created_at;
-	const visibleTags = (project.tags || []).slice(0, 2);
+	const visibleTags = (project.tags || []).slice(0, 1);
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
 	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
 
