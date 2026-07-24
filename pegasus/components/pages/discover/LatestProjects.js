@@ -8,7 +8,8 @@ import { getCategoryLabel } from "@/utils/categoryLabels";
 import { getProjectPath } from "@/utils/projectRoutes";
 import { ProjectStatDownloads } from "./DiscoverProjectRail";
 
-function LatestProjectCardContent({ project, tCategoryLabels }) {
+function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" }) {
+	const projectIcon = project.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
 	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
 	const visibleTags = (project.tags || []).slice(0, 1);
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
@@ -16,14 +17,14 @@ function LatestProjectCardContent({ project, tCategoryLabels }) {
 	return (
 		<>
 			<div className="discover-latest-card__icon">
-				<img src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" loading="lazy" />
+				<img key={projectIcon} src={projectIcon} alt="" loading={imageLoading} />
 			</div>
 
 			<div className="discover-latest-card__content">
 				<span className="discover-latest-card__title">{project.title}</span>
 				
 				<span className="discover-latest-card__author">
-					<img className="discover-author__avatar" src={ownerAvatar} alt="" loading="lazy" />
+					<img key={ownerAvatar} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 					
 					<UserName user={project.owner} className="discover-author__name" />
 				</span>
@@ -67,8 +68,11 @@ function LatestProjectCardPreview({ preview, tCategoryLabels }) {
 		return null;
 	}
 
+	const previewKey = preview.project.id || preview.project.slug;
+
 	return (
 		<Link
+			key={previewKey}
 			href={getProjectPath(preview.project)}
 			className={`discover-latest-card discover-latest-card--preview ${preview.isClosing ? "is-closing" : ""}`}
 			style={{
@@ -77,7 +81,7 @@ function LatestProjectCardPreview({ preview, tCategoryLabels }) {
 				width: `${preview.width}px`,
 			}}
 		>
-			<LatestProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} />
+			<LatestProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} imageLoading="eager" />
 		</Link>
 	);
 }
@@ -154,7 +158,7 @@ export default function LatestProjects({ projects, t, viewAllHref }) {
 					))}
 				</div>
 
-				<LatestProjectCardPreview preview={preview} tCategoryLabels={tCategoryLabels} />
+				<LatestProjectCardPreview key={preview?.project?.id || preview?.project?.slug || "empty"} preview={preview} tCategoryLabels={tCategoryLabels} />
 			</div>
 		</section>
 	);

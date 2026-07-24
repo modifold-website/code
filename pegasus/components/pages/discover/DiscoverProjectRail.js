@@ -26,13 +26,15 @@ export function ProjectStatDownloads({ project, useWeekly = false }) {
 	);
 }
 
-function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = false }) {
+function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = false, imageLoading = "lazy" }) {
 	const locale = useLocale();
 	const tProjectCard = useTranslations("ProjectCard");
 	const relativeNow = new Date();
 	const updatedDate = project.updated_at || project.created_at;
 	const visibleTags = (project.tags || []).slice(0, 1);
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
+	const projectImage = getProjectImage(project);
+	const projectIcon = getProjectIcon(project);
 	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
 
 	const formatRelativeDate = (dateString) => {
@@ -103,9 +105,9 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 			<Link className="discover-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
 			<div className="discover-project-card__head card-head">
-				<img className="discover-project-card__cover resource-cover" src={getProjectImage(project)} alt="" loading="lazy" />
+				<img key={projectImage} className="discover-project-card__cover resource-cover" src={projectImage} alt="" loading={imageLoading} />
 				
-				<img className="discover-project-card__logo resource-logo-lg" src={getProjectIcon(project)} alt="" loading="lazy" />
+				<img key={projectIcon} className="discover-project-card__logo resource-logo-lg" src={projectIcon} alt="" loading={imageLoading} />
 			</div>
 
 			<div className="discover-project-card__body">
@@ -113,7 +115,7 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 				
 				<span className="discover-project-card__author">
 					<Link href={getOwnerHref(project)}>
-						<img className="discover-author__avatar" src={ownerAvatar} alt="" loading="lazy" />
+						<img key={ownerAvatar} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 						
 						<UserName user={project.owner} className="discover-author__name" />
 					</Link>
@@ -180,8 +182,11 @@ function DiscoverProjectCardPreview({ preview, tCategoryLabels }) {
 		return null;
 	}
 
+	const previewKey = preview.project.id || preview.project.slug;
+
 	return (
 		<article
+			key={previewKey}
 			className={`discover-project-card discover-project-card--preview ${preview.isClosing ? "is-closing" : ""}`}
 			style={{
 				left: `${preview.left}px`,
@@ -189,7 +194,7 @@ function DiscoverProjectCardPreview({ preview, tCategoryLabels }) {
 				width: `${preview.width}px`,
 			}}
 		>
-			<ProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={preview.useWeeklyDownloads} />
+			<ProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={preview.useWeeklyDownloads} imageLoading="eager" />
 		</article>
 	);
 }
@@ -370,7 +375,7 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 					))}
 				</div>
 
-				<DiscoverProjectCardPreview preview={preview} tCategoryLabels={tCategoryLabels} />
+				<DiscoverProjectCardPreview key={preview?.project?.id || preview?.project?.slug || "empty"} preview={preview} tCategoryLabels={tCategoryLabels} />
 
 				<button type="button" className="discover-rail-arrow discover-rail-arrow--right" onClick={() => scroll(1)} aria-label={t("next")} disabled={!scrollState.canScrollNext} aria-disabled={!scrollState.canScrollNext}>
 					<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right-icon lucide-chevron-right">
