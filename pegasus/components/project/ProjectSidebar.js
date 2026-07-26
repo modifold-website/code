@@ -85,6 +85,7 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 	const [isSubscribed, setIsSubscribed] = useState(Boolean(creator?.isSubscribed));
 	const [subscriptionId, setSubscriptionId] = useState(creator?.subscriptionId || null);
 	const [isSaving, setIsSaving] = useState(false);
+	const avatarClassName = `andropov-media--cropped andropov-media ${isOrganization ? "project-creator-card__avatar-media--organization" : "andropov-media--rounded"} andropov-media--bordered andropov-image account-menu__avatar`;
 
 	const handleSubscribe = async () => {
 		if(!isLoggedIn || !authToken) {
@@ -139,7 +140,7 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 		<div className="project-creator-card">
 			<div className="project-creator-card__header">
 				<Link className="project-creator-card__avatar button--active-transform" href={getCreatorHref(creator)}>
-					<div className="andropov-media--cropped andropov-media andropov-media--rounded andropov-media--bordered andropov-image account-menu__avatar" style={{ aspectRatio: "480 / 320", width: "38px", height: "38px", maxWidth: "none", maxHeight: "none", backgroundColor: "var(--theme-color-background)" }}>
+					<div className={avatarClassName} style={{ aspectRatio: "480 / 320", width: "38px", height: "38px", maxWidth: "none", maxHeight: "none", backgroundColor: "var(--theme-color-background)" }}>
 						<img alt="" loading="lazy" width="38" height="38" decoding="async" data-nimg="1" style={{ color: "transparent" }} src={getCreatorAvatar(creator)} />
 					</div>
 				</Link>

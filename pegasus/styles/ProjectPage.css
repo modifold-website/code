@@ -54,6 +54,10 @@
 	flex-shrink: 0;
 	color: inherit !important;
 }
+.project-creator-card__avatar-media--organization {
+	aspect-ratio: 1 / 1 !important;
+	border-radius: 10px;
+}
 .project-creator-card__avatar img {
 	display: block;
 	width: 100%;
