@@ -1,5 +1,5 @@
 {
-	"packageManager": "bun@1.3.11",
+	"packageManager": "bun@1.3.14",
 	"scripts": {
 		"index.js": "node index.js",
 		"start": "node index.js"
