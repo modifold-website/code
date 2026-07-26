@@ -79,26 +79,6 @@ const getVersionDependencies = async (versionId) => {
 	}
 };
 
-/**
- * @swagger
- * /v2/version/{versionId}:
- *   get:
- *     summary: Get a version by ID
- *     description: Returns a project version directly by its version ID.
- *     tags: [Versions v2]
- *     parameters:
- *       - in: path
- *         name: versionId
- *         required: true
- *         schema:
- *           type: string
- *         description: Version ID
- *     responses:
- *       200:
- *         description: Version details
- *       404:
- *         description: Version not found
- */
 router.get("/:versionId", optionalAuth, async (req, res) => {
 	const { versionId } = req.params;
 

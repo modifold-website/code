@@ -41,6 +41,9 @@
 	line-height: 1.2;
 	text-decoration: none;
 }
+.project-creator-card__name:hover .project-creator-card__name-text > span:first-child {
+	text-decoration: underline;
+}
 .project-creator-card__name--organization {
 	flex-direction: column;
 	align-items: flex-start;
@@ -50,6 +53,10 @@
 	display: inline-flex;
 	flex-shrink: 0;
 	color: inherit !important;
+}
+.project-creator-card__avatar-media--organization {
+	aspect-ratio: 1 / 1 !important;
+	border-radius: 10px;
 }
 .project-creator-card__avatar img {
 	display: block;

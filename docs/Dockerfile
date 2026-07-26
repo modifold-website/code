@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.11-alpine AS deps
+FROM oven/bun:1.3.14-alpine AS deps
 
 WORKDIR /app
 
@@ -14,7 +14,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY . .
 RUN bun run build
 
-FROM oven/bun:1.3.11-alpine AS runner
+FROM oven/bun:1.3.14-alpine AS runner
 
 WORKDIR /app
 
