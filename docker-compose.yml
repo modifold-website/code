@@ -30,6 +30,8 @@ services:
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
     volumes:
       - ./data/clickhouse:/var/lib/clickhouse
+      - ./clickhouse/config.d/low-memory.xml:/etc/clickhouse-server/config.d/low-memory.xml:ro
+      - ./clickhouse/users.d/low-memory.xml:/etc/clickhouse-server/users.d/low-memory.xml:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:8123/ping | grep -q Ok"]
       interval: 5s
