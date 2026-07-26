@@ -3,9 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const swaggerUi = require("swagger-ui-express");
 
-const specs = require("./swagger");
 const { db } = require("./config/db");
 const { clickhouse } = require("./config/clickhouse");
 const { cacheClient } = require("./config/cache");
@@ -140,16 +138,6 @@ const startServer = () => {
 
 	app.use("/internal/downloads", internalDownloadsRoutes);
 
-	app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, {
-		customCss: ".swagger-ui .topbar { display: none }",
-		customSiteTitle: "Modifold API Documentation",
-	}));
-
-	app.get("/api-docs.json", (req, res) => {
-		res.setHeader("Content-Type", "application/json");
-		res.send(specs);
-	});
-
 	const mountV1Route = (routePath, ...handlers) => {
 		app.use(routePath, ...handlers);
 		app.use(`/v1${routePath}`, ...handlers);
@@ -178,7 +166,6 @@ const startServer = () => {
 
 	const server = app.listen(SERVER_PORT, () => {
 		console.log(`Server running on http://localhost:${SERVER_PORT}`);
-		console.log(`Swagger UI http://localhost:${SERVER_PORT}/api-docs`);
 	});
 
 	server.setTimeout(600000);

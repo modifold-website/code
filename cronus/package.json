@@ -16,12 +16,10 @@
 		"jsonwebtoken": "^9.0.2",
 		"multer": "^1.4.5-lts.2",
 		"mysql2": "^3.14.0",
+		"otplib": "^12.0.1",
 		"path": "^0.12.7",
 		"sanitize-html": "^2.17.1",
 		"sharp": "^0.34.1",
-		"slugify": "^1.6.6",
-		"swagger-jsdoc": "^6.2.8",
-		"swagger-ui-express": "^5.0.1",
-		"otplib": "^12.0.1"
+		"slugify": "^1.6.6"
 	}
 }
