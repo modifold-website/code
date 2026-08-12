@@ -1133,10 +1133,109 @@
       "learnMore": "Learn more"
     }
   },
+  "ProjectDisclosures": {
+    "metadata": {
+      "title": "Content disclosures — {title} — Modifold",
+      "notFound": "Project not found — Modifold"
+    },
+    "title": "Content disclosures",
+    "introBefore": "Add every disclosure that applies to your project in accordance with the",
+    "contentRules": "Content Rules",
+    "explanation": "Explanation",
+    "explanationOptional": "Explanation (optional)",
+    "addAnother": "Add another",
+    "removeItem": "Remove item",
+    "success": "Content disclosures updated",
+    "errors": {
+      "save": "Could not update content disclosures",
+      "aiCategory": "Select at least one way generative AI is used.",
+      "advertisingExplanation": "Explain where advertising appears in the project.",
+      "paidFeature": "List at least one paid feature.",
+      "telemetry": "Choose a consent model and list the data collected.",
+      "photosensitivityExplanation": "Explain the photosensitivity risk."
+    },
+    "ai": {
+      "title": "Contains AI-generated content",
+      "description": "Enable this when a substantial amount of code, assets, text, or functionality relies on generative AI.",
+      "descriptionRequirement": "You must clearly disclose “Created with AI” on this content disclosures page.",
+      "usesTitle": "What is generative AI being used for?",
+      "types": {
+        "code": "Code",
+        "assets": "Assets",
+        "text": "Text",
+        "functionality": "Functionality"
+      },
+      "placeholder": "For example, translations were generated with AI and then reviewed by the author."
+    },
+    "advertising": {
+      "title": "Contains advertising",
+      "description": "Enable this if the project contains advertisements, sponsorships, or promotions of other works.",
+      "placeholder": "Describe what is promoted and where users will see it."
+    },
+    "paid": {
+      "title": "Contains paid features",
+      "description": "Enable this if features can be obtained by spending real-world money.",
+      "listTitle": "List the types of paid features",
+      "placeholder": "For example, optional supporter cosmetics"
+    },
+    "telemetry": {
+      "title": "Contains telemetry",
+      "description": "Enable this if the project sends usage data to you or a third party.",
+      "consentTitle": "What is the consent model?",
+      "consent": {
+        "opt_in": "Opt-in",
+        "opt_out": "Opt-out",
+        "always_active": "Always active"
+      },
+      "dataTitle": "What data is collected?",
+      "dataDescription": "List each type of data or provide the privacy-policy URL, including whether the data is anonymous or personally identifiable.",
+      "placeholder": "For example, anonymous feature usage counters"
+    },
+    "photosensitivity": {
+      "title": "Photosensitivity warning",
+      "description": "Enable this if the project contains flashing lights or patterns that may be dangerous to photosensitive people.",
+      "placeholder": "Describe the flashing effect and whether it can be disabled."
+    },
+    "external": {
+      "title": "External system interactions",
+      "description": "Enable this if the project reads or changes anything on the user's system outside the game.",
+      "placeholder": "Describe what is accessed outside the game and why."
+    },
+    "archive": {
+      "title": "Archive project",
+      "description": "Mark the project as archived when you are no longer maintaining it.",
+      "hidden": "Archived projects are removed from every catalog and profile, and remain available only through a direct link.",
+      "placeholder": "For example, I no longer have time to maintain this project. Feel free to fork it.",
+      "previewTitle": "Banner preview",
+      "bannerTitle": "{title} has been archived",
+      "bannerDescription": "{title} will not receive further updates unless the author unarchives the project."
+    },
+    "public": {
+      "title": "Content disclosures",
+      "ai": "Contains AI-generated {types}",
+      "aiTypes": {
+        "code": "code",
+        "assets": "assets",
+        "text": "text",
+        "functionality": "functionality"
+      },
+      "advertising": "Contains advertising",
+      "paid": "Contains paid features",
+      "telemetry": "Contains {consent} telemetry",
+      "consent": {
+        "optIn": "opt-in",
+        "optOut": "opt-out",
+        "alwaysActive": "always-active"
+      },
+      "photosensitivity": "Contains photosensitive content",
+      "external": "Interacts with systems outside the game"
+    }
+  },
   "SettingsProjectPage": {
     "sidebar": {
       "general": "General",
       "description": "Description",
+      "disclosures": "Disclosures",
       "links": "Links",
       "versions": "Versions",
       "gallery": "Gallery",

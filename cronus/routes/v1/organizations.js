@@ -348,6 +348,7 @@ router.get("/:slug", async (req, res) => {
             INNER JOIN projects p ON p.id COLLATE utf8mb4_unicode_ci = op.project_id COLLATE utf8mb4_unicode_ci
             WHERE op.organization_id = ?
             ${canViewAllOrganizationProjects ? "" : "AND p.status = 'approved'"}
+			AND p.is_archived = 0
             ORDER BY p.updated_at DESC`,
             [organization.id]
         );

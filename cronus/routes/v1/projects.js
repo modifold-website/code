@@ -20,7 +20,28 @@ const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotificatio
 const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
+const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
 const router = express.Router();
+
+const DISCLOSURE_TEXT_LIMIT = 2000;
+const DISCLOSURE_LIST_LIMIT = 12;
+const DISCLOSURE_LIST_ITEM_LIMIT = 240;
+const TELEMETRY_CONSENT_VALUES = new Set(["opt_in", "opt_out", "always_active"]);
+
+const normalizeBoolean = (value) => value === true || value === 1 || value === "1" || value === "true";
+
+const normalizeDisclosureText = (value, { maxLength = DISCLOSURE_TEXT_LIMIT } = {}) => {
+	const safeValue = sanitizePlainText(value || "", { preserveNewlines: true });
+	return safeValue.slice(0, maxLength);
+};
+
+const normalizeDisclosureList = (value) => {
+	if(!Array.isArray(value)) {
+		return [];
+	}
+
+	return [...new Set(value.map((item) => normalizeDisclosureText(item, { maxLength: DISCLOSURE_LIST_ITEM_LIMIT })).filter(Boolean))].slice(0, DISCLOSURE_LIST_LIMIT);
+};
 
 const parseJsonArrayField = (value) => {
     if(Array.isArray(value)) {
@@ -1237,7 +1258,7 @@ router.get("/", async (req, res) => {
             LEFT JOIN project_versions pv ON p.id = pv.project_id AND pv.moderation_status = 'approved'
         `;
 
-        let whereClause = " WHERE p.status = 'approved'";
+        let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0";
         const params = [];
         const countParams = [];
 
@@ -1438,6 +1459,7 @@ router.get('/user/projects', auth, async (req, res) => {
             p.project_type,
             p.tags,
             p.user_id,
+			p.is_archived,
             u.username,
             u.slug AS user_slug,
             u.avatar,
@@ -1488,6 +1510,7 @@ router.get('/user/projects', auth, async (req, res) => {
                 created_at: project.created_at,
                 updated_at: project.updated_at,
                 project_type: project.project_type,
+				is_archived: Boolean(project.is_archived),
                 tags: project.tags ? project.tags.split(",").map((tag) => tag.trim()) : [],
                 owner: project.organization_slug ? {
                     id: project.organization_id,
@@ -2238,6 +2261,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         const access = userId ? await resolveProjectAccess(db, projectData.id, userId) : null;
         const canViewModerationFields = await canViewPrivateProjectVersions(projectData, userId);
         const versionVisibility = await buildVisibleVersionWhereClause(projectData, userId);
+		const disclosureStatePromise = getProjectDisclosureState(db, projectData.id);
 
         const [versions] = await db.query(
             `SELECT v.* FROM project_versions v WHERE v.project_id = ? AND ${versionVisibility.sql} ORDER BY v.created_at DESC`,
@@ -2276,6 +2300,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             }
         }
         const organizationOwner = await getOrganizationOwnerForProject(projectData.id);
+		const disclosureState = await disclosureStatePromise;
 
         const formattedVersions = versions.map((version) => {
             let gameVersions, loaders;
@@ -2362,6 +2387,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 summary: organizationOwner.summary || "",
                 icon_url: organizationOwner.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
             } : null,
+			disclosures: disclosureState.disclosures,
+			archive: disclosureState.archive,
             members: members.map(member => ({
                 user_id: member.user_id,
                 role: member.role,
@@ -4767,10 +4794,14 @@ router.get("/:slug/settings", auth, async (req, res) => {
             organizationOptions.unshift(currentOrganization);
         }
 
+        const disclosureState = await getProjectDisclosureState(db, project.id);
+
         res.json({
             ...projectRow,
             organization: currentOrganization,
             organization_options: organizationOptions,
+			disclosures: disclosureState.disclosures,
+			archive: disclosureState.archive,
             permissions: {
                 can_edit_details: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_DETAILS),
                 can_edit_body: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY),
@@ -4783,6 +4814,124 @@ router.get("/:slug/settings", auth, async (req, res) => {
         console.error("Error fetching project settings:", error);
         res.status(500).json({ message: "Server error" });
     }
+});
+
+router.put("/:slug/disclosures", auth, async (req, res) => {
+	try {
+		const project = await getProjectBySlug(req.params.slug);
+		if(!project) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+
+		const access = await requireProjectPermission(res, {
+			project,
+			userId: req.user.id,
+			permission: ORG_PROJECT_PERMISSIONS.EDIT_DETAILS,
+		});
+
+		if(!access) {
+			return;
+		}
+
+		const source = req.body?.disclosures && typeof req.body.disclosures === "object" ? req.body.disclosures : {};
+		const archiveSource = req.body?.archive && typeof req.body.archive === "object" ? req.body.archive : {};
+		const aiGenerated = normalizeBoolean(source.ai_generated);
+		const aiCode = aiGenerated && normalizeBoolean(source.ai_code);
+		const aiAssets = aiGenerated && normalizeBoolean(source.ai_assets);
+		const aiText = aiGenerated && normalizeBoolean(source.ai_text);
+		const aiFunctionality = aiGenerated && normalizeBoolean(source.ai_functionality);
+		const containsAdvertising = normalizeBoolean(source.contains_advertising);
+		const containsPaidFeatures = normalizeBoolean(source.contains_paid_features);
+		const containsTelemetry = normalizeBoolean(source.contains_telemetry);
+		const photosensitivityWarning = normalizeBoolean(source.photosensitivity_warning);
+		const externalSystemInteractions = normalizeBoolean(source.external_system_interactions);
+		const isArchived = normalizeBoolean(archiveSource.is_archived);
+		const aiExplanation = aiGenerated ? normalizeDisclosureText(source.ai_explanation) : "";
+		const advertisingExplanation = containsAdvertising ? normalizeDisclosureText(source.advertising_explanation) : "";
+		const paidFeatures = containsPaidFeatures ? normalizeDisclosureList(source.paid_features) : [];
+		const telemetryConsent = containsTelemetry && TELEMETRY_CONSENT_VALUES.has(source.telemetry_consent) ? source.telemetry_consent : null;
+		const telemetryData = containsTelemetry ? normalizeDisclosureList(source.telemetry_data) : [];
+		const photosensitivityExplanation = photosensitivityWarning ? normalizeDisclosureText(source.photosensitivity_explanation) : "";
+		const externalSystemExplanation = externalSystemInteractions ? normalizeDisclosureText(source.external_system_explanation) : "";
+		const archiveExplanation = isArchived ? normalizeDisclosureText(archiveSource.explanation) : "";
+
+		if(aiGenerated && ![aiCode, aiAssets, aiText, aiFunctionality].some(Boolean)) {
+			return res.status(400).json({ message: "Select at least one way generative AI is used" });
+		}
+
+		if(containsAdvertising && !advertisingExplanation) {
+			return res.status(400).json({ message: "Add an explanation for the advertising disclosure" });
+		}
+
+		if(containsPaidFeatures && paidFeatures.length === 0) {
+			return res.status(400).json({ message: "List at least one paid feature" });
+		}
+
+		if(containsTelemetry && (!telemetryConsent || telemetryData.length === 0)) {
+			return res.status(400).json({ message: "Select a telemetry consent model and list the collected data" });
+		}
+
+		if(photosensitivityWarning && !photosensitivityExplanation) {
+			return res.status(400).json({ message: "Add an explanation for the photosensitivity warning" });
+		}
+
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
+
+			await connection.query(
+				`INSERT INTO project_disclosures (
+				project_id, ai_generated, ai_code, ai_assets, ai_text, ai_functionality, ai_explanation,
+				contains_advertising, advertising_explanation, contains_paid_features, paid_features,
+				contains_telemetry, telemetry_consent, telemetry_data, photosensitivity_warning,
+				photosensitivity_explanation, external_system_interactions, external_system_explanation
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				ON DUPLICATE KEY UPDATE
+				ai_generated = VALUES(ai_generated), ai_code = VALUES(ai_code), ai_assets = VALUES(ai_assets),
+				ai_text = VALUES(ai_text), ai_functionality = VALUES(ai_functionality), ai_explanation = VALUES(ai_explanation),
+				contains_advertising = VALUES(contains_advertising), advertising_explanation = VALUES(advertising_explanation),
+				contains_paid_features = VALUES(contains_paid_features), paid_features = VALUES(paid_features),
+				contains_telemetry = VALUES(contains_telemetry), telemetry_consent = VALUES(telemetry_consent),
+				telemetry_data = VALUES(telemetry_data), photosensitivity_warning = VALUES(photosensitivity_warning),
+				photosensitivity_explanation = VALUES(photosensitivity_explanation),
+				external_system_interactions = VALUES(external_system_interactions),
+				external_system_explanation = VALUES(external_system_explanation)`,
+				[
+					project.id, aiGenerated, aiCode, aiAssets, aiText, aiFunctionality, aiExplanation || null,
+					containsAdvertising, advertisingExplanation || null, containsPaidFeatures, JSON.stringify(paidFeatures),
+					containsTelemetry, telemetryConsent, JSON.stringify(telemetryData), photosensitivityWarning,
+					photosensitivityExplanation || null, externalSystemInteractions, externalSystemExplanation || null,
+				]
+			);
+
+			await connection.query(
+				`UPDATE projects
+				SET is_archived = ?, archive_explanation = ?
+				WHERE id = ?`,
+				[isArchived, archiveExplanation || null, project.id]
+			);
+
+			await connection.commit();
+		} catch (error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
+		await Promise.all([
+			bumpProjectCacheVersion(project.slug),
+			deleteCacheByPattern("modifold_projects_*"),
+			deleteCacheByPattern("modifold_discover_v2_*"),
+			deleteCacheByPattern("user_likes_*"),
+		]);
+
+		const disclosureState = await getProjectDisclosureState(db, project.id);
+		return res.json({ success: true, ...disclosureState });
+	} catch (error) {
+		console.error("Error updating project disclosures:", error);
+		return res.status(500).json({ message: "Error updating project disclosures", error: error.message });
+	}
 });
 
 router.get("/:slug/moderation-history", auth, async (req, res) => {

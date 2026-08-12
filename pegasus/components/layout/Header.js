@@ -170,19 +170,6 @@ export default function Header({ authToken }) {
                                     </div>
 
                                     <div className="account-action">
-										<Link href="/discover/modpacks" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-package-open-icon lucide-package-open account-action__icon" style={{ fill: "none", marginRight: "12px" }}>
-                                                <path d="M12 22v-9"></path>
-                                                <path d="M15.17 2.21a1.67 1.67 0 0 1 1.63 0L21 4.57a1.93 1.93 0 0 1 0 3.36L8.82 14.79a1.655 1.655 0 0 1-1.64 0L3 12.43a1.93 1.93 0 0 1 0-3.36z"></path>
-                                                <path d="M20 13v3.87a2.06 2.06 0 0 1-1.11 1.83l-6 3.08a1.93 1.93 0 0 1-1.78 0l-6-3.08A2.06 2.06 0 0 1 4 16.87V13"></path>
-                                                <path d="M21 12.43a1.93 1.93 0 0 0 0-3.36L8.83 2.2a1.64 1.64 0 0 0-1.63 0L3 4.57a1.93 1.93 0 0 0 0 3.36l12.18 6.86a1.636 1.636 0 0 0 1.63 0z"></path>
-                                            </svg>
-                                            
-                                            <span>{t("modpacks")}</span>
-                                        </Link>
-                                    </div>
-
-                                    <div className="account-action">
                                         <Link href="/jams" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-trophy-icon lucide-trophy" style={{ fill: "none", marginRight: "12px" }}>
                                                 <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>

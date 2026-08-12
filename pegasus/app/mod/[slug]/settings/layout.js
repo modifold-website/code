@@ -54,6 +54,7 @@ export default async function Layout({ children, params }) {
                     labels={{
                         general: tSettings("sidebar.general"),
                         description: tSettings("sidebar.description"),
+						disclosures: tSettings("sidebar.disclosures"),
                         links: tSettings("sidebar.links"),
                         versions: tSettings("sidebar.versions"),
                         gallery: tSettings("sidebar.gallery"),

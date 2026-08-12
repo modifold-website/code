@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Checkbox from "@/components/ui/Checkbox";
 import CategoryIcon from "@/utils/CategoryIcon";
 import { getBrowseGameVersionGroups, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 
@@ -119,17 +120,9 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
                 })}
             </ul>
 
-            <button className="browse-version-checkbox" type="button" role="checkbox" aria-checked={showAllVersions} aria-label={t("showAllVersions")} onClick={() => setShowAllVersions((prev) => !prev)}>
-                <span className={`browse-version-checkbox__box ${showAllVersions ? "browse-version-checkbox__box--checked" : ""}`}>
-                    {showAllVersions && (
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M20 6 9 17l-5-5"/>
-                        </svg>
-                    )}
-                </span>
-
-                <span aria-hidden="true">{t("showAllVersions")}</span>
-            </button>
+            <Checkbox className="browse-version-checkbox" checked={showAllVersions} onChange={setShowAllVersions} ariaLabel={t("showAllVersions")}>
+                {t("showAllVersions")}
+            </Checkbox>
         </div>
     ) : null;
 
