@@ -21,6 +21,19 @@ const localeMap = {
     "tr-tr": "tr",
 };
 
+const mergeMessages = (fallbackMessages, localeMessages) => {
+	if(!fallbackMessages || typeof fallbackMessages !== "object" || Array.isArray(fallbackMessages)) {
+		return localeMessages === undefined ? fallbackMessages : localeMessages;
+	}
+
+	const merged = { ...fallbackMessages };
+	for(const [key, value] of Object.entries(localeMessages || {})) {
+		merged[key] = value && typeof value === "object" && !Array.isArray(value) ? mergeMessages(fallbackMessages[key], value) : value;
+	}
+
+	return merged;
+};
+
 export default getRequestConfig(async ({ locale, requestLocale }) => {
     const requestLocaleValue = typeof requestLocale === "string" ? requestLocale : await requestLocale;
     let requestedLocale = requestLocaleValue || locale;
@@ -48,8 +61,11 @@ export default getRequestConfig(async ({ locale, requestLocale }) => {
 
     const validLocale = SUPPORTED_LOCALES.includes(requestedLocale) ? requestedLocale : "en";
     
+    const localeMessages = (await import(`../i18n/messages/${validLocale}.json`)).default;
+    const fallbackMessages = validLocale === "en" ? localeMessages : (await import("../i18n/messages/en.json")).default;
+
     return {
         locale: validLocale,
-        messages: (await import(`../i18n/messages/${validLocale}.json`)).default,
+		messages: mergeMessages(fallbackMessages, localeMessages),
     };
 });
