@@ -779,6 +779,7 @@
 .all-versions .version-button .version__stats {
     display: flex;
     flex-direction: column;
+	align-items: center;
     text-align: center;
     grid-area: stats;
 }
