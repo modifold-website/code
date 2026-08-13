@@ -461,6 +461,7 @@ const findProjectForSubmission = async ({ projectSlug, projectId, userId }) => {
 		WHERE ${lookupClause}
 		AND p.project_type = 'mod'
 		AND p.status = 'approved'
+		AND p.is_archived = 0
 		AND (p.user_id = ? OR pm.user_id IS NOT NULL)
 		LIMIT 1`,
 		[...params, lookupValue, userId]
@@ -480,10 +481,10 @@ const getSubmissions = async ({ jamId, userId, resultsOnly = false }) => {
 		(SELECT user_vote.submission_id FROM mod_jam_votes user_vote WHERE user_vote.jam_id = mjs.jam_id AND user_vote.user_id = ? AND COALESCE(user_vote.nomination_id, 0) = 0 LIMIT 1) AS user_voted_submission_id
 		FROM mod_jam_submissions mjs
 		LEFT JOIN projects p ON p.id = mjs.project_id
-		LEFT JOIN users u ON u.id = mjs.submitter_user_id
-		LEFT JOIN mod_jam_votes mjv ON mjv.submission_id = mjs.id
-		WHERE mjs.jam_id = ? AND mjs.status = 'submitted'
-		GROUP BY mjs.id
+			LEFT JOIN users u ON u.id = mjs.submitter_user_id
+			LEFT JOIN mod_jam_votes mjv ON mjv.submission_id = mjs.id
+			WHERE mjs.jam_id = ? AND mjs.status = 'submitted'
+			GROUP BY mjs.id
 		ORDER BY ${resultsOnly ? "votes_count DESC, mjs.created_at ASC" : "mjs.created_at ASC"}`,
 		[userId || null, jamId]
 	);

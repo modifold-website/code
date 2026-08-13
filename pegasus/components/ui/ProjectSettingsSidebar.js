@@ -41,6 +41,16 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
                     {labels.description}
                 </Link>
 
+				<Link href={`${baseProjectPath}/settings/disclosures`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/disclosures`) ? "sidebar-item--active" : ""}`} data-ripple>
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-triangle-alert-icon lucide-triangle-alert">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
+                        <path d="M12 9v4"/>
+                        <path d="M12 17h.01"/>
+                    </svg>
+
+					{labels.disclosures}
+				</Link>
+
                 <Link href={`${baseProjectPath}/settings/links`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/links`) ? "sidebar-item--active" : ""}`} data-ripple>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide-link-icon lucide-link">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />

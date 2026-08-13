@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import { getCookieValue, parseFeatureFlagsCookieValue } from "@/utils/featureFlags";
 
 const getFlagsFromDocumentCookie = () => {
@@ -59,14 +60,13 @@ export default function SettingsFlagsPage() {
 					<div key={flag.key} className="settings-feature-flag-card">
 						<div className="settings-feature-flag-card__content">
 							<div className="settings-feature-flag-card__title">{flag.title}</div>
+							
 							<div className="settings-feature-flag-card__default">
 								{t("defaultLabel")} <span>{t("defaultValue")}</span>
 							</div>
 						</div>
 
-						<button id={`toggle-${flag.key}`} type="button" className={`settings-feature-flag-switch ${flagsState[flag.key] ? "is-active" : ""}`} role="switch" aria-checked={flagsState[flag.key]} aria-label={`${t("ariaLabelToggle")} ${flag.title}`} onClick={() => handleToggleFlag(flag.key)}>
-							<span className="settings-feature-flag-switch__thumb" aria-hidden="true"></span>
-						</button>
+						<ToggleSwitch id={`toggle-${flag.key}`} checked={flagsState[flag.key]} onChange={() => handleToggleFlag(flag.key)} label={`${t("ariaLabelToggle")} ${flag.title}`} />
 					</div>
 				))}
 			</div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { usePathname } from "next/navigation";
@@ -27,10 +27,28 @@ const getSafeMarkdownHref = (href) => {
     }
 };
 
+const scrollToCurrentHash = () => {
+    const hash = window.location.hash.slice(1);
+    if(!hash) {
+        return;
+    }
+
+    let elementId;
+    try {
+        elementId = decodeURIComponent(hash);
+    } catch {
+        elementId = hash;
+    }
+
+    requestAnimationFrame(() => {
+        document.getElementById(elementId)?.scrollIntoView({ block: "start" });
+    });
+};
+
 const contentRulesEN = `
 # Content Rules
 
-**Last modified: February 18, 2026**
+**Last modified: August 11, 2026**
 
 These Content Rules are part of our [Terms of Use](/legal/terms) and apply to all User Contributions, Gaming Content (e.g., mods, modpacks), and use of interactive features (profiles, posts, comments; collectively, "Content") on Modifold (\`modifold.com\` and \`api.modifold.com\`).
 
@@ -54,7 +72,9 @@ Content must comply with all applicable laws and must not:
 
 ## 2. Clear and Honest Description
 
-The project (including its title, avatar, and gallery) must reflect the real functionality or content it adds. Misleading presentation is not allowed.
+Projects, a form of Content, must make a clear and honest attempt to describe their purpose in designated areas on the project page. Necessary information must not be obscured in any way or use confusing language or technical jargon when it is unnecessary.
+
+Important information like content disclosures must always be described accurately and appropriately.
 
 Every project must clearly and honestly describe:
 - What exactly the project does or adds
@@ -85,21 +105,36 @@ Such features are allowed **only** when they are server-side plugins/mods with e
 - You must own the content or have all necessary rights/permissions
 - Direct re-uploads of other people's work without explicit permission are prohibited
 - Forks and substantial modifications are allowed if they follow the original license and give proper credit
-- We recommend using in-game screenshots or images that accurately show your mod, rather than fully AI-generated visuals
+- Gallery images must be relevant to the project and must not give a false impression of the project's contents
 
 ## 5. Good Practices (strongly recommended)
 
-- Fill in all metadata accurately (license, side, tags)
+- Fill in all metadata accurately and consistently, including license, environment information, tags, and content disclosures
+- Fill in all applicable content disclosures accurately and keep them up to date
 - Use clean project titles (without spam, version numbers, emojis in title)
 - Keep short description concise and without formatting
 - Specify correct dependencies
 - Use "Additional files" only for truly supplementary materials
+
+## 6. Usage of Generative "AI"
+
+Projects must be forthright and honest about the usage of generative AI when producing projects or any other posted content and cannot be entirely or primarily comprised of content created or derived from generative AI output.
+
+Projects must abide by all of the following requirements:
+
+1. Clearly include the **“Created with AI”** disclosure on the project's dedicated content disclosures page when:
+   1. a substantial portion of the project's code is a product of AI output.
+   2. the project includes any assets that are primarily or entirely a product of AI output.
+   3. the project's design or functionality relies on the use of generative AI.
+   4. any element of the project's page, such as its description or publishing, relies on generative AI.
+2. No images uploaded to a gallery, icon, description, or any other part of a project page may be created or derived from generative AI output. Any such images will be removed.
+3. Projects may not be published publicly if their contents are primarily or entirely a product of AI output.
 `;
 
 const contentRulesRU = `
 # Правила контента
 
-**Последнее изменение: 18 февраля 2026**
+**Последнее изменение: 11 августа 2026**
 
 Данные Правила контента являются частью наших [Условий использования](/legal/terms) и распространяются на все пользовательские материалы, игровой контент (моды, модпаки) и интерактивные функции (профили, посты, комментарии) на платформе Modifold.
 
@@ -120,7 +155,9 @@ const contentRulesRU = `
 
 ## 2. Честное и понятное описание
 
-Проект (включая название, аватар и изображения в галерее) должен отражать реальную функцию или то, что добавляет мод. Вводящие в заблуждение описания и визуалы запрещены.
+Проекты как форма Контента должны ясно и добросовестно описывать своё назначение в отведённых для этого разделах страницы проекта. Нельзя скрывать необходимую информацию, использовать запутанные формулировки или технический жаргон без необходимости.
+
+Важная информация, включая раскрытие сведений о контенте, всегда должна быть указана точно и надлежащим образом.
 
 Каждый проект обязан понятно и честно описывать:
 - Что именно делает мод/пак/карта
@@ -150,21 +187,43 @@ const contentRulesRU = `
 - Вы должны обладать всеми правами на загружаемый контент
 - Прямой перезалив чужих работ без разрешения запрещён
 - Форки и значительные переработки допустимы при соблюдении лицензии и указании авторства
-- Рекомендуется использовать скриншоты или изображения прямо из игры, которые честно показывают ваш мод, а не полностью сгенерированные ИИ визуалы
+- Изображения в галерее должны относиться к проекту и не создавать ложного впечатления о его содержимом
 
 ## 5. Хорошие практики (настоятельно рекомендуется)
 
-- Заполняйте все поля метаданных (лицензия, сторона, теги)
+- Точно и единообразно заполняйте все метаданные, включая лицензию, информацию об окружении, теги и раскрытия сведений о контенте
+- Точно заполняйте все применимые раскрытия сведений о контенте и поддерживайте их в актуальном состоянии
 - Чистое название проекта без спама
 - Краткое описание без форматирования
 - Указывайте корректные зависимости
 - Используйте «Дополнительные файлы» только по назначению
+
+## 6. Использование генеративного «ИИ»
+
+Авторы проектов обязаны открыто и честно сообщать об использовании генеративного ИИ при создании проектов или любого другого опубликованного контента. Проекты не могут полностью или преимущественно состоять из контента, созданного на основе результатов генеративного ИИ.
+
+Проекты должны соответствовать всем следующим требованиям:
+
+1. Обязательно и явно укажите **«Создано с помощью ИИ»** на отдельной странице раскрытия информации о содержимом проекта, если:
+   1. существенная часть кода проекта является результатом работы ИИ;
+   2. проект содержит любые материалы, преимущественно или полностью являющиеся результатом работы ИИ;
+   3. дизайн или функциональность проекта опираются на использование генеративного ИИ;
+   4. любой элемент страницы проекта, например описание или публикация, создавался с помощью генеративного ИИ.
+2. Изображения, загруженные в галерею, используемые как иконка, добавленные в описание или любую другую часть страницы проекта, не могут быть созданы на основе результатов генеративного ИИ. Такие изображения будут удалены.
+3. Проекты нельзя публиковать в открытом доступе, если их содержимое преимущественно или полностью является результатом работы ИИ.
 `;
 
 export default function ContentRules() {
     const [lang, setLang] = useState("en");
 
     const content = lang === "en" ? contentRulesEN : contentRulesRU;
+
+    useEffect(() => {
+        scrollToCurrentHash();
+        window.addEventListener("hashchange", scrollToCurrentHash);
+
+        return () => window.removeEventListener("hashchange", scrollToCurrentHash);
+    }, [lang]);
 
     const pathname = usePathname();
     const isActive = (href) => pathname === href;
@@ -202,11 +261,11 @@ export default function ContentRules() {
 
                 <div className="content content--padding markdown-body">
                     <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                        <button onClick={() => setLang("en")} className={`button button--size-m ${lang === "en" ? "button--type-primary" : "button--type-secondary"}`}>
+                        <button onClick={() => setLang("en")} className={`button button--size-m ${lang === "en" ? "button--type-primary" : "button--type-minimal"}`}>
                             English
                         </button>
 
-                        <button onClick={() => setLang("ru")} className={`button button--size-m ${lang === "ru" ? "button--type-primary" : "button--type-secondary"}`}>
+                        <button onClick={() => setLang("ru")} className={`button button--size-m ${lang === "ru" ? "button--type-primary" : "button--type-minimal"}`}>
                             Русский
                         </button>
                     </div>
@@ -214,6 +273,10 @@ export default function ContentRules() {
                     <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
+                            h2: ({ children }) => {
+                                const heading = React.Children.toArray(children).join("");
+                                return <h2 id={heading.startsWith("6.") ? "generative-ai" : undefined}>{children}</h2>;
+                            },
                             a: ({ href, children }) => {
                                 const safeHref = getSafeMarkdownHref(href);
                                 if(!safeHref) {

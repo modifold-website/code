@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import ProjectMasthead from "@/components/project/ProjectMasthead";
 import ProjectTabs from "@/components/project/ProjectTabs";
+import ProjectArchiveBanner from "@/components/project/ProjectArchiveBanner";
 import { getProjectBySlug } from "@/utils/projects/server";
 
 export default async function Layout({ children, params }) {
@@ -20,6 +21,8 @@ export default async function Layout({ children, params }) {
             <div className="layout">
                 <div className="project-page">
                     <ProjectMasthead project={project} authToken={authToken} />
+
+					<ProjectArchiveBanner project={project} />
 
                     <ProjectTabs project={project} />
 

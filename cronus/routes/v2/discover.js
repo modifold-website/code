@@ -123,6 +123,7 @@ const fetchProjects = async ({ projectType, where = "", params = [], orderBy = "
 	const [projects] = await db.query(`
 		${getProjectSelect()}
 		WHERE p.status = 'approved'
+		AND p.is_archived = 0
 		AND p.project_type = ?
 		${where}
 		ORDER BY ${orderBy}
@@ -152,6 +153,7 @@ const fetchRecommendedProjects = async (projectType) => {
 		${getProjectSelect(customImageSelect)}
 		INNER JOIN recommended r ON p.slug COLLATE utf8mb4_unicode_ci = r.slug COLLATE utf8mb4_unicode_ci
 		WHERE p.status = 'approved'
+		AND p.is_archived = 0
 		AND p.project_type = ?
 		ORDER BY ${orderClause}
 		LIMIT 8
@@ -199,7 +201,7 @@ const getWeeklyDownloadCounts = async ({ projectType, limit = 40 }) => {
 
 		const slugs = downloadRows.map((row) => row.slug);
 		const [approvedRows] = await db.query(
-			"SELECT slug FROM projects WHERE status = 'approved' AND project_type = ? AND slug IN (?)",
+			"SELECT p.slug FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.project_type = ? AND p.slug IN (?)",
 			[projectType, slugs]
 		);
 		const approvedSlugs = new Set(approvedRows.map((row) => row.slug));
@@ -220,6 +222,7 @@ const fetchProjectsBySlugs = async ({ projectType, rankedDownloads, where = "", 
 	const [projects] = await db.query(`
 		${getProjectSelect()}
 		WHERE p.status = 'approved'
+		AND p.is_archived = 0
 		AND p.project_type = ?
 		AND p.slug IN (?)
 		${where}
@@ -288,7 +291,7 @@ const fetchDiscoverTags = async (projectType) => {
 	}
 
 	const [rows] = await db.query(
-		"SELECT tags FROM projects WHERE status = 'approved' AND project_type = ? AND tags IS NOT NULL AND tags != ''",
+		"SELECT p.tags FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.project_type = ? AND p.tags IS NOT NULL AND p.tags != ''",
 		[projectType]
 	);
 	const countsByTag = new Map(discoverTags.map((tag) => [tag, 0]));
@@ -306,7 +309,7 @@ const fetchDiscoverTags = async (projectType) => {
 
 const fetchPopularTags = async (projectType, limit = 6) => {
 	const [rows] = await db.query(
-		"SELECT tags FROM projects WHERE status = 'approved' AND project_type = ? AND tags IS NOT NULL AND tags != ''",
+		"SELECT p.tags FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.project_type = ? AND p.tags IS NOT NULL AND p.tags != ''",
 		[projectType]
 	);
 	const countsByTag = new Map();

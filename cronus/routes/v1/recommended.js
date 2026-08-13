@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
         }
 
         const params = [];
-        let whereClause = "WHERE p.status = 'approved'";
+        let whereClause = "WHERE p.status = 'approved' AND p.is_archived = 0";
         let orderClause = "ORDER BY r.slug ASC";
 
         const [recommendedColumns] = await db.query("SHOW COLUMNS FROM recommended");

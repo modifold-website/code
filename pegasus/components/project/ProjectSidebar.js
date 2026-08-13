@@ -12,6 +12,7 @@ import { useAuth } from "../providers/AuthProvider";
 import { formatDownloads } from "@/utils/formatDownloads";
 import { getProjectPath } from "@/utils/projectRoutes";
 import { LICENSES } from "../Licenses";
+import ProjectDisclosureDetails from "./ProjectDisclosureDetails";
 
 function getLicenseDisplayName(license, unknownLicense) {
 	const normalizedId = (license?.id || "").toString().toLowerCase();
@@ -297,6 +298,8 @@ export default function ProjectSidebar({ project, authToken, showLicense = true,
                     )}
                 </div>
             </div>
+
+			<ProjectDisclosureDetails disclosures={project.disclosures} />
 
             <div className="content content--padding">
                 <h2>{t("detailsTitle")}</h2>
