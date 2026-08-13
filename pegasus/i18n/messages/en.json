@@ -1204,7 +1204,7 @@
     "archive": {
       "title": "Archive project",
       "description": "Mark the project as archived when you are no longer maintaining it.",
-      "hidden": "Archived projects are removed from every catalog and profile, and remain available only through a direct link.",
+      "hidden": "Archived projects are removed from catalogs but remain visible on author profiles and through a direct link.",
       "placeholder": "For example, I no longer have time to maintain this project. Feel free to fork it.",
       "previewTitle": "Banner preview",
       "bannerTitle": "{title} has been archived",
