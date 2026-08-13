@@ -345,11 +345,10 @@ router.get("/:slug", async (req, res) => {
         const [projects] = await db.query(
             `SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.downloads, p.followers, p.updated_at, p.tags, p.project_type
             FROM organization_projects op
-            INNER JOIN projects p ON p.id COLLATE utf8mb4_unicode_ci = op.project_id COLLATE utf8mb4_unicode_ci
-            WHERE op.organization_id = ?
-            ${canViewAllOrganizationProjects ? "" : "AND p.status = 'approved'"}
-			AND p.is_archived = 0
-            ORDER BY p.updated_at DESC`,
+			INNER JOIN projects p ON p.id COLLATE utf8mb4_unicode_ci = op.project_id COLLATE utf8mb4_unicode_ci
+			WHERE op.organization_id = ?
+			${canViewAllOrganizationProjects ? "" : "AND p.status = 'approved'"}
+			ORDER BY p.updated_at DESC`,
             [organization.id]
         );
 

@@ -352,10 +352,9 @@ router.get("/me/likes", auth, async (req, res) => {
 			LEFT JOIN users u ON p.user_id = u.id
 			LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
 			LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-			WHERE pl.user_id = ?
-			AND p.status = 'approved'
-			AND p.is_archived = 0
-			GROUP BY p.id, pl.created_at
+				WHERE pl.user_id = ?
+				AND p.status = 'approved'
+				GROUP BY p.id, pl.created_at
 			ORDER BY pl.created_at DESC
 			LIMIT ? OFFSET ?`,
 			[userId, limit, offset]
@@ -370,10 +369,9 @@ router.get("/me/likes", auth, async (req, res) => {
 		const [[{ total }]] = await db.query(
 			`SELECT COUNT(*) AS total
 			FROM project_likes pl
-			INNER JOIN projects p ON p.id = pl.project_id
-			WHERE pl.user_id = ?
-			AND p.status = 'approved'
-			AND p.is_archived = 0`,
+				INNER JOIN projects p ON p.id = pl.project_id
+				WHERE pl.user_id = ?
+				AND p.status = 'approved'`,
 			[userId]
 		);
 
@@ -451,11 +449,10 @@ router.get("/:username/projects", async (req, res) => {
             (SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 LIMIT 1) AS featured_image
             FROM projects p
             LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-            WHERE p.status = 'approved'
-			AND p.is_archived = 0
-			AND (
+			LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+			LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
+			WHERE p.status = 'approved'
+				AND (
                 u.slug = ?
                 OR EXISTS (
                     SELECT 1
@@ -470,11 +467,10 @@ router.get("/:username/projects", async (req, res) => {
 
         let statsQuery = `
             SELECT COUNT(DISTINCT p.id) as total, COALESCE(SUM(p.downloads), 0) AS totalDownloads
-            FROM projects p
-            LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.status = 'approved'
-			AND p.is_archived = 0
-			AND (
+			FROM projects p
+			LEFT JOIN users u ON p.user_id = u.id
+			WHERE p.status = 'approved'
+				AND (
                 u.slug = ?
                 OR EXISTS (
                     SELECT 1
