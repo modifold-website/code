@@ -5,7 +5,7 @@ author: ["bogdan"]
 date: 2026-07-08
 slug: /blog/july-update
 image: https://media.modifold.com/news/full_hytale_link_banner.png
-featured: true
+featured: false
 locale: en
 ---
 
