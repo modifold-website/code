@@ -1,5 +1,6 @@
 {
   "pageTitle": {
+    "discover": "Огляд контенту — Modifold",
     "mods": "Моди — Modifold",
     "modpacks": "Модпаки — Modifold",
     "worlds": "Світи — Modifold"
@@ -9,6 +10,7 @@
   },
   "Header": {
     "home": "Головна",
+    "discover": "Огляд",
     "mods": "Моди",
     "modpacks": "Модпаки",
     "worlds": "Світи",
@@ -24,8 +26,7 @@
     },
     "loginToCreate": "Будь ласка, увійдіть, щоб створити проєкт",
     "beta": "бета",
-    "browse": "Відкрити контент",
-    "discoverContent": "Відкрити контент",
+    "browse": "Знайти контент",
     "myProfile": "Мій профіль",
     "moderation": "Модерація",
     "projects": "Проєкти",
@@ -976,8 +977,15 @@
   },
   "DiscoverPage": {
     "featured": "Рекомендоване",
+    "popularMods": "Популярні моди",
+    "popularWorlds": "Популярні світи",
+    "worldsEmpty": "Каталог світів поки порожній, але вже відкритий для перших публікацій.",
+    "communityTitle": "Події спільноти",
+    "communityText": "Беріть участь у мод-джемах, відкривайте роботи спільноти та підтримуйте авторів.",
+    "communityCta": "Відкрити мод-джеми",
     "weeklyPopular": "Популярне за тиждень",
     "weeklyNewPopular": "Популярні новинки тижня",
+    "recentlyUpdated": "Нещодавно оновлені",
     "latest": "Нещодавно опубліковані",
     "popularCategories": "Популярні категорії",
     "viewAll": "Дивитися всі",

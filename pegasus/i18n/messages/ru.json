@@ -1,5 +1,6 @@
 {
   "pageTitle": {
+    "discover": "Обзор контента — Modifold",
     "mods": "Моды — Modifold",
     "modpacks": "Модпаки — Modifold",
     "worlds": "Миры — Modifold"
@@ -9,6 +10,7 @@
   },
   "Header": {
     "home": "Главная",
+    "discover": "Обзор",
     "mods": "Моды",
     "modpacks": "Модпаки",
     "worlds": "Миры",
@@ -24,8 +26,7 @@
     },
     "loginToCreate": "Войдите, чтобы создать проект",
     "beta": "бета",
-    "browse": "Открыть контент",
-    "discoverContent": "Открыть контент",
+    "browse": "Найти контент",
     "myProfile": "Мой профиль",
     "moderation": "Модерация",
     "projects": "Проекты",
@@ -975,8 +976,15 @@
   },
   "DiscoverPage": {
     "featured": "Рекомендуемое",
+    "popularMods": "Популярные моды",
+    "popularWorlds": "Популярные миры",
+    "worldsEmpty": "Каталог миров пока пуст, но он уже открыт для первых публикаций.",
+    "communityTitle": "События сообщества",
+    "communityText": "Участвуйте в мод-джемах, открывайте работы сообщества и поддерживайте авторов.",
+    "communityCta": "Открыть мод-джемы",
     "weeklyPopular": "Популярное за неделю",
     "weeklyNewPopular": "Популярные новинки недели",
+    "recentlyUpdated": "Недавно обновлённые",
     "latest": "Недавно опубликованные",
     "popularCategories": "Популярные категории",
     "viewAll": "Смотреть все",

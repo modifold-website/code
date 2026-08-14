@@ -1,5 +1,6 @@
 {
   "pageTitle": {
+    "discover": "Descubrir contenido — Modifold",
     "mods": "Mods — Modifold",
     "modpacks": "Modpacks — Modifold",
     "worlds": "Mundos — Modifold"
@@ -9,6 +10,7 @@
   },
   "Header": {
     "home": "Inicio",
+    "discover": "Descubrir",
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Mundos",
@@ -24,8 +26,7 @@
     },
     "loginToCreate": "Inicia sesión para crear un proyecto",
     "beta": "beta",
-    "browse": "Descubrir contenido",
-    "discoverContent": "Descubrir contenido",
+    "browse": "Buscar contenido",
     "myProfile": "Mi perfil",
     "moderation": "Moderación",
     "projects": "Proyectos",
@@ -975,8 +976,15 @@
   },
   "DiscoverPage": {
     "featured": "Destacados",
+    "popularMods": "Mods populares",
+    "popularWorlds": "Mundos populares",
+    "worldsEmpty": "El catálogo de mundos está vacío por ahora, pero ya está listo para sus primeras publicaciones.",
+    "communityTitle": "Eventos de la comunidad",
+    "communityText": "Participa en mod jams, descubre creaciones de la comunidad y apoya a sus autores.",
+    "communityCta": "Explorar mod jams",
     "weeklyPopular": "Popular esta semana",
     "weeklyNewPopular": "Novedades populares de la semana",
+    "recentlyUpdated": "Actualizados recientemente",
     "latest": "Publicados recientemente",
     "popularCategories": "Categorías populares",
     "viewAll": "Ver todo",

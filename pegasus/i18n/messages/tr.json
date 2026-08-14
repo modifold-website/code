@@ -1,5 +1,6 @@
 {
   "pageTitle": {
+    "discover": "İçeriği keşfet - Modifold",
     "mods": "Modlar - Modifold",
     "modpacks": "Modpackler - Modifold",
     "worlds": "Dünyalar - Modifold"
@@ -9,6 +10,7 @@
   },
   "Header": {
     "home": "Ana sayfa",
+    "discover": "Keşfet",
     "mods": "Modlar",
     "modpacks": "Modpackler",
     "worlds": "Dünyalar",
@@ -24,8 +26,7 @@
     },
     "loginToCreate": "Proje oluşturmak için lütfen giriş yapın",
     "beta": "beta",
-    "browse": "İçeriğe göz at",
-    "discoverContent": "İçeriği keşfet",
+    "browse": "İçerik bul",
     "myProfile": "Profilim",
     "moderation": "Moderasyon",
     "projects": "Projeler",
@@ -975,8 +976,15 @@
   },
   "DiscoverPage": {
     "featured": "Öne çıkanlar",
+    "popularMods": "Popüler modlar",
+    "popularWorlds": "Popüler dünyalar",
+    "worldsEmpty": "Dünya kataloğu şimdilik boş, ancak ilk yayınlar için hazır.",
+    "communityTitle": "Topluluk etkinlikleri",
+    "communityText": "Mod jamlerine katılın, topluluk çalışmalarını keşfedin ve üreticileri destekleyin.",
+    "communityCta": "Mod jamlerini keşfet",
     "weeklyPopular": "Bu hafta popüler",
     "weeklyNewPopular": "Bu haftanın popüler yenileri",
+    "recentlyUpdated": "Yakın zamanda güncellenenler",
     "latest": "Yeni yayınlananlar",
     "popularCategories": "Popüler kategoriler",
     "viewAll": "Tümünü gör",
