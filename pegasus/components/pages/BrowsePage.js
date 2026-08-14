@@ -8,7 +8,6 @@ import ProjectCardSkeleton from "../ui/ProjectCardSkeleton";
 import ProjectCardMediaSkeleton from "../ui/ProjectCardMediaSkeleton";
 import BrowseFiltersSidebar from "./browse/BrowseFiltersSidebar";
 import BrowseToolbar from "./browse/BrowseToolbar";
-import BrowseRecommendedRail from "./browse/BrowseRecommendedRail";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { apiClient } from "@/utils/api/client";
@@ -85,7 +84,7 @@ async function fetchBrowseProjects({ queryKey, signal }) {
     };
 }
 
-export default function BrowsePage({ projectType, initialState = null, initialData = null, initialCardView = "list", tags = [], gameVersions = [], recommendedProjects = [], activeModJams = [], initialRecommendedCollapsed = false }) {
+export default function BrowsePage({ projectType, initialState = null, initialData = null, initialCardView = "list", tags = [], gameVersions = [] }) {
     const t = useTranslations("BrowsePage");
     const tLabels = useTranslations("CategoryLabels");
     const router = useRouter();
@@ -335,10 +334,6 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
             <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
-                {projectType === "mod" && (
-                    <BrowseRecommendedRail projects={recommendedProjects} modJams={activeModJams} t={t} projectType={projectType} initialCollapsed={initialRecommendedCollapsed} />
-                )}
-
                 <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ marginTop: 0, marginLeft: "auto" })} />
 
                 {(selectedTags.length > 0 || selectedGameVersions.length > 0) && (

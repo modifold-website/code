@@ -959,15 +959,6 @@
       "grid": "Izgara",
       "list": "Liste"
     },
-    "recommended": {
-      "ariaLabel": "Önerilen modlar",
-      "noSummary": "Henüz açıklama yok",
-      "downloadsTitle": "{count} indirme",
-      "openProject": "Aç",
-      "participate": "Katıl",
-      "collapse": "Önerileri daralt",
-      "expand": "Önerileri genişlet"
-    },
     "discover": "Keşfet",
     "browseAll": "Tümüne göz at",
     "mods": "Modlar",

@@ -960,15 +960,6 @@
       "grid": "Сітка",
       "list": "Список"
     },
-    "recommended": {
-      "ariaLabel": "Рекомендовані моди",
-      "noSummary": "Опис поки не додано",
-      "downloadsTitle": "{count} завантажень",
-      "openProject": "Відкрити",
-      "participate": "Узяти участь",
-      "collapse": "Згорнути рекомендації",
-      "expand": "Розгорнути рекомендації"
-    },
     "discover": "Огляд",
     "browseAll": "Усі проєкти",
     "mods": "Моди",

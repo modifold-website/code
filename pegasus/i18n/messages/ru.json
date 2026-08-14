@@ -959,15 +959,6 @@
       "grid": "Сетка",
       "list": "Список"
     },
-    "recommended": {
-      "ariaLabel": "Рекомендуемые моды",
-      "noSummary": "Описание пока не добавлено",
-      "downloadsTitle": "{count} скачиваний",
-      "openProject": "Открыть",
-      "participate": "Участвовать",
-      "collapse": "Свернуть блок рекомендаций",
-      "expand": "Развернуть блок рекомендаций"
-    },
     "discover": "Обзор",
     "browseAll": "Все проекты",
     "mods": "Моды",

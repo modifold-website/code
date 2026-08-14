@@ -959,15 +959,6 @@
       "grid": "Grade",
       "list": "Lista"
     },
-    "recommended": {
-      "ariaLabel": "Mods recomendados",
-      "noSummary": "Sem descrição ainda",
-      "downloadsTitle": "{count} downloads",
-      "openProject": "Ver",
-      "participate": "Participar",
-      "collapse": "Ocultar recomendações",
-      "expand": "Mostrar recomendações"
-    },
     "discover": "Descobrir",
     "browseAll": "Ver tudo",
     "mods": "Mods",

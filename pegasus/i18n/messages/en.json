@@ -959,15 +959,6 @@
       "grid": "Grid",
       "list": "List"
     },
-    "recommended": {
-      "ariaLabel": "Recommended mods",
-      "noSummary": "No description yet",
-      "downloadsTitle": "{count} downloads",
-      "openProject": "View",
-      "participate": "Join",
-      "collapse": "Collapse recommendations",
-      "expand": "Expand recommendations"
-    },
     "discover": "Discover",
     "browseAll": "Browse All",
     "mods": "Mods",
