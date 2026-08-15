@@ -1177,6 +1177,7 @@
     "sidebar": {
       "general": "Загальні",
       "description": "Опис",
+      "disclosures": "Відомості",
       "links": "Посилання",
       "versions": "Версії",
       "gallery": "Галерея",
@@ -1184,8 +1185,7 @@
       "analytics": "Аналітика",
       "issues": "Проблеми",
       "moderation": "Модерація",
-      "members": "Учасники",
-      "license": "Ліцензія"
+      "members": "Учасники"
     },
     "save": "Зберегти",
     "unsavedBar": {

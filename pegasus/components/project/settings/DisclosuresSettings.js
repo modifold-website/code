@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
+import { LICENSES } from "@/components/Licenses";
 import Checkbox from "@/components/ui/Checkbox";
 import ToggleSwitch from "@/components/ui/ToggleSwitch";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
@@ -15,8 +16,6 @@ const EMPTY_DISCLOSURES = {
 	ai_text: false,
 	ai_functionality: false,
 	ai_explanation: "",
-	contains_advertising: false,
-	advertising_explanation: "",
 	contains_paid_features: false,
 	paid_features: [],
 	contains_telemetry: false,
@@ -24,8 +23,6 @@ const EMPTY_DISCLOSURES = {
 	telemetry_data: [],
 	photosensitivity_warning: false,
 	photosensitivity_explanation: "",
-	external_system_interactions: false,
-	external_system_explanation: "",
 };
 
 const EMPTY_ARCHIVE = {
@@ -33,7 +30,23 @@ const EMPTY_ARCHIVE = {
 	explanation: "",
 };
 
+const getLicenseValue = (license) => license.key || license.spdx.toLowerCase();
+
+const normalizeLicense = (project) => {
+	const rawId = (project?.license?.id || project?.license_id || "arr").toString().toLowerCase();
+	const matchedLicense = LICENSES.find((license) => {
+		const candidates = [getLicenseValue(license), license.id, license.spdx].filter(Boolean).map((value) => value.toString().toLowerCase());
+		return candidates.includes(rawId);
+	});
+
+	return {
+		id: matchedLicense ? getLicenseValue(matchedLicense) : rawId,
+		name: matchedLicense?.name || project?.license?.name || project?.license_name || null,
+	};
+};
+
 const normalizeFormData = (project) => ({
+	license: normalizeLicense(project),
 	disclosures: {
 		...EMPTY_DISCLOSURES,
 		...(project?.disclosures || {}),
@@ -119,10 +132,45 @@ export default function DisclosuresSettings({ project, authToken }) {
 	const [formData, setFormData] = useState(() => cloneFormData(initialData));
 	const [savedFormData, setSavedFormData] = useState(() => cloneFormData(initialData));
 	const [isSaving, setIsSaving] = useState(false);
+	const [isLicensePopoverOpen, setIsLicensePopoverOpen] = useState(false);
+	const licenseFieldRef = useRef(null);
+	const licenseTriggerRef = useRef(null);
 	const isDirty = JSON.stringify(formData) !== JSON.stringify(savedFormData);
 	const disclosures = formData.disclosures;
 	const archive = formData.archive;
+	const selectedLicense = LICENSES.find((license) => getLicenseValue(license) === formData.license.id);
 	const archiveBannerDescription = archive.explanation.trim() || t("archive.bannerDescription", { title: project.title });
+
+	useEffect(() => {
+		if(!isLicensePopoverOpen) {
+			return;
+		}
+
+		const handlePointerDown = (event) => {
+			if(licenseFieldRef.current && !licenseFieldRef.current.contains(event.target)) {
+				setIsLicensePopoverOpen(false);
+			}
+		};
+		const handleKeyDown = (event) => {
+			if(event.key === "Escape") {
+				setIsLicensePopoverOpen(false);
+				licenseTriggerRef.current?.focus();
+			}
+		};
+
+		document.addEventListener("pointerdown", handlePointerDown);
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("pointerdown", handlePointerDown);
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [isLicensePopoverOpen]);
+
+	const updateLicense = (licenseId) => {
+		const license = LICENSES.find((item) => getLicenseValue(item) === licenseId) || LICENSES[0];
+		setFormData((current) => ({ ...current, license: { id: getLicenseValue(license), name: license.name } }));
+		setIsLicensePopoverOpen(false);
+	};
 
 	const updateDisclosure = (key, value) => {
 		setFormData((current) => ({ ...current, disclosures: { ...current.disclosures, [key]: value } }));
@@ -135,10 +183,6 @@ export default function DisclosuresSettings({ project, authToken }) {
 	const validate = () => {
 		if(disclosures.ai_generated && ![disclosures.ai_code, disclosures.ai_assets, disclosures.ai_text, disclosures.ai_functionality].some(Boolean)) {
 			return t("errors.aiCategory");
-		}
-
-		if(disclosures.contains_advertising && !disclosures.advertising_explanation.trim()) {
-			return t("errors.advertisingExplanation");
 		}
 
 		if(disclosures.contains_paid_features && !disclosures.paid_features.some((item) => item.trim())) {
@@ -170,6 +214,7 @@ export default function DisclosuresSettings({ project, authToken }) {
 		setIsSaving(true);
 		try {
 			const payload = {
+				license: formData.license,
 				disclosures: {
 					...disclosures,
 					paid_features: disclosures.paid_features.map((item) => item.trim()).filter(Boolean),
@@ -192,7 +237,7 @@ export default function DisclosuresSettings({ project, authToken }) {
 			}
 
 			const data = await response.json();
-			const nextData = normalizeFormData(data);
+			const nextData = normalizeFormData({ ...data, license: data.license || formData.license });
 			setFormData(cloneFormData(nextData));
 			setSavedFormData(cloneFormData(nextData));
 			toast.success(t("success"));
@@ -203,7 +248,10 @@ export default function DisclosuresSettings({ project, authToken }) {
 		}
 	};
 
-	const handleReset = () => setFormData(cloneFormData(savedFormData));
+	const handleReset = () => {
+		setFormData(cloneFormData(savedFormData));
+		setIsLicensePopoverOpen(false);
+	};
 
 	return (
 		<>
@@ -215,6 +263,50 @@ export default function DisclosuresSettings({ project, authToken }) {
 				</header>
 
 				<div className="disclosures-settings__cards">
+					<section className="content content--padding disclosures-section disclosures-section--license">
+						<div className="disclosures-section__intro">
+							<h2 className="disclosures-section__title">{t("license.title")}</h2>
+							<div className="disclosures-section__description">{t("license.description")}</div>
+						</div>
+
+						<div className="disclosures-license">
+							<div className="field field--default blog-settings__input" ref={licenseFieldRef}>
+								<button ref={licenseTriggerRef} type="button" className="field__wrapper disclosures-license__trigger" aria-haspopup="listbox" aria-expanded={isLicensePopoverOpen} aria-controls="license-options" onClick={() => setIsLicensePopoverOpen((current) => !current)}>
+									<span className="field__wrapper-body">
+										<span className="select">
+											<span className="select__selected">{selectedLicense?.name || t("license.noSelection")}</span>
+										</span>
+									</span>
+
+									<svg className={`icon icon--chevron_down ${isLicensePopoverOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+										<path d="m6 9 6 6 6-6"/>
+									</svg>
+								</button>
+
+								{isLicensePopoverOpen ? (
+									<div className="popover disclosures-license__popover" id="license-options" role="listbox" aria-label={t("license.title")}>
+										<div className="context-list" data-scrollable>
+											{LICENSES.map((license) => {
+												const licenseValue = getLicenseValue(license);
+												const isSelected = formData.license.id === licenseValue;
+
+												return (
+													<button key={license.id} type="button" role="option" aria-selected={isSelected} className={`context-list-option disclosures-license__option ${isSelected ? "context-list-option--selected" : ""}`} onClick={() => updateLicense(licenseValue)}>
+														<span className="context-list-option__label">{license.name}</span>
+													</button>
+												);
+											})}
+										</div>
+									</div>
+								) : null}
+							</div>
+
+							<button type="button" className="button button--size-l button--type-minimal button--active-transform" onClick={() => updateLicense("arr")} disabled={formData.license.id === "arr"}>
+								{t("license.clear")}
+							</button>
+						</div>
+					</section>
+
 					<DisclosureSection title={t("ai.title")} description={<>{t("ai.description")} <strong>{t("ai.descriptionRequirement")}</strong></>} enabled={disclosures.ai_generated} onToggle={(value) => updateDisclosure("ai_generated", value)}>
 						<div className="disclosure-field-group">
 							<h3 className="blog-settings__field-title">{t("ai.usesTitle")}</h3>
@@ -228,14 +320,6 @@ export default function DisclosuresSettings({ project, authToken }) {
 							<h3 className="blog-settings__field-title">{t("explanationOptional")}</h3>
 							
 							<TextArea value={disclosures.ai_explanation} onChange={(value) => updateDisclosure("ai_explanation", value)} placeholder={t("ai.placeholder")} />
-						</div>
-					</DisclosureSection>
-
-					<DisclosureSection title={t("advertising.title")} description={t("advertising.description")} enabled={disclosures.contains_advertising} onToggle={(value) => updateDisclosure("contains_advertising", value)}>
-						<div className="disclosure-field-group">
-							<h3 className="blog-settings__field-title">{t("explanation")}</h3>
-							
-							<TextArea value={disclosures.advertising_explanation} onChange={(value) => updateDisclosure("advertising_explanation", value)} placeholder={t("advertising.placeholder")} />
 						</div>
 					</DisclosureSection>
 
@@ -268,14 +352,6 @@ export default function DisclosuresSettings({ project, authToken }) {
 							<h3 className="blog-settings__field-title">{t("explanation")}</h3>
 							
 							<TextArea value={disclosures.photosensitivity_explanation} onChange={(value) => updateDisclosure("photosensitivity_explanation", value)} placeholder={t("photosensitivity.placeholder")} />
-						</div>
-					</DisclosureSection>
-
-					<DisclosureSection title={t("external.title")} description={t("external.description")} enabled={disclosures.external_system_interactions} onToggle={(value) => updateDisclosure("external_system_interactions", value)}>
-						<div className="disclosure-field-group">
-							<h3 className="blog-settings__field-title">{t("explanationOptional")}</h3>
-							
-							<TextArea value={disclosures.external_system_explanation} onChange={(value) => updateDisclosure("external_system_explanation", value)} placeholder={t("external.placeholder")} />
 						</div>
 					</DisclosureSection>
 

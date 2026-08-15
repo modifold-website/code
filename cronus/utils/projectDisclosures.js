@@ -5,8 +5,6 @@ const EMPTY_DISCLOSURES = Object.freeze({
 	ai_text: false,
 	ai_functionality: false,
 	ai_explanation: "",
-	contains_advertising: false,
-	advertising_explanation: "",
 	contains_paid_features: false,
 	paid_features: [],
 	contains_telemetry: false,
@@ -14,8 +12,6 @@ const EMPTY_DISCLOSURES = Object.freeze({
 	telemetry_data: [],
 	photosensitivity_warning: false,
 	photosensitivity_explanation: "",
-	external_system_interactions: false,
-	external_system_explanation: "",
 });
 
 const EMPTY_ARCHIVE = Object.freeze({
@@ -52,8 +48,6 @@ const formatProjectDisclosures = (row) => {
 		ai_text: Boolean(row.ai_text),
 		ai_functionality: Boolean(row.ai_functionality),
 		ai_explanation: row.ai_explanation || "",
-		contains_advertising: Boolean(row.contains_advertising),
-		advertising_explanation: row.advertising_explanation || "",
 		contains_paid_features: Boolean(row.contains_paid_features),
 		paid_features: parseJsonArray(row.paid_features),
 		contains_telemetry: Boolean(row.contains_telemetry),
@@ -61,8 +55,6 @@ const formatProjectDisclosures = (row) => {
 		telemetry_data: parseJsonArray(row.telemetry_data),
 		photosensitivity_warning: Boolean(row.photosensitivity_warning),
 		photosensitivity_explanation: row.photosensitivity_explanation || "",
-		external_system_interactions: Boolean(row.external_system_interactions),
-		external_system_explanation: row.external_system_explanation || "",
 	};
 };
 

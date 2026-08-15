@@ -1,1 +1,0 @@
-export { default, generateMetadata } from "@/app/mod/[slug]/settings/license/page";

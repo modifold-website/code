@@ -4798,6 +4798,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
 
         res.json({
             ...projectRow,
+			license: { id: projectRow.license_id, name: projectRow.license_name },
             organization: currentOrganization,
             organization_options: organizationOptions,
 			disclosures: disclosureState.disclosures,
@@ -4835,32 +4836,30 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 
 		const source = req.body?.disclosures && typeof req.body.disclosures === "object" ? req.body.disclosures : {};
 		const archiveSource = req.body?.archive && typeof req.body.archive === "object" ? req.body.archive : {};
+		const licenseSource = req.body?.license && typeof req.body.license === "object" ? req.body.license : null;
+		const hasLicenseUpdate = Boolean(licenseSource && (licenseSource.id !== undefined || licenseSource.name !== undefined));
+		const defaultLicenseId = "arr";
+		const defaultLicenseName = "All Rights Reserved / No License";
+		const licenseId = hasLicenseUpdate ? String(licenseSource.id || defaultLicenseId).trim().slice(0, 100) || defaultLicenseId : null;
+		const licenseName = hasLicenseUpdate ? normalizeDisclosureText(licenseSource.name || defaultLicenseName, { maxLength: 255 }) || defaultLicenseName : null;
 		const aiGenerated = normalizeBoolean(source.ai_generated);
 		const aiCode = aiGenerated && normalizeBoolean(source.ai_code);
 		const aiAssets = aiGenerated && normalizeBoolean(source.ai_assets);
 		const aiText = aiGenerated && normalizeBoolean(source.ai_text);
 		const aiFunctionality = aiGenerated && normalizeBoolean(source.ai_functionality);
-		const containsAdvertising = normalizeBoolean(source.contains_advertising);
 		const containsPaidFeatures = normalizeBoolean(source.contains_paid_features);
 		const containsTelemetry = normalizeBoolean(source.contains_telemetry);
 		const photosensitivityWarning = normalizeBoolean(source.photosensitivity_warning);
-		const externalSystemInteractions = normalizeBoolean(source.external_system_interactions);
 		const isArchived = normalizeBoolean(archiveSource.is_archived);
 		const aiExplanation = aiGenerated ? normalizeDisclosureText(source.ai_explanation) : "";
-		const advertisingExplanation = containsAdvertising ? normalizeDisclosureText(source.advertising_explanation) : "";
 		const paidFeatures = containsPaidFeatures ? normalizeDisclosureList(source.paid_features) : [];
 		const telemetryConsent = containsTelemetry && TELEMETRY_CONSENT_VALUES.has(source.telemetry_consent) ? source.telemetry_consent : null;
 		const telemetryData = containsTelemetry ? normalizeDisclosureList(source.telemetry_data) : [];
 		const photosensitivityExplanation = photosensitivityWarning ? normalizeDisclosureText(source.photosensitivity_explanation) : "";
-		const externalSystemExplanation = externalSystemInteractions ? normalizeDisclosureText(source.external_system_explanation) : "";
 		const archiveExplanation = isArchived ? normalizeDisclosureText(archiveSource.explanation) : "";
 
 		if(aiGenerated && ![aiCode, aiAssets, aiText, aiFunctionality].some(Boolean)) {
 			return res.status(400).json({ message: "Select at least one way generative AI is used" });
-		}
-
-		if(containsAdvertising && !advertisingExplanation) {
-			return res.status(400).json({ message: "Add an explanation for the advertising disclosure" });
 		}
 
 		if(containsPaidFeatures && paidFeatures.length === 0) {
@@ -4882,27 +4881,33 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 			await connection.query(
 				`INSERT INTO project_disclosures (
 				project_id, ai_generated, ai_code, ai_assets, ai_text, ai_functionality, ai_explanation,
-				contains_advertising, advertising_explanation, contains_paid_features, paid_features,
+				contains_paid_features, paid_features,
 				contains_telemetry, telemetry_consent, telemetry_data, photosensitivity_warning,
-				photosensitivity_explanation, external_system_interactions, external_system_explanation
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				photosensitivity_explanation
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				ON DUPLICATE KEY UPDATE
 				ai_generated = VALUES(ai_generated), ai_code = VALUES(ai_code), ai_assets = VALUES(ai_assets),
 				ai_text = VALUES(ai_text), ai_functionality = VALUES(ai_functionality), ai_explanation = VALUES(ai_explanation),
-				contains_advertising = VALUES(contains_advertising), advertising_explanation = VALUES(advertising_explanation),
 				contains_paid_features = VALUES(contains_paid_features), paid_features = VALUES(paid_features),
 				contains_telemetry = VALUES(contains_telemetry), telemetry_consent = VALUES(telemetry_consent),
 				telemetry_data = VALUES(telemetry_data), photosensitivity_warning = VALUES(photosensitivity_warning),
-				photosensitivity_explanation = VALUES(photosensitivity_explanation),
-				external_system_interactions = VALUES(external_system_interactions),
-				external_system_explanation = VALUES(external_system_explanation)`,
+				photosensitivity_explanation = VALUES(photosensitivity_explanation)`,
 				[
 					project.id, aiGenerated, aiCode, aiAssets, aiText, aiFunctionality, aiExplanation || null,
-					containsAdvertising, advertisingExplanation || null, containsPaidFeatures, JSON.stringify(paidFeatures),
+					containsPaidFeatures, JSON.stringify(paidFeatures),
 					containsTelemetry, telemetryConsent, JSON.stringify(telemetryData), photosensitivityWarning,
-					photosensitivityExplanation || null, externalSystemInteractions, externalSystemExplanation || null,
+					photosensitivityExplanation || null,
 				]
 			);
+
+			if(hasLicenseUpdate) {
+				await connection.query(
+					`UPDATE projects
+					SET license_id = ?, license_name = ?
+					WHERE id = ?`,
+					[licenseId, licenseName, project.id]
+				);
+			}
 
 			await connection.query(
 				`UPDATE projects
@@ -4927,7 +4932,11 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 		]);
 
 		const disclosureState = await getProjectDisclosureState(db, project.id);
-		return res.json({ success: true, ...disclosureState });
+		return res.json({
+			success: true,
+			...disclosureState,
+			license: hasLicenseUpdate ? { id: licenseId, name: licenseName } : undefined,
+		});
 	} catch (error) {
 		console.error("Error updating project disclosures:", error);
 		return res.status(500).json({ message: "Error updating project disclosures", error: error.message });

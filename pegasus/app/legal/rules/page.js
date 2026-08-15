@@ -74,7 +74,7 @@ Content must comply with all applicable laws and must not:
 
 Projects, a form of Content, must make a clear and honest attempt to describe their purpose in designated areas on the project page. Necessary information must not be obscured in any way or use confusing language or technical jargon when it is unnecessary.
 
-Important information like content disclosures must always be described accurately and appropriately.
+Important project details must always be described accurately and appropriately.
 
 Every project must clearly and honestly describe:
 - What exactly the project does or adds
@@ -109,8 +109,8 @@ Such features are allowed **only** when they are server-side plugins/mods with e
 
 ## 5. Good Practices (strongly recommended)
 
-- Fill in all metadata accurately and consistently, including license, environment information, tags, and content disclosures
-- Fill in all applicable content disclosures accurately and keep them up to date
+- Fill in all metadata accurately and consistently, including license, environment information, tags, and required notices
+- Fill in all applicable notices accurately and keep them up to date
 - Use clean project titles (without spam, version numbers, emojis in title)
 - Keep short description concise and without formatting
 - Specify correct dependencies
@@ -122,7 +122,7 @@ Projects must be forthright and honest about the usage of generative AI when pro
 
 Projects must abide by all of the following requirements:
 
-1. Clearly include the **“Created with AI”** disclosure on the project's dedicated content disclosures page when:
+1. Clearly include the **“Created with AI”** notice on the project's dedicated **Details** page when:
    1. a substantial portion of the project's code is a product of AI output.
    2. the project includes any assets that are primarily or entirely a product of AI output.
    3. the project's design or functionality relies on the use of generative AI.
@@ -157,7 +157,7 @@ const contentRulesRU = `
 
 Проекты как форма Контента должны ясно и добросовестно описывать своё назначение в отведённых для этого разделах страницы проекта. Нельзя скрывать необходимую информацию, использовать запутанные формулировки или технический жаргон без необходимости.
 
-Важная информация, включая раскрытие сведений о контенте, всегда должна быть указана точно и надлежащим образом.
+Важные сведения о проекте всегда должны быть указаны точно и надлежащим образом.
 
 Каждый проект обязан понятно и честно описывать:
 - Что именно делает мод/пак/карта
@@ -191,8 +191,8 @@ const contentRulesRU = `
 
 ## 5. Хорошие практики (настоятельно рекомендуется)
 
-- Точно и единообразно заполняйте все метаданные, включая лицензию, информацию об окружении, теги и раскрытия сведений о контенте
-- Точно заполняйте все применимые раскрытия сведений о контенте и поддерживайте их в актуальном состоянии
+- Точно и единообразно заполняйте все метаданные, включая лицензию, информацию об окружении, теги и обязательные уведомления
+- Точно заполняйте все применимые уведомления и поддерживайте их в актуальном состоянии
 - Чистое название проекта без спама
 - Краткое описание без форматирования
 - Указывайте корректные зависимости
@@ -204,7 +204,7 @@ const contentRulesRU = `
 
 Проекты должны соответствовать всем следующим требованиям:
 
-1. Обязательно и явно укажите **«Создано с помощью ИИ»** на отдельной странице раскрытия информации о содержимом проекта, если:
+1. Обязательно и явно укажите **«Создано с помощью ИИ»** на отдельной странице проекта **«Сведения»**, если:
    1. существенная часть кода проекта является результатом работы ИИ;
    2. проект содержит любые материалы, преимущественно или полностью являющиеся результатом работы ИИ;
    3. дизайн или функциональность проекта опираются на использование генеративного ИИ;

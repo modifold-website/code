@@ -20,10 +20,6 @@ export default function ProjectDisclosureDetails({ disclosures }) {
 		items.push({ icon: "ai", title: t("ai", { types: listFormatter.format(aiTypes) }), detail: disclosures.ai_explanation });
 	}
 
-	if(disclosures?.contains_advertising) {
-		items.push({ icon: "advertising", title: t("advertising"), detail: disclosures.advertising_explanation });
-	}
-
 	if(disclosures?.contains_paid_features) {
 		items.push({ icon: "paid", title: t("paid"), detail: listFormatter.format(disclosures.paid_features || []) });
 	}
@@ -35,10 +31,6 @@ export default function ProjectDisclosureDetails({ disclosures }) {
 
 	if(disclosures?.photosensitivity_warning) {
 		items.push({ icon: "photosensitivity", title: t("photosensitivity"), detail: disclosures.photosensitivity_explanation });
-	}
-
-	if(disclosures?.external_system_interactions) {
-		items.push({ icon: "external", title: t("external"), detail: disclosures.external_system_explanation });
 	}
 
 	if(items.length === 0) {

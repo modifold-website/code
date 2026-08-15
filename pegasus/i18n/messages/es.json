@@ -1176,6 +1176,7 @@
     "sidebar": {
       "general": "General",
       "description": "Descripción",
+      "disclosures": "Detalles",
       "links": "Enlaces",
       "versions": "Versiones",
       "gallery": "Galería",
@@ -1183,8 +1184,7 @@
       "analytics": "Analítica",
       "issues": "Issues",
       "moderation": "Moderación",
-      "members": "Miembros",
-      "license": "Licencia"
+      "members": "Miembros"
     },
     "save": "Guardar",
     "unsavedBar": {

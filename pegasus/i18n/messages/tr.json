@@ -1176,6 +1176,7 @@
     "sidebar": {
       "general": "Genel",
       "description": "Açıklama",
+      "disclosures": "Ayrıntılar",
       "links": "Bağlantılar",
       "versions": "Sürümler",
       "gallery": "Galeri",
@@ -1183,8 +1184,7 @@
       "analytics": "Analitik",
       "issues": "Issues",
       "moderation": "Moderasyon",
-      "members": "Üyeler",
-      "license": "Lisans"
+      "members": "Üyeler"
     },
     "save": "Kaydet",
     "unsavedBar": {

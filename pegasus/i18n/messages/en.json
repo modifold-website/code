@@ -1174,21 +1174,20 @@
   },
   "ProjectDisclosures": {
     "metadata": {
-      "title": "Content disclosures — {title} — Modifold",
+      "title": "Details — {title} — Modifold",
       "notFound": "Project not found — Modifold"
     },
-    "title": "Content disclosures",
-    "introBefore": "Add every disclosure that applies to your project in accordance with the",
+    "title": "Details",
+    "introBefore": "Choose a license and add every notice that applies to your project in accordance with the",
     "contentRules": "Content Rules",
     "explanation": "Explanation",
     "explanationOptional": "Explanation (optional)",
     "addAnother": "Add another",
     "removeItem": "Remove item",
-    "success": "Content disclosures updated",
+    "success": "Project details updated",
     "errors": {
-      "save": "Could not update content disclosures",
+      "save": "Could not update project details",
       "aiCategory": "Select at least one way generative AI is used.",
-      "advertisingExplanation": "Explain where advertising appears in the project.",
       "paidFeature": "List at least one paid feature.",
       "telemetry": "Choose a consent model and list the data collected.",
       "photosensitivityExplanation": "Explain the photosensitivity risk."
@@ -1196,7 +1195,7 @@
     "ai": {
       "title": "Contains AI-generated content",
       "description": "Enable this when a substantial amount of code, assets, text, or functionality relies on generative AI.",
-      "descriptionRequirement": "You must clearly disclose “Created with AI” on this content disclosures page.",
+      "descriptionRequirement": "You must clearly state “Created with AI” on this details page.",
       "usesTitle": "What is generative AI being used for?",
       "types": {
         "code": "Code",
@@ -1206,10 +1205,11 @@
       },
       "placeholder": "For example, translations were generated with AI and then reviewed by the author."
     },
-    "advertising": {
-      "title": "Contains advertising",
-      "description": "Enable this if the project contains advertisements, sponsorships, or promotions of other works.",
-      "placeholder": "Describe what is promoted and where users will see it."
+    "license": {
+      "title": "Project license",
+      "description": "Choose the terms under which other people may use and redistribute your project.",
+      "clear": "Clear license",
+      "noSelection": "No license selected"
     },
     "paid": {
       "title": "Contains paid features",
@@ -1235,11 +1235,6 @@
       "description": "Enable this if the project contains flashing lights or patterns that may be dangerous to photosensitive people.",
       "placeholder": "Describe the flashing effect and whether it can be disabled."
     },
-    "external": {
-      "title": "External system interactions",
-      "description": "Enable this if the project reads or changes anything on the user's system outside the game.",
-      "placeholder": "Describe what is accessed outside the game and why."
-    },
     "archive": {
       "title": "Archive project",
       "description": "Mark the project as archived when you are no longer maintaining it.",
@@ -1250,7 +1245,7 @@
       "bannerDescription": "{title} will not receive further updates unless the author unarchives the project."
     },
     "public": {
-      "title": "Content disclosures",
+      "title": "Project details",
       "ai": "Contains AI-generated {types}",
       "aiTypes": {
         "code": "code",
@@ -1258,7 +1253,6 @@
         "text": "text",
         "functionality": "functionality"
       },
-      "advertising": "Contains advertising",
       "paid": "Contains paid features",
       "telemetry": "Contains {consent} telemetry",
       "consent": {
@@ -1266,15 +1260,14 @@
         "optOut": "opt-out",
         "alwaysActive": "always-active"
       },
-      "photosensitivity": "Contains photosensitive content",
-      "external": "Interacts with systems outside the game"
+      "photosensitivity": "Contains photosensitive content"
     }
   },
   "SettingsProjectPage": {
     "sidebar": {
       "general": "General",
       "description": "Description",
-      "disclosures": "Disclosures",
+      "disclosures": "Details",
       "links": "Links",
       "versions": "Versions",
       "gallery": "Gallery",
@@ -1282,8 +1275,7 @@
       "analytics": "Analytics",
       "issues": "Issues",
       "moderation": "Moderation",
-      "members": "Members",
-      "license": "License"
+      "members": "Members"
     },
     "save": "Save",
     "unsavedBar": {
