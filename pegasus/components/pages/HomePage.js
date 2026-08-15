@@ -134,7 +134,7 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 					</div>
 
 					<div className="home-discovery-section__content">
-						<DiscoverProjectRail title={t("discovery.popularTitle")} titleIcon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>} projects={weeklyPopular.slice(0, 10)} t={tDiscover} tCategoryLabels={tCategoryLabels} viewAllHref="/discover" useWeeklyDownloads />
+						<DiscoverProjectRail title={t("discovery.popularTitle")} titleIcon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>} projects={weeklyPopular.slice(0, 10)} t={tDiscover} tCategoryLabels={tCategoryLabels} viewAllHref="/discover" />
 						<DiscoverProjectRail title={t("discovery.updatedTitle")} titleIcon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/></svg>} projects={recentlyUpdated.slice(0, 10)} t={tDiscover} tCategoryLabels={tCategoryLabels} viewAllHref="/discover" />
 						<PopularCategories categories={popularCategories.slice(0, 6)} tCategoryLabels={tCategoryLabels} t={tDiscover} />
 					</div>
