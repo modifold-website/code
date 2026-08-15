@@ -1245,7 +1245,7 @@
       "bannerDescription": "{title} will not receive further updates unless the author unarchives the project."
     },
     "public": {
-      "title": "Project details",
+      "title": "What to know",
       "ai": "Contains AI-generated {types}",
       "aiTypes": {
         "code": "code",
