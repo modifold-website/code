@@ -59,7 +59,6 @@ export default async function Layout({ children, params }) {
                         versions: tSettings("sidebar.versions"),
                         gallery: tSettings("sidebar.gallery"),
                         tags: tSettings("sidebar.tags"),
-                        license: tSettings("sidebar.license"),
                         analytics: tSettings("sidebar.analytics"),
                         issues: tSettings("sidebar.issues"),
                         moderation: tSettings("sidebar.moderation"),

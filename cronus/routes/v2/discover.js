@@ -323,6 +323,138 @@ const fetchPopularTags = async (projectType, limit = 6) => {
 	return [...countsByTag.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([name, count]) => ({ name, count }));
 };
 
+const getDiscoverCacheKey = (scope) => {
+	const cacheHash = crypto.createHash("sha1").update(JSON.stringify(scope)).digest("hex");
+	return `modifold_discover_v2_${cacheHash}`;
+};
+
+const setDiscoverCacheHeaders = (res) => {
+	res.set("Cache-Control", "public, max-age=300, s-maxage=300, stale-while-revalidate=120");
+};
+
+const buildDiscoverData = async (projectType, { includeCategorySections = true } = {}) => {
+	const weeklyDownloadsPromise = getWeeklyDownloadCounts({ projectType, limit: 120 });
+	const discoverTagsPromise = includeCategorySections ? fetchDiscoverTags(projectType) : Promise.resolve([]);
+	const [featuredProjects, rankedDownloads, latestProjects, recentlyUpdatedProjects, discoverTags, popularTags] = await Promise.all([
+		fetchRecommendedProjects(projectType),
+		weeklyDownloadsPromise,
+		fetchProjects({ projectType, orderBy: "p.created_at DESC, p.id DESC", limit: 12 }),
+		fetchProjects({ projectType, orderBy: "p.updated_at DESC, p.id DESC", limit: 10 }),
+		discoverTagsPromise,
+		fetchPopularTags(projectType, 6),
+	]);
+	const [weeklyPopularResult, weeklyNewPopularResult] = await Promise.all([
+		fetchWeeklyPopularProjects(projectType, rankedDownloads.slice(0, 60)),
+		fetchWeeklyNewPopularProjects(projectType, rankedDownloads),
+	]);
+	const categorySections = includeCategorySections ? await Promise.all(discoverTags.map(async (tag) => ({
+		tag: tag.name,
+		count: tag.count,
+		projects: (await fetchProjects({
+			projectType,
+			where: "AND FIND_IN_SET(?, p.tags)",
+			params: [tag.name],
+			orderBy: "p.downloads DESC, p.updated_at DESC",
+			limit: 10,
+		})).map((project) => formatProject(project)),
+	}))) : [];
+
+	return {
+		type: projectType,
+		featured: featuredProjects.map((project) => formatProject(project)),
+		weeklyPopular: weeklyPopularResult.projects.map((project) => formatProject(project, weeklyPopularResult.weeklyDownloadsBySlug)),
+		weeklyNewPopular: weeklyNewPopularResult.projects.map((project) => formatProject(project, weeklyNewPopularResult.weeklyDownloadsBySlug)),
+		recentlyUpdated: recentlyUpdatedProjects.map((project) => formatProject(project)),
+		categorySections,
+		popularCategories: popularTags,
+		latest: latestProjects.map((project) => formatProject(project)),
+		generatedAt: new Date().toISOString(),
+	};
+};
+
+const combineProjects = (firstProjects = [], secondProjects = [], limit = 10) => {
+	const projects = [];
+	const seenProjects = new Set();
+	const maxLength = Math.max(firstProjects.length, secondProjects.length);
+
+	for(let index = 0; index < maxLength && projects.length < limit; index += 1) {
+		for(const project of [firstProjects[index], secondProjects[index]]) {
+			if(!project) {
+				continue;
+			}
+
+			const projectKey = project.id || `${project.project_type || "project"}:${project.slug}`;
+			if(seenProjects.has(projectKey)) {
+				continue;
+			}
+
+			seenProjects.add(projectKey);
+			projects.push(project);
+			if(projects.length === limit) {
+				break;
+			}
+		}
+	}
+
+	return projects;
+};
+
+const combinePopularCategories = (modCategories = [], worldCategories = [], limit = 6) => {
+	const categoriesByName = new Map();
+
+	for(const [categories, projectType] of [[modCategories, "mod"], [worldCategories, "world"]]) {
+		for(const category of categories) {
+			const currentCategory = categoriesByName.get(category.name);
+			if(currentCategory && Number(currentCategory.count || 0) >= Number(category.count || 0)) {
+				continue;
+			}
+
+			categoriesByName.set(category.name, {
+				...category,
+				project_type: projectType,
+			});
+		}
+	}
+
+	return [...categoriesByName.values()]
+		.sort((firstCategory, secondCategory) => Number(secondCategory.count || 0) - Number(firstCategory.count || 0))
+		.slice(0, limit);
+};
+
+router.get("/", async (req, res) => {
+	try {
+		const cacheKey = getDiscoverCacheKey({ types: ["mod", "world"], version: 2 });
+		const cachedResponse = await getCacheJson(cacheKey);
+
+		if(cachedResponse) {
+			setDiscoverCacheHeaders(res);
+			return res.json(cachedResponse);
+		}
+
+		const [mods, worlds] = await Promise.all([
+			buildDiscoverData("mod", { includeCategorySections: false }),
+			buildDiscoverData("world", { includeCategorySections: false }),
+		]);
+		const responseData = {
+			types: ["mod", "world"],
+			featured: combineProjects(mods.featured, worlds.featured, 5),
+			weeklyPopular: combineProjects(mods.weeklyPopular, worlds.weeklyPopular),
+			weeklyNewPopular: combineProjects(mods.weeklyNewPopular, worlds.weeklyNewPopular),
+			recentlyUpdated: combineProjects(mods.recentlyUpdated, worlds.recentlyUpdated),
+			popularCategories: combinePopularCategories(mods.popularCategories, worlds.popularCategories),
+			latest: combineProjects(mods.latest, worlds.latest, 6),
+			generatedAt: new Date().toISOString(),
+		};
+
+		await setCacheJson(cacheKey, responseData, DISCOVER_CACHE_TTL_SECONDS);
+		setDiscoverCacheHeaders(res);
+		return res.json(responseData);
+	} catch (error) {
+		console.error("Error fetching unified discover page:", error);
+		return res.status(500).json({ message: "Error fetching discover page", error: error.message });
+	}
+});
+
 router.get("/:type", async (req, res) => {
 	try {
 		const projectType = normalizeProjectType(req.params.type);
@@ -331,55 +463,17 @@ router.get("/:type", async (req, res) => {
 			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-		const cacheSeed = JSON.stringify({ type: projectType, version: 4 });
-		const cacheHash = crypto.createHash("sha1").update(cacheSeed).digest("hex");
-		const cacheKey = `modifold_discover_v2_${cacheHash}`;
+		const cacheKey = getDiscoverCacheKey({ type: projectType, version: 5 });
 		const cachedResponse = await getCacheJson(cacheKey);
 
 		if(cachedResponse) {
-			res.set("Cache-Control", "public, max-age=300, s-maxage=300, stale-while-revalidate=120");
+			setDiscoverCacheHeaders(res);
 			return res.json(cachedResponse);
 		}
 
-		const weeklyDownloadsPromise = getWeeklyDownloadCounts({ projectType, limit: 120 });
-		const [featuredProjects, rankedDownloads, latestProjects, discoverTags, popularTags] = await Promise.all([
-			fetchRecommendedProjects(projectType),
-			weeklyDownloadsPromise,
-			fetchProjects({ projectType, orderBy: "p.created_at DESC, p.id DESC", limit: 12 }),
-			fetchDiscoverTags(projectType),
-			fetchPopularTags(projectType, 6),
-		]);
-		const [weeklyPopularResult, weeklyNewPopularResult] = await Promise.all([
-			fetchWeeklyPopularProjects(projectType, rankedDownloads.slice(0, 60)),
-			fetchWeeklyNewPopularProjects(projectType, rankedDownloads),
-		]);
-
-		const categorySections = await Promise.all(discoverTags.map(async (tag) => ({
-			tag: tag.name,
-			count: tag.count,
-			projects: (await fetchProjects({
-				projectType,
-				where: "AND FIND_IN_SET(?, p.tags)",
-				params: [tag.name],
-				orderBy: "p.downloads DESC, p.updated_at DESC",
-				limit: 10,
-			})).map((project) => formatProject(project)),
-		})));
-
-		const responseData = {
-			type: projectType,
-			featured: featuredProjects.map((project) => formatProject(project)),
-			weeklyPopular: weeklyPopularResult.projects.map((project) => formatProject(project, weeklyPopularResult.weeklyDownloadsBySlug)),
-			weeklyNewPopular: weeklyNewPopularResult.projects.map((project) => formatProject(project, weeklyNewPopularResult.weeklyDownloadsBySlug)),
-			categorySections,
-			popularCategories: popularTags,
-			latest: latestProjects.map((project) => formatProject(project)),
-			generatedAt: new Date().toISOString(),
-		};
-
+		const responseData = await buildDiscoverData(projectType);
 		await setCacheJson(cacheKey, responseData, DISCOVER_CACHE_TTL_SECONDS);
-
-		res.set("Cache-Control", "public, max-age=300, s-maxage=300, stale-while-revalidate=120");
+		setDiscoverCacheHeaders(res);
 		return res.json(responseData);
 	} catch (error) {
 		console.error("Error fetching discover page:", error);

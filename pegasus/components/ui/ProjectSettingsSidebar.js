@@ -42,11 +42,13 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
                 </Link>
 
 				<Link href={`${baseProjectPath}/settings/disclosures`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/disclosures`) ? "sidebar-item--active" : ""}`} data-ripple>
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-triangle-alert-icon lucide-triangle-alert">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/>
-                        <path d="M12 9v4"/>
-                        <path d="M12 17h.01"/>
-                    </svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-list-collapse-icon lucide-list-collapse">
+						<path d="M10 5h11"/>
+						<path d="M10 12h11"/>
+						<path d="M10 19h11"/>
+						<path d="m3 10 3-3-3-3"/>
+						<path d="m3 20 3-3-3-3"/>
+					</svg>
 
 					{labels.disclosures}
 				</Link>
@@ -87,12 +89,6 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
                     </svg>
 
                     {labels.tags}
-                </Link>
-
-                <Link href={`${baseProjectPath}/settings/license`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/license`) ? "sidebar-item--active" : ""}`} data-ripple>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon--settings"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83a4 4 0 1 1 0-5.66"/></svg>
-                    
-                    {labels.license}
                 </Link>
 
                 <Link href={`${baseProjectPath}/settings/issues`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/issues`) ? "sidebar-item--active" : ""}`} data-ripple>

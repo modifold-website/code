@@ -6,70 +6,65 @@ import FeaturedHero from "./FeaturedHero";
 import DiscoverProjectRail from "./DiscoverProjectRail";
 import LatestProjects from "./LatestProjects";
 import PopularCategories from "./PopularCategories";
-import CategoryIcon from "@/utils/CategoryIcon";
-import { getCategoryLabel } from "@/utils/categoryLabels";
-import { getBrowseHref } from "./discoverHelpers";
 
-export default function DiscoverProjectsPage({ data, projectType }) {
+export default function DiscoverProjectsPage({ data }) {
 	const t = useTranslations("DiscoverPage");
 	const tCategoryLabels = useTranslations("CategoryLabels");
-	const browseHref = getBrowseHref(projectType);
-	const hasContent = data?.featured?.length || data?.weeklyPopular?.length || data?.weeklyNewPopular?.length || data?.categorySections?.length || data?.latest?.length;
-
-	if(!hasContent) {
-		return (
-			<div className="discover-page">
-				<div className="subsite-empty-feed">
-					<img src="/images/kweebec.png" style={{ width: "200px" }} alt="" />
-					
-					<p className="subsite-empty-feed__title">{t("empty")}</p>
-				</div>
-			</div>
-		);
-	}
+	const featured = data?.featured || [];
+	const weeklyPopular = data?.weeklyPopular || [];
+	const weeklyNewPopular = data?.weeklyNewPopular || [];
+	const recentlyUpdated = data?.recentlyUpdated || [];
+	const recentlyPublished = data?.latest || [];
+	const popularCategories = data?.popularCategories || [];
 
 	return (
 		<div className="discover-page">
-			<FeaturedHero projects={data?.featured || []} t={t} />
+			<FeaturedHero projects={featured} t={t} />
 
 			<DiscoverProjectRail title={t("weeklyPopular")} titleIcon={(
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trending-up-icon lucide-trending-up">
 					<path d="M16 7h6v6"/>
 					<path d="m22 7-8.5 8.5-5-5L2 17"/>
 				</svg>
-			)} projects={data?.weeklyPopular || []} t={t} tCategoryLabels={tCategoryLabels} viewAllHref={`${browseHref}?sort=downloads`} />
+			)} projects={weeklyPopular} t={t} tCategoryLabels={tCategoryLabels} useWeeklyDownloads />
 
 			<DiscoverProjectRail title={t("weeklyNewPopular")} titleIcon={(
 				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-flame-icon lucide-flame">
 					<path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/>
 				</svg>
-			)} projects={data?.weeklyNewPopular || []} t={t} tCategoryLabels={tCategoryLabels} viewAllHref={`${browseHref}?sort=recent`} useWeeklyDownloads />
+			)} projects={weeklyNewPopular} t={t} tCategoryLabels={tCategoryLabels} useWeeklyDownloads />
 
-			{(data?.categorySections || []).map((section) => (
-				<DiscoverProjectRail key={section.tag} title={getCategoryLabel(tCategoryLabels, section.tag)} titleIcon={<CategoryIcon category={section.tag} />} projects={section.projects || []} t={t} tCategoryLabels={tCategoryLabels} viewAllHref={`${browseHref}?c=${encodeURIComponent(section.tag)}`} />
-			))}
+			<DiscoverProjectRail title={t("recentlyUpdated")} titleIcon={(
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw-icon lucide-refresh-cw">
+					<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+					<path d="M21 3v5h-5"/>
+					<path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+					<path d="M8 16H3v5"/>
+				</svg>
+			)} projects={recentlyUpdated} t={t} tCategoryLabels={tCategoryLabels} />
 
-			<PopularCategories categories={data?.popularCategories || []} tCategoryLabels={tCategoryLabels} t={t} browseHref={browseHref} />
-			
-			<LatestProjects projects={data?.latest || []} t={t} viewAllHref={`${browseHref}?sort=recent`} />
+			<PopularCategories categories={popularCategories} tCategoryLabels={tCategoryLabels} t={t} />
+
+			<LatestProjects projects={recentlyPublished} t={t} />
 
 			<section className="discover-more">
-				<img className="discover-more__leaf discover-more__leaf--right" src="/images/leaf.webp" alt="" aria-hidden="true" loading="lazy" />
-				<img className="discover-more__leaf discover-more__leaf--left" src="/images/leaf.webp" alt="" aria-hidden="true" loading="lazy" />
-
 				<div>
-					<h2>{t("moreTitle")}</h2>
+					<h2>{t("communityTitle")}</h2>
 					
-					<p>{t("moreText")}</p>
+					<p>{t("communityText")}</p>
 				</div>
 
-				<Link href={browseHref} className="button button--size-m button--type-primary button--active-transform button--with-icon">
-					<svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-						<path d="M7 7h10v10"/>
-						<path d="M7 17 17 7"/>
+				<Link href="/jams" className="button button--size-m button--type-primary button--active-transform button--with-icon">
+					<svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+						<path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>
+						<path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/>
+						<path d="M18 9h1.5a1 1 0 0 0 0-5H18"/>
+						<path d="M4 22h16"/>
+						<path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/>
+						<path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
 					</svg>
 					
-					{t("moreCta")}
+					{t("communityCta")}
 				</Link>
 			</section>
 		</div>

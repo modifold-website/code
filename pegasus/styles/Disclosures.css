@@ -32,6 +32,11 @@
 .disclosures-section {
 	overflow: hidden;
 }
+.disclosures-section--license {
+	position: relative;
+	z-index: 2;
+	overflow: visible;
+}
 .disclosures-section__header {
 	display: flex;
 	align-items: center;
@@ -58,6 +63,27 @@
 }
 .disclosures-section__description strong {
 	color: var(--theme-color-text-primary);
+}
+.disclosures-license {
+	display: grid;
+	grid-template-columns: minmax(0, 380px) max-content;
+	align-items: center;
+	gap: 12px;
+	margin-top: 14px;
+}
+.disclosures-license__trigger {
+	color: var(--theme-color-text-primary);
+	text-align: left;
+	cursor: pointer;
+}
+.disclosures-license__trigger .icon {
+	fill: none;
+}
+.disclosures-license__popover .context-list {
+	max-height: 280px;
+}
+.disclosures-license__option {
+	width: 100%;
 }
 .disclosures-section__body {
 	display: grid;
@@ -172,6 +198,12 @@
 	}
 	.disclosure-choice-grid {
 		grid-template-columns: 1fr;
+	}
+	.disclosures-license {
+		grid-template-columns: 1fr;
+	}
+	.disclosures-license .button {
+		width: fit-content;
 	}
 	.archive-banner {
 		padding: 14px;

@@ -54,37 +54,11 @@ function parseBrowseSearchParams(searchParams) {
     };
 }
 
-async function fetchActiveModJams() {
-    const limit = 100;
-    let page = 1;
-    let totalPages = 1;
-    const modJams = [];
-
-    do {
-        const activeModJamsResponse = await fetch(`${apiBase}/mod-jams?status=active&page=${page}&limit=${limit}`, {
-            next: { revalidate: 60 },
-        });
-
-        if(!activeModJamsResponse.ok) {
-            console.error("Failed to fetch active mod jams for browse hero:", activeModJamsResponse.status);
-            break;
-        }
-
-        const data = await activeModJamsResponse.json();
-        modJams.push(...(Array.isArray(data?.mod_jams) ? data.mod_jams : []));
-        totalPages = Number.isFinite(Number(data?.totalPages)) ? Number(data.totalPages) : 1;
-        page += 1;
-    } while(page <= totalPages);
-
-    return modJams;
-}
-
 export default async function ModsPage({ searchParams }) {
     const cookieStore = await cookies();
     const resolvedSearchParams = await searchParams;
     const initialState = parseBrowseSearchParams(resolvedSearchParams);
     const initialCardView = cookieStore.get("browse_card_view_mod")?.value === "media" ? "media" : "list";
-    const initialRecommendedCollapsed = cookieStore.get("browse_recommended_collapsed_mod")?.value === "1";
     const sortedTags = [...initialState.tags].sort();
     const gameVersions = await fetchGameVersionItems();
     const effectiveGameVersions = getEffectiveBrowseGameVersions(initialState.gameVersions, gameVersions, { useDefault: initialState.useDefaultGameVersions });
@@ -103,8 +77,6 @@ export default async function ModsPage({ searchParams }) {
     const initialApiKey = JSON.stringify(apiParams);
     let initialData = null;
     let initialTags = [];
-    let recommendedProjects = [];
-    let activeModJams = [];
 
     try {
         const requestParams = new URLSearchParams({
@@ -151,26 +123,5 @@ export default async function ModsPage({ searchParams }) {
         console.error("Failed to fetch mod tags:", error);
     }
 
-    try {
-        const recommendedResponse = await fetch(`${apiBase}/recommended?type=mod`, {
-            next: { revalidate: 60 },
-        });
-
-        if(recommendedResponse.ok) {
-            const data = await recommendedResponse.json();
-            recommendedProjects = Array.isArray(data?.projects) ? data.projects : [];
-        } else {
-            console.error("Failed to fetch recommended mods:", recommendedResponse.status);
-        }
-    } catch (error) {
-        console.error("Failed to fetch recommended mods:", error);
-    }
-
-    try {
-        activeModJams = await fetchActiveModJams();
-    } catch (error) {
-        console.error("Failed to fetch active mod jams for browse hero:", error);
-    }
-
-    return <BrowsePage projectType="mod" initialState={initialState} initialData={initialData} initialCardView={initialCardView} tags={initialTags} gameVersions={gameVersions} recommendedProjects={recommendedProjects} activeModJams={activeModJams} initialRecommendedCollapsed={initialRecommendedCollapsed} />;
+    return <BrowsePage projectType="mod" initialState={initialState} initialData={initialData} initialCardView={initialCardView} tags={initialTags} gameVersions={gameVersions} />;
 }

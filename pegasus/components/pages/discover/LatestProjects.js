@@ -144,9 +144,11 @@ export default function LatestProjects({ projects, t, viewAllHref }) {
 			<div className="discover-section__header">
 				<h2>{t("latest")}</h2>
 				
-				<Link href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
-					{t("viewAll")}
-				</Link>
+				{viewAllHref && (
+					<Link href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
+						{t("viewAll")}
+					</Link>
+				)}
 			</div>
 
 			<div ref={shellRef} className={`discover-latest-shell ${preview ? "discover-latest-shell--preview-open" : ""}`} onMouseLeave={closePreview} onBlur={(event) => {

@@ -7,12 +7,12 @@ import { useTranslations } from "next-intl";
 
 let lastBrowseTabsIndicatorStyle = { width: 0, left: 0, opacity: 0 };
 
-function getBrowseType(pathname) {
-	if(pathname.includes("/modpacks") || pathname === "/modpacks") {
-		return "modpacks";
+function getActiveSection(pathname) {
+	if(pathname.startsWith("/discover")) {
+		return "discover";
 	}
 
-	if(pathname.includes("/worlds") || pathname === "/worlds") {
+	if(pathname.startsWith("/worlds")) {
 		return "worlds";
 	}
 
@@ -22,10 +22,7 @@ function getBrowseType(pathname) {
 export default function BrowseTabs() {
 	const t = useTranslations("BrowsePage");
 	const pathname = usePathname();
-	const browseType = getBrowseType(pathname);
-	const isDiscover = pathname.startsWith("/discover/");
-	const discoverHref = `/discover/${browseType}`;
-	const browseHref = `/${browseType}`;
+	const activeSection = getActiveSection(pathname);
 	const tabsRef = useRef(null);
 	const [indicatorStyle, setIndicatorStyle] = useState(lastBrowseTabsIndicatorStyle);
 
@@ -60,13 +57,17 @@ export default function BrowseTabs() {
 	}, [pathname]);
 
 	return (
-		<div className="tabs" ref={tabsRef} style={{ paddingLeft: "16px", "--40010a00": "46px", "--58752bc5": "0px", "--b2a58f2e": "0" }}>
-			<Link href={discoverHref} className={`tabs__tab ${isDiscover ? "tabs__tab--active" : ""}`}>
+		<div className="tabs browse-tabs" ref={tabsRef} style={{ paddingLeft: "16px", "--40010a00": "46px", "--58752bc5": "0px", "--b2a58f2e": "0" }}>
+			<Link href="/discover" className={`tabs__tab ${activeSection === "discover" ? "tabs__tab--active" : ""}`}>
 				{t("discover")}
 			</Link>
 
-			<Link href={browseHref} className={`tabs__tab ${!isDiscover ? "tabs__tab--active" : ""}`}>
-				{t("browseAll")}
+			<Link href="/mods" className={`tabs__tab ${activeSection === "mods" ? "tabs__tab--active" : ""}`}>
+				{t("mods")}
+			</Link>
+
+			<Link href="/worlds" className={`tabs__tab ${activeSection === "worlds" ? "tabs__tab--active" : ""}`}>
+				{t("worlds")}
 			</Link>
 
 			<span className="tabs__indicator" aria-hidden="true" style={{ width: `${indicatorStyle.width}px`, transform: `translateX(${indicatorStyle.left}px)`, opacity: indicatorStyle.opacity }} />

@@ -6,6 +6,7 @@ import LoginModal from "../../modal/LoginModal";
 import ProjectCreationModal from "../../modal/ProjectCreationModal";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { useUnreadNotificationsCount } from "@/utils/notifications/hooks";
@@ -14,27 +15,21 @@ import { getProfileBadgeCode } from "@/utils/profileBadges";
 
 export default function Header({ authToken }) {
     const t = useTranslations("Header");
+    const pathname = usePathname();
     const { isLoggedIn, user, logout } = useAuth();
     const [loginModalOpen, setLoginModalOpen] = useState(false);
     const [projectModalOpen, setProjectModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isBrowseMenuOpen, setIsBrowseMenuOpen] = useState(false);
+	const [isBrowseMenuOpen, setIsBrowseMenuOpen] = useState(false);
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
-    const browseWrapperRef = useRef(null);
-    const browseCloseTimeoutRef = useRef(null);
+	const browseWrapperRef = useRef(null);
+	const browseButtonRef = useRef(null);
+	const browseCloseTimeoutRef = useRef(null);
+	const browseOpenSourceRef = useRef(null);
     const activeProfileBadgeCode = getProfileBadgeCode(user);
     const unreadCountQuery = useUnreadNotificationsCount({ authToken, isLoggedIn, user });
     const unreadCount = unreadCountQuery.data || 0;
-
-    useEffect(() => {
-        return () => {
-            if(browseCloseTimeoutRef.current) {
-                clearTimeout(browseCloseTimeoutRef.current);
-                browseCloseTimeoutRef.current = null;
-            }
-        };
-    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -42,44 +37,87 @@ export default function Header({ authToken }) {
                 setIsMenuOpen(false);
             }
 
-            if(isBrowseMenuOpen && browseWrapperRef.current && !browseWrapperRef.current.contains(event.target)) {
-                setIsBrowseMenuOpen(false);
-            }
+			if(isBrowseMenuOpen && browseWrapperRef.current && !browseWrapperRef.current.contains(event.target)) {
+				browseOpenSourceRef.current = null;
+				setIsBrowseMenuOpen(false);
+			}
         };
+		const handleKeyDown = (event) => {
+			if(event.key === "Escape" && isBrowseMenuOpen) {
+				browseOpenSourceRef.current = null;
+				setIsBrowseMenuOpen(false);
+				browseButtonRef.current?.focus();
+			}
+		};
 
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+			document.removeEventListener("keydown", handleKeyDown);
+		};
     }, [isMenuOpen, isBrowseMenuOpen]);
 
-    const openBrowseMenu = () => {
-        if(browseCloseTimeoutRef.current) {
-            clearTimeout(browseCloseTimeoutRef.current);
-            browseCloseTimeoutRef.current = null;
-        }
+	useEffect(() => () => {
+		if(browseCloseTimeoutRef.current) {
+			clearTimeout(browseCloseTimeoutRef.current);
+		}
+	}, []);
 
-        setIsBrowseMenuOpen(true);
-    };
+	const openBrowseMenu = () => {
+		if(browseOpenSourceRef.current === "click") {
+			return;
+		}
 
-    const scheduleCloseBrowseMenu = () => {
-        if(browseCloseTimeoutRef.current) {
-            clearTimeout(browseCloseTimeoutRef.current);
-        }
+		if(browseCloseTimeoutRef.current) {
+			clearTimeout(browseCloseTimeoutRef.current);
+			browseCloseTimeoutRef.current = null;
+		}
 
-        browseCloseTimeoutRef.current = setTimeout(() => {
-            setIsBrowseMenuOpen(false);
-        }, 150);
-    };
+		browseOpenSourceRef.current = "hover";
+		setIsMenuOpen(false);
+		setIsBrowseMenuOpen(true);
+	};
+
+	const scheduleCloseBrowseMenu = () => {
+		if(browseOpenSourceRef.current === "click") {
+			return;
+		}
+
+		if(browseCloseTimeoutRef.current) {
+			clearTimeout(browseCloseTimeoutRef.current);
+		}
+
+		browseCloseTimeoutRef.current = setTimeout(() => {
+			browseOpenSourceRef.current = null;
+			setIsBrowseMenuOpen(false);
+		}, 160);
+	};
+
+	const toggleBrowseMenu = () => {
+		if(isBrowseMenuOpen && browseOpenSourceRef.current === "click") {
+			browseOpenSourceRef.current = null;
+			setIsBrowseMenuOpen(false);
+			return;
+		}
+
+		browseOpenSourceRef.current = "click";
+		setIsMenuOpen(false);
+		setIsBrowseMenuOpen(true);
+	};
+
+	const closeBrowseMenu = () => {
+		browseOpenSourceRef.current = null;
+		setIsBrowseMenuOpen(false);
+	};
 
     const toggleMenu = () => {
+		closeBrowseMenu();
         setIsMenuOpen((prev) => !prev);
     };
 
     const closeAccountMenu = () => {
         setIsMenuOpen(false);
-    };
-
-    const toggleBrowseMenu = () => {
-        setIsBrowseMenuOpen((prev) => !prev);
     };
 
     const openLoginModal = () => {
@@ -105,6 +143,9 @@ export default function Header({ authToken }) {
 
     const isStaging = process.env.NEXT_PUBLIC_API_BASE?.includes("staging");
     const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+	const isDiscoverActive = pathname === "/discover";
+	const isModsActive = pathname === "/mods" || pathname.startsWith("/mod/");
+	const isWorldsActive = pathname === "/worlds" || pathname.startsWith("/world/");
 
     return (
         <>
@@ -126,67 +167,65 @@ export default function Header({ authToken }) {
                         </Link>
                     </div>
 
-                    <div className="browse-menu-wrapper" ref={browseWrapperRef} onMouseEnter={openBrowseMenu} onMouseLeave={scheduleCloseBrowseMenu}>
-                        <button style={{ "--button-font-size": "16px" }} className={`button button--size-m button--type-secondary button__browse--with-icon button--active-transform ${isBrowseMenuOpen ? "active" : ""}`} onClick={toggleBrowseMenu} aria-expanded={isBrowseMenuOpen} aria-controls="browse-menu">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-compass-icon lucide-compass">
-                                <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
-                                <circle cx="12" cy="12" r="10"/>
-                            </svg>
+					<div className="browse-menu-wrapper" ref={browseWrapperRef} onMouseEnter={openBrowseMenu} onMouseLeave={scheduleCloseBrowseMenu} onBlur={(event) => {
+						if(!event.currentTarget.contains(event.relatedTarget)) {
+							scheduleCloseBrowseMenu();
+						}
+					}}>
+						<button ref={browseButtonRef} type="button" className={`button button--size-m button--type-secondary button__browse--with-icon button--active-transform ${isBrowseMenuOpen ? "active" : ""}`} onClick={toggleBrowseMenu} aria-expanded={isBrowseMenuOpen} aria-controls="browse-menu" aria-haspopup="true">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-compass-icon lucide-compass" aria-hidden="true">
+								<path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
+								<circle cx="12" cy="12" r="10"/>
+							</svg>
 
-                            {t("browse")}
+							{t("browse")}
 
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down-icon ${isBrowseMenuOpen ? "rotate" : ""}`} style={{ fill: "none" }}>
-                                <path d="m6 9 6 6 6-6"></path>
-                            </svg>
-                        </button>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`lucide lucide-chevron-down-icon ${isBrowseMenuOpen ? "rotate" : ""}`} aria-hidden="true">
+								<path d="m6 9 6 6 6-6"/>
+							</svg>
+						</button>
 
-                        <div id="browse-menu" className={`bubble account-menu-root user-menu browse-menu ${isBrowseMenuOpen ? "open" : ""}`} style={{ width: "210px", right: "auto" }}>
-                            <div className="account-menu">
-                                <div className="account-menu__title" style={{ marginBottom: "6px" }}>{t("discoverContent")}</div>
-                                
-                                <div className="account-menu__section">
-                                    <div className="account-action">
-										<Link href="/discover/mods" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
-                                            <svg style={{ fill: "none", marginRight: "12px" }} className="icon icon--settings account-action__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
-                                                <path d="m3.3 7 8.7 5 8.7-5"></path>
-                                                <path d="M12 22V12"></path>
-                                            </svg>
-                                            
-                                            <span>{t("mods")}</span>
-                                        </Link>
-                                    </div>
+						<div id="browse-menu" className={`bubble account-menu-root browse-menu ${isBrowseMenuOpen ? "open" : ""}`}>
+							<div className="account-menu">
+								<nav className="account-menu__section" aria-label={t("browse")}>
+									<div className="account-action">
+										<Link href="/discover" onClick={closeBrowseMenu} className={`account-action__wrapper browse-menu__link button--active-transform ${isDiscoverActive ? "browse-menu__link--active" : ""}`} aria-current={isDiscoverActive ? "page" : undefined}>
+											<svg className="icon account-action__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+												<path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"/>
+												<circle cx="12" cy="12" r="10"/>
+											</svg>
 
-                                    <div className="account-action">
-										<Link href="/discover/worlds" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-map-icon lucide-map account-action__icon" style={{ fill: "none", marginRight: "12px" }}>
-                                                <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/>
-                                                <path d="M15 5.764v15"/>
-                                                <path d="M9 3.236v15"/>
-                                            </svg>
+											<span>{t("discover")}</span>
+										</Link>
+									</div>
 
-                                            <span>{t("worlds")}</span>
-                                        </Link>
-                                    </div>
+									<div className="account-action">
+										<Link href="/mods" onClick={closeBrowseMenu} className={`account-action__wrapper browse-menu__link button--active-transform ${isModsActive ? "browse-menu__link--active" : ""}`} aria-current={isModsActive ? "page" : undefined}>
+											<svg className="icon account-action__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+												<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+												<path d="m3.3 7 8.7 5 8.7-5"/>
+												<path d="M12 22V12"/>
+											</svg>
 
-                                    <div className="account-action">
-                                        <Link href="/jams" onClick={() => setIsBrowseMenuOpen(false)} className="account-action__wrapper button--active-transform">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-trophy-icon lucide-trophy" style={{ fill: "none", marginRight: "12px" }}>
-                                                <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>
-                                                <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/>
-                                                <path d="M18 9h1.5a1 1 0 0 0 0-5H18"/>
-                                                <path d="M4 22h16"/>
-                                                <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"/>
-                                                <path d="M6 9H4.5a1 1 0 0 1 0-5H6"/>
-                                            </svg>
+											<span>{t("mods")}</span>
+										</Link>
+									</div>
 
-                                            <span>{t("modJams")}</span>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+									<div className="account-action">
+										<Link href="/worlds" onClick={closeBrowseMenu} className={`account-action__wrapper browse-menu__link button--active-transform ${isWorldsActive ? "browse-menu__link--active" : ""}`} aria-current={isWorldsActive ? "page" : undefined}>
+											<svg className="icon account-action__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+												<path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/>
+												<path d="M15 5.764v15"/>
+												<path d="M9 3.236v15"/>
+											</svg>
+
+											<span>{t("worlds")}</span>
+										</Link>
+									</div>
+								</nav>
+							</div>
+						</div>
+					</div>
 
                     <div className="header__right">
                         {isLoggedIn ? (

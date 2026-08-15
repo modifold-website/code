@@ -1,5 +1,6 @@
 {
   "pageTitle": {
+    "discover": "Descubrir contenido — Modifold",
     "mods": "Mods — Modifold",
     "modpacks": "Modpacks — Modifold",
     "worlds": "Mundos — Modifold"
@@ -9,6 +10,7 @@
   },
   "Header": {
     "home": "Inicio",
+    "discover": "Descubrir",
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Mundos",
@@ -24,8 +26,7 @@
     },
     "loginToCreate": "Inicia sesión para crear un proyecto",
     "beta": "beta",
-    "browse": "Descubrir contenido",
-    "discoverContent": "Descubrir contenido",
+    "browse": "Buscar contenido",
     "myProfile": "Mi perfil",
     "moderation": "Moderación",
     "projects": "Proyectos",
@@ -385,6 +386,46 @@
     "exploreMods": "Explorar mods",
     "dashboardCta": "Ir al panel de control",
     "loginCta": "Iniciar sesión",
+    "discovery": {
+      "badge": "Descubrir",
+      "title": "Mira lo que juega la comunidad",
+      "lead": "Empieza con proyectos populares, lanzamientos actualizados recientemente o una categoría para tu estilo de juego.",
+      "popularTitle": "Popular esta semana",
+      "updatedTitle": "Actualizados recientemente"
+    },
+    "playerTools": {
+      "badge": "Creado para jugadores",
+      "title": "Encuentra proyectos compatibles más rápido",
+      "lead": "Los proyectos se pueden filtrar por versión y categoría y seguir para recibir novedades sobre sus lanzamientos.",
+      "versionsTitle": "Elige tu versión de Hytale",
+      "versionsText": "Solo se muestran los proyectos compatibles con tu versión del juego.",
+      "filtersTitle": "Filtros y categorías útiles",
+      "filtersText": "Los resultados se pueden filtrar por categoría, popularidad, fecha de publicación o última actualización.",
+      "updatesTitle": "Sigue nuevos lanzamientos",
+      "updatesText": "Al seguir proyectos y creadores, recibes avisos cuando se publica una nueva versión.",
+      "notificationTitle": "Hay una nueva versión disponible",
+      "notificationText": "Un proyecto que sigues se ha actualizado"
+    },
+    "safety": {
+      "badge": "Cuidamos de tu seguridad",
+      "title": "Cada archivo pasa por moderación",
+      "lead": "Nuestros sistemas inspeccionan cada archivo. Un moderador real revisa los resultados y toma la decisión final de publicar o rechazar.",
+		"cta": "Leer nuestras reglas de contenido",
+		"queuedTitle": "Versión enviada a moderación",
+		"reviewingTitle": "Un moderador está revisando la versión",
+		"publishedTitle": "Versión publicada",
+		"uploadedLabel": "Subido",
+		"animationLabel": "Demostración"
+    },
+    "openSource": {
+      "badge": "Plataforma abierta",
+      "title": "Código abierto y una API para todos",
+      "lead": "Modifold se desarrolla de forma abierta. Usa nuestra API documentada para crear herramientas, integraciones y nuevas formas de explorar el contenido de la comunidad.",
+      "docsCta": "Ver la documentación",
+      "sourceCta": "Ver el código fuente",
+      "apiLabel": "API pública",
+      "codeLabel": "Ejemplo de respuesta de la API pública"
+    },
     "statsTitle": "Creciendo juntos: {count}+ mods de la comunidad",
     "searchPlaceholder": "Buscar mods por nombre",
     "noProjects": "No se encontraron proyectos",
@@ -409,8 +450,8 @@
     },
     "creatorSection": {
       "badge": "Para creadores",
-      "title": "Comparte tus creaciones con la comunidad",
-      "lead": "Modifold ofrece a los creadores herramientas prácticas para publicar, presentar proyectos, colaborar en equipo y comunicarse con su audiencia."
+      "title": "Publica y gestiona tus proyectos",
+      "lead": "Crea una página de proyecto, añade lanzamientos, elige versiones compatibles, trabaja en equipo y consulta el uso real. ¡Y hay mucho más!"
     },
     "creatorCards": {
       "team": {
@@ -419,7 +460,7 @@
       },
       "versions": {
         "title": "Versiones flexibles",
-        "description": "Publica lanzamientos con canales, compatibilidad de versiones del juego y loaders para que los jugadores encuentren mods compatibles rápidamente."
+        "description": "Publica lanzamientos con canales y compatibilidad con versiones del juego para que los jugadores encuentren mods compatibles rápidamente."
       },
       "pages": {
         "title": "Páginas de proyecto completas",
@@ -958,15 +999,6 @@
       "grid": "Cuadrícula",
       "list": "Lista"
     },
-    "recommended": {
-      "ariaLabel": "Mods recomendados",
-      "noSummary": "Aún sin descripción",
-      "downloadsTitle": "{count} descargas",
-      "openProject": "Ver",
-      "participate": "Participar",
-      "collapse": "Ocultar recomendaciones",
-      "expand": "Mostrar recomendaciones"
-    },
     "discover": "Descubrir",
     "browseAll": "Ver todo",
     "mods": "Mods",
@@ -975,8 +1007,15 @@
   },
   "DiscoverPage": {
     "featured": "Destacados",
+    "popularMods": "Mods populares",
+    "popularWorlds": "Mundos populares",
+    "worldsEmpty": "El catálogo de mundos está vacío por ahora, pero ya está listo para sus primeras publicaciones.",
+    "communityTitle": "Eventos de la comunidad",
+    "communityText": "Participa en mod jams, descubre creaciones de la comunidad y apoya a sus autores.",
+    "communityCta": "Explorar mod jams",
     "weeklyPopular": "Popular esta semana",
     "weeklyNewPopular": "Novedades populares de la semana",
+    "recentlyUpdated": "Actualizados recientemente",
     "latest": "Publicados recientemente",
     "popularCategories": "Categorías populares",
     "viewAll": "Ver todo",
@@ -1137,6 +1176,7 @@
     "sidebar": {
       "general": "General",
       "description": "Descripción",
+      "disclosures": "Detalles",
       "links": "Enlaces",
       "versions": "Versiones",
       "gallery": "Galería",
@@ -1144,8 +1184,7 @@
       "analytics": "Analítica",
       "issues": "Issues",
       "moderation": "Moderación",
-      "members": "Miembros",
-      "license": "Licencia"
+      "members": "Miembros"
     },
     "save": "Guardar",
     "unsavedBar": {

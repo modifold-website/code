@@ -353,9 +353,11 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 					{title}
 				</h2>
 
-				<Link href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
-					{t("viewAll")}
-				</Link>
+				{viewAllHref && (
+					<Link href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
+						{t("viewAll")}
+					</Link>
+				)}
 			</div>
 
 			<div ref={shellRef} className={`discover-rail-shell ${preview ? "discover-rail-shell--preview-open" : ""} ${!scrollState.hasUserMoved || !scrollState.canScrollPrev ? "discover-rail-shell--at-start" : ""} ${!scrollState.canScrollNext ? "discover-rail-shell--at-end" : ""}`} onMouseLeave={closePreview} onBlur={(event) => {

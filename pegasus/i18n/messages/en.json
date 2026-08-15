@@ -1,5 +1,6 @@
 {
   "pageTitle": {
+    "discover": "Discover content — Modifold",
     "mods": "Mods — Modifold",
     "modpacks": "Modpacks — Modifold",
     "worlds": "Worlds — Modifold"
@@ -9,6 +10,7 @@
   },
   "Header": {
     "home": "Home",
+    "discover": "Discover",
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Worlds",
@@ -24,8 +26,7 @@
     },
     "loginToCreate": "Please log in to create a project",
     "beta": "beta",
-    "browse": "Discover content",
-    "discoverContent": "Discover content",
+    "browse": "Find content",
     "myProfile": "My profile",
     "moderation": "Moderation",
     "projects": "Projects",
@@ -385,6 +386,46 @@
     "exploreMods": "Explore mods",
     "dashboardCta": "Dashboard",
     "loginCta": "Sign in",
+    "discovery": {
+      "badge": "Discover",
+      "title": "See what the community is playing",
+      "lead": "Start with popular projects, recently updated releases, or a category that matches your playstyle.",
+      "popularTitle": "Popular this week",
+      "updatedTitle": "Recently updated"
+    },
+    "playerTools": {
+      "badge": "Built for players",
+      "title": "Find compatible projects faster",
+      "lead": "Projects can be filtered by game version and category, then followed for release updates.",
+      "versionsTitle": "Choose your Hytale version",
+      "versionsText": "Only projects that support your game version are shown.",
+      "filtersTitle": "Useful filters and categories",
+      "filtersText": "Results can be narrowed by category, popularity, publication date, or latest update.",
+      "updatesTitle": "Follow new releases",
+      "updatesText": "Following projects and creators notifies you when a new version is published.",
+      "notificationTitle": "A new version is available",
+      "notificationText": "Your followed project was updated"
+    },
+    "safety": {
+      "badge": "Keeping you safe",
+      "title": "Every file goes through moderation",
+      "lead": "Our systems inspect every uploaded file. A real moderator reviews the results and makes the final publish or reject decision.",
+		"cta": "Read our content rules",
+		"queuedTitle": "Version sent for moderation",
+		"reviewingTitle": "A moderator is reviewing the version",
+		"publishedTitle": "Version published",
+		"uploadedLabel": "Uploaded",
+		"animationLabel": "Demonstration"
+    },
+    "openSource": {
+      "badge": "Open platform",
+      "title": "Open source, with an API for everyone",
+      "lead": "Modifold is developed in the open. Use our documented API to build tools, integrations, and new ways to explore community content.",
+      "docsCta": "Read the API docs",
+      "sourceCta": "View source code",
+      "apiLabel": "Public API",
+      "codeLabel": "Public API response example"
+    },
     "statsTitle": "Growing together: {count}+ community mods",
     "searchPlaceholder": "Search mods by name",
     "noProjects": "No projects found",
@@ -409,8 +450,8 @@
     },
     "creatorSection": {
       "badge": "For creators",
-      "title": "Share creations with the community",
-      "lead": "Modifold gives creators practical tools for publishing, presentation, teamwork, and communication with their audience."
+      "title": "Publish and manage your projects",
+      "lead": "Create a project page, add releases, choose supported game versions, work with a team, and follow real usage. There’s a lot you can do!"
     },
     "creatorCards": {
       "team": {
@@ -419,7 +460,7 @@
       },
       "versions": {
         "title": "Flexible versions",
-        "description": "Publish releases with channels, game version support, and loaders so players can quickly find compatible mods."
+        "description": "Publish releases with channels and game version support so players can quickly find compatible mods."
       },
       "pages": {
         "title": "Rich project pages",
@@ -958,15 +999,6 @@
       "grid": "Grid",
       "list": "List"
     },
-    "recommended": {
-      "ariaLabel": "Recommended mods",
-      "noSummary": "No description yet",
-      "downloadsTitle": "{count} downloads",
-      "openProject": "View",
-      "participate": "Join",
-      "collapse": "Collapse recommendations",
-      "expand": "Expand recommendations"
-    },
     "discover": "Discover",
     "browseAll": "Browse All",
     "mods": "Mods",
@@ -975,8 +1007,15 @@
   },
   "DiscoverPage": {
     "featured": "Featured",
+    "popularMods": "Popular mods",
+    "popularWorlds": "Popular worlds",
+    "worldsEmpty": "The worlds catalog is empty for now, but it is ready for its first releases.",
+    "communityTitle": "Community events",
+    "communityText": "Join mod jams, discover community creations, and support their authors.",
+    "communityCta": "Explore mod jams",
     "weeklyPopular": "Popular this week",
     "weeklyNewPopular": "Popular new this week",
+    "recentlyUpdated": "Recently updated",
     "latest": "Recently published",
     "popularCategories": "Popular categories",
     "viewAll": "View all",
@@ -1135,21 +1174,20 @@
   },
   "ProjectDisclosures": {
     "metadata": {
-      "title": "Content disclosures — {title} — Modifold",
+      "title": "Details — {title} — Modifold",
       "notFound": "Project not found — Modifold"
     },
-    "title": "Content disclosures",
-    "introBefore": "Add every disclosure that applies to your project in accordance with the",
+    "title": "Details",
+    "introBefore": "Choose a license and add every notice that applies to your project in accordance with the",
     "contentRules": "Content Rules",
     "explanation": "Explanation",
     "explanationOptional": "Explanation (optional)",
     "addAnother": "Add another",
     "removeItem": "Remove item",
-    "success": "Content disclosures updated",
+    "success": "Project details updated",
     "errors": {
-      "save": "Could not update content disclosures",
+      "save": "Could not update project details",
       "aiCategory": "Select at least one way generative AI is used.",
-      "advertisingExplanation": "Explain where advertising appears in the project.",
       "paidFeature": "List at least one paid feature.",
       "telemetry": "Choose a consent model and list the data collected.",
       "photosensitivityExplanation": "Explain the photosensitivity risk."
@@ -1157,7 +1195,7 @@
     "ai": {
       "title": "Contains AI-generated content",
       "description": "Enable this when a substantial amount of code, assets, text, or functionality relies on generative AI.",
-      "descriptionRequirement": "You must clearly disclose “Created with AI” on this content disclosures page.",
+      "descriptionRequirement": "You must clearly state “Created with AI” on this details page.",
       "usesTitle": "What is generative AI being used for?",
       "types": {
         "code": "Code",
@@ -1167,10 +1205,11 @@
       },
       "placeholder": "For example, translations were generated with AI and then reviewed by the author."
     },
-    "advertising": {
-      "title": "Contains advertising",
-      "description": "Enable this if the project contains advertisements, sponsorships, or promotions of other works.",
-      "placeholder": "Describe what is promoted and where users will see it."
+    "license": {
+      "title": "Project license",
+      "description": "Choose the terms under which other people may use and redistribute your project.",
+      "clear": "Clear license",
+      "noSelection": "No license selected"
     },
     "paid": {
       "title": "Contains paid features",
@@ -1196,11 +1235,6 @@
       "description": "Enable this if the project contains flashing lights or patterns that may be dangerous to photosensitive people.",
       "placeholder": "Describe the flashing effect and whether it can be disabled."
     },
-    "external": {
-      "title": "External system interactions",
-      "description": "Enable this if the project reads or changes anything on the user's system outside the game.",
-      "placeholder": "Describe what is accessed outside the game and why."
-    },
     "archive": {
       "title": "Archive project",
       "description": "Mark the project as archived when you are no longer maintaining it.",
@@ -1211,7 +1245,7 @@
       "bannerDescription": "{title} will not receive further updates unless the author unarchives the project."
     },
     "public": {
-      "title": "Content disclosures",
+      "title": "What to know",
       "ai": "Contains AI-generated {types}",
       "aiTypes": {
         "code": "code",
@@ -1219,7 +1253,6 @@
         "text": "text",
         "functionality": "functionality"
       },
-      "advertising": "Contains advertising",
       "paid": "Contains paid features",
       "telemetry": "Contains {consent} telemetry",
       "consent": {
@@ -1227,15 +1260,14 @@
         "optOut": "opt-out",
         "alwaysActive": "always-active"
       },
-      "photosensitivity": "Contains photosensitive content",
-      "external": "Interacts with systems outside the game"
+      "photosensitivity": "Contains photosensitive content"
     }
   },
   "SettingsProjectPage": {
     "sidebar": {
       "general": "General",
       "description": "Description",
-      "disclosures": "Disclosures",
+      "disclosures": "Details",
       "links": "Links",
       "versions": "Versions",
       "gallery": "Gallery",
@@ -1243,8 +1275,7 @@
       "analytics": "Analytics",
       "issues": "Issues",
       "moderation": "Moderation",
-      "members": "Members",
-      "license": "License"
+      "members": "Members"
     },
     "save": "Save",
     "unsavedBar": {
