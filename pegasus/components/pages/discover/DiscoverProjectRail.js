@@ -12,7 +12,7 @@ import { getOwnerHref, getProjectIcon, getProjectImage } from "./discoverHelpers
 
 const PREVIEW_EDGE_GUARD_PX = 76;
 
-export function ProjectStatDownloads({ project, useWeekly = false }) {
+export function ProjectStatDownloads({ project }) {
 	return (
 		<div className="new-stat" style={{ fontWeight: "400" }}>
 			<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-download-icon lucide-download">
@@ -21,12 +21,12 @@ export function ProjectStatDownloads({ project, useWeekly = false }) {
 				<path d="m7 10 5 5 5-5"/>
 			</svg>
 
-			<DownloadCount value={useWeekly ? project.weekly_downloads : project.downloads} />
+			<DownloadCount value={project.downloads} />
 		</div>
 	);
 }
 
-function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = false, imageLoading = "lazy" }) {
+function ProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" }) {
 	const locale = useLocale();
 	const tProjectCard = useTranslations("ProjectCard");
 	const relativeNow = new Date();
@@ -131,7 +131,7 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 							<path d="m7 10 5 5 5-5"/>
 						</svg>
 
-						<DownloadCount value={useWeeklyDownloads ? project.weekly_downloads : project.downloads} />
+						<DownloadCount value={project.downloads} />
 					</div>
 
 					{relativeDate && (
@@ -165,14 +165,14 @@ function ProjectCardContent({ project, tCategoryLabels, useWeeklyDownloads = fal
 	);
 }
 
-function DiscoverProjectCard({ project, tCategoryLabels, useWeeklyDownloads = false, onPreviewOpen }) {
+function DiscoverProjectCard({ project, tCategoryLabels, onPreviewOpen }) {
 	const openPreview = (event) => {
-		onPreviewOpen(project, event.currentTarget, useWeeklyDownloads);
+		onPreviewOpen(project, event.currentTarget);
 	};
 
 	return (
 		<article className="discover-project-card" onMouseEnter={openPreview} onFocus={openPreview}>
-			<ProjectCardContent project={project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={useWeeklyDownloads} />
+			<ProjectCardContent project={project} tCategoryLabels={tCategoryLabels} />
 		</article>
 	);
 }
@@ -194,12 +194,12 @@ function DiscoverProjectCardPreview({ preview, tCategoryLabels }) {
 				width: `${preview.width}px`,
 			}}
 		>
-			<ProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={preview.useWeeklyDownloads} imageLoading="eager" />
+			<ProjectCardContent project={preview.project} tCategoryLabels={tCategoryLabels} imageLoading="eager" />
 		</article>
 	);
 }
 
-export default function DiscoverProjectRail({ title, titleIcon = null, projects, t, tCategoryLabels, viewAllHref, useWeeklyDownloads = false }) {
+export default function DiscoverProjectRail({ title, titleIcon = null, projects, t, tCategoryLabels, viewAllHref }) {
 	const shellRef = useRef(null);
 	const scrollerRef = useRef(null);
 	const hasUserInteractedRef = useRef(false);
@@ -264,7 +264,7 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 		window.clearTimeout(closePreviewTimerRef.current);
 	}, []);
 
-	const openPreview = (project, cardNode, cardUsesWeeklyDownloads) => {
+	const openPreview = (project, cardNode) => {
 		const shell = shellRef.current;
 		if(!shell || !cardNode) {
 			return;
@@ -283,7 +283,6 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 
 		setPreview({
 			project,
-			useWeeklyDownloads: cardUsesWeeklyDownloads,
 			left: cardRect.left - shellRect.left,
 			top: cardRect.top - shellRect.top,
 			width: cardRect.width,
@@ -373,7 +372,7 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 
 				<div ref={scrollerRef} className="discover-project-rail">
 					{projects.map((project) => (
-						<DiscoverProjectCard key={project.id || project.slug} project={project} tCategoryLabels={tCategoryLabels} useWeeklyDownloads={useWeeklyDownloads} onPreviewOpen={openPreview} />
+						<DiscoverProjectCard key={project.id || project.slug} project={project} tCategoryLabels={tCategoryLabels} onPreviewOpen={openPreview} />
 					))}
 				</div>
 
