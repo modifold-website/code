@@ -41,7 +41,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
                     {labels.description}
                 </Link>
 
-				<Link href={`${baseProjectPath}/settings/disclosures`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/disclosures`) ? "sidebar-item--active" : ""}`} data-ripple>
+				<Link href={`${baseProjectPath}/settings/details`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/details`) ? "sidebar-item--active" : ""}`} data-ripple>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-list-collapse-icon lucide-list-collapse">
 						<path d="M10 5h11"/>
 						<path d="M10 12h11"/>
