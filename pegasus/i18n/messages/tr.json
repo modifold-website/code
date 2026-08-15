@@ -386,6 +386,46 @@
     "exploreMods": "Modları keşfet",
     "dashboardCta": "Kontrol paneline git",
     "loginCta": "Giriş yap",
+    "discovery": {
+      "badge": "Keşfet",
+      "title": "Topluluğun neler oynadığını görün",
+      "lead": "Popüler projelerden, yakın zamanda güncellenen sürümlerden veya oyun tarzınıza uygun bir kategoriden başlayın.",
+      "popularTitle": "Bu hafta popüler",
+      "updatedTitle": "Yakın zamanda güncellendi"
+    },
+    "playerTools": {
+      "badge": "Oyuncular için tasarlandı",
+      "title": "Uyumlu projeleri daha hızlı bulun",
+      "lead": "Projeler oyun sürümüne ve kategoriye göre filtrelenebilir ve sürüm güncellemeleri için takip edilebilir.",
+      "versionsTitle": "Hytale sürümünüzü seçin",
+      "versionsText": "Yalnızca oyun sürümünüzü destekleyen projeler gösterilir.",
+      "filtersTitle": "Kullanışlı filtreler ve kategoriler",
+      "filtersText": "Sonuçlar kategoriye, popülerliğe, yayın tarihine veya son güncellemeye göre daraltılabilir.",
+      "updatesTitle": "Yeni sürümleri takip edin",
+      "updatesText": "Projeleri ve üreticileri takip ettiğinizde yeni bir sürüm yayınlanınca bildirim alırsınız.",
+      "notificationTitle": "Yeni bir sürüm hazır",
+      "notificationText": "Takip ettiğiniz proje güncellendi"
+    },
+    "safety": {
+      "badge": "Güvenliğinizi koruyoruz",
+      "title": "Her dosya moderasyondan geçer",
+      "lead": "Sistemlerimiz yüklenen her dosyayı inceler. Gerçek bir moderatör sonuçları değerlendirir ve yayınlama ya da reddetme kararını verir.",
+		"cta": "İçerik kurallarımızı okuyun",
+		"queuedTitle": "Sürüm moderasyona gönderildi",
+		"reviewingTitle": "Bir moderatör sürümü inceliyor",
+		"publishedTitle": "Sürüm yayınlandı",
+		"uploadedLabel": "Yüklendi",
+		"animationLabel": "Gösterim"
+    },
+    "openSource": {
+      "badge": "Açık platform",
+      "title": "Açık kaynak ve herkes için bir API",
+      "lead": "Modifold açık olarak geliştiriliyor. Araçlar, entegrasyonlar ve topluluk içeriğini keşfetmenin yeni yollarını oluşturmak için belgelenmiş API'mizi kullanın.",
+      "docsCta": "API belgelerini oku",
+      "sourceCta": "Kaynak kodunu görüntüle",
+      "apiLabel": "Herkese açık API",
+      "codeLabel": "Herkese açık API yanıt örneği"
+    },
     "statsTitle": "Birlikte büyüyoruz: Topluluktan {count}+ mod",
     "searchPlaceholder": "Modları ada göre ara",
     "noProjects": "Proje bulunamadı",
@@ -410,8 +450,8 @@
     },
     "creatorSection": {
       "badge": "Üreticiler için",
-      "title": "Üretimlerinizi toplulukla paylaşın",
-      "lead": "Modifold, üreticilere yayınlama, proje sunumu, ekip çalışması ve topluluk iletişimi için pratik araçlar sunar."
+      "title": "Projelerinizi yayınlayın ve yönetin",
+      "lead": "Proje sayfası oluşturun, sürümler ekleyin, desteklenen oyun sürümlerini seçin, ekibinizle çalışın ve gerçek kullanımı takip edin. Ve çok daha fazlası!"
     },
     "creatorCards": {
       "team": {
@@ -420,7 +460,7 @@
       },
       "versions": {
         "title": "Esnek sürümler",
-        "description": "Sürümleri kanallar, oyun sürümü desteği ve loader'larla yayınlayın; oyuncular uyumlu modları hızla bulsun."
+        "description": "Sürümleri kanallar ve oyun sürümü desteğiyle yayınlayın; oyuncular uyumlu modları hızla bulsun."
       },
       "pages": {
         "title": "Zengin proje sayfaları",

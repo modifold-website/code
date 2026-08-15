@@ -386,6 +386,46 @@
     "exploreMods": "Explore mods",
     "dashboardCta": "Dashboard",
     "loginCta": "Sign in",
+    "discovery": {
+      "badge": "Discover",
+      "title": "See what the community is playing",
+      "lead": "Start with popular projects, recently updated releases, or a category that matches your playstyle.",
+      "popularTitle": "Popular this week",
+      "updatedTitle": "Recently updated"
+    },
+    "playerTools": {
+      "badge": "Built for players",
+      "title": "Find compatible projects faster",
+      "lead": "Projects can be filtered by game version and category, then followed for release updates.",
+      "versionsTitle": "Choose your Hytale version",
+      "versionsText": "Only projects that support your game version are shown.",
+      "filtersTitle": "Useful filters and categories",
+      "filtersText": "Results can be narrowed by category, popularity, publication date, or latest update.",
+      "updatesTitle": "Follow new releases",
+      "updatesText": "Following projects and creators notifies you when a new version is published.",
+      "notificationTitle": "A new version is available",
+      "notificationText": "Your followed project was updated"
+    },
+    "safety": {
+      "badge": "Keeping you safe",
+      "title": "Every file goes through moderation",
+      "lead": "Our systems inspect every uploaded file. A real moderator reviews the results and makes the final publish or reject decision.",
+		"cta": "Read our content rules",
+		"queuedTitle": "Version sent for moderation",
+		"reviewingTitle": "A moderator is reviewing the version",
+		"publishedTitle": "Version published",
+		"uploadedLabel": "Uploaded",
+		"animationLabel": "Demonstration"
+    },
+    "openSource": {
+      "badge": "Open platform",
+      "title": "Open source, with an API for everyone",
+      "lead": "Modifold is developed in the open. Use our documented API to build tools, integrations, and new ways to explore community content.",
+      "docsCta": "Read the API docs",
+      "sourceCta": "View source code",
+      "apiLabel": "Public API",
+      "codeLabel": "Public API response example"
+    },
     "statsTitle": "Growing together: {count}+ community mods",
     "searchPlaceholder": "Search mods by name",
     "noProjects": "No projects found",
@@ -410,8 +450,8 @@
     },
     "creatorSection": {
       "badge": "For creators",
-      "title": "Share creations with the community",
-      "lead": "Modifold gives creators practical tools for publishing, presentation, teamwork, and communication with their audience."
+      "title": "Publish and manage your projects",
+      "lead": "Create a project page, add releases, choose supported game versions, work with a team, and follow real usage. There’s a lot you can do!"
     },
     "creatorCards": {
       "team": {
@@ -420,7 +460,7 @@
       },
       "versions": {
         "title": "Flexible versions",
-        "description": "Publish releases with channels, game version support, and loaders so players can quickly find compatible mods."
+        "description": "Publish releases with channels and game version support so players can quickly find compatible mods."
       },
       "pages": {
         "title": "Rich project pages",

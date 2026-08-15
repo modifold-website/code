@@ -386,6 +386,46 @@
     "exploreMods": "Explorar mods",
     "dashboardCta": "Ir para o painel de controle",
     "loginCta": "Entrar",
+    "discovery": {
+      "badge": "Descobrir",
+      "title": "Veja o que a comunidade está jogando",
+      "lead": "Comece por projetos populares, lançamentos atualizados recentemente ou uma categoria que combine com seu estilo.",
+      "popularTitle": "Popular nesta semana",
+      "updatedTitle": "Atualizados recentemente"
+    },
+    "playerTools": {
+      "badge": "Feito para jogadores",
+      "title": "Encontre projetos compatíveis mais rápido",
+      "lead": "Os projetos podem ser filtrados por versão e categoria e acompanhados para receber atualizações de lançamentos.",
+      "versionsTitle": "Escolha sua versão do Hytale",
+      "versionsText": "Apenas projetos compatíveis com a sua versão do jogo são exibidos.",
+      "filtersTitle": "Filtros e categorias úteis",
+      "filtersText": "Os resultados podem ser filtrados por categoria, popularidade, data de publicação ou última atualização.",
+      "updatesTitle": "Acompanhe novos lançamentos",
+      "updatesText": "Ao seguir projetos e criadores, você recebe avisos quando uma nova versão é publicada.",
+      "notificationTitle": "Uma nova versão está disponível",
+      "notificationText": "Um projeto que você segue foi atualizado"
+    },
+    "safety": {
+      "badge": "Cuidando da sua segurança",
+      "title": "Cada arquivo passa por moderação",
+      "lead": "Nossos sistemas inspecionam cada arquivo enviado. Um moderador real revisa os resultados e toma a decisão final de publicar ou rejeitar.",
+		"cta": "Ler nossas regras de conteúdo",
+		"queuedTitle": "Versão enviada para moderação",
+		"reviewingTitle": "Um moderador está revisando a versão",
+		"publishedTitle": "Versão publicada",
+		"uploadedLabel": "Enviado",
+		"animationLabel": "Demonstração"
+    },
+    "openSource": {
+      "badge": "Plataforma aberta",
+      "title": "Código aberto e uma API para todos",
+      "lead": "O Modifold é desenvolvido de forma aberta. Use nossa API documentada para criar ferramentas, integrações e novas formas de explorar o conteúdo da comunidade.",
+      "docsCta": "Ver documentação da API",
+      "sourceCta": "Ver código-fonte",
+      "apiLabel": "API pública",
+      "codeLabel": "Exemplo de resposta da API pública"
+    },
     "statsTitle": "Crescendo juntos: {count}+ mods da comunidade",
     "searchPlaceholder": "Pesquisar mods por nome",
     "noProjects": "Nenhum projeto encontrado",
@@ -410,8 +450,8 @@
     },
     "creatorSection": {
       "badge": "Para criadores",
-      "title": "Compartilhe criações com a comunidade",
-      "lead": "O Modifold oferece aos criadores ferramentas práticas para publicar, apresentar projetos, colaborar em equipe e se comunicar com a audiência."
+      "title": "Publique e gerencie seus projetos",
+      "lead": "Crie uma página de projeto, adicione lançamentos, escolha versões compatíveis, trabalhe em equipe e acompanhe o uso real. E muito mais!"
     },
     "creatorCards": {
       "team": {
@@ -420,7 +460,7 @@
       },
       "versions": {
         "title": "Versões flexíveis",
-        "description": "Publique versões com canais, suporte a versões do jogo e loaders para que os jogadores encontrem mods compatíveis rapidamente."
+        "description": "Publique versões com canais e suporte a versões do jogo para que os jogadores encontrem mods compatíveis rapidamente."
       },
       "pages": {
         "title": "Páginas de projeto completas",
