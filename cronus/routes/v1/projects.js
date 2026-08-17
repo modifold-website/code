@@ -574,12 +574,11 @@ const sanitizeUploadFilenameStem = (value) => {
 };
 
 const buildSafeUploadFilename = (originalname) => {
-    const parsed = path.parse(path.basename(String(originalname || "")));
-    const safeBaseName = sanitizeUploadFilenameStem(parsed.name);
-    const safeExtension = sanitizeUploadFilenameStem(parsed.ext.replace(/^\./, "")).toLowerCase();
-    const uniqueSuffix = crypto.randomBytes(4).toString("hex");
+	const parsed = path.parse(path.basename(String(originalname || "")));
+	const safeBaseName = sanitizeUploadFilenameStem(parsed.name);
+	const safeExtension = sanitizeUploadFilenameStem(parsed.ext.replace(/^\./, "")).toLowerCase();
 
-    return safeExtension ? `${safeBaseName}_${uniqueSuffix}.${safeExtension}` : `${safeBaseName}_${uniqueSuffix}`;
+	return safeExtension ? `${safeBaseName}.${safeExtension}` : safeBaseName;
 };
 
 const fileFilter = (req, file, cb) => {
