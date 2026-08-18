@@ -5359,7 +5359,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 .browse-view-toggle__item.is-active {
 	color: var(--theme-color-text-primary);
-    background: var(--theme-color-background-content);
+    background: var(--theme-color-button-secondary);
     box-shadow: var(--theme-color-button-secondary-shadow);
 }
 .version-item:not(.selected):hover {
