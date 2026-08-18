@@ -3906,7 +3906,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem;
+    padding-top: 4rem;
+    padding-right: 2rem;
+    padding-left: 2rem;
 }
 .hero-container {
     position: relative;
@@ -3923,12 +3925,20 @@ input[type="file"]::-webkit-file-upload-button:hover {
     width: 150px;
     height: auto;
     margin: 0 auto 16px;
+    color: #307DF0;
 }
 .hero-title {
-    margin-bottom: 26px;
+	margin-bottom: 26px;
     font-size: 84px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.08;
+}
+.hero-title__wordmark {
+    display: inline-block;
+	color: #307df0;
+    vertical-align: -0.31em;
+    width: auto;
+    height: 88px;
 }
 .text-reveal__line {
     display: block;
@@ -7202,6 +7212,10 @@ body.dark .home-api-code__token--string {
     .hero-title {
         font-size: 36px;
     }
+	.hero-title__wordmark {
+		vertical-align: -0.33em;
+        height: 40px;
+	}
     .hero-description {
         font-size: 20px;
     }

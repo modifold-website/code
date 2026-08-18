@@ -379,11 +379,11 @@
     "message": "The link is missing, moved, or deleted."
   },
   "HomePage": {
-    "title": "The home for your Hytale mods — Modifold",
-    "description": "Explore the Hytale modding scene, play what the community builds, and share your own work with the world.",
-    "heroTitle": "The home for your {hytale} mods",
-    "heroDescription": "Explore the Hytale modding scene, play what the community builds, and share your own work with the world.",
-    "exploreMods": "Explore mods",
+    "title": "Modifold — Hytale mods start here",
+    "description": "Find mods, discover community projects, and share your own creations.",
+    "heroTitle": "{hytale} mods start here",
+    "heroDescription": "Find mods, discover community projects, and share your own creations.",
+    "exploreMods": "Discover mods",
     "dashboardCta": "Dashboard",
     "loginCta": "Sign in",
     "discovery": {

@@ -379,10 +379,10 @@
     "message": "Bağlantı yok, taşınmış ya da silinmiş."
   },
   "HomePage": {
-    "title": "Hytale modlarınız için bir yuva - Modifold",
-    "description": "Hytale modlama sahnesini keşfedin, topluluğun ürettiklerini oynayın ve kendi çalışmalarınızı dünyayla paylaşın.",
-    "heroTitle": "{hytale} modlarınız için bir yuva",
-    "heroDescription": "Hytale modlama sahnesini keşfedin, topluluğun ürettiklerini oynayın ve kendi çalışmalarınızı dünyayla paylaşın.",
+    "title": "Modifold — Hytale modları burada başlıyor",
+    "description": "Modları bulun, topluluk projelerini keşfedin ve kendi eserlerinizi paylaşın.",
+    "heroTitle": "{hytale} modları burada başlıyor",
+    "heroDescription": "Modları bulun, topluluk projelerini keşfedin ve kendi eserlerinizi paylaşın.",
     "exploreMods": "Modları keşfet",
     "dashboardCta": "Kontrol paneline git",
     "loginCta": "Giriş yap",
