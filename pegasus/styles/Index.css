@@ -4679,6 +4679,13 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	pointer-events: auto;
 	transform: translateY(-24px) scale(1.06);
 }
+.discover-project-card:has(a:active) {
+	transform: scale(.95);
+	transition: transform .05s ease-in-out;
+}
+.discover-project-card--preview:has(a:active) {
+	transform: translateY(-24px) scale(1.03);
+}
 .discover-project-card--preview.is-closing {
 	opacity: 0;
 	pointer-events: none;
@@ -7111,16 +7118,12 @@ body.dark .home-api-code__token--string {
     box-shadow: var(--theme-shadow-popover);
 }
 .unsaved-changes-bar-enter-active {
-	transition:
-		transform 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96),
-		opacity 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96);
+	transition: transform 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96), opacity 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96);
 	will-change: transform, opacity;
 }
 .unsaved-changes-bar-leave-active {
 	pointer-events: none;
-	transition:
-		transform 0.2s ease,
-		opacity 0.2s ease;
+	transition: transform 0.2s ease, opacity 0.2s ease;
 	will-change: transform, opacity;
 }
 .unsaved-changes-bar-enter-from {
