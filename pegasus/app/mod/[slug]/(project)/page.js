@@ -12,6 +12,7 @@ export async function generateMetadata({ params }) {
     const projectTypeTitle = getProjectTypeTitle(project.project_type);
     const summary = project.summary || "";
     const description = summary.length > 160 ? `${summary.substring(0, 157)}...` : summary;
+    const iconImage = project.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
 
     return {
         title: `${project.title} — ${projectTypeTitle} — Modifold`,
@@ -28,9 +29,7 @@ export async function generateMetadata({ params }) {
             description,
             images: [
                 {
-                    url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
-                    width: 1200,
-                    height: 630,
+                    url: iconImage,
                     alt: `${project.title} ${projectTypeTitle}`,
                 },
             ],
@@ -39,10 +38,10 @@ export async function generateMetadata({ params }) {
             locale: "en_US",
         },
         twitter: {
-            card: "summary_large_image",
+            card: "summary",
             title: `${project.title} — ${projectTypeTitle} — Modifold`,
             description,
-            images: [project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"],
+            images: [iconImage],
         },
     };
 }
