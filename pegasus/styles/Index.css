@@ -3906,7 +3906,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4rem 2rem;
+    padding-top: 4rem;
+    padding-right: 2rem;
+    padding-left: 2rem;
 }
 .hero-container {
     position: relative;
@@ -3923,12 +3925,20 @@ input[type="file"]::-webkit-file-upload-button:hover {
     width: 150px;
     height: auto;
     margin: 0 auto 16px;
+    color: #307DF0;
 }
 .hero-title {
-    margin-bottom: 26px;
+	margin-bottom: 26px;
     font-size: 84px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.08;
+}
+.hero-title__wordmark {
+    display: inline-block;
+	color: #307df0;
+    vertical-align: -0.31em;
+    width: auto;
+    height: 88px;
 }
 .text-reveal__line {
     display: block;
@@ -4669,6 +4679,13 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	pointer-events: auto;
 	transform: translateY(-24px) scale(1.06);
 }
+.discover-project-card:has(a:active) {
+	transform: scale(.95);
+	transition: transform .05s ease-in-out;
+}
+.discover-project-card--preview:has(a:active) {
+	transform: translateY(-24px) scale(1.03);
+}
 .discover-project-card--preview.is-closing {
 	opacity: 0;
 	pointer-events: none;
@@ -5342,7 +5359,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
 }
 .browse-view-toggle__item.is-active {
 	color: var(--theme-color-text-primary);
-    background: var(--theme-color-background-content);
+    background: var(--theme-color-button-secondary);
     box-shadow: var(--theme-color-button-secondary-shadow);
 }
 .version-item:not(.selected):hover {
@@ -7101,16 +7118,12 @@ body.dark .home-api-code__token--string {
     box-shadow: var(--theme-shadow-popover);
 }
 .unsaved-changes-bar-enter-active {
-	transition:
-		transform 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96),
-		opacity 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96);
+	transition: transform 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96), opacity 0.25s cubic-bezier(0.15, 1.4, 0.64, 0.96);
 	will-change: transform, opacity;
 }
 .unsaved-changes-bar-leave-active {
 	pointer-events: none;
-	transition:
-		transform 0.2s ease,
-		opacity 0.2s ease;
+	transition: transform 0.2s ease, opacity 0.2s ease;
 	will-change: transform, opacity;
 }
 .unsaved-changes-bar-enter-from {
@@ -7202,6 +7215,10 @@ body.dark .home-api-code__token--string {
     .hero-title {
         font-size: 36px;
     }
+	.hero-title__wordmark {
+		vertical-align: -0.33em;
+        height: 40px;
+	}
     .hero-description {
         font-size: 20px;
     }

@@ -24,6 +24,26 @@ function formatNewsDate(dateString, locale) {
 	return date.toLocaleDateString(locale, options);
 }
 
+function HytaleWordmark() {
+	return (
+		<svg className="hero-title__wordmark" viewBox="0 0 195 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+			<g clipPath="url(#hytale-wordmark-clip)">
+				<path d="M178.098 34.7872H185.799L188.634 27.0993H178.098V22.527H191.442L194.929 13.0466L168.465 13.0811V48.8069H193.883V39.3265H178.098V34.7872Z" fill="currentColor"/>
+				<path d="M153.143 38.3219V13.0825H139.562L141.764 17.1769V48.8069H167.11L163.191 38.3219H153.143Z" fill="currentColor"/>
+				<path d="M129.722 13.0781L110.737 13.1154L112.202 15.8594L99.9688 48.8068H111.531L113.213 44.1068H126.896L128.77 48.8068H140.343L128.207 15.8637L129.724 13.0781H129.722ZM116.495 34.6264L120.163 24.041L123.876 34.6264H116.494H116.495Z" fill="currentColor"/>
+				<path d="M106.189 13.0781H67.1448L60.25 27.9029L53.3567 13.0781L53.3394 13.1327L53.3163 13.0781H41.8438L54.4243 40.4343L50.4972 48.8757H62.4156L75.8401 19.9896L77.2353 23.4196L83.8011 23.4224V48.8958H95.6185V23.4196H102.205L106.189 13.0781Z" fill="currentColor"/>
+				<path d="M28.1882 -0.008584V22.5141L18.571 22.4912L18.3806 -0.0458984L-0.015625 2.62198L5.84762 13.4342L5.85338 49.2561L18.5191 58.4179L18.5263 33.3277L28.0151 33.3665V68.501L40.6173 59.3794V13.4456L46.4964 2.65069L28.1882 -0.008584Z" fill="currentColor"/>
+			</g>
+
+			<defs>
+				<clipPath id="hytale-wordmark-clip">
+					<rect width="194.912" height="69.4596" fill="currentColor"/>
+				</clipPath>
+			</defs>
+		</svg>
+	);
+}
+
 export default function HomePage({ news = [], locale, discoverData = null, authToken = null }) {
 	const t = useTranslations("HomePage");
 	const tDiscover = useTranslations("DiscoverPage");
@@ -38,6 +58,7 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 	const popularCategories = discoverData?.popularCategories || [];
 	const hytaleToken = "__HYTALE__";
 	const heroTitle = t("heroTitle", { hytale: hytaleToken });
+	const heroTitleLabel = t("heroTitle", { hytale: "Hytale" });
 	const [heroTitleBefore, heroTitleAfter] = heroTitle.split(hytaleToken);
 	const heroHasToken = heroTitle.includes(hytaleToken);
 
@@ -64,23 +85,15 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 				<section className="hero-section">
 					<div className="hero-container">
 						<div className="hero-content animated">
-							<svg className="hero-logo" xmlns="http://www.w3.org/2000/svg" width="86" height="85" viewBox="0 0 86 85" fill="none" aria-hidden="true">
-								<path d="M0 36.788C0 6.493 6.5 0 36.829 0h11.437c30.328 0 36.828 6.493 36.828 36.788v11.424C85.094 78.507 78.594 85 48.266 85H36.829C6.5 85 0 78.507 0 48.212z" fill="url(#home-logo-gradient)"/>
-								<path d="m42.139 9.289.616-.167.616.167L71.62 25.83c.375.22.606.623.606 1.058v31.404c0 .438-.233.843-.611 1.062L43.366 75.714a1.22 1.22 0 0 1-1.222 0L13.894 59.354a1.225 1.225 0 0 1-.611-1.062V26.888c0-.435.231-.838.606-1.058zM16.54 28.024v29.137l26.215 15.229L68.97 57.161V28.024L42.755 12.606zM65.958 29.532v26.215L42.755 68.996 19.552 55.747V29.532l23.203-13.531zM22.637 54.191l18.896 10.844V43.63L22.637 32.879zm21.622-10.53v21.28l18.802-10.781V32.786zM39.559 57.774v3.411l-2.821-1.619v-3.395zm9.4 1.792-2.82 1.619v-3.411l2.82-1.603zm-21.433-8.581v3.395l-2.915-1.603v-3.395zm33.561 1.792-2.915 1.603v-3.395l2.915-1.603zM34.482 46.082v6.317l-5.264-2.923v-6.318zm21.998 3.394-5.264 2.923v-6.317l5.264-2.924zM39.653 45.233v3.583l-2.915-1.603V43.63zm9.306 1.98-2.914 1.603v-3.583l2.914-1.603zM27.526 38.632v3.395l-2.915-1.603V37.03zm33.561 1.792-2.915 1.603v-3.395l2.915-1.603z" fill="white"/>
-								<defs>
-									<linearGradient id="home-logo-gradient" x1="0" y1="0" x2="85" y2="85" gradientUnits="userSpaceOnUse">
-										<stop stopColor="#68A5FF"/>
-										<stop offset=".5" stopColor="#307DF0"/>
-										<stop offset="1" stopColor="#307DF0"/>
-									</linearGradient>
-								</defs>
+							<svg className="hero-logo" width="710" height="802" viewBox="0 0 710 802" fill="none" xmlns="http://www.w3.org/2000/svg">
+								<path d="M347.578 2.0083C352.164 -0.669477 357.835 -0.669387 362.421 2.0083L702.7 200.728C707.22 203.368 710 208.209 710 213.446V590.725C710 595.988 707.193 600.85 702.638 603.481L362.36 800.027C357.805 802.657 352.193 802.658 347.639 800.027L7.36041 603.481C2.80578 600.85 0 595.988 0 590.725V213.446C0.000100346 208.209 2.77944 203.368 7.29959 200.728L347.578 2.0083ZM39.2283 227.081V577.138L355.002 760.096L670.775 577.138V227.081L355.002 41.8568L39.2283 227.081ZM634.49 245.207V560.145L355.002 719.313L75.5127 560.145V245.207L355.002 82.6402L634.49 245.207ZM112.673 541.452L340.28 671.732V414.571L112.673 285.424V541.452ZM373.118 414.946V670.6L599.593 541.084V284.291L373.118 414.946ZM316.5 584.505V625.48L282.529 606.029V565.246L316.5 584.505ZM429.737 606.028L395.766 625.479V584.504L429.737 565.245V606.028ZM171.556 502.938V543.722L136.453 524.463V483.679L171.556 502.938ZM575.813 524.462L540.709 543.72V502.937L575.813 483.678V524.462ZM255.352 444.029V519.931L191.939 484.812V408.91L255.352 444.029ZM520.327 484.811L456.914 519.93V444.028L520.327 408.909V484.811ZM317.632 433.833V476.882L282.529 457.623V414.574L317.632 433.833ZM429.737 457.622L394.634 476.881V433.832L429.737 414.573V457.622ZM171.556 354.532V395.315L136.453 376.057V335.273L171.556 354.532ZM575.813 376.056L540.709 395.314V354.531L575.813 335.272V376.056Z" fill="currentColor"/>
 							</svg>
 
-							<h1 className="hero-title">
+							<h1 className="hero-title" aria-label={heroTitleLabel}>
 								{heroHasToken ? (
 									<>
 										{heroTitleBefore}
-										<span className="highlight-text">Hytale</span>
+										<HytaleWordmark/>
 										{heroTitleAfter}
 									</>
 								) : heroTitle}

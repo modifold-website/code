@@ -379,11 +379,11 @@
     "message": "El enlace no existe, fue movido o eliminado."
   },
   "HomePage": {
-    "title": "El hogar de tus mods de Hytale — Modifold",
-    "description": "Explora la escena de mods de Hytale, juega lo que crea la comunidad y comparte tu propio trabajo con el mundo.",
-    "heroTitle": "El hogar de tus mods de {hytale}",
-    "heroDescription": "Explora la escena de mods de Hytale, juega lo que crea la comunidad y comparte tu propio trabajo con el mundo.",
-    "exploreMods": "Explorar mods",
+    "title": "Modifold — Los mods de Hytale empiezan aquí",
+    "description": "Encuentra mods, descubre proyectos de la comunidad y comparte tus propias creaciones.",
+    "heroTitle": "Los mods de {hytale} empiezan aquí",
+    "heroDescription": "Encuentra mods, descubre proyectos de la comunidad y comparte tus propias creaciones.",
+    "exploreMods": "Descubrir mods",
     "dashboardCta": "Ir al panel de control",
     "loginCta": "Iniciar sesión",
     "discovery": {

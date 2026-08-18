@@ -118,8 +118,6 @@ export default async function RootLayout({ children }) {
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="theme-color" content="#3b82f6" />
                 <meta property="og:site_name" content="Modifold" />
-                <meta property="og:image:width" content="600" />
-                <meta property="og:image:height" content="315" />
                 <meta property="og:type" content="website" />
                 <meta property="robots" content="all" />
 
