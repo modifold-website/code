@@ -279,6 +279,10 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
             availableCodes.add("hytalemodjam_2026");
         }
 
+        if(achievementCodes.has("hytalemodding")) {
+            availableCodes.add("hytalemodding");
+        }
+
         if(achievementCodes.has("hytale_linked")) {
             availableCodes.add("hytale_linked");
         }

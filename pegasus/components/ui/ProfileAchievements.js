@@ -3,6 +3,12 @@
 import { useLocale, useTranslations } from "next-intl";
 import Tooltip from "@/components/ui/Tooltip";
 
+// WIP
+const ACHIEVEMENT_LINKS = {
+    hytalemodjam_2026: "https://hytalemodjam.com/submissions?modjam=hm-26.2",
+    hytalemodding: "https://hytalemodding.dev/",
+};
+
 const getDateFormatOptions = (date) => {
     const now = new Date();
     const options = {
@@ -80,14 +86,15 @@ export default function ProfileAchievements({ achievements = [], isBanned = fals
                 {visibleAchievements.map((achievement) => {
                     const title = getAchievementTitle(achievement);
                     const iconUrl = achievement.icon_url || "/badges/creator.webp";
+                    const achievementUrl = ACHIEVEMENT_LINKS[achievement.code] || null;
                     const achievementIcon = (
                         <img src={iconUrl} alt={title} width="56" height="56" />
                     );
 
                     return (
                         <Tooltip key={achievement.id || achievement.code} content={getAchievementTooltip(achievement)}>
-                            {achievement.code === "hytalemodjam_2026" ? (
-                                <a className="subsite-achievements__item subsite-achievements__item--link" href="https://hytalemodjam.com/submissions?modjam=hm-26.2" target="_blank" rel="noopener noreferrer" aria-label={title}>
+                            {achievementUrl ? (
+                                <a className="subsite-achievements__item subsite-achievements__item--link" href={achievementUrl} target="_blank" rel="noopener noreferrer" aria-label={title}>
                                     {achievementIcon}
                                 </a>
                             ) : (
