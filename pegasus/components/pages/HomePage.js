@@ -223,6 +223,11 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 
 				<section className="home-safety-section">
 					<div className="home-safety-upload-demo" role="img" aria-label={t("safety.animationLabel")}>
+						<span className="home-api-showcase__marker home-api-showcase__marker--top-left" aria-hidden="true"/>
+						<span className="home-api-showcase__marker home-api-showcase__marker--bottom-left" aria-hidden="true"/>
+						<span className="home-api-showcase__marker home-api-showcase__marker--top-right" aria-hidden="true"/>
+						<span className="home-api-showcase__marker home-api-showcase__marker--bottom-right" aria-hidden="true"/>
+						
 						<svg className="home-safety-upload-demo__animation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 310" fill="none" aria-hidden="true">
 							<g className="home-safety-upload-demo__target" transform="translate(280 110)">
 								<g className="home-safety-upload-demo__upload-target">
