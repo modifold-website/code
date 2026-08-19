@@ -40,6 +40,8 @@ export default function ClientProvider({ children }) {
         const queryString = searchParams.toString();
         const location = queryString ? `${pathname}?${queryString}` : pathname;
         const isInitialLocation = previousLocationRef.current === null;
+        const previousPathname = previousLocationRef.current?.split("?")[0] || null;
+        const pathnameChanged = previousPathname !== null && previousPathname !== pathname;
 
         if(previousLocationRef.current === location) {
             return;
@@ -53,6 +55,10 @@ export default function ClientProvider({ children }) {
 
         if(isPopstateRef.current) {
             isPopstateRef.current = false;
+            return;
+        }
+
+        if(!pathnameChanged) {
             return;
         }
 
