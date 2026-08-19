@@ -25,6 +25,7 @@ export default function ClientProvider({ children }) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const isPopstateRef = useRef(false);
+    const previousLocationRef = useRef(null);
 
     useEffect(() => {
         const handlePopState = () => {
@@ -36,6 +37,20 @@ export default function ClientProvider({ children }) {
     }, []);
 
     useEffect(() => {
+        const queryString = searchParams.toString();
+        const location = queryString ? `${pathname}?${queryString}` : pathname;
+        const isInitialLocation = previousLocationRef.current === null;
+
+        if(previousLocationRef.current === location) {
+            return;
+        }
+
+        previousLocationRef.current = location;
+
+        if(isInitialLocation) {
+            return;
+        }
+
         if(isPopstateRef.current) {
             isPopstateRef.current = false;
             return;
