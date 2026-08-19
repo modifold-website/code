@@ -6135,14 +6135,13 @@ body.light .home-creator-tool {
 }
 .home-safety-upload-demo {
 	--home-upload-duration: 10s;
+    position: relative;
 	display: grid;
 	grid-template-rows: 270px;
 	align-self: center;
 	width: 100%;
 	min-width: 0;
-	border: 2px dashed var(--theme-sidebar-separator-color-background);
-    background: var(--theme-color-background);
-	border-radius: 26px;
+    background: var(--theme-color-background-content);
 }
 .home-safety-upload-demo__animation {
 	display: block;
@@ -6162,7 +6161,7 @@ body.light .home-creator-tool {
 	animation: home-safety-upload-target var(--home-upload-duration) ease-in-out infinite;
 }
 .home-safety-upload-demo__target-background {
-	fill: var(--theme-color-background-content);
+	fill: var(--theme-color-background);
 	stroke: none;
 }
 .home-safety-upload-demo__progress {
@@ -6216,7 +6215,7 @@ body.light .home-creator-tool {
 	animation: home-safety-dragged-file var(--home-upload-duration) cubic-bezier(.32, .72, 0, 1) infinite;
 }
 .home-safety-upload-demo__file-background {
-	fill: var(--theme-color-background-content);
+	fill: var(--theme-color-background);
 	stroke: none;
 }
 .home-safety-upload-demo__file-icon {

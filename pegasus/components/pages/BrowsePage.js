@@ -273,7 +273,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         scrollToResults();
     };
 
-    const handlePageChange = (nextPage) => {
+    const handlePageChange = (nextPage, shouldScrollToResults = false) => {
         const normalizedPage = Math.min(totalPages, Math.max(1, nextPage));
 
         if(normalizedPage === currentPage) {
@@ -281,10 +281,13 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         }
 
         setCurrentPage(normalizedPage);
-        scrollToResults();
+
+        if(shouldScrollToResults) {
+            scrollToResults();
+        }
     };
 
-    const getPageButtons = () => {
+    const getPageButtons = (shouldScrollToResults) => {
         const maxButtons = 10;
         let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
         let endPage = Math.min(totalPages, startPage + maxButtons - 1);
@@ -296,7 +299,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         const buttons = [];
         for(let i = startPage; i <= endPage; i++) {
             buttons.push(
-                <button key={i} className={`button button--size-m pagination-button ${currentPage === i ? "button--type-primary" : "button--type-secondary"}`} onClick={() => handlePageChange(i)} aria-current={currentPage === i ? "page" : undefined}>
+                <button key={i} className={`button button--size-m pagination-button ${currentPage === i ? "button--type-primary" : "button--type-secondary"}`} onClick={() => handlePageChange(i, shouldScrollToResults)} aria-current={currentPage === i ? "page" : undefined}>
                     {i}
                 </button>
             );
@@ -305,22 +308,22 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         return buttons;
     };
 
-    const renderPaginationControls = (style) => {
+    const renderPaginationControls = ({ style, shouldScrollToResults = false } = {}) => {
         if(totalPages <= 1) {
             return null;
         }
 
         return (
             <div className="pagination-controls" style={style}>
-                <button className="button button--size-m button--type-secondary button--icon-only" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} aria-disabled={currentPage === 1} aria-label={t("previous")}>
+                <button className="button button--size-m button--type-secondary button--icon-only" onClick={() => handlePageChange(currentPage - 1, shouldScrollToResults)} disabled={currentPage === 1} aria-disabled={currentPage === 1} aria-label={t("previous")}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left-icon lucide-chevron-left">
                         <path d="m15 18-6-6 6-6"/>
                     </svg>
                 </button>
 
-                {getPageButtons()}
+                {getPageButtons(shouldScrollToResults)}
 
-                <button className="button button--size-m button--type-secondary button--icon-only" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} aria-disabled={currentPage === totalPages} aria-label={t("next")}>
+                <button className="button button--size-m button--type-secondary button--icon-only" onClick={() => handlePageChange(currentPage + 1, shouldScrollToResults)} disabled={currentPage === totalPages} aria-disabled={currentPage === totalPages} aria-label={t("next")}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right-icon lucide-chevron-right">
                         <path d="m9 18 6-6-6-6"/>
                     </svg>
@@ -334,7 +337,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
             <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
-                <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ marginTop: 0, marginLeft: "auto" })} />
+                <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ style: { marginTop: 0, marginLeft: "auto" } })} />
 
                 {(selectedTags.length > 0 || selectedGameVersions.length > 0) && (
                     <div className="browse-selected-filters">
@@ -394,7 +397,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
                     </div>
                 )}
 
-                {renderPaginationControls()}
+                {renderPaginationControls({ shouldScrollToResults: true })}
             </div>
         </div>
     );
