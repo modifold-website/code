@@ -573,6 +573,9 @@
 .project-collaborator-card__author-toggle {
 	margin-bottom: 10px;
 }
+.project-collaborator-card__author-toggle:last-child {
+	margin-bottom: 0;
+}
 .project-team-settings__organization-description,
 .project-team-settings__organization-hint {
 	color: var(--theme-color-text-secondary);
