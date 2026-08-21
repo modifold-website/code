@@ -332,7 +332,8 @@ export default function GallerySettings({ project, authToken }) {
 
 	const handleUploadInputChange = (event) => {
 		const { name, value } = event.target;
-		setUploadItems((currentItems) => currentItems.map((item, index) => index === uploadIndex ? { ...item, [name]: value } : item));
+		const nextValue = name === "ordering" && value !== "" ? Math.max(0, Number.parseInt(value, 10) || 0) : value;
+		setUploadItems((currentItems) => currentItems.map((item, index) => index === uploadIndex ? { ...item, [name]: nextValue } : item));
 	};
 
 	const toggleUploadFeatured = () => {
@@ -432,7 +433,7 @@ export default function GallerySettings({ project, authToken }) {
         setEditFormData({
             title: image?.title || "",
             description: image?.description || "",
-            ordering: image?.ordering ?? 0,
+			ordering: Math.max(0, Number.parseInt(image?.ordering, 10) || 0),
             featured: Boolean(Number(image?.featured)),
         });
         setEditSelectedFile(null);
@@ -513,7 +514,8 @@ export default function GallerySettings({ project, authToken }) {
 
     const handleEditInputChange = (event) => {
         const { name, value } = event.target;
-        setEditFormData((prev) => ({ ...prev, [name]: value }));
+		const nextValue = name === "ordering" && value !== "" ? Math.max(0, Number.parseInt(value, 10) || 0) : value;
+		setEditFormData((prev) => ({ ...prev, [name]: nextValue }));
     };
 
     const toggleEditFeatured = () => {

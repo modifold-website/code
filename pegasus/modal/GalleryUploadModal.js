@@ -149,7 +149,7 @@ export default function GalleryUploadModal({ isOpen, onRequestClose, uploadLoadi
 								<p className="blog-settings__field-title">{t("gallerySettings.fields.orderOptional")}</p>
 								<div className="field field--default">
 									<label className="field__wrapper">
-										<input type="number" name="ordering" value={uploadItem.ordering} onChange={handleUploadInputChange} placeholder={t("gallerySettings.placeholders.order")} className="text-input" disabled={uploadLoading} />
+										<input type="number" name="ordering" min="0" step="1" value={uploadItem.ordering} onChange={handleUploadInputChange} placeholder={t("gallerySettings.placeholders.order")} className="text-input" disabled={uploadLoading} />
 									</label>
 								</div>
 
