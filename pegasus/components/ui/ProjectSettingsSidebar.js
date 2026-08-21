@@ -91,11 +91,11 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 
 				{canManageVersions ? (
                     <Link href={`${baseProjectPath}/settings/versions`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/versions`) ? "sidebar-item--active" : ""}`} data-ripple>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide-arrow-down-to-line-icon lucide-arrow-down-to-line">
-                            <path d="M12 17V3" />
-                            <path d="m6 11 6 6 6-6" />
-                            <path d="M19 21H5" />
-                        </svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-download-icon lucide-download">
+							<path d="M12 15V3" />
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+							<path d="m7 10 5 5 5-5" />
+						</svg>
 
                         {labels.versions}
                     </Link>
