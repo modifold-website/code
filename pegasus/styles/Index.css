@@ -376,7 +376,7 @@ svg {
     --theme-color-background-content: var(--color-white);
     --theme-color-background-content-blur: rgb(255 255 255 / 90%);
     --theme-color-background-issue-card-hover: #ffffff94;
-    --theme-color-media-background: rgb(255 255 255 / 70%);
+    --theme-color-media-background: rgb(255 255 255 / 90%);
     --theme-color-border: #f5f5f5;
     --theme-color-text-primary: var(--color-black);
     --theme-color-text-secondary: #595959;
@@ -456,7 +456,7 @@ body.dark {
     --theme-color-background-content: #232324;
     --theme-color-background-content-blur: rgb(35 35 36 / 90%);
     --theme-color-background-issue-card-hover: #232324a8;
-    --theme-color-media-background: rgb(35 35 36 / 70%);
+    --theme-color-media-background: rgb(35 35 36 / 90%);
     --theme-color-border: rgba(255, 255, 255, 0.10);
     --theme-color-link: #45a2f3;
     --theme-color-link-hover: #6cb1ff;

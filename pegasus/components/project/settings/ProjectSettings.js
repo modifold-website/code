@@ -22,7 +22,7 @@ const getInitialFormData = (project) => ({
     icon: null,
 });
 
-export default function ProjectSettings({ project, organizationOptions: initialOrganizationOptions = [] }) {
+export default function ProjectSettings({ project }) {
     const t = useTranslations("SettingsProjectPage");
     const tProject = useTranslations("ProjectPage");
     const { isLoggedIn } = useAuth();
@@ -37,17 +37,13 @@ export default function ProjectSettings({ project, organizationOptions: initialO
     const [previewIcon, setPreviewIcon] = useState("");
     const [savedPreviewIcon, setSavedPreviewIcon] = useState(project?.icon_url || "");
     const iconInputRef = useRef(null);
-    const [organizationOptions, setOrganizationOptions] = useState(() => initialOrganizationOptions);
-    const [selectedOrganizationSlug, setSelectedOrganizationSlug] = useState(project?.organization?.slug || "");
-    const [savedOrganizationSlug, setSavedOrganizationSlug] = useState(project?.organization?.slug || "");
-    const [isOrganizationMenuOpen, setIsOrganizationMenuOpen] = useState(false);
     const [isIssuesMenuOpen, setIsIssuesMenuOpen] = useState(false);
     const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
     const [isPlayersCountMenuOpen, setIsPlayersCountMenuOpen] = useState(false);
-    const projectType = project?.project_type || project?.projectType || project?.type;
+	const projectType = project?.project_type || project?.projectType || project?.type;
+	const canEditDetails = Boolean(project?.permissions?.can_edit_details);
+	const canDeleteProject = Boolean(project?.permissions?.can_delete_project);
     const showPlayersCountSetting = !isWorldProjectType(projectType);
-    const organizationButtonRef = useRef(null);
-    const organizationMenuRef = useRef(null);
     const issuesButtonRef = useRef(null);
     const issuesMenuRef = useRef(null);
     const visibilityButtonRef = useRef(null);
@@ -61,16 +57,12 @@ export default function ProjectSettings({ project, organizationOptions: initialO
         } else if(project) {
             const initialData = getInitialFormData(project);
             const initialPreview = project.icon_url || "";
-            const initialOrganizationSlug = project.organization?.slug || "";
             setFormData(initialData);
             setSavedFormData(initialData);
             setPreviewIcon(initialPreview);
             setSavedPreviewIcon(initialPreview);
-            setSelectedOrganizationSlug(initialOrganizationSlug);
-            setSavedOrganizationSlug(initialOrganizationSlug);
-            setOrganizationOptions(initialOrganizationOptions);
         }
-    }, [initialOrganizationOptions, isLoggedIn, project, router]);
+    }, [isLoggedIn, project, router]);
 
     const isDirty = (
         formData.title !== savedFormData.title ||
@@ -79,7 +71,6 @@ export default function ProjectSettings({ project, organizationOptions: initialO
         formData.issues_enabled !== savedFormData.issues_enabled ||
         (showPlayersCountSetting && formData.show_players_last_14d !== savedFormData.show_players_last_14d) ||
         formData.slug !== savedFormData.slug ||
-        selectedOrganizationSlug !== savedOrganizationSlug ||
         Boolean(formData.icon)
     );
 
@@ -106,10 +97,6 @@ export default function ProjectSettings({ project, organizationOptions: initialO
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if(isOrganizationMenuOpen && !organizationMenuRef.current?.contains(event.target) && !organizationButtonRef.current?.contains(event.target)) {
-                setIsOrganizationMenuOpen(false);
-            }
-
             if(isIssuesMenuOpen && !issuesMenuRef.current?.contains(event.target) && !issuesButtonRef.current?.contains(event.target)) {
                 setIsIssuesMenuOpen(false);
             }
@@ -125,14 +112,14 @@ export default function ProjectSettings({ project, organizationOptions: initialO
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isIssuesMenuOpen, isOrganizationMenuOpen, isPlayersCountMenuOpen, isVisibilityMenuOpen]);
+    }, [isIssuesMenuOpen, isPlayersCountMenuOpen, isVisibilityMenuOpen]);
 
-    const handleSubmit = async (e) => {
+	const handleSubmit = async (e) => {
         if(e) {
             e.preventDefault();
         }
 
-        if(isSaving || !isDirty) {
+		if(!canEditDetails || isSaving || !isDirty) {
             return;
         }
 
@@ -167,18 +154,6 @@ export default function ProjectSettings({ project, organizationOptions: initialO
                 },
             });
             const nextSlug = response.data?.slug || slugValidation.normalized;
-
-            if(selectedOrganizationSlug !== savedOrganizationSlug) {
-                await axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${nextSlug || project.slug}/organization`, {
-                    organization_slug: selectedOrganizationSlug || null,
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                    },
-                });
-
-                setSavedOrganizationSlug(selectedOrganizationSlug);
-            }
 
             setSavedFormData({
                 ...formData,
@@ -222,9 +197,6 @@ export default function ProjectSettings({ project, organizationOptions: initialO
         return null;
     }
 
-    const toggleOrganizationMenu = () => setIsOrganizationMenuOpen((prev) => !prev);
-    const selectedOrganization = organizationOptions.find((organization) => organization.slug === selectedOrganizationSlug);
-
     return (
         <>
             <div className="settings-wrapper settings-wrapper--narrow">
@@ -232,199 +204,168 @@ export default function ProjectSettings({ project, organizationOptions: initialO
                     <form onSubmit={handleSubmit}>
                         <div className="blog-settings">
                             <div className="blog-settings__body">
-                                <p className="blog-settings__field-title">
-                                    {t("general.fields.icon")}
-                                </p>
+								{canEditDetails ? <>
+                                    <p className="blog-settings__field-title">
+                                        {t("general.fields.icon")}
+                                    </p>
 
-                                <div className="blog-settings__avatar">
-                                    <div className="avatar avatar--size-l">
-                                        <div className="avatar__wrapper" style={{ "--background-color": "var(--theme-color-background)" }}>
-                                            {previewIcon && (
-                                                <img src={previewIcon} alt={t("general.iconAlt")} className="avatar__image" />
-                                            )}
+                                    <div className="blog-settings__avatar">
+                                        <div className="avatar avatar--size-l">
+                                            <div className="avatar__wrapper" style={{ "--background-color": "var(--theme-color-background)" }}>
+                                                {previewIcon && (
+                                                    <img src={previewIcon} alt={t("general.iconAlt")} className="avatar__image" />
+                                                )}
 
-                                            <div className="avatar__overlay" onClick={handleIconOverlayClick}>
-                                                <svg className="icon icon--image" width="40" height="40" viewBox="0 0 24 24">
-                                                    <path d="M8 9.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"></path>
-                                                    <path fillRule="evenodd" clipRule="evenodd" d="M7 3a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4H7ZM5 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5.252l-1.478-1.477a2 2 0 0 0-3.014.214L8.5 19H7a2 2 0 0 1-2-2V7Zm11.108 5.19L19 15.08V17a2 2 0 0 1-2 2h-6l5.108-6.81Z"></path>
-                                                </svg>
+                                                <div className="avatar__overlay" onClick={handleIconOverlayClick}>
+                                                    <svg className="icon icon--image" width="40" height="40" viewBox="0 0 24 24">
+                                                        <path d="M8 9.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"></path>
+                                                        <path fillRule="evenodd" clipRule="evenodd" d="M7 3a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4H7ZM5 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5.252l-1.478-1.477a2 2 0 0 0-3.014.214L8.5 19H7a2 2 0 0 1-2-2V7Zm11.108 5.19L19 15.08V17a2 2 0 0 1-2 2h-6l5.108-6.81Z"></path>
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <input type="file" id="icon" name="icon" accept="image/jpeg,image/png,image/gif" onChange={handleFileChange} ref={iconInputRef} style={{ display: "none" }} />
+                                    <input type="file" id="icon" name="icon" accept="image/jpeg,image/png,image/gif" onChange={handleFileChange} ref={iconInputRef} style={{ display: "none" }} />
 
-                                <p style={{ marginTop: "12px" }} className="blog-settings__field-title">
-                                    {t("general.fields.name")}
-                                </p>
+                                    <p style={{ marginTop: "12px" }} className="blog-settings__field-title">
+                                        {t("general.fields.name")}
+                                    </p>
 
-                                <div className="field field--default blog-settings__input">
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper">
-                                        <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder={t("general.placeholders.name")} className="text-input" maxLength="70" />
-                                        <div className="counter">{formData.title.length}/70</div>
-                                    </label>
-                                </div>
+                                    <div className="field field--default blog-settings__input">
+                                        <label style={{ marginBottom: "10px" }} className="field__wrapper">
+                                            <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder={t("general.placeholders.name")} className="text-input" maxLength="70" />
+                                            <div className="counter">{formData.title.length}/70</div>
+                                        </label>
+                                    </div>
 
-                                <p className="blog-settings__field-title">{t("general.fields.summary")}</p>
-                                <div className="field field--default textarea blog-settings__input">
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper">
-                                        <textarea name="summary" value={formData.summary} onChange={handleInputChange} placeholder={t("general.placeholders.summary")} className="autosize textarea__input" style={{ height: "256px" }} minLength={30} maxLength={256} />
-                                    </label>
+                                    <p className="blog-settings__field-title">{t("general.fields.summary")}</p>
+                                    <div className="field field--default textarea blog-settings__input">
+                                        <label style={{ marginBottom: "10px" }} className="field__wrapper">
+                                            <textarea name="summary" value={formData.summary} onChange={handleInputChange} placeholder={t("general.placeholders.summary")} className="autosize textarea__input" style={{ height: "256px" }} minLength={30} maxLength={256} />
+                                        </label>
 
-                                    <p>{t("general.hints.summary")}</p>
-                                </div>
+                                        <p>{t("general.hints.summary")}</p>
+                                    </div>
 
-                                <p style={{ marginTop: "12px" }} className="blog-settings__field-title">{t("general.fields.url")}</p>
-                                <div className="field field--default blog-settings__input">
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper">
-                                        <input type="text" name="slug" value={formData.slug} onChange={(e) => { const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30); setFormData((prev) => ({ ...prev, slug: value })); }} placeholder={t("general.placeholders.url")} className="text-input" maxLength="30" />
+                                    <p style={{ marginTop: "12px" }} className="blog-settings__field-title">{t("general.fields.url")}</p>
+                                    <div className="field field--default blog-settings__input">
+                                        <label style={{ marginBottom: "10px" }} className="field__wrapper">
+                                            <input type="text" name="slug" value={formData.slug} onChange={(e) => { const value = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30); setFormData((prev) => ({ ...prev, slug: value })); }} placeholder={t("general.placeholders.url")} className="text-input" maxLength="30" />
 
-                                        <div className="counter">{formData.slug.length}/30</div>
-                                    </label>
+                                            <div className="counter">{formData.slug.length}/30</div>
+                                        </label>
 
-                                    <p>{t("general.hints.url")}</p>
-                                </div>
+                                        <p>{t("general.hints.url")}</p>
+                                    </div>
 
-                                <p className="blog-settings__field-title">{t("general.fields.visibility")}</p>
-                                <div className="field field--default blog-settings__input" ref={visibilityMenuRef}>
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsVisibilityMenuOpen((prev) => !prev)} ref={visibilityButtonRef}>
-                                        <div className="field__wrapper-body">
-                                            <div className="select">
-                                                <div className="select__selected">
-                                                    {t(`general.visibility.${formData.visibility}`)}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isVisibilityMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                                    </label>
-
-                                    {isVisibilityMenuOpen && (
-                                        <div className="popover">
-                                            <div className="context-list" data-scrollable>
-                                                <div className={`context-list-option ${formData.visibility === "public" ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, visibility: "public" })); setIsVisibilityMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.visibility.public")}</div>
-                                                </div>
-
-                                                <div className={`context-list-option ${formData.visibility === "unlisted" ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, visibility: "unlisted" })); setIsVisibilityMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.visibility.unlisted")}</div>
-                                                </div>
-
-                                                <div className={`context-list-option ${formData.visibility === "private" ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, visibility: "private" })); setIsVisibilityMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.visibility.private")}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <p>{t("general.hints.visibility")}</p>
-                                </div>
-
-                                <p className="blog-settings__field-title">{t("general.fields.issues")}</p>
-                                <div className="field field--default blog-settings__input" ref={issuesMenuRef}>
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsIssuesMenuOpen((prev) => !prev)} ref={issuesButtonRef}>
-                                        <div className="field__wrapper-body">
-                                            <div className="select">
-                                                <div className="select__selected">
-                                                    {formData.issues_enabled ? t("general.issues.enabled") : t("general.issues.disabled")}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isIssuesMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                                    </label>
-
-                                    {isIssuesMenuOpen && (
-                                        <div className="popover">
-                                            <div className="context-list" data-scrollable>
-                                                <div className={`context-list-option ${formData.issues_enabled ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, issues_enabled: true })); setIsIssuesMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.issues.enabled")}</div>
-                                                </div>
-                                                
-                                                <div className={`context-list-option ${!formData.issues_enabled ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, issues_enabled: false })); setIsIssuesMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.issues.disabled")}</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <p>{t("general.hints.issues")}</p>
-                                </div>
-
-                                {showPlayersCountSetting ? (
-                                    <>
-                                        <p className="blog-settings__field-title">{t("general.fields.playersCount")}</p>
-                                        <div className="field field--default blog-settings__input" ref={playersCountMenuRef}>
-                                            <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsPlayersCountMenuOpen((prev) => !prev)} ref={playersCountButtonRef}>
-                                                <div className="field__wrapper-body">
-                                                    <div className="select">
-                                                        <div className="select__selected">
-                                                            {formData.show_players_last_14d ? t("general.playersCount.enabled") : t("general.playersCount.disabled")}
-                                                        </div>
+                                    <p className="blog-settings__field-title">{t("general.fields.visibility")}</p>
+                                    <div className="field field--default blog-settings__input" ref={visibilityMenuRef}>
+                                        <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsVisibilityMenuOpen((prev) => !prev)} ref={visibilityButtonRef}>
+                                            <div className="field__wrapper-body">
+                                                <div className="select">
+                                                    <div className="select__selected">
+                                                        {t(`general.visibility.${formData.visibility}`)}
                                                     </div>
                                                 </div>
+                                            </div>
 
-                                                <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isPlayersCountMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                                            </label>
+                                            <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isVisibilityMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                                        </label>
 
-                                            {isPlayersCountMenuOpen && (
-                                                <div className="popover">
-                                                    <div className="context-list" data-scrollable>
-                                                        <div className={`context-list-option ${formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: true })); setIsPlayersCountMenuOpen(false); }}>
-                                                            <div className="context-list-option__label">{t("general.playersCount.enabled")}</div>
-                                                        </div>
+                                        {isVisibilityMenuOpen && (
+                                            <div className="popover">
+                                                <div className="context-list" data-scrollable>
+                                                    <div className={`context-list-option ${formData.visibility === "public" ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, visibility: "public" })); setIsVisibilityMenuOpen(false); }}>
+                                                        <div className="context-list-option__label">{t("general.visibility.public")}</div>
+                                                    </div>
 
-                                                        <div className={`context-list-option ${!formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: false })); setIsPlayersCountMenuOpen(false); }}>
-                                                            <div className="context-list-option__label">{t("general.playersCount.disabled")}</div>
-                                                        </div>
+                                                    <div className={`context-list-option ${formData.visibility === "unlisted" ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, visibility: "unlisted" })); setIsVisibilityMenuOpen(false); }}>
+                                                        <div className="context-list-option__label">{t("general.visibility.unlisted")}</div>
+                                                    </div>
+
+                                                    <div className={`context-list-option ${formData.visibility === "private" ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, visibility: "private" })); setIsVisibilityMenuOpen(false); }}>
+                                                        <div className="context-list-option__label">{t("general.visibility.private")}</div>
                                                     </div>
                                                 </div>
-                                            )}
-
-                                            <p>{t("general.hints.playersCount")}</p>
-                                        </div>
-                                    </>
-                                ) : null}
-
-                                <p className="blog-settings__field-title">{t("general.organization.title")}</p>
-                                <div className="field field--default blog-settings__input" ref={organizationMenuRef}>
-                                    <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={toggleOrganizationMenu} ref={organizationButtonRef}>
-                                        <div className="field__wrapper-body">
-                                            <div className="select">
-                                                <div className="select__selected">
-                                                    {selectedOrganization?.name || t("general.organization.noOrganization")}
-                                                </div>
                                             </div>
-                                        </div>
+                                        )}
 
-                                        <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isOrganizationMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                                    </label>
+                                        <p>{t("general.hints.visibility")}</p>
+                                    </div>
 
-                                    {isOrganizationMenuOpen && (
-                                        <div className="popover">
-                                            <div className="context-list" data-scrollable>
-                                                <div className={`context-list-option ${selectedOrganizationSlug === "" ? "context-list-option--selected" : ""}`} onClick={() => { setSelectedOrganizationSlug(""); setIsOrganizationMenuOpen(false); }}>
-                                                    <div className="context-list-option__label">{t("general.organization.noOrganization")}</div>
-                                                </div>
-
-                                                {organizationOptions.map((organization) => (
-                                                    <div key={organization.id} className={`context-list-option ${selectedOrganizationSlug === organization.slug ? "context-list-option--selected" : ""}`} onClick={() => { setSelectedOrganizationSlug(organization.slug); setIsOrganizationMenuOpen(false); }}>
-                                                        <div className="context-list-option__label">{organization.name}</div>
+                                    <p className="blog-settings__field-title">{t("general.fields.issues")}</p>
+                                    <div className="field field--default blog-settings__input" ref={issuesMenuRef}>
+                                        <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsIssuesMenuOpen((prev) => !prev)} ref={issuesButtonRef}>
+                                            <div className="field__wrapper-body">
+                                                <div className="select">
+                                                    <div className="select__selected">
+                                                        {formData.issues_enabled ? t("general.issues.enabled") : t("general.issues.disabled")}
                                                     </div>
-                                                ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
 
-                                    <p>{t("general.organization.hint")}</p>
-                                </div>
+                                            <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isIssuesMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                                        </label>
 
-                                <div style={{ marginTop: "18px", display: "flex", gap: "10px" }}>
+                                        {isIssuesMenuOpen && (
+                                            <div className="popover">
+                                                <div className="context-list" data-scrollable>
+                                                    <div className={`context-list-option ${formData.issues_enabled ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, issues_enabled: true })); setIsIssuesMenuOpen(false); }}>
+                                                        <div className="context-list-option__label">{t("general.issues.enabled")}</div>
+                                                    </div>
+                                                    
+                                                    <div className={`context-list-option ${!formData.issues_enabled ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, issues_enabled: false })); setIsIssuesMenuOpen(false); }}>
+                                                        <div className="context-list-option__label">{t("general.issues.disabled")}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <p>{t("general.hints.issues")}</p>
+                                    </div>
+
+                                    {showPlayersCountSetting ? (
+                                        <>
+                                            <p className="blog-settings__field-title">{t("general.fields.playersCount")}</p>
+                                            <div className="field field--default blog-settings__input" ref={playersCountMenuRef}>
+                                                <label style={{ marginBottom: "10px" }} className="field__wrapper" onClick={() => setIsPlayersCountMenuOpen((prev) => !prev)} ref={playersCountButtonRef}>
+                                                    <div className="field__wrapper-body">
+                                                        <div className="select">
+                                                            <div className="select__selected">
+                                                                {formData.show_players_last_14d ? t("general.playersCount.enabled") : t("general.playersCount.disabled")}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <svg style={{ fill: "none" }} className={`icon icon--chevron_down ${isPlayersCountMenuOpen ? "rotate" : ""}`} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                                                </label>
+
+                                                {isPlayersCountMenuOpen && (
+                                                    <div className="popover">
+                                                        <div className="context-list" data-scrollable>
+                                                            <div className={`context-list-option ${formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: true })); setIsPlayersCountMenuOpen(false); }}>
+                                                                <div className="context-list-option__label">{t("general.playersCount.enabled")}</div>
+                                                            </div>
+
+                                                            <div className={`context-list-option ${!formData.show_players_last_14d ? "context-list-option--selected" : ""}`} onClick={() => { setFormData((prev) => ({ ...prev, show_players_last_14d: false })); setIsPlayersCountMenuOpen(false); }}>
+                                                                <div className="context-list-option__label">{t("general.playersCount.disabled")}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <p>{t("general.hints.playersCount")}</p>
+                                            </div>
+                                        </>
+                                    ) : null}
+								</> : null}
+
+								{canDeleteProject ? <div style={{ marginTop: canEditDetails ? "18px" : 0, display: "flex", gap: "10px" }}>
                                     <button type="button" className="button button--size-m button--type-negative" onClick={() => setIsDeleteConfirmOpen(true)}>
                                         {t("general.actions.delete")}
                                     </button>
-                                </div>
+								</div> : null}
                             </div>
                         </div>
                     </form>
@@ -432,14 +373,12 @@ export default function ProjectSettings({ project, organizationOptions: initialO
             </div>
 
             <UnsavedChangesBar
-                isDirty={isDirty}
+				isDirty={canEditDetails && isDirty}
                 isSaving={isSaving}
                 onSave={handleSubmit}
                 onReset={() => {
                     setFormData({ ...savedFormData, icon: null });
                     setPreviewIcon(savedPreviewIcon);
-                    setSelectedOrganizationSlug(savedOrganizationSlug);
-                    setIsOrganizationMenuOpen(false);
                     setIsIssuesMenuOpen(false);
                     setIsVisibilityMenuOpen(false);
                     setIsPlayersCountMenuOpen(false);

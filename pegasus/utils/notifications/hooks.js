@@ -139,3 +139,20 @@ export function useOrganizationInviteAction({ authToken }) {
         },
     });
 }
+
+export function useProjectCollaboratorInviteAction({ authToken }) {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ inviteId, action }) => apiClient.post(`/projects/collaborator-invitations/${inviteId}/${action}`, {}, {
+			headers: getAuthHeaders(authToken),
+		}),
+		onSuccess: (_data, variables) => {
+			queryClient.setQueriesData(
+				{ queryKey: notificationQueryKeys.listRoot },
+				(oldData) => removeNotificationFromPages(oldData, variables.notificationId)
+			);
+			queryClient.invalidateQueries({ queryKey: notificationQueryKeys.unreadCountRoot });
+		},
+	});
+}

@@ -306,8 +306,8 @@ export default function ProjectMasthead({ project, authToken }) {
                         </div>
                     </div>
 
-                    <div className="masthead-buttons project-page-card__actions">
-                        {user && (project.permissions?.can_edit_details || isProjectAuthor) && (
+					<div className="masthead-buttons project-page-card__actions">
+						{user && (isProjectAuthor || project.permissions?.can_edit_details || project.permissions?.can_edit_body || project.permissions?.can_edit_gallery || project.permissions?.can_manage_versions || project.permissions?.can_manage_collaborators || project.permissions?.can_view_analytics || project.permissions?.can_delete_project) && (
                             <Link className="button button--size-l button--with-icon button--active-transform button--type-primary" href={getProjectPath(project, "/settings")}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-settings-icon lucide-settings">
                                     <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>

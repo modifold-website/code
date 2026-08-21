@@ -1270,6 +1270,7 @@
   "SettingsProjectPage": {
     "sidebar": {
       "general": "General",
+      "collaborators": "Team",
       "description": "Description",
       "disclosures": "Details",
       "links": "Links",
@@ -1731,6 +1732,112 @@
       }
     }
   },
+  "ProjectCollaborators": {
+    "title": "Team",
+    "description": "Manage who can work on this project and choose whether it is published under your profile or an organization.",
+    "invite": {
+      "title": "Invite collaborators to the project",
+      "description": "Invited users receive a notification and, after accepting, can manage the project within the permissions you grant them.",
+      "hint": "Search by username or profile slug and select everyone you want to invite.",
+      "placeholder": "Search users",
+      "selectedLabel": "Selected users",
+      "removeSelection": "Remove {username} from the invitation",
+      "resultsLabel": "User search results",
+      "searching": "Searching...",
+      "noResults": "No users found"
+    },
+    "list": {
+      "title": "Collaborators"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Active",
+      "owner": "Project owner"
+    },
+    "role": {
+      "title": "Project role",
+      "description": "The role is shown next to this collaborator in settings and in the project author list.",
+      "ownerDescription": "The role is shown next to you in settings and in the project author list.",
+      "placeholder": "For example, Developer or Helper"
+    },
+    "authors": {
+      "title": "Author list",
+      "description": "Choose whether this collaborator is publicly credited on the project page.",
+      "ownerDescription": "Choose whether you are publicly shown in the project page sidebar.",
+      "toggle": "Show collaborator in the project author list",
+      "ownerToggle": "Show project owner in the author list"
+    },
+    "permissionsTitle": "Project permissions",
+    "permissionsHint": "Choose exactly what this person can change in the project.",
+    "permissions": {
+      "project_edit_details": "Edit project settings",
+      "project_edit_body": "Edit description and links",
+      "project_edit_gallery": "Manage gallery",
+      "project_upload_version": "Upload versions",
+      "project_edit_version": "Edit versions",
+      "project_delete_version": "Delete versions",
+      "project_view_analytics": "View analytics",
+	  "project_manage_invites": "Manage invitations",
+	  "project_edit_members": "Edit collaborators",
+	  "project_remove_members": "Remove collaborators",
+      "project_delete": "Delete project"
+    },
+    "organization": {
+      "title": "Project organization",
+      "description": "Attach the project to an organization to publish it under that organization. The project author will not change.",
+      "noOrganization": "No organization",
+      "selectLabel": "Choose a project organization",
+      "hint": "Organization members may also receive project access through their organization roles.",
+      "noOptions": "You do not have an organization where you can add this project yet.",
+      "save": "Save",
+      "saving": "Saving...",
+      "success": "Project ownership updated",
+      "error": "Could not update project ownership",
+      "confirm": {
+        "attachTitle": "Publish under {organization}?",
+        "attachDescription": "The organization will be shown as the project owner. Members with matching organization permissions may receive access.",
+        "attachAction": "Attach organization",
+        "moveTitle": "Move project to {organization}?",
+        "moveDescription": "The displayed organization and organization-based access will change immediately.",
+        "moveAction": "Move project",
+        "detachTitle": "Detach project from {organization}?",
+        "detachDescription": "The project will be published under your personal profile again. Organization-based access will be removed.",
+        "detachAction": "Detach organization",
+        "cancel": "Cancel"
+      }
+    },
+    "actions": {
+      "invite": "Invite",
+      "inviting": "Inviting...",
+	  "save": "Save changes",
+      "remove": "Remove collaborator",
+      "removing": "Removing...",
+      "cancelInvitation": "Cancel invitation",
+      "keep": "Keep access",
+      "expand": "Edit permissions",
+      "collapse": "Collapse permissions",
+      "expandOwner": "Edit owner attribution",
+      "collapseOwner": "Collapse owner settings"
+    },
+    "confirm": {
+      "removeTitle": "Remove {username} from this project?",
+      "cancelTitle": "Cancel the invitation for {username}?"
+    },
+    "success": {
+      "invited": "Invitation sent to {username}",
+      "invitedMany": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+	  "permissionsSaved": "Collaborator settings saved",
+      "removed": "{username} no longer has access",
+      "invitationCancelled": "Invitation for {username} cancelled"
+    },
+    "errors": {
+      "search": "Could not search users",
+      "invite": "Could not send the invitation",
+      "inviteMany": "{count, plural, one {Could not invite # user} other {Could not invite # users}}",
+	  "save": "Could not save collaborator settings",
+      "remove": "Could not remove the collaborator"
+    }
+  },
   "NewsPage": {
     "title": "Blog",
     "featuredArticle": {
@@ -2139,7 +2246,9 @@
       "unknown": "New notification",
       "organizationFallback": "organization",
       "organizationInviteTail": "invited you to",
-      "organizationRemovedTail": "removed you from"
+      "organizationRemovedTail": "removed you from",
+      "projectCollaborationInvitePrefix": "User",
+      "projectCollaborationInviteTail": "invited you to collaborate on"
     },
     "errors": {
       "fetch": "Failed to load notifications",
@@ -2452,7 +2561,7 @@
       "actions": {
         "uploadIcon": "Upload icon",
         "uploading": "Uploading...",
-        "save": "Save organization",
+      "save": "Save",
         "saving": "Saving...",
         "invite": "Invite",
         "inviting": "Inviting...",

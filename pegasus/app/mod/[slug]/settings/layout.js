@@ -53,6 +53,7 @@ export default async function Layout({ children, params }) {
                     iconAlt={tSettings("general.iconAlt")}
                     labels={{
                         general: tSettings("sidebar.general"),
+						collaborators: tSettings("sidebar.collaborators"),
                         description: tSettings("sidebar.description"),
 						disclosures: tSettings("sidebar.disclosures"),
                         links: tSettings("sidebar.links"),

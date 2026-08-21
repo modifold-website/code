@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
 import NotificationItem from "@/components/ui/NotificationItem";
-import { useMarkNotificationsRead, useNotificationsFeed, useOrganizationInviteAction } from "@/utils/notifications/hooks";
+import { useMarkNotificationsRead, useNotificationsFeed, useOrganizationInviteAction, useProjectCollaboratorInviteAction } from "@/utils/notifications/hooks";
 
 const getDayKey = (date) => `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 
@@ -54,12 +54,13 @@ export default function NotificationsPage({ authToken, initialNotifications = []
     });
     const markReadMutation = useMarkNotificationsRead({ authToken, user });
     const inviteActionMutation = useOrganizationInviteAction({ authToken });
+	const collaboratorInviteActionMutation = useProjectCollaboratorInviteAction({ authToken });
     const notifications = useMemo(() => (
         notificationsQuery.data?.pages?.flatMap((pageData) => pageData.notifications || []) || []
     ), [notificationsQuery.data]);
     const loading = notificationsQuery.isPending;
     const loadingMore = notificationsQuery.isFetchingNextPage;
-    const error = notificationsQuery.isError || inviteActionMutation.isError ? t("errors.fetch") : "";
+	const error = notificationsQuery.isError || inviteActionMutation.isError || collaboratorInviteActionMutation.isError ? t("errors.fetch") : "";
 
     useEffect(() => {
         if(!isLoggedIn) {
@@ -123,6 +124,18 @@ export default function NotificationsPage({ authToken, initialNotifications = []
         });
     };
 
+	const handleProjectCollaboratorInviteAction = (notification, action) => {
+		if(!notification?.inviteId) {
+			return;
+		}
+
+		collaboratorInviteActionMutation.mutate({
+			action,
+			inviteId: notification.inviteId,
+			notificationId: notification.id,
+		});
+	};
+
     return (
         <div className="layout">
             <div className="page-content settings-page">
@@ -172,7 +185,8 @@ export default function NotificationsPage({ authToken, initialNotifications = []
                                                 timeFormatter={timeFormatter}
                                                 t={t}
                                                 onOrganizationInviteAction={handleOrganizationInviteAction}
-                                                isInviteActionPending={inviteActionMutation.isPending}
+												onProjectCollaboratorInviteAction={handleProjectCollaboratorInviteAction}
+												isInviteActionPending={inviteActionMutation.isPending || collaboratorInviteActionMutation.isPending}
                                             />
                                         ))}
                                     </div>

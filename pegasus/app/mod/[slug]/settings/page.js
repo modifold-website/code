@@ -1,9 +1,10 @@
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectSettings from "@/components/project/settings/ProjectSettings";
+import { getProjectBasePath } from "@/utils/projectRoutes";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
@@ -57,6 +58,21 @@ export default async function Page({ params }) {
     }
 
     const settingsData = await res.json();
+	if(!settingsData?.permissions?.can_edit_details) {
+		const baseProjectPath = `${getProjectBasePath(settingsData?.project_type)}/${settingsData?.slug || slug}`;
+		if(settingsData?.permissions?.can_manage_collaborators) {
+			redirect(`${baseProjectPath}/settings/collaborators`);
+		}
+		if(settingsData?.permissions?.can_manage_versions) {
+			redirect(`${baseProjectPath}/settings/versions`);
+		}
+		if(settingsData?.permissions?.can_edit_gallery) {
+			redirect(`${baseProjectPath}/settings/gallery`);
+		}
+		if(settingsData?.permissions?.can_edit_body) {
+			redirect(`${baseProjectPath}/settings/description`);
+		}
+	}
     const project = {
         ...settingsData,
         organization: settingsData?.organization || null,
@@ -65,8 +81,6 @@ export default async function Page({ params }) {
     return (
         <ProjectSettings
             project={project}
-            organizationOptions={Array.isArray(settingsData?.organization_options) ? settingsData.organization_options : []}
-            authToken={authToken}
         />
     );
 }

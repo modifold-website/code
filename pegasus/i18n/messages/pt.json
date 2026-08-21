@@ -1179,6 +1179,7 @@
   "SettingsProjectPage": {
     "sidebar": {
       "general": "Geral",
+      "collaborators": "Equipe",
       "description": "Descrição",
       "disclosures": "Detalhes",
       "links": "Links",
@@ -1640,6 +1641,108 @@
       }
     }
   },
+  "ProjectCollaborators": {
+    "title": "Equipe",
+    "description": "Gerencie quem pode trabalhar neste projeto e escolha se ele será publicado pelo seu perfil ou por uma organização.",
+    "invite": {
+      "title": "Convidar colaboradores para o projeto",
+      "description": "As pessoas convidadas receberão uma notificação e, após aceitar, poderão gerenciar o projeto dentro das permissões que você conceder.",
+      "hint": "Pesquise pelo nome de usuário ou slug e selecione todas as pessoas que deseja convidar.",
+      "placeholder": "Search users",
+      "selectedLabel": "Usuários selecionados",
+      "removeSelection": "Remover {username} do convite",
+      "resultsLabel": "User search results",
+      "searching": "Searching...",
+      "noResults": "No users found"
+    },
+    "list": {
+      "title": "Lista de colaboradores"
+    },
+    "status": { "pending": "Pendente", "accepted": "Ativo", "owner": "Autor do projeto" },
+    "role": {
+      "title": "Função no projeto",
+      "description": "A função aparece ao lado do colaborador nas configurações e na lista de autores do projeto.",
+      "ownerDescription": "A função aparece ao seu lado nas configurações e na lista de autores do projeto.",
+      "placeholder": "Por exemplo, Desenvolvedor ou Helper"
+    },
+    "authors": {
+      "title": "Lista de autores",
+      "description": "Escolha se este colaborador será exibido publicamente na página do projeto.",
+      "ownerDescription": "Escolha se você será exibido publicamente na barra lateral da página do projeto.",
+      "toggle": "Mostrar colaborador na lista de autores",
+      "ownerToggle": "Mostrar autor do projeto na lista de autores"
+    },
+    "permissionsTitle": "Permissões do projeto",
+    "permissionsHint": "Escolha exatamente o que esta pessoa poderá fazer no projeto.",
+    "permissions": {
+      "project_edit_details": "Editar configurações do projeto",
+      "project_edit_body": "Editar descrição e links",
+      "project_edit_gallery": "Gerenciar galeria",
+      "project_upload_version": "Enviar versões",
+      "project_edit_version": "Editar versões",
+      "project_delete_version": "Excluir versões",
+      "project_view_analytics": "Ver análises",
+	  "project_manage_invites": "Gerenciar convites",
+	  "project_edit_members": "Editar colaboradores",
+	  "project_remove_members": "Remover colaboradores",
+      "project_delete": "Excluir projeto"
+    },
+    "organization": {
+      "title": "Organização do projeto",
+      "description": "Vincule o projeto a uma organização para publicá-lo em nome dela. O autor do projeto não será alterado.",
+      "noOrganization": "Sem organização",
+      "selectLabel": "Escolha uma organização para o projeto",
+      "hint": "Os membros da organização também podem receber acesso por meio de suas funções.",
+      "noOptions": "Você ainda não tem uma organização à qual possa adicionar este projeto.",
+      "save": "Salvar",
+      "saving": "Salvando...",
+      "success": "Propriedade do projeto atualizada",
+      "error": "Não foi possível atualizar a propriedade do projeto",
+      "confirm": {
+        "attachTitle": "Publicar por {organization}?",
+        "attachDescription": "A organização será exibida como proprietária do projeto. Membros com as permissões adequadas poderão receber acesso.",
+        "attachAction": "Vincular organização",
+        "moveTitle": "Mover o projeto para {organization}?",
+        "moveDescription": "A organização exibida e o acesso por funções serão alterados imediatamente.",
+        "moveAction": "Mover projeto",
+        "detachTitle": "Desvincular o projeto de {organization}?",
+        "detachDescription": "O projeto voltará a ser publicado pelo seu perfil pessoal e o acesso pela organização será removido.",
+        "detachAction": "Desvincular organização",
+        "cancel": "Cancelar"
+      }
+    },
+    "actions": {
+      "invite": "Convidar",
+      "inviting": "Convidando...",
+	  "save": "Salvar alterações",
+      "remove": "Remove collaborator",
+      "removing": "Removing...",
+      "cancelInvitation": "Cancel invitation",
+      "keep": "Keep access",
+      "expand": "Edit permissions",
+      "collapse": "Collapse permissions",
+      "expandOwner": "Editar atribuição do autor",
+      "collapseOwner": "Recolher configurações do autor"
+    },
+    "confirm": {
+      "removeTitle": "Remove {username} from this project?",
+      "cancelTitle": "Cancel the invitation for {username}?"
+    },
+    "success": {
+      "invited": "Invitation sent to {username}",
+      "invitedMany": "{count, plural, one {# convite enviado} other {# convites enviados}}",
+	  "permissionsSaved": "Configurações do colaborador salvas",
+      "removed": "{username} no longer has access",
+      "invitationCancelled": "Invitation for {username} cancelled"
+    },
+    "errors": {
+      "search": "Could not search users",
+      "invite": "Could not send the invitation",
+      "inviteMany": "{count, plural, one {Não foi possível convidar # usuário} other {Não foi possível convidar # usuários}}",
+	  "save": "Não foi possível salvar as configurações do colaborador",
+      "remove": "Could not remove the collaborator"
+    }
+  },
   "NewsPage": {
     "title": "Blog",
     "featuredArticle": {
@@ -2048,7 +2151,9 @@
       "unknown": "Nova notificação",
       "organizationFallback": "organização",
       "organizationInviteTail": "convidou você para",
-      "organizationRemovedTail": "removeu você de"
+      "organizationRemovedTail": "removeu você de",
+      "projectCollaborationInvitePrefix": "O usuário",
+      "projectCollaborationInviteTail": "convidou você para colaborar em"
     },
     "errors": {
       "fetch": "Não foi possível carregar notificações",
@@ -2361,7 +2466,7 @@
       "actions": {
         "uploadIcon": "Enviar ícone",
         "uploading": "Enviando...",
-        "save": "Salvar organização",
+      "save": "Salvar",
         "saving": "Salvando...",
         "invite": "Convidar",
         "inviting": "Convidando...",

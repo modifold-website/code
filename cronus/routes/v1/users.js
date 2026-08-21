@@ -421,6 +421,44 @@ router.get("/me/likes", auth, async (req, res) => {
 	}
 });
 
+router.get("/search", auth, async (req, res) => {
+	const query = String(req.query.q || "").trim().slice(0, 64);
+	if(query.length < 2) {
+		return res.json({ users: [] });
+	}
+
+	try {
+		const escapedQuery = query.replace(/[\\%_]/g, "\\$&");
+		const prefixQuery = `${escapedQuery}%`;
+		const containsQuery = `%${escapedQuery}%`;
+		const [users] = await db.query(
+			`SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge
+			FROM users
+			WHERE id <> ?
+			AND (username LIKE ? OR slug LIKE ?)
+			ORDER BY
+				CASE
+					WHEN LOWER(username) = LOWER(?) OR LOWER(slug) = LOWER(?) THEN 0
+					WHEN username LIKE ? OR slug LIKE ? THEN 1
+					ELSE 2
+				END,
+				username ASC
+			LIMIT 8`,
+			[req.user.id, containsQuery, containsQuery, query, query, prefixQuery, prefixQuery]
+		);
+
+		return res.json({
+			users: users.map((user) => ({
+				...user,
+				isVerified: Number(user.isVerified || 0),
+			})),
+		});
+	} catch (error) {
+		console.error("Error searching users:", error);
+		return res.status(500).json({ message: "Error searching users", error: error.message });
+	}
+});
+
 router.get("/:username/projects", async (req, res) => {
     try {
         const { username } = req.params;
@@ -458,7 +496,7 @@ router.get("/:username/projects", async (req, res) => {
                     SELECT 1
                     FROM project_members pm
                     INNER JOIN users member_user ON member_user.id = pm.user_id
-                    WHERE pm.project_id = p.id AND member_user.slug = ?
+                    WHERE pm.project_id = p.id AND member_user.slug = ? AND pm.status IN ('accept', 'accepted')
                 )
             )
             ORDER BY ${orderBy}
@@ -476,7 +514,7 @@ router.get("/:username/projects", async (req, res) => {
                     SELECT 1
                     FROM project_members pm
                     INNER JOIN users member_user ON member_user.id = pm.user_id
-                    WHERE pm.project_id = p.id AND member_user.slug = ?
+                    WHERE pm.project_id = p.id AND member_user.slug = ? AND pm.status IN ('accept', 'accepted')
                 )
             )
         `;
@@ -744,8 +782,7 @@ router.delete("/me", auth, async (req, res) => {
 
             await db.query("DELETE FROM project_versions WHERE project_id IN (?)", [projectIds]);
             await db.query("DELETE FROM project_gallery WHERE project_id IN (?)", [projectIds]);
-            await db.query("DELETE FROM project_members WHERE project_id IN (?)", [projectIds]);
-            await db.query("DELETE FROM project_likes WHERE project_id IN (?)", [projectIds]);
+			await db.query("DELETE FROM project_likes WHERE project_id IN (?)", [projectIds]);
             await db.query("DELETE FROM project_ad_impressions WHERE project_id IN (?)", [projectIds]);
 
             if(hasClickHouseConfig && clickhouse && projectSlugs.length > 0) {

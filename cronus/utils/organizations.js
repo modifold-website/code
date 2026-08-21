@@ -15,8 +15,51 @@ const ORG_PERMISSIONS = {
     DELETE_ORGANIZATION: "organization_delete",
 };
 
+// a fucking disaster
 const ORG_OWNER_PROJECT_PERMISSIONS = Object.values(ORG_PROJECT_PERMISSIONS);
 const ORG_OWNER_ORGANIZATION_PERMISSIONS = Object.values(ORG_PERMISSIONS);
+const PROJECT_COLLABORATOR_PERMISSION_KEYS = {
+	EDIT_DETAILS: ORG_PROJECT_PERMISSIONS.EDIT_DETAILS,
+	EDIT_BODY: ORG_PROJECT_PERMISSIONS.EDIT_BODY,
+	EDIT_GALLERY: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
+	UPLOAD_VERSION: "project_upload_version",
+	EDIT_VERSION: "project_edit_version",
+	DELETE_VERSION: "project_delete_version",
+	VIEW_ANALYTICS: "project_view_analytics",
+	MANAGE_INVITES: "project_manage_invites",
+	EDIT_MEMBERS: "project_edit_members",
+	REMOVE_MEMBERS: "project_remove_members",
+	DELETE_PROJECT: ORG_PROJECT_PERMISSIONS.DELETE_PROJECT,
+};
+const PROJECT_COLLABORATOR_PERMISSIONS = [
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_DETAILS,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_BODY,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_GALLERY,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.VIEW_ANALYTICS,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_PROJECT,
+];
+const PROJECT_ACCESS_PERMISSION_SET = new Set([
+	...PROJECT_COLLABORATOR_PERMISSIONS,
+	ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS,
+]);
+
+const PROJECT_PERMISSION_ALIASES = {
+	[PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION]: [ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS],
+	[PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION]: [ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS],
+	[PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION]: [ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS],
+	[PROJECT_COLLABORATOR_PERMISSION_KEYS.VIEW_ANALYTICS]: [ORG_PROJECT_PERMISSIONS.EDIT_DETAILS],
+	[ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS]: [
+		PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION,
+		PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION,
+		PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION,
+	],
+};
 
 const parsePermissions = (value, fallback = []) => {
     if(Array.isArray(value)) {
@@ -35,6 +78,17 @@ const parsePermissions = (value, fallback = []) => {
     } catch {}
 
     return [...fallback];
+};
+
+const expandProjectPermissions = (value) => {
+	const permissions = new Set(parsePermissions(value));
+	if(permissions.has(ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS)) {
+		permissions.add(PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION);
+		permissions.add(PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION);
+		permissions.add(PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION);
+	}
+
+	return Array.from(permissions);
 };
 
 const logOrganizationAudit = async (db, { organizationId, actorUserId, action, targetType = null, targetId = null, metadata = null }) => {
@@ -101,7 +155,9 @@ const resolveProjectAccess = async (db, projectId, userId) => {
     if(!projectId || !userId) {
         return {
             isOwner: false,
+			hasDirectAccess: false,
             hasOrganizationAccess: false,
+			directMember: null,
             organization: null,
             projectPermissions: new Set(),
             organizationPermissions: new Set(),
@@ -112,7 +168,9 @@ const resolveProjectAccess = async (db, projectId, userId) => {
     if(projectRows.length === 0) {
         return {
             isOwner: false,
+			hasDirectAccess: false,
             hasOrganizationAccess: false,
+			directMember: null,
             organization: null,
             projectPermissions: new Set(),
             organizationPermissions: new Set(),
@@ -122,12 +180,26 @@ const resolveProjectAccess = async (db, projectId, userId) => {
     if(Number(projectRows[0].user_id) === Number(userId)) {
         return {
             isOwner: true,
+			hasDirectAccess: false,
             hasOrganizationAccess: false,
+			directMember: null,
             organization: null,
             projectPermissions: new Set(ORG_OWNER_PROJECT_PERMISSIONS),
             organizationPermissions: new Set(ORG_OWNER_ORGANIZATION_PERMISSIONS),
         };
     }
+
+	const [directMemberRows] = await db.query(
+		`SELECT id, project_id, user_id, role, status, permissions, invited_by_user_id, created_at, updated_at
+		FROM project_members
+		WHERE project_id = ? AND user_id = ? AND status IN ('accept', 'accepted')
+		LIMIT 1`,
+		[projectId, userId]
+	);
+	const directMember = directMemberRows[0] || null;
+	const directPermissions = new Set(
+		expandProjectPermissions(directMember?.permissions).filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission))
+	);
 
     const [organizationRows] = await db.query(
         `SELECT o.id, o.slug, o.name, o.summary, o.icon_url
@@ -141,9 +213,11 @@ const resolveProjectAccess = async (db, projectId, userId) => {
     if(organizationRows.length === 0) {
         return {
             isOwner: false,
+			hasDirectAccess: Boolean(directMember),
             hasOrganizationAccess: false,
+			directMember,
             organization: null,
-            projectPermissions: new Set(),
+			projectPermissions: directPermissions,
             organizationPermissions: new Set(),
         };
     }
@@ -154,18 +228,27 @@ const resolveProjectAccess = async (db, projectId, userId) => {
     if(!memberAccess) {
         return {
             isOwner: false,
+			hasDirectAccess: Boolean(directMember),
             hasOrganizationAccess: false,
+			directMember,
             organization,
-            projectPermissions: new Set(),
+			projectPermissions: directPermissions,
             organizationPermissions: new Set(),
         };
     }
 
+	const projectPermissions = new Set([
+		...directPermissions,
+		...memberAccess.projectPermissions,
+	]);
+
     return {
         isOwner: false,
+		hasDirectAccess: Boolean(directMember),
         hasOrganizationAccess: true,
+		directMember,
         organization,
-        projectPermissions: memberAccess.projectPermissions,
+		projectPermissions,
         organizationPermissions: memberAccess.organizationPermissions,
     };
 };
@@ -179,7 +262,11 @@ const hasProjectPermission = (access, permission) => {
         return true;
     }
 
-    return access.projectPermissions.has(permission);
+	if(access.projectPermissions.has(permission)) {
+		return true;
+	}
+
+	return (PROJECT_PERMISSION_ALIASES[permission] || []).some((alias) => access.projectPermissions.has(alias));
 };
 
 const hasOrganizationPermission = (access, permission) => {
@@ -197,7 +284,10 @@ const hasOrganizationPermission = (access, permission) => {
 module.exports = {
     ORG_PERMISSIONS,
     ORG_PROJECT_PERMISSIONS,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS,
+	PROJECT_COLLABORATOR_PERMISSIONS,
     parsePermissions,
+	expandProjectPermissions,
     getOrganizationMemberAccess,
     resolveProjectAccess,
     hasProjectPermission,

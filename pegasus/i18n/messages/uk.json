@@ -1180,6 +1180,7 @@
   "SettingsProjectPage": {
     "sidebar": {
       "general": "Загальні",
+      "collaborators": "Команда",
       "description": "Опис",
       "disclosures": "Відомості",
       "links": "Посилання",
@@ -1641,6 +1642,108 @@
       }
     }
   },
+  "ProjectCollaborators": {
+    "title": "Команда",
+    "description": "Керуйте доступом до проєкту та вибирайте, від чийого імені його опубліковано — вашого профілю чи організації.",
+    "invite": {
+      "title": "Запросити учасників до проєкту",
+      "description": "Запрошені користувачі отримають сповіщення й після прийняття зможуть керувати проєктом у межах наданих вами прав.",
+      "hint": "Знайдіть користувачів за ім’ям або slug профілю та виберіть усіх, кого хочете запросити.",
+      "placeholder": "Search users",
+      "selectedLabel": "Вибрані користувачі",
+      "removeSelection": "Прибрати {username} із запрошення",
+      "resultsLabel": "User search results",
+      "searching": "Searching...",
+      "noResults": "No users found"
+    },
+    "list": {
+      "title": "Список учасників"
+    },
+    "status": { "pending": "Очікує відповіді", "accepted": "Активний", "owner": "Автор проєкту" },
+    "role": {
+      "title": "Роль у проєкті",
+      "description": "Роль відображається поруч з учасником у налаштуваннях і в списку авторів проєкту.",
+      "ownerDescription": "Роль відображається поруч із вами в налаштуваннях і в списку авторів проєкту.",
+      "placeholder": "Наприклад, розробник або помічник"
+    },
+    "authors": {
+      "title": "Список авторів",
+      "description": "Виберіть, чи потрібно публічно показувати цього учасника на сторінці проєкту.",
+      "ownerDescription": "Виберіть, чи потрібно публічно показувати вас у сайдбарі сторінки проєкту.",
+      "toggle": "Відображати учасника в списку авторів проєкту",
+      "ownerToggle": "Відображати автора проєкту в списку авторів"
+    },
+    "permissionsTitle": "Права проєкту",
+    "permissionsHint": "Виберіть, що саме учасник зможе робити в проєкті.",
+    "permissions": {
+      "project_edit_details": "Редагувати налаштування проєкту",
+      "project_edit_body": "Редагувати опис і посилання",
+      "project_edit_gallery": "Керувати галереєю",
+      "project_upload_version": "Завантажувати версії",
+      "project_edit_version": "Редагувати версії",
+      "project_delete_version": "Видаляти версії",
+      "project_view_analytics": "Переглядати аналітику",
+	  "project_manage_invites": "Керувати запрошеннями",
+	  "project_edit_members": "Редагувати учасників",
+	  "project_remove_members": "Видаляти учасників",
+      "project_delete": "Видаляти проєкт"
+    },
+    "organization": {
+      "title": "Організація проєкту",
+      "description": "Прив’яжіть проєкт до організації, щоб опублікувати його від її імені. Автор проєкту не зміниться.",
+      "noOrganization": "Без організації",
+      "selectLabel": "Виберіть організацію проєкту",
+      "hint": "Учасники організації також можуть отримати доступ до проєкту через свої ролі.",
+      "noOptions": "У вас поки немає організації, до якої можна додати цей проєкт.",
+      "save": "Зберегти",
+      "saving": "Зберігаємо...",
+      "success": "Власність проєкту оновлено",
+      "error": "Не вдалося оновити власність проєкту",
+      "confirm": {
+        "attachTitle": "Опублікувати від імені {organization}?",
+        "attachDescription": "Організація відображатиметься власником проєкту. Її учасники з відповідними правами зможуть отримати доступ.",
+        "attachAction": "Приєднати організацію",
+        "moveTitle": "Перенести проєкт до {organization}?",
+        "moveDescription": "Відображувана організація та доступ через її ролі зміняться одразу.",
+        "moveAction": "Перенести проєкт",
+        "detachTitle": "Від’єднати проєкт від {organization}?",
+        "detachDescription": "Проєкт знову буде опубліковано від вашого особистого профілю. Доступ через ролі організації зникне.",
+        "detachAction": "Від’єднати організацію",
+        "cancel": "Скасувати"
+      }
+    },
+    "actions": {
+      "invite": "Запросити",
+      "inviting": "Запрошуємо...",
+	  "save": "Зберегти зміни",
+      "remove": "Remove collaborator",
+      "removing": "Removing...",
+      "cancelInvitation": "Cancel invitation",
+      "keep": "Keep access",
+      "expand": "Edit permissions",
+      "collapse": "Collapse permissions",
+      "expandOwner": "Налаштувати відображення автора",
+      "collapseOwner": "Згорнути налаштування автора"
+    },
+    "confirm": {
+      "removeTitle": "Remove {username} from this project?",
+      "cancelTitle": "Cancel the invitation for {username}?"
+    },
+    "success": {
+      "invited": "Invitation sent to {username}",
+      "invitedMany": "{count, plural, one {Надіслано # запрошення} few {Надіслано # запрошення} many {Надіслано # запрошень} other {Надіслано # запрошення}}",
+	  "permissionsSaved": "Налаштування учасника збережено",
+      "removed": "{username} no longer has access",
+      "invitationCancelled": "Invitation for {username} cancelled"
+    },
+    "errors": {
+      "search": "Could not search users",
+      "invite": "Could not send the invitation",
+      "inviteMany": "{count, plural, one {Не вдалося запросити # користувача} few {Не вдалося запросити # користувачів} many {Не вдалося запросити # користувачів} other {Не вдалося запросити # користувача}}",
+	  "save": "Не вдалося зберегти налаштування учасника",
+      "remove": "Could not remove the collaborator"
+    }
+  },
   "NewsPage": {
     "title": "Блог",
     "featuredArticle": {
@@ -2049,7 +2152,9 @@
       "unknown": "Нове сповіщення",
       "organizationFallback": "організацію",
       "organizationInviteTail": "запросив(ла) вас до",
-      "organizationRemovedTail": "видалив(ла) вас з"
+      "organizationRemovedTail": "видалив(ла) вас з",
+      "projectCollaborationInvitePrefix": "Користувач",
+      "projectCollaborationInviteTail": "запросив(ла) вас до участі в проєкті"
     },
     "errors": {
       "fetch": "Не вдалося завантажити сповіщення",

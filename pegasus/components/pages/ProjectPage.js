@@ -32,7 +32,10 @@ const hasProjectEditPermission = (permissions = {}) => Boolean(
     permissions.can_edit_details ||
     permissions.can_edit_body ||
     permissions.can_edit_gallery ||
-    permissions.can_manage_versions
+	permissions.can_manage_versions ||
+	permissions.can_manage_collaborators ||
+	permissions.can_view_analytics ||
+	permissions.can_delete_project
 );
 
 export default function ProjectPage({ project, authToken, showInlineGallery = false }) {
