@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const sharp = require('sharp');
 const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require('../../utils/sanitize');
 const { validateSlug } = require("../../utils/slug");
-const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
+const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
 const optionalAuth = require('../../middleware/optionalAuth');
 const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
@@ -27,8 +27,27 @@ const DISCLOSURE_TEXT_LIMIT = 2000;
 const DISCLOSURE_LIST_LIMIT = 12;
 const DISCLOSURE_LIST_ITEM_LIMIT = 240;
 const TELEMETRY_CONSENT_VALUES = new Set(["opt_in", "opt_out", "always_active"]);
+const PROJECT_COLLABORATOR_PERMISSION_SET = new Set(PROJECT_COLLABORATOR_PERMISSIONS);
+const DEFAULT_PROJECT_COLLABORATOR_PERMISSIONS = [
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_GALLERY,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION,
+];
+const PROJECT_COLLABORATOR_ROLE_MAX_LENGTH = 50;
 
 const normalizeBoolean = (value) => value === true || value === 1 || value === "1" || value === "true";
+
+const normalizeCollaboratorPermissions = (value, fallback = []) => {
+	const source = Array.isArray(value) ? value : fallback;
+	return [...new Set(expandProjectPermissions(source).filter((permission) => PROJECT_COLLABORATOR_PERMISSION_SET.has(permission)))];
+};
+
+const normalizeProjectRole = (value, fallback) => {
+	const role = sanitizePlainText(value || "").trim().slice(0, PROJECT_COLLABORATOR_ROLE_MAX_LENGTH);
+	return role || fallback;
+};
+
+const normalizeCollaboratorRole = (value) => normalizeProjectRole(value, "Member");
+const normalizeProjectOwnerRole = (value) => normalizeProjectRole(value, "Owner");
 
 const normalizeDisclosureText = (value, { maxLength = DISCLOSURE_TEXT_LIMIT } = {}) => {
 	const safeValue = sanitizePlainText(value || "", { preserveNewlines: true });
@@ -1471,7 +1490,7 @@ router.get('/user/projects', auth, async (req, res) => {
             o.summary AS organization_summary
             FROM projects p
             LEFT JOIN users u ON u.id = p.user_id
-            LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ?
+            LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ? AND pm.status IN ('accept', 'accepted')
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organization_members om ON om.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci AND om.user_id = ? AND om.status = 'accepted'
@@ -1486,7 +1505,7 @@ router.get('/user/projects', auth, async (req, res) => {
             `
             SELECT COUNT(DISTINCT p.id) AS total
             FROM projects p
-            LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ?
+            LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ? AND pm.status IN ('accept', 'accepted')
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organization_members om ON om.organization_id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci AND om.user_id = ? AND om.status = 'accepted'
             WHERE p.user_id = ? OR pm.user_id = ? OR om.user_id = ?
@@ -1632,16 +1651,11 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
         }
 
         const sql = "INSERT INTO projects (id, slug, user_id, title, summary, visibility, project_type, icon_url, color, license_id, license_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        const values = [projectId, slug, req.user.id, safeTitle, safeSummary, visibility, normalizedProjectType, iconUrl, projectColor, defaultLicenseId, defaultLicenseName];
+		const values = [projectId, slug, req.user.id, safeTitle, safeSummary, visibility, normalizedProjectType, iconUrl, projectColor, defaultLicenseId, defaultLicenseName];
 
-        await db.query(sql, values);
+		await db.query(sql, values);
 
-        await db.query(
-            "INSERT INTO project_members (project_id, user_id, role, status) VALUES (?, ?, ?, ?)",
-            [projectId, req.user.id, "Owner", "accept"]
-        );
-
-        res.json({ id: projectId, slug, title: safeTitle, summary: safeSummary, visibility, project_type: normalizedProjectType, icon_url: iconUrl, color: projectColor, success: true });
+		res.json({ id: projectId, slug, title: safeTitle, summary: safeSummary, visibility, project_type: normalizedProjectType, icon_url: iconUrl, color: projectColor, success: true });
     } catch (error) {
         console.error("Error creating project:", error);
         res.status(500).json({ message: "Error creating project", error: error.message });
@@ -1909,7 +1923,7 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
         const access = await requireProjectPermission(res, {
             project,
             userId: req.user.id,
-            permission: ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS,
+			permission: PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION,
         });
 
         if(!access) {
@@ -2276,8 +2290,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             `SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
             FROM project_members pm 
             LEFT JOIN users u ON pm.user_id = u.id 
-            WHERE pm.project_id = ?`,
-            [projectData.id]
+			WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.show_as_author = 1 AND pm.status IN ('accept', 'accepted')`,
+			[projectData.id, projectData.user_id]
         );
         let modJamParticipations = [];
         try {
@@ -2361,6 +2375,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             tags: projectData.tags,
             user_id: projectData.user_id,
             showProjectBackground: projectData.showProjectBackground,
+			show_owner_as_author: Boolean(projectData.show_owner_as_author),
             owner: organizationOwner ? {
                 id: organizationOwner.id,
                 username: organizationOwner.name,
@@ -2371,14 +2386,29 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 type: "organization",
                 profile_url: `/organization/${organizationOwner.slug}`,
             } : {
+				id: projectData.user_id,
+				user_id: projectData.user_id,
                 username: projectData.username,
                 slug: projectData.user_slug,
                 avatar: projectData.avatar,
                 isVerified: projectData.isVerified,
                 activeProfileBadge: projectData.activeProfileBadge,
+				role: normalizeProjectOwnerRole(projectData.owner_role),
                 type: "user",
                 profile_url: `/user/${projectData.user_slug}`,
             },
+			original_author: {
+				id: projectData.user_id,
+				user_id: projectData.user_id,
+				username: projectData.username,
+				slug: projectData.user_slug,
+				avatar: projectData.avatar,
+				isVerified: projectData.isVerified,
+				activeProfileBadge: projectData.activeProfileBadge,
+				role: normalizeProjectOwnerRole(projectData.owner_role),
+				type: "user",
+				profile_url: `/user/${projectData.user_slug}`,
+			},
             organization: organizationOwner ? {
                 id: organizationOwner.id,
                 slug: organizationOwner.slug,
@@ -2426,10 +2456,21 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             })),
             is_liked: !!projectData.is_liked,
             permissions: {
+				is_owner: Boolean(access?.isOwner),
+				can_manage_collaborators: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES)
+					|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS)
+					|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS),
+				can_manage_invites: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES),
+				can_edit_members: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS),
+				can_remove_members: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS),
                 can_edit_details: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_DETAILS),
                 can_edit_body: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY),
                 can_edit_gallery: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_GALLERY),
                 can_manage_versions: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS),
+				can_upload_versions: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION),
+				can_edit_versions: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION),
+				can_delete_versions: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION),
+				can_view_analytics: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.VIEW_ANALYTICS),
                 can_delete_project: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.DELETE_PROJECT),
             },
         };
@@ -2481,6 +2522,11 @@ router.delete("/:slug", auth, async (req, res) => {
 
         await db.query("DELETE FROM project_versions WHERE project_id = ?", [projectId]);
         await db.query("DELETE FROM project_gallery WHERE project_id = ?", [projectId]);
+		await db.query(
+			`DELETE FROM notification_events
+			WHERE event_type = 'project_collaboration_invite' AND object_type = 'project' AND object_id = ?`,
+			[projectId]
+		);
         await db.query("DELETE FROM projects WHERE id = ?", [projectId]);
 
         res.json({ success: true, message: "Project and associated files deleted" });
@@ -2802,7 +2848,7 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
         const access = await requireProjectPermission(res, {
             project,
             userId: req.user.id,
-            permission: ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS,
+			permission: PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION,
         });
 
         if(!access) {
@@ -2923,7 +2969,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
         const access = await requireProjectPermission(res, {
             project,
             userId: req.user.id,
-            permission: ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS,
+			permission: PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION,
         });
 
         if(!access) {
@@ -2974,127 +3020,524 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
     }
 });
 
-router.post("/:slug/members", auth, async (req, res) => {
-    const { slug } = req.params;
-    const { username, role = "Member" } = req.body;
+const getProjectCollaboratorManagementAccess = async (slug, userId) => {
+	const [rows] = await db.query(
+		`SELECT
+			p.id, p.user_id, p.slug, p.status, p.title, p.icon_url, p.project_type,
+			p.owner_role, p.show_owner_as_author,
+			u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar,
+			u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge
+		FROM projects p
+		INNER JOIN users u ON u.id = p.user_id
+		WHERE p.slug = ?
+		LIMIT 1`,
+		[slug]
+	);
+	const project = rows[0] || null;
+	if(!project) {
+		return null;
+	}
 
-    try {
-        const [project] = await db.query("SELECT id, user_id FROM projects WHERE slug = ?", [slug]);
-        if(!project.length || project[0].user_id !== req.user.id) {
-            return res.status(403).json({ message: "Unauthorized or project not found" });
-        }
+	const access = await getProjectAccess({ project, userId });
+	return {
+		project,
+		access,
+		isOwner: Boolean(access?.isOwner),
+		canManageInvites: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES),
+		canEditMembers: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS),
+		canRemoveMembers: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS),
+	};
+};
 
-        const [user] = await db.query("SELECT id FROM users WHERE username = ?", [username]);
-        if(!user.length) {
-            return res.status(404).json({ message: "User not found" });
-        }
+const getProjectOrganizationSettings = async ({ projectId, userId }) => {
+	const [organizationRowsResult, organizationOptionRowsResult] = await Promise.all([
+		db.query(
+			`SELECT
+			o.id,
+			o.slug,
+			o.name,
+			o.summary,
+			o.icon_url
+			FROM organization_projects op
+			INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
+			WHERE op.project_id = ?
+			LIMIT 1`,
+			[projectId]
+		),
+		db.query(
+			`SELECT
+			o.id,
+			o.slug,
+			o.name,
+			o.summary,
+			o.icon_url,
+			o.owner_user_id,
+			om.organization_permissions
+			FROM organization_members om
+			INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = om.organization_id COLLATE utf8mb4_unicode_ci
+			WHERE om.user_id = ?
+			AND om.status = 'accepted'
+			ORDER BY o.updated_at DESC`,
+			[userId]
+		),
+	]);
+	const organizationRows = organizationRowsResult[0];
+	const organizationOptionRows = organizationOptionRowsResult[0];
+	const organizationOptions = organizationOptionRows.filter((row) => {
+		if(Number(row.owner_user_id) === Number(userId)) {
+			return true;
+		}
 
-        const [existingMember] = await db.query("SELECT 1 FROM project_members WHERE project_id = ? AND user_id = ?", [project[0].id, user[0].id]);
-        if(existingMember.length) {
-            return res.status(400).json({ message: "User is already a member" });
-        }
+		const permissions = new Set(parsePermissions(row.organization_permissions));
+		return permissions.has(ORG_PERMISSIONS.ADD_PROJECT);
+	}).map((row) => ({
+		id: row.id,
+		slug: row.slug,
+		name: row.name,
+		summary: row.summary || "",
+		icon_url: row.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+	}));
+	const currentOrganization = organizationRows[0] ? {
+		id: organizationRows[0].id,
+		slug: organizationRows[0].slug,
+		name: organizationRows[0].name,
+		summary: organizationRows[0].summary || "",
+		icon_url: organizationRows[0].icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+	} : null;
 
-        await db.query("INSERT INTO project_members (project_id, user_id, role, status) VALUES (?, ?, ?, ?)", [project[0].id, user[0].id, role, "accept"]);
-        res.json({ success: true, message: "Invitation sent" });
-    } catch (error) {
-        console.error("Error inviting member:", error);
-        res.status(500).json({ message: "Error inviting member", error: error.message });
-    }
+	if(currentOrganization && !organizationOptions.some((item) => item.slug === currentOrganization.slug)) {
+		organizationOptions.unshift(currentOrganization);
+	}
+
+	return {
+		organization: currentOrganization,
+		organizationOptions,
+	};
+};
+
+const findCollaboratorUser = async ({ userId, slug, username }) => {
+	if(userId) {
+		const [rows] = await db.query(
+			"SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge FROM users WHERE id = ? LIMIT 1",
+			[userId]
+		);
+		return rows[0] || null;
+	}
+
+	const identifier = String(slug || username || "").trim();
+	if(!identifier) {
+		return null;
+	}
+
+	const [rows] = await db.query(
+		"SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge FROM users WHERE slug = ? OR username = ? LIMIT 1",
+		[identifier, identifier]
+	);
+	return rows[0] || null;
+};
+
+const inviteProjectCollaborator = async (req, res) => {
+	const { slug } = req.params;
+
+	try {
+		const management = await getProjectCollaboratorManagementAccess(slug, req.user.id);
+		if(!management?.canManageInvites) {
+			return res.status(403).json({ message: "You do not have permission to manage project invitations" });
+		}
+		const { project, access, isOwner } = management;
+
+		const invitedUser = await findCollaboratorUser({
+			userId: req.body?.user_id,
+			slug: req.body?.slug,
+			username: req.body?.username,
+		});
+		if(!invitedUser) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		if(Number(invitedUser.id) === Number(project.user_id)) {
+			return res.status(400).json({ message: "The project owner is already a member" });
+		}
+
+		const [existingRows] = await db.query(
+			"SELECT id, status FROM project_members WHERE project_id = ? AND user_id = ? LIMIT 1",
+			[project.id, invitedUser.id]
+		);
+		if(existingRows[0]?.status === "accepted" || existingRows[0]?.status === "accept") {
+			return res.status(409).json({ message: "User is already a project collaborator" });
+		}
+		if(existingRows[0]?.status === "pending") {
+			return res.status(409).json({ message: "An invitation is already pending for this user" });
+		}
+
+		const requestedPermissions = normalizeCollaboratorPermissions(req.body?.permissions, DEFAULT_PROJECT_COLLABORATOR_PERMISSIONS);
+		const permissions = isOwner ? requestedPermissions : requestedPermissions.filter((permission) => hasProjectPermission(access, permission));
+		const role = normalizeCollaboratorRole(req.body?.role);
+		const showAsAuthor = normalizeBoolean(req.body?.show_as_author) ? 1 : 0;
+		const now = Math.floor(Date.now() / 1000);
+		const connection = await db.getConnection();
+
+		try {
+			await connection.beginTransaction();
+			await connection.query(
+				`INSERT INTO project_members
+				(project_id, user_id, role, status, show_as_author, permissions, invited_by_user_id, created_at, updated_at)
+				VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+				ON DUPLICATE KEY UPDATE
+				role = VALUES(role), status = 'pending', show_as_author = VALUES(show_as_author), permissions = VALUES(permissions),
+				invited_by_user_id = VALUES(invited_by_user_id), created_at = VALUES(created_at), updated_at = VALUES(updated_at)`,
+				[project.id, invitedUser.id, role, showAsAuthor, JSON.stringify(permissions), req.user.id, now, now]
+			);
+			await connection.query(
+				`INSERT INTO notification_events
+				(recipient_user_id, actor_user_id, event_type, object_type, object_id, created_at, read_at)
+				VALUES (?, ?, 'project_collaboration_invite', 'project', ?, ?, NULL)
+				ON DUPLICATE KEY UPDATE actor_user_id = VALUES(actor_user_id), created_at = VALUES(created_at), read_at = NULL`,
+				[invitedUser.id, req.user.id, project.id, now]
+			);
+			await connection.commit();
+		} catch (error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
+		const [[invitation]] = await db.query(
+			"SELECT id, status, created_at, updated_at FROM project_members WHERE project_id = ? AND user_id = ? LIMIT 1",
+			[project.id, invitedUser.id]
+		);
+
+		return res.status(201).json({
+			success: true,
+			collaborator: {
+				...invitedUser,
+				user_id: invitedUser.id,
+				invitation_id: invitation.id,
+				role,
+				status: invitation.status,
+				show_as_author: Boolean(showAsAuthor),
+				permissions,
+				created_at: Number(invitation.created_at || now),
+				updated_at: Number(invitation.updated_at || now),
+			},
+		});
+	} catch (error) {
+		console.error("Error inviting project collaborator:", error);
+		return res.status(500).json({ message: "Error inviting project collaborator", error: error.message });
+	}
+};
+
+const updateProjectCollaborator = async (req, res) => {
+	try {
+		const management = await getProjectCollaboratorManagementAccess(req.params.slug, req.user.id);
+		if(!management?.canEditMembers) {
+			return res.status(403).json({ message: "You do not have permission to edit project collaborators" });
+		}
+		const { project, access, isOwner } = management;
+
+		if(Number(req.params.userId) === Number(project.user_id)) {
+			return res.status(400).json({ message: "Project owner permissions cannot be changed" });
+		}
+		if(!isOwner && Number(req.params.userId) === Number(req.user.id)) {
+			return res.status(400).json({ message: "You cannot change your own collaborator permissions" });
+		}
+
+		const [[collaborator]] = await db.query(
+			`SELECT role, show_as_author, permissions
+			FROM project_members
+			WHERE project_id = ? AND user_id = ? AND status IN ('pending', 'accept', 'accepted')
+			LIMIT 1`,
+			[project.id, req.params.userId]
+		);
+		if(!collaborator) {
+			return res.status(404).json({ message: "Collaborator not found" });
+		}
+
+		const hasPermissions = Object.prototype.hasOwnProperty.call(req.body || {}, "permissions");
+		const hasRole = Object.prototype.hasOwnProperty.call(req.body || {}, "role");
+		const hasShowAsAuthor = Object.prototype.hasOwnProperty.call(req.body || {}, "show_as_author");
+		const currentPermissions = normalizeCollaboratorPermissions(parsePermissions(collaborator.permissions));
+		const requestedPermissions = hasPermissions
+			? normalizeCollaboratorPermissions(req.body.permissions)
+			: currentPermissions;
+		const permissions = isOwner ? requestedPermissions : PROJECT_COLLABORATOR_PERMISSIONS.filter((permission) => (
+			hasProjectPermission(access, permission)
+				? requestedPermissions.includes(permission)
+				: currentPermissions.includes(permission)
+		));
+		const role = hasRole ? normalizeCollaboratorRole(req.body.role) : normalizeCollaboratorRole(collaborator.role);
+		const showAsAuthor = hasShowAsAuthor ? normalizeBoolean(req.body.show_as_author) : Boolean(collaborator.show_as_author);
+		const [result] = await db.query(
+			`UPDATE project_members
+			SET role = ?, show_as_author = ?, permissions = ?, updated_at = ?
+			WHERE project_id = ? AND user_id = ? AND status IN ('pending', 'accept', 'accepted')`,
+			[role, showAsAuthor ? 1 : 0, JSON.stringify(permissions), Math.floor(Date.now() / 1000), project.id, req.params.userId]
+		);
+		if(!result.affectedRows) {
+			return res.status(404).json({ message: "Collaborator not found" });
+		}
+
+		await bumpProjectCacheVersion(project.slug);
+		return res.json({ success: true, role, show_as_author: showAsAuthor, permissions });
+	} catch (error) {
+		console.error("Error updating project collaborator:", error);
+		return res.status(500).json({ message: "Error updating project collaborator", error: error.message });
+	}
+};
+
+const updateProjectOwnerAttribution = async (req, res) => {
+	try {
+		const management = await getProjectCollaboratorManagementAccess(req.params.slug, req.user.id);
+		if(!management) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+		if(!management.isOwner) {
+			return res.status(403).json({ message: "Only the project owner can edit owner attribution" });
+		}
+
+		const hasRole = Object.prototype.hasOwnProperty.call(req.body || {}, "role");
+		const hasShowAsAuthor = Object.prototype.hasOwnProperty.call(req.body || {}, "show_as_author");
+		const role = hasRole ? normalizeProjectOwnerRole(req.body.role) : normalizeProjectOwnerRole(management.project.owner_role);
+		const showAsAuthor = hasShowAsAuthor ? normalizeBoolean(req.body.show_as_author) : Boolean(management.project.show_owner_as_author);
+		await db.query(
+			`UPDATE projects
+			SET owner_role = ?, show_owner_as_author = ?, updated_at = NOW()
+			WHERE id = ? AND user_id = ?`,
+			[role, showAsAuthor ? 1 : 0, management.project.id, req.user.id]
+		);
+
+		await bumpProjectCacheVersion(management.project.slug);
+		return res.json({ success: true, role, show_as_author: showAsAuthor });
+	} catch (error) {
+		console.error("Error updating project owner attribution:", error);
+		return res.status(500).json({ message: "Error updating project owner attribution", error: error.message });
+	}
+};
+
+const removeProjectCollaborator = async (req, res) => {
+	try {
+		const management = await getProjectCollaboratorManagementAccess(req.params.slug, req.user.id);
+		if(!management) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+		const { project, isOwner, canManageInvites, canRemoveMembers } = management;
+
+		const isSelf = Number(req.params.userId) === Number(req.user.id);
+		if(Number(req.params.userId) === Number(project.user_id)) {
+			return res.status(400).json({ message: "Project owner cannot be removed" });
+		}
+
+		const [[targetMember]] = await db.query(
+			"SELECT status FROM project_members WHERE project_id = ? AND user_id = ? LIMIT 1",
+			[project.id, req.params.userId]
+		);
+		if(!targetMember) {
+			return res.status(404).json({ message: "Collaborator not found" });
+		}
+		const canRemoveTarget = isOwner
+			|| isSelf
+			|| (targetMember.status === "pending" ? canManageInvites : canRemoveMembers);
+		if(!canRemoveTarget) {
+			return res.status(403).json({ message: "You do not have permission to remove this collaborator" });
+		}
+
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
+			const [result] = await connection.query(
+				"DELETE FROM project_members WHERE project_id = ? AND user_id = ?",
+				[project.id, req.params.userId]
+			);
+			if(!result.affectedRows) {
+				await connection.rollback();
+				return res.status(404).json({ message: "Collaborator not found" });
+			}
+			await connection.query(
+				`DELETE FROM notification_events
+				WHERE recipient_user_id = ? AND event_type = 'project_collaboration_invite'
+				AND object_type = 'project' AND object_id = ?`,
+				[req.params.userId, project.id]
+			);
+			await connection.commit();
+		} catch (error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
+		await bumpProjectCacheVersion(project.slug);
+		return res.json({ success: true });
+	} catch (error) {
+		console.error("Error removing project collaborator:", error);
+		return res.status(500).json({ message: "Error removing project collaborator", error: error.message });
+	}
+};
+
+router.get("/:slug/collaborators", auth, async (req, res) => {
+	try {
+		const management = await getProjectCollaboratorManagementAccess(req.params.slug, req.user.id);
+		if(!management || (!management.isOwner && !management.canManageInvites && !management.canEditMembers && !management.canRemoveMembers)) {
+			return res.status(403).json({ message: "You do not have permission to manage project collaborators" });
+		}
+		const { project, access, isOwner, canManageInvites, canEditMembers, canRemoveMembers } = management;
+
+		const [collaboratorRowsResult, organizationSettings] = await Promise.all([
+				db.query(
+				`SELECT
+				pm.id AS invitation_id, pm.user_id, pm.role, pm.status, pm.show_as_author, pm.permissions, pm.created_at, pm.updated_at,
+				u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
+				FROM project_members pm
+				INNER JOIN users u ON u.id = pm.user_id
+				WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.status IN ('pending', 'accept', 'accepted')
+				ORDER BY CASE WHEN pm.status = 'pending' THEN 0 ELSE 1 END, pm.created_at DESC`,
+				[project.id, project.user_id]
+			),
+			isOwner ? getProjectOrganizationSettings({ projectId: project.id, userId: req.user.id }) : Promise.resolve({ organization: null, organizationOptions: [] }),
+		]);
+		const rows = collaboratorRowsResult[0];
+
+		return res.json({
+			project: {
+				id: project.id,
+				user_id: project.user_id,
+				slug: project.slug,
+				title: project.title,
+				icon_url: project.icon_url,
+				project_type: project.project_type,
+				current_user_id: req.user.id,
+				organization: organizationSettings.organization,
+				permissions: {
+					is_owner: isOwner,
+					can_manage_invites: canManageInvites,
+					can_edit_members: canEditMembers,
+					can_remove_members: canRemoveMembers,
+				},
+			},
+			owner: {
+				user_id: project.user_id,
+				username: project.owner_username,
+				slug: project.owner_slug,
+				avatar: project.owner_avatar,
+				isVerified: Number(project.owner_isVerified || 0),
+				activeProfileBadge: project.owner_activeProfileBadge,
+				role: normalizeProjectOwnerRole(project.owner_role),
+				show_as_author: Boolean(project.show_owner_as_author),
+				status: "owner",
+			},
+			organization_options: organizationSettings.organizationOptions,
+			available_permissions: isOwner ? PROJECT_COLLABORATOR_PERMISSIONS : PROJECT_COLLABORATOR_PERMISSIONS.filter((permission) => hasProjectPermission(access, permission)),
+			default_permissions: DEFAULT_PROJECT_COLLABORATOR_PERMISSIONS,
+			collaborators: rows.map((member) => ({
+				...member,
+				status: member.status === "accept" ? "accepted" : member.status,
+				show_as_author: Boolean(member.show_as_author),
+				permissions: normalizeCollaboratorPermissions(parsePermissions(member.permissions)),
+				isVerified: Number(member.isVerified || 0),
+				created_at: Number(member.created_at || 0),
+				updated_at: Number(member.updated_at || 0),
+			})),
+		});
+	} catch (error) {
+		console.error("Error fetching project collaborators:", error);
+		return res.status(500).json({ message: "Error fetching project collaborators", error: error.message });
+	}
 });
 
-router.put("/:slug/members/:userId", auth, async (req, res) => {
-    const { slug, userId } = req.params;
-    const { role, status } = req.body;
+router.post("/:slug/collaborators/invitations", auth, inviteProjectCollaborator);
+router.post("/:slug/members", auth, inviteProjectCollaborator);
+router.patch("/:slug/owner-attribution", auth, updateProjectOwnerAttribution);
+router.patch("/:slug/collaborators/:userId", auth, updateProjectCollaborator);
+router.put("/:slug/members/:userId", auth, updateProjectCollaborator);
+router.delete("/:slug/collaborators/:userId", auth, removeProjectCollaborator);
+router.delete("/:slug/members/:userId", auth, removeProjectCollaborator);
 
-    try {
-        const [project] = await db.query("SELECT id, user_id FROM projects WHERE slug = ?", [slug]);
-        if(!project.length || project[0].user_id !== req.user.id) {
-            return res.status(403).json({ message: "Unauthorized or project not found" });
-        }
+router.post("/collaborator-invitations/:inviteId/:action", auth, async (req, res) => {
+	const action = String(req.params.action || "").toLowerCase();
+	if(action !== "accept" && action !== "decline") {
+		return res.status(400).json({ message: "Unsupported invitation action" });
+	}
 
-        const [member] = await db.query("SELECT 1 FROM project_members WHERE project_id = ? AND user_id = ?", [project[0].id, userId]);
-        if(!member.length) {
-            return res.status(404).json({ message: "Member not found" });
-        }
+	const connection = await db.getConnection();
+	try {
+		await connection.beginTransaction();
+		const [[invitation]] = await connection.query(
+			`SELECT pm.id, pm.project_id, pm.user_id, pm.status, p.slug, p.title, p.project_type
+			FROM project_members pm
+			INNER JOIN projects p ON p.id = pm.project_id
+			WHERE pm.id = ? AND pm.user_id = ?
+			LIMIT 1 FOR UPDATE`,
+			[req.params.inviteId, req.user.id]
+		);
+		if(!invitation || invitation.status !== "pending") {
+			await connection.rollback();
+			return res.status(404).json({ message: "Pending invitation not found" });
+		}
 
-        const updates = {};
+		const nextStatus = action === "accept" ? "accepted" : "declined";
+		await connection.query(
+			"UPDATE project_members SET status = ?, updated_at = ? WHERE id = ?",
+			[nextStatus, Math.floor(Date.now() / 1000), invitation.id]
+		);
+		await connection.query(
+			`DELETE FROM notification_events
+			WHERE recipient_user_id = ? AND event_type = 'project_collaboration_invite'
+			AND object_type = 'project' AND object_id = ?`,
+			[req.user.id, invitation.project_id]
+		);
+		await connection.commit();
+		await bumpProjectCacheVersion(invitation.slug);
 
-        if(role) {
-            updates.role = role;
-        }
-
-        if(status) {
-            updates.status = status;
-        }
-
-        if(!Object.keys(updates).length) {
-            return res.status(400).json({ message: "No updates provided" });
-        }
-
-        await db.query("UPDATE project_members SET ? WHERE project_id = ? AND user_id = ?", [updates, project[0].id, userId]);
-        res.json({ success: true, message: "Member updated" });
-    } catch (error) {
-        console.error("Error updating member:", error);
-        res.status(500).json({ message: "Error updating member", error: error.message });
-    }
-});
-
-router.delete("/:slug/members/:userId", auth, async (req, res) => {
-    const { slug, userId } = req.params;
-
-    try {
-        const [project] = await db.query("SELECT id, user_id FROM projects WHERE slug = ?", [slug]);
-        if(!project.length) {
-            return res.status(404).json({ message: "Project not found" });
-        }
-
-        const isOwner = project[0].user_id === req.user.id;
-        const isSelf = req.user.id === userId;
-
-        if(!isOwner && !isSelf) {
-            return res.status(403).json({ message: "Unauthorized" });
-        }
-
-        if(isOwner && req.user.id === userId) {
-            return res.status(400).json({ message: "Owner cannot leave project" });
-        }
-
-        await db.query("DELETE FROM project_members WHERE project_id = ? AND user_id = ?", [project[0].id, userId]);
-        res.json({ success: true, message: "Member removed" });
-    } catch (error) {
-        console.error("Error removing member:", error);
-        res.status(500).json({ message: "Error removing member", error: error.message });
-    }
+		return res.json({
+			success: true,
+			action,
+			project: {
+				id: invitation.project_id,
+				slug: invitation.slug,
+				title: invitation.title,
+				project_type: invitation.project_type,
+			},
+		});
+	} catch (error) {
+		await connection.rollback();
+		console.error("Error responding to project collaboration invitation:", error);
+		return res.status(500).json({ message: "Error responding to project collaboration invitation", error: error.message });
+	} finally {
+		connection.release();
+	}
 });
 
 router.get('/:slug/members', async (req, res) => {
-    const { slug } = req.params;
+	const { slug } = req.params;
 
-    try {
-        const cacheVersion = await getProjectCacheVersion(slug);
-        const cacheKey = `modifold_project_members_${slug}_${cacheVersion}`;
-        const cachedMembers = await getCacheJson(cacheKey);
-        if(cachedMembers) {
-            return res.json(cachedMembers);
-        }
+	try {
+		const cacheVersion = await getProjectCacheVersion(slug);
+		const cacheKey = `modifold_project_members_${slug}_${cacheVersion}`;
+		const cachedMembers = await getCacheJson(cacheKey);
+		if(cachedMembers) {
+			return res.json(cachedMembers);
+		}
 
-        const [project] = await db.query('SELECT id, user_id FROM projects WHERE slug = ?', [slug]);
-        if(!project.length) {
-            return res.status(404).json({ message: "Project not found" });
-        }
+		const [project] = await db.query('SELECT id, user_id FROM projects WHERE slug = ?', [slug]);
+		if(!project.length) {
+			return res.status(404).json({ message: "Project not found" });
+		}
 
-        const [members] = await db.query(`
-            SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
-            FROM project_members pm 
-            LEFT JOIN users u ON pm.user_id = u.id 
-            WHERE pm.project_id = ?
-        `, [project[0].id]);
+		const [members] = await db.query(
+			`SELECT pm.user_id, pm.role, 'accepted' AS status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
+			FROM project_members pm
+			LEFT JOIN users u ON pm.user_id = u.id
+			WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.show_as_author = 1 AND pm.status IN ('accept', 'accepted')`,
+			[project[0].id, project[0].user_id]
+		);
 
-        await setCacheJson(cacheKey, members, 30);
-        res.json(members);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching members' });
-    }
+		await setCacheJson(cacheKey, members, 30);
+		return res.json(members);
+	} catch (error) {
+		console.error("Error fetching project members:", error);
+		return res.status(500).json({ message: 'Error fetching members' });
+	}
 });
 
 router.get("/:slug/issues", optionalAuth, async (req, res) => {
@@ -4626,10 +5069,7 @@ router.get("/:slug/analytics", auth, async (req, res) => {
         ]);
         const isModerator = userRole === "admin" || userRole === "moderator";
         const canAccess = isModerator
-            || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_DETAILS)
-            || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY)
-            || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_GALLERY)
-            || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS);
+			|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.VIEW_ANALYTICS);
 
         if(!canAccess) {
             return res.status(403).json({
@@ -4724,7 +5164,16 @@ router.get("/:slug/settings", auth, async (req, res) => {
             getUserRole(userId),
         ]);
         const isModerator = userRole === "admin" || userRole === "moderator";
-        const canAccess = isModerator || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_DETAILS) || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY) || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_GALLERY) || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS);
+		const canAccess = isModerator
+			|| hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_DETAILS)
+			|| hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY)
+			|| hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_GALLERY)
+			|| hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS)
+			|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.VIEW_ANALYTICS)
+			|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES)
+			|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS)
+			|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS)
+			|| hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.DELETE_PROJECT);
         
         if(!canAccess) {
             return res.status(403).json({
@@ -4735,78 +5184,36 @@ router.get("/:slug/settings", auth, async (req, res) => {
         const [rows] = await db.query("SELECT * FROM projects WHERE id = ? LIMIT 1", [project.id]);
         const projectRow = rows[0];
 
-        const [organizationRows] = await db.query(
-            `SELECT
-            o.id,
-            o.slug,
-            o.name,
-            o.summary,
-            o.icon_url
-            FROM organization_projects op
-            INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-            WHERE op.project_id = ?
-            LIMIT 1`,
-            [project.id]
-        );
-
-        const [organizationOptionRows] = await db.query(
-            `SELECT
-            o.id,
-            o.slug,
-            o.name,
-            o.summary,
-            o.icon_url,
-            o.owner_user_id,
-            om.organization_permissions
-            FROM organization_members om
-            INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = om.organization_id COLLATE utf8mb4_unicode_ci
-            WHERE om.user_id = ?
-            AND om.status = 'accepted'
-            ORDER BY o.updated_at DESC`,
-            [req.user.id]
-        );
-
-        const organizationOptions = organizationOptionRows.filter((row) => {
-            if(Number(row.owner_user_id) === Number(req.user.id)) {
-                return true;
-            }
-
-            const permissions = new Set(parsePermissions(row.organization_permissions));
-            return permissions.has(ORG_PERMISSIONS.ADD_PROJECT);
-        }).map((row) => ({
-            id: row.id,
-            slug: row.slug,
-            name: row.name,
-            summary: row.summary || "",
-            icon_url: row.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
-        }));
-
-        const currentOrganization = organizationRows[0] ? {
-            id: organizationRows[0].id,
-            slug: organizationRows[0].slug,
-            name: organizationRows[0].name,
-            summary: organizationRows[0].summary || "",
-            icon_url: organizationRows[0].icon_url || "https://media.modifold.com/static/no-project-icon.svg",
-        } : null;
-
-        if(currentOrganization && !organizationOptions.some((item) => item.slug === currentOrganization.slug)) {
-            organizationOptions.unshift(currentOrganization);
-        }
+		const organizationSettings = await getProjectOrganizationSettings({
+			projectId: project.id,
+			userId: req.user.id,
+		});
 
         const disclosureState = await getProjectDisclosureState(db, project.id);
 
         res.json({
             ...projectRow,
 			license: { id: projectRow.license_id, name: projectRow.license_name },
-            organization: currentOrganization,
-            organization_options: organizationOptions,
+			organization: organizationSettings.organization,
+			organization_options: organizationSettings.organizationOptions,
 			disclosures: disclosureState.disclosures,
 			archive: disclosureState.archive,
             permissions: {
+				is_owner: Boolean(access?.isOwner),
+				can_manage_collaborators: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES)
+					|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS)
+					|| hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS),
+				can_manage_invites: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES),
+				can_edit_members: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS),
+				can_remove_members: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.REMOVE_MEMBERS),
                 can_edit_details: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_DETAILS),
                 can_edit_body: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY),
                 can_edit_gallery: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_GALLERY),
                 can_manage_versions: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS),
+				can_upload_versions: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION),
+				can_edit_versions: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION),
+				can_delete_versions: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_VERSION),
+				can_view_analytics: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.VIEW_ANALYTICS),
                 can_delete_project: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.DELETE_PROJECT),
             },
         });

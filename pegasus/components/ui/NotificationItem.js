@@ -149,6 +149,16 @@ function NotificationText({ notification, t }) {
         );
     }
 
+	if(notification.eventType === "project_collaboration_invite") {
+		const projectTitle = notification.project?.title || t("messages.projectFallback");
+
+		return (
+			<>
+				{t("messages.projectCollaborationInvitePrefix")} {firstActorView} {t("messages.projectCollaborationInviteTail")} <ProjectLink project={notification.project}>{projectTitle}</ProjectLink>
+			</>
+		);
+	}
+
     return t("messages.unknown");
 }
 
@@ -213,6 +223,15 @@ function NotificationIcon({ eventType, clipId }) {
         );
     }
 
+	if(eventType === "project_collaboration_invite") {
+		return (
+			<svg className="notification-item__icon notification-item__icon--blue" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+				<circle cx="8" cy="8" r="8" fill="currentColor" />
+				<path d="M5.1 10.8c.3-1.4 1.3-2.1 2.9-2.1s2.6.7 2.9 2.1M8 7.4a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke="#fff" strokeWidth="1.35" strokeLinecap="round" />
+			</svg>
+		);
+	}
+
     if(eventType === "organization_member_removed") {
         return (
             <svg className="notification-item__icon notification-item__icon--red" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -261,9 +280,9 @@ function ProjectAvatar({ project }) {
     );
 }
 
-export default function NotificationItem({ notification, timeFormatter, t, onOrganizationInviteAction, isInviteActionPending = false }) {
+export default function NotificationItem({ notification, timeFormatter, t, onOrganizationInviteAction, onProjectCollaboratorInviteAction, isInviteActionPending = false }) {
     const approvedIconClipId = `notification-approved-icon-${notification.id}`;
-    const thumbnailProject = notification.eventType === "project_like" ? notification.project : notification.eventType === "project_version_release" ? notification.projectVersion?.project : null;
+	const thumbnailProject = notification.eventType === "project_like" ? notification.project : notification.eventType === "project_version_release" ? notification.projectVersion?.project : null;
     const notificationProject = getNotificationProject(notification);
     const shouldShowProjectAvatar = PROJECT_IMAGE_EVENT_TYPES.has(notification.eventType) && notificationProject?.iconUrl;
 
@@ -304,11 +323,23 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
                         {t("actions.accept")}
                     </button>
 
-                    <button className="button button--size-s button--type-secondary" onClick={() => onOrganizationInviteAction(notification, "decline")} disabled={isInviteActionPending}>
+                    <button className="button button--size-s button--type-minimal" onClick={() => onOrganizationInviteAction(notification, "decline")} disabled={isInviteActionPending}>
                         {t("actions.decline")}
                     </button>
                 </div>
             )}
+
+			{notification.eventType === "project_collaboration_invite" && notification.inviteId ? (
+				<div className="notification-item__actions">
+					<button className="button button--size-s button--type-primary" onClick={() => onProjectCollaboratorInviteAction(notification, "accept")} disabled={isInviteActionPending}>
+						{t("actions.accept")}
+					</button>
+
+					<button className="button button--size-s button--type-minimal" onClick={() => onProjectCollaboratorInviteAction(notification, "decline")} disabled={isInviteActionPending}>
+						{t("actions.decline")}
+					</button>
+				</div>
+			) : null}
         </div>
     );
 }

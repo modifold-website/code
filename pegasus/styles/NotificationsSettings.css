@@ -10,10 +10,10 @@
     padding: 18px;
     border-radius: 26px;
     align-items: center;
-    transition: transform .05s ease-in-out;
+	transition: transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 .notification-item:active {
-    transform: scale(.95);
+	transform: scale(.98);
 }
 .notification-item b {
     font-weight: 500;
@@ -195,4 +195,43 @@
 }
 .notifications-settings .checkbox:not(:last-child) {
     margin-bottom: 8px;
+}
+@media (max-width: 600px) {
+	.notification-item {
+		display: grid;
+		grid-template-columns: 46px minmax(0, 1fr) auto;
+		align-items: start;
+		padding: 16px;
+		border-radius: 22px;
+	}
+	.notification-item__image {
+		grid-column: 1;
+		grid-row: 1;
+		margin-right: 10px;
+	}
+	.notification-item__body {
+		grid-column: 2;
+		grid-row: 1;
+		min-width: 0;
+	}
+	.notification-item__etc {
+		grid-column: 3;
+		grid-row: 1;
+		margin-left: 10px;
+	}
+	.notification-item__actions {
+		grid-column: 2 / -1;
+		grid-row: 2;
+		justify-content: flex-start;
+		margin-top: 10px;
+		margin-left: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.notification-item {
+		transition: none;
+	}
+	.notification-item:active {
+		transform: none;
+	}
 }

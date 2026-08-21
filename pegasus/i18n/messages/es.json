@@ -1179,6 +1179,7 @@
   "SettingsProjectPage": {
     "sidebar": {
       "general": "General",
+      "collaborators": "Equipo",
       "description": "Descripción",
       "disclosures": "Detalles",
       "links": "Enlaces",
@@ -1193,7 +1194,14 @@
     "save": "Guardar",
     "unsavedBar": {
       "message": "Tienes cambios sin guardar.",
-      "reset": "Restablecer"
+      "reset": "Restablecer",
+      "leaveConfirm": {
+        "title": "¿Salir de la página?",
+        "messageTitle": "Tienes cambios sin guardar",
+        "description": "Los cambios sin guardar se perderán si sales de esta página.",
+        "stay": "Permanecer en la página",
+        "leave": "Salir de la página"
+      }
     },
     "metadata": {
       "title": "Ajustes — {title} — Modifold"
@@ -1477,8 +1485,13 @@
     },
     "gallerySettings": {
       "success": "Imagen subida",
+      "successMultiple": "{count, plural, one {Imagen subida} other {# imágenes subidas}}",
       "errors": {
-        "upload": "Error al subir la imagen"
+        "upload": "Error al subir la imagen",
+        "uploadMultiple": "{count, plural, one {No se pudo subir # imagen. Puedes intentarlo de nuevo.} other {No se pudieron subir # imágenes. Puedes intentarlo de nuevo.}}",
+        "refresh": "Las imágenes se subieron, pero no se pudo actualizar la galería",
+        "invalidFiles": "Solo se pueden seleccionar imágenes JPEG, PNG, GIF y WebP",
+        "fileTooLarge": "Cada imagen debe ocupar menos de 100 MB"
       },
       "title": "Añadir nueva imagen",
       "media": {
@@ -1487,8 +1500,11 @@
       },
       "fields": {
         "title": "Título",
+        "titleOptional": "Título (opcional)",
         "description": "Descripción",
+        "descriptionOptional": "Descripción (opcional)",
         "order": "Índice de orden",
+        "orderOptional": "Índice de orden (opcional)",
         "featured": "Destacada"
       },
       "placeholders": {
@@ -1518,18 +1534,25 @@
       },
       "modal": {
         "steps": {
+          "label": "Pasos para subir a la galería",
           "files": "Archivos",
           "metadata": "Metadatos"
         },
         "dropzone": {
-          "uploadTitle": "Subir imagen",
-          "uploadHint": "Arrastra y suelta una imagen o haz clic para buscar",
+          "uploadTitle": "Subir imágenes",
+          "uploadHint": "Selecciona varias imágenes o arrástralas aquí",
+          "selected": "{count, plural, one {# imagen seleccionada} other {# imágenes seleccionadas}}",
+          "addMore": "Haz clic o arrastra más imágenes para añadirlas",
           "replaceTitle": "Reemplazar imagen (opcional)",
           "replaceHint": "Arrastra una imagen nueva o haz clic para buscar"
         },
+        "selectedFiles": "Imágenes seleccionadas",
+        "removeFile": "Eliminar {name}",
+        "metadataNavigation": "Imágenes seleccionadas",
         "actions": {
           "continue": "Continuar",
           "back": "Atrás",
+          "upload": "Subir",
           "uploading": "Subiendo..."
         }
       },
@@ -1638,6 +1661,108 @@
         "accepted": "Aceptado",
         "member": "Miembro"
       }
+    }
+  },
+  "ProjectCollaborators": {
+    "title": "Equipo",
+    "description": "Gestiona quién puede trabajar en este proyecto y elige si se publica desde tu perfil o desde una organización.",
+    "invite": {
+      "title": "Invitar colaboradores al proyecto",
+      "description": "Las personas invitadas recibirán una notificación y, después de aceptar, podrán gestionar el proyecto dentro de los permisos que les concedas.",
+      "hint": "Busca por nombre de usuario o slug y selecciona a todas las personas que quieras invitar.",
+      "placeholder": "Search users",
+      "selectedLabel": "Usuarios seleccionados",
+      "removeSelection": "Quitar a {username} de la invitación",
+      "resultsLabel": "User search results",
+      "searching": "Searching...",
+      "noResults": "No users found"
+    },
+    "list": {
+      "title": "Lista de colaboradores"
+    },
+    "status": { "pending": "Pendiente", "accepted": "Activo", "owner": "Autor del proyecto" },
+    "role": {
+      "title": "Rol en el proyecto",
+      "description": "El rol se muestra junto al colaborador en los ajustes y en la lista de autores del proyecto.",
+      "ownerDescription": "El rol se muestra junto a ti en los ajustes y en la lista de autores del proyecto.",
+      "placeholder": "Por ejemplo, Desarrollador o Helper"
+    },
+    "authors": {
+      "title": "Lista de autores",
+      "description": "Elige si este colaborador aparecerá públicamente en la página del proyecto.",
+      "ownerDescription": "Elige si aparecerás públicamente en la barra lateral de la página del proyecto.",
+      "toggle": "Mostrar al colaborador en la lista de autores",
+      "ownerToggle": "Mostrar al autor del proyecto en la lista de autores"
+    },
+    "permissionsTitle": "Permisos del proyecto",
+    "permissionsHint": "Elige exactamente qué podrá hacer esta persona en el proyecto.",
+    "permissions": {
+      "project_edit_details": "Editar los ajustes del proyecto",
+      "project_edit_body": "Editar la descripción y los enlaces",
+      "project_edit_gallery": "Gestionar la galería",
+      "project_upload_version": "Subir versiones",
+      "project_edit_version": "Editar versiones",
+      "project_delete_version": "Eliminar versiones",
+      "project_view_analytics": "Ver analíticas",
+	  "project_manage_invites": "Gestionar invitaciones",
+	  "project_edit_members": "Editar colaboradores",
+	  "project_remove_members": "Eliminar colaboradores",
+      "project_delete": "Eliminar el proyecto"
+    },
+    "organization": {
+      "title": "Organización del proyecto",
+      "description": "Vincula el proyecto a una organización para publicarlo en su nombre. El autor del proyecto no cambiará.",
+      "noOrganization": "Sin organización",
+      "selectLabel": "Elige una organización para el proyecto",
+      "hint": "Los miembros de la organización también pueden obtener acceso mediante sus roles.",
+      "noOptions": "Todavía no tienes una organización a la que puedas añadir este proyecto.",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "success": "Propiedad del proyecto actualizada",
+      "error": "No se pudo actualizar la propiedad del proyecto",
+      "confirm": {
+        "attachTitle": "¿Publicar desde {organization}?",
+        "attachDescription": "La organización aparecerá como propietaria del proyecto. Los miembros con los permisos adecuados podrán obtener acceso.",
+        "attachAction": "Vincular organización",
+        "moveTitle": "¿Mover el proyecto a {organization}?",
+        "moveDescription": "La organización mostrada y el acceso mediante sus roles cambiarán de inmediato.",
+        "moveAction": "Mover proyecto",
+        "detachTitle": "¿Desvincular el proyecto de {organization}?",
+        "detachDescription": "El proyecto volverá a publicarse desde tu perfil personal y se retirará el acceso mediante la organización.",
+        "detachAction": "Desvincular organización",
+        "cancel": "Cancelar"
+      }
+    },
+    "actions": {
+      "invite": "Invitar",
+      "inviting": "Invitando...",
+	  "save": "Guardar cambios",
+      "remove": "Remove collaborator",
+      "removing": "Removing...",
+      "cancelInvitation": "Cancel invitation",
+      "keep": "Keep access",
+      "expand": "Edit permissions",
+      "collapse": "Collapse permissions",
+      "expandOwner": "Editar atribución del autor",
+      "collapseOwner": "Contraer ajustes del autor"
+    },
+    "confirm": {
+      "removeTitle": "Remove {username} from this project?",
+      "cancelTitle": "Cancel the invitation for {username}?"
+    },
+    "success": {
+      "invited": "Invitation sent to {username}",
+      "invitedMany": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
+	  "permissionsSaved": "Ajustes del colaborador guardados",
+      "removed": "{username} no longer has access",
+      "invitationCancelled": "Invitation for {username} cancelled"
+    },
+    "errors": {
+      "search": "Could not search users",
+      "invite": "Could not send the invitation",
+      "inviteMany": "{count, plural, one {No se pudo invitar a # usuario} other {No se pudo invitar a # usuarios}}",
+	  "save": "No se pudieron guardar los ajustes del colaborador",
+      "remove": "Could not remove the collaborator"
     }
   },
   "NewsPage": {
@@ -2048,7 +2173,9 @@
       "unknown": "Nueva notificación",
       "organizationFallback": "organización",
       "organizationInviteTail": "te invitó a",
-      "organizationRemovedTail": "te eliminó de"
+      "organizationRemovedTail": "te eliminó de",
+      "projectCollaborationInvitePrefix": "El usuario",
+      "projectCollaborationInviteTail": "te invitó a colaborar en"
     },
     "errors": {
       "fetch": "No se pudieron cargar las notificaciones",
@@ -2361,7 +2488,7 @@
       "actions": {
         "uploadIcon": "Subir icono",
         "uploading": "Subiendo...",
-        "save": "Guardar organización",
+      "save": "Guardar",
         "saving": "Guardando...",
         "invite": "Invitar",
         "inviting": "Invitando...",

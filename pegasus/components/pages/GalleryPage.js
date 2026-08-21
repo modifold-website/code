@@ -46,7 +46,7 @@ export default function GalleryPage({ project, authToken }) {
         setEditFormData({
             title: image?.title || "",
             description: image?.description || "",
-            ordering: image?.ordering ?? 0,
+			ordering: Math.max(0, Number.parseInt(image?.ordering, 10) || 0),
             featured: false,
         });
         setEditModalOpen(true);
@@ -271,7 +271,7 @@ export default function GalleryPage({ project, authToken }) {
                                         <p className="blog-settings__field-title">{t("gallery.orderIndex")}</p>
                                         <div className="field field--default blog-settings__input">
                                             <label className="field__wrapper">
-                                                <input type="number" name="ordering" value={editFormData.ordering} className="text-input" disabled={editLoading} onChange={(e) => setEditFormData((prev) => ({ ...prev, ordering: e.target.value }))} />
+                                                <input type="number" name="ordering" min="0" step="1" value={editFormData.ordering} className="text-input" disabled={editLoading} onChange={(event) => setEditFormData((prev) => ({ ...prev, ordering: event.target.value === "" ? "" : Math.max(0, Number.parseInt(event.target.value, 10) || 0) }))} />
                                             </label>
                                         </div>
 

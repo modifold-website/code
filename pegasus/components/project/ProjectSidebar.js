@@ -72,7 +72,11 @@ function ProjectCreatorOrganizationLabel({ t }) {
 	);
 }
 
-function ProjectCreatorCard({ creator, authToken, t, locale }) {
+function ProjectCreatorRoleLabel({ role }) {
+	return <div className="project-creator-card__role">{role}</div>;
+}
+
+function ProjectCreatorCard({ creator, authToken, t, locale, compact = false }) {
 	const { isLoggedIn, user: currentUser } = useAuth();
 	const creatorId = getCreatorId(creator);
 	const isOrganization = creator?.type === "organization";
@@ -138,7 +142,7 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 	};
 
 	return (
-		<div className="project-creator-card">
+		<div className={`project-creator-card ${compact ? "project-creator-card--compact" : ""}`}>
 			<div className="project-creator-card__header">
 				<Link className="project-creator-card__avatar button--active-transform" href={getCreatorHref(creator)}>
 					<div className={avatarClassName} style={{ aspectRatio: "480 / 320", width: "38px", height: "38px", maxWidth: "none", maxHeight: "none", backgroundColor: "var(--theme-color-background)" }}>
@@ -146,14 +150,16 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 					</div>
 				</Link>
 
-				<Link className={`project-creator-card__name ${isOrganization ? "project-creator-card__name--organization" : ""}`} href={getCreatorHref(creator)}>
+				<Link className={`project-creator-card__name ${isOrganization || creator?.role ? "project-creator-card__name--with-meta" : ""}`} href={getCreatorHref(creator)}>
 					<UserName user={creator} className="project-creator-card__name-text" />
 
 					{isOrganization && <ProjectCreatorOrganizationLabel t={t} />}
+
+					{!isOrganization && creator?.role ? <ProjectCreatorRoleLabel role={creator.role} /> : null}
 				</Link>
 			</div>
 
-			<div className="project-creator-card__stats">
+			{!compact ? <div className="project-creator-card__stats">
 				{!isOrganization && (
 					<ProjectCreatorStat
 						icon={(
@@ -192,9 +198,9 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 					value={formatDownloads(stats.downloads, locale)}
 					label={t("creatorStats.downloads", { count: stats.downloads })}
 				/>
-			</div>
+			</div> : null}
 
-			{!isOrganization && !isOwnCreator && (
+			{!compact && !isOrganization && !isOwnCreator ? (
 				<button className={`button button--size-m ${isSubscribed ? "button--type-secondary" : "button--type-primary"} button--with-icon project-creator-card__follow`} type="button" onClick={handleSubscribe} disabled={isSaving}>
 					{isSubscribed ? (
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -213,7 +219,7 @@ function ProjectCreatorCard({ creator, authToken, t, locale }) {
 
 					{isSubscribed ? t("unsubscribeCreator") : t("subscribeCreator")}
 				</button>
-			)}
+			) : null}
 		</div>
 	);
 }
@@ -240,6 +246,9 @@ export default function ProjectSidebar({ project, authToken, showLicense = true,
     const isSameCreatedUpdated = hasValidDates ? createdAtTime === updatedAtTime : project?.created_at === project?.updated_at;
     const showUpdatedAt = Boolean(project?.updated_at) && !isSameCreatedUpdated;
     const projectPath = getProjectPath(project);
+	const hasOrganizationOwner = project?.owner?.type === "organization";
+	const showPrimaryCreator = hasOrganizationOwner || Boolean(project?.show_owner_as_author);
+	const showOriginalAuthor = hasOrganizationOwner && Boolean(project?.show_owner_as_author) && project?.original_author;
     
     return (
         <div style={{ display: "flex", gap: "15px", flexDirection: "column" }}>
@@ -287,15 +296,13 @@ export default function ProjectSidebar({ project, authToken, showLicense = true,
                 <h2>{t("creators")}</h2>
 
                 <div className="project-creators-list">
-                    {project.owner?.type === "organization" ? (
-                        <ProjectCreatorCard creator={project.owner} authToken={authToken} t={t} locale={locale} />
-                    ) : project.members && project.members.length > 0 ? (
-                        project.members.map((member) => (
-                            <ProjectCreatorCard key={member.user_id} creator={member} authToken={authToken} t={t} locale={locale} />
-                        ))
-                    ) : (
-                        <ProjectCreatorCard creator={project.owner} authToken={authToken} t={t} locale={locale} />
-                    )}
+					{showPrimaryCreator ? <ProjectCreatorCard creator={project.owner} authToken={authToken} t={t} locale={locale} /> : null}
+					
+					{showOriginalAuthor ? <ProjectCreatorCard creator={project.original_author} authToken={authToken} t={t} locale={locale} compact /> : null}
+					
+					{(project.members || []).map((member) => (
+						<ProjectCreatorCard key={member.user_id} creator={member} authToken={authToken} t={t} locale={locale} compact />
+					))}
                 </div>
             </div>
 

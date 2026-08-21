@@ -14,6 +14,20 @@ const cleanupStaleProjectVersionReleaseNotifications = async (userId) => {
         AND pv.id IS NULL`,
         [userId]
     );
+
+	await db.query(
+		`DELETE ne
+		FROM notification_events ne
+		LEFT JOIN project_members pm
+			ON BINARY pm.project_id = BINARY ne.object_id
+			AND BINARY pm.user_id = BINARY ne.recipient_user_id
+			AND pm.status = 'pending'
+		WHERE ne.recipient_user_id = ?
+		AND ne.event_type = 'project_collaboration_invite'
+		AND ne.object_type = 'project'
+		AND pm.id IS NULL`,
+		[userId]
+	);
 };
 
 router.get("/unread-count", auth, async (req, res) => {
@@ -263,6 +277,20 @@ router.get("/", auth, async (req, res) => {
                 );
                 inviteId = inviteRows[0]?.id || null;
             }
+
+			if(row.object_type === "project" && row.event_type === "project_collaboration_invite") {
+				const [inviteRows] = await db.query(
+					`SELECT id
+					FROM project_members
+					WHERE project_id = ?
+					AND user_id = ?
+					AND status = 'pending'
+					ORDER BY created_at DESC
+					LIMIT 1`,
+					[row.object_id, userId]
+				);
+				inviteId = inviteRows[0]?.id || null;
+			}
 
             return {
                 id: `${row.event_type}:${row.object_type}:${row.object_id}:${row.group_bucket}`,

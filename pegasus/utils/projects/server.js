@@ -43,9 +43,15 @@ export const getProjectBySlug = cache(async (slug, authToken = "") => {
 
     const project = await response.json();
 
+    const [owner, originalAuthor] = await Promise.all([
+        enrichProjectCreator(project.owner, authToken),
+        project.original_author ? enrichProjectCreator(project.original_author, authToken) : null,
+    ]);
+
     return {
         ...project,
-        owner: await enrichProjectCreator(project.owner, authToken),
+        owner,
+        original_author: originalAuthor,
     };
 });
 

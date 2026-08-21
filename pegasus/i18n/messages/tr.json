@@ -1179,6 +1179,7 @@
   "SettingsProjectPage": {
     "sidebar": {
       "general": "Genel",
+      "collaborators": "Ekip",
       "description": "Açıklama",
       "disclosures": "Ayrıntılar",
       "links": "Bağlantılar",
@@ -1193,7 +1194,14 @@
     "save": "Kaydet",
     "unsavedBar": {
       "message": "Kaydedilmemiş değişiklikleriniz var.",
-      "reset": "Sıfırla"
+      "reset": "Sıfırla",
+      "leaveConfirm": {
+        "title": "Sayfadan ayrılsın mı?",
+        "messageTitle": "Kaydedilmemiş değişiklikleriniz var",
+        "description": "Bu sayfadan ayrılırsanız kaydedilmemiş değişiklikleriniz kaybolacak.",
+        "stay": "Sayfada kal",
+        "leave": "Sayfadan ayrıl"
+      }
     },
     "metadata": {
       "title": "Ayarlar - {title} - Modifold"
@@ -1477,8 +1485,13 @@
     },
     "gallerySettings": {
       "success": "Görsel yüklendi",
+      "successMultiple": "{count, plural, one {Görsel yüklendi} other {# görsel yüklendi}}",
       "errors": {
-        "upload": "Görsel yüklenemedi"
+        "upload": "Görsel yüklenemedi",
+        "uploadMultiple": "{count, plural, one {# görsel yüklenemedi. Tekrar deneyebilirsiniz.} other {# görsel yüklenemedi. Tekrar deneyebilirsiniz.}}",
+        "refresh": "Görseller yüklendi ancak galeri yenilenemedi",
+        "invalidFiles": "Yalnızca JPEG, PNG, GIF ve WebP görselleri seçilebilir",
+        "fileTooLarge": "Her görsel 100 MB'den küçük olmalıdır"
       },
       "title": "Yeni görsel ekle",
       "media": {
@@ -1487,8 +1500,11 @@
       },
       "fields": {
         "title": "Başlık",
+        "titleOptional": "Başlık (isteğe bağlı)",
         "description": "Açıklama",
+        "descriptionOptional": "Açıklama (isteğe bağlı)",
         "order": "Sıra",
+        "orderOptional": "Sıra (isteğe bağlı)",
         "featured": "Öne çıkan"
       },
       "placeholders": {
@@ -1518,18 +1534,25 @@
       },
       "modal": {
         "steps": {
+          "label": "Galeri yükleme adımları",
           "files": "Dosyalar",
           "metadata": "Meta veriler"
         },
         "dropzone": {
-          "uploadTitle": "Görsel yükle",
-          "uploadHint": "Bir görseli sürükleyip bırakın veya seçmek için tıklayın",
+          "uploadTitle": "Görselleri yükle",
+          "uploadHint": "Birden fazla görsel seçin veya buraya sürükleyip bırakın",
+          "selected": "{count, plural, one {# görsel seçildi} other {# görsel seçildi}}",
+          "addMore": "Daha fazla görsel eklemek için tıklayın veya sürükleyin",
           "replaceTitle": "Görseli değiştir (isteğe bağlı)",
           "replaceHint": "Yeni bir görseli sürükleyip bırakın veya seçmek için tıklayın"
         },
+        "selectedFiles": "Seçilen görseller",
+        "removeFile": "{name} dosyasını kaldır",
+        "metadataNavigation": "Seçilen görseller",
         "actions": {
           "continue": "Devam",
           "back": "Geri",
+          "upload": "Yükle",
           "uploading": "Yükleniyor..."
         }
       },
@@ -1638,6 +1661,108 @@
         "accepted": "Kabul edildi",
         "member": "Üye"
       }
+    }
+  },
+  "ProjectCollaborators": {
+    "title": "Ekip",
+    "description": "Bu projede kimlerin çalışabileceğini yönetin ve projenin profiliniz ya da bir kuruluş adına yayınlanmasını seçin.",
+    "invite": {
+      "title": "Projeye katılımcı davet et",
+      "description": "Davet edilen kullanıcılar bildirim alır ve kabul ettikten sonra verdiğiniz izinler kapsamında projeyi yönetebilir.",
+      "hint": "Kullanıcı adı veya profil slug'ı ile arayın ve davet etmek istediğiniz herkesi seçin.",
+      "placeholder": "Search users",
+      "selectedLabel": "Seçilen kullanıcılar",
+      "removeSelection": "{username} kullanıcısını davetten çıkar",
+      "resultsLabel": "User search results",
+      "searching": "Searching...",
+      "noResults": "No users found"
+    },
+    "list": {
+      "title": "Katılımcı listesi"
+    },
+    "status": { "pending": "Bekliyor", "accepted": "Aktif", "owner": "Proje yazarı" },
+    "role": {
+      "title": "Proje rolü",
+      "description": "Rol, ayarlarda ve proje yazarları listesinde katılımcının yanında gösterilir.",
+      "ownerDescription": "Rol, ayarlarda ve proje yazarları listesinde sizin yanınızda gösterilir.",
+      "placeholder": "Örneğin, Geliştirici veya Helper"
+    },
+    "authors": {
+      "title": "Yazar listesi",
+      "description": "Bu katılımcının proje sayfasında herkese açık olarak gösterilip gösterilmeyeceğini seçin.",
+      "ownerDescription": "Proje sayfasının kenar çubuğunda herkese açık olarak gösterilip gösterilmeyeceğinizi seçin.",
+      "toggle": "Katılımcıyı proje yazarları listesinde göster",
+      "ownerToggle": "Proje yazarını yazarlar listesinde göster"
+    },
+    "permissionsTitle": "Proje izinleri",
+    "permissionsHint": "Bu kişinin projede tam olarak neler yapabileceğini seçin.",
+    "permissions": {
+      "project_edit_details": "Proje ayarlarını düzenle",
+      "project_edit_body": "Açıklamayı ve bağlantıları düzenle",
+      "project_edit_gallery": "Galeriyi yönet",
+      "project_upload_version": "Sürüm yükle",
+      "project_edit_version": "Sürümleri düzenle",
+      "project_delete_version": "Sürümleri sil",
+      "project_view_analytics": "Analizleri görüntüle",
+	  "project_manage_invites": "Davetleri yönet",
+	  "project_edit_members": "Katılımcıları düzenle",
+	  "project_remove_members": "Katılımcıları kaldır",
+      "project_delete": "Projeyi sil"
+    },
+    "organization": {
+      "title": "Proje kuruluşu",
+      "description": "Projeyi bir kuruluş adına yayınlamak için kuruluşa bağlayın. Projenin yazarı değişmez.",
+      "noOrganization": "Kuruluş yok",
+      "selectLabel": "Proje için bir kuruluş seçin",
+      "hint": "Kuruluş üyeleri, kuruluş rollerine göre projeye erişim de kazanabilir.",
+      "noOptions": "Bu projeyi ekleyebileceğiniz bir kuruluşunuz henüz yok.",
+      "save": "Kaydet",
+      "saving": "Kaydediliyor...",
+      "success": "Proje sahipliği güncellendi",
+      "error": "Proje sahipliği güncellenemedi",
+      "confirm": {
+        "attachTitle": "{organization} adına yayınlansın mı?",
+        "attachDescription": "Kuruluş proje sahibi olarak gösterilir. Uygun izinlere sahip üyeler erişim kazanabilir.",
+        "attachAction": "Kuruluşa bağla",
+        "moveTitle": "Proje {organization} kuruluşuna taşınsın mı?",
+        "moveDescription": "Gösterilen kuruluş ve kuruluş rollerinden gelen erişim hemen değişir.",
+        "moveAction": "Projeyi taşı",
+        "detachTitle": "Proje {organization} kuruluşundan ayrılsın mı?",
+        "detachDescription": "Proje yeniden kişisel profiliniz adına yayınlanır ve kuruluş üzerinden erişim kaldırılır.",
+        "detachAction": "Kuruluştan ayır",
+        "cancel": "İptal"
+      }
+    },
+    "actions": {
+      "invite": "Davet et",
+      "inviting": "Davet ediliyor...",
+	  "save": "Değişiklikleri kaydet",
+      "remove": "Remove collaborator",
+      "removing": "Removing...",
+      "cancelInvitation": "Cancel invitation",
+      "keep": "Keep access",
+      "expand": "Edit permissions",
+      "collapse": "Collapse permissions",
+      "expandOwner": "Yazar görünümünü düzenle",
+      "collapseOwner": "Yazar ayarlarını daralt"
+    },
+    "confirm": {
+      "removeTitle": "Remove {username} from this project?",
+      "cancelTitle": "Cancel the invitation for {username}?"
+    },
+    "success": {
+      "invited": "Invitation sent to {username}",
+      "invitedMany": "{count} davet gönderildi",
+	  "permissionsSaved": "Katılımcı ayarları kaydedildi",
+      "removed": "{username} no longer has access",
+      "invitationCancelled": "Invitation for {username} cancelled"
+    },
+    "errors": {
+      "search": "Could not search users",
+      "invite": "Could not send the invitation",
+      "inviteMany": "{count} kullanıcı davet edilemedi",
+	  "save": "Katılımcı ayarları kaydedilemedi",
+      "remove": "Could not remove the collaborator"
     }
   },
   "NewsPage": {
@@ -2048,7 +2173,9 @@
       "unknown": "Yeni bildirim",
       "organizationFallback": "organizasyon",
       "organizationInviteTail": "seni şuraya davet etti",
-      "organizationRemovedTail": "seni şuradan çıkardı"
+      "organizationRemovedTail": "seni şuradan çıkardı",
+      "projectCollaborationInvitePrefix": "Kullanıcı",
+      "projectCollaborationInviteTail": "seni şu projede iş birliğine davet etti:"
     },
     "errors": {
       "fetch": "Bildirimler yüklenemedi",

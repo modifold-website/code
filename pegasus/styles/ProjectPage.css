@@ -44,10 +44,13 @@
 .project-creator-card__name:hover .project-creator-card__name-text > span:first-child {
 	text-decoration: underline;
 }
-.project-creator-card__name--organization {
+.project-creator-card__name--with-meta {
 	flex-direction: column;
 	align-items: flex-start;
 	gap: 2px;
+}
+.project-creator-card--compact {
+	gap: 0;
 }
 .project-creator-card__avatar {
 	display: inline-flex;
@@ -79,6 +82,16 @@
 	font-size: 13px;
 	font-weight: 500;
 	line-height: 1.2;
+}
+.project-creator-card__role {
+	max-width: 100%;
+	overflow: hidden;
+	color: var(--theme-color-text-secondary);
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.2;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .project-creator-card__organization svg {
 	flex-shrink: 0;

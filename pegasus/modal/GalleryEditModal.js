@@ -110,7 +110,7 @@ export default function GalleryEditModal({ isOpen, onRequestClose, editLoading, 
                                 <p className="blog-settings__field-title">{tProject("gallery.orderIndex")}</p>
                                 <div className="field field--default">
                                     <label className="field__wrapper">
-                                        <input type="number" name="ordering" value={editFormData.ordering} className="text-input" disabled={editLoading} onChange={handleEditInputChange} />
+                                        <input type="number" name="ordering" min="0" step="1" value={editFormData.ordering} className="text-input" disabled={editLoading} onChange={handleEditInputChange} />
                                     </label>
                                 </div>
 
