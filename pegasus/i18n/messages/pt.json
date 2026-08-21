@@ -1485,8 +1485,13 @@
     },
     "gallerySettings": {
       "success": "Imagem enviada",
+      "successMultiple": "{count, plural, one {Imagem enviada} other {# imagens enviadas}}",
       "errors": {
-        "upload": "Erro ao enviar imagem"
+        "upload": "Erro ao enviar imagem",
+        "uploadMultiple": "{count, plural, one {Não foi possível enviar # imagem. Você pode tentar novamente.} other {Não foi possível enviar # imagens. Você pode tentar novamente.}}",
+        "refresh": "As imagens foram enviadas, mas não foi possível atualizar a galeria",
+        "invalidFiles": "Apenas imagens JPEG, PNG, GIF e WebP podem ser selecionadas",
+        "fileTooLarge": "Cada imagem deve ter menos de 100 MB"
       },
       "title": "Adicionar nova imagem",
       "media": {
@@ -1495,8 +1500,11 @@
       },
       "fields": {
         "title": "Título",
+        "titleOptional": "Título (opcional)",
         "description": "Descrição",
+        "descriptionOptional": "Descrição (opcional)",
         "order": "Índice de ordem",
+        "orderOptional": "Índice de ordem (opcional)",
         "featured": "Destaque"
       },
       "placeholders": {
@@ -1526,18 +1534,25 @@
       },
       "modal": {
         "steps": {
+          "label": "Etapas de envio para a galeria",
           "files": "Arquivos",
           "metadata": "Metadados"
         },
         "dropzone": {
-          "uploadTitle": "Enviar imagem",
-          "uploadHint": "Arraste e solte uma imagem ou clique para procurar",
+          "uploadTitle": "Enviar imagens",
+          "uploadHint": "Selecione várias imagens ou arraste-as para cá",
+          "selected": "{count, plural, one {# imagem selecionada} other {# imagens selecionadas}}",
+          "addMore": "Clique ou arraste mais imagens para adicioná-las",
           "replaceTitle": "Substituir imagem (opcional)",
           "replaceHint": "Arraste uma nova imagem ou clique para procurar"
         },
+        "selectedFiles": "Imagens selecionadas",
+        "removeFile": "Remover {name}",
+        "metadataNavigation": "Imagens selecionadas",
         "actions": {
           "continue": "Continuar",
           "back": "Voltar",
+          "upload": "Enviar",
           "uploading": "Enviando..."
         }
       },

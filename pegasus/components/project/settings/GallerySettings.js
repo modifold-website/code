@@ -14,6 +14,16 @@ const GALLERY_STEPS = {
     METADATA: "metadata",
 };
 
+const MAX_GALLERY_IMAGE_SIZE = 100 * 1024 * 1024;
+const GALLERY_IMAGE_EXTENSION_PATTERN = /\.(gif|jpe?g|png|webp)$/i;
+const GALLERY_IMAGE_MIME_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
+
+const isGalleryImageFile = (file) => {
+	const mimeType = (file?.type || "").toLowerCase();
+	return GALLERY_IMAGE_MIME_TYPES.has(mimeType) || ((!mimeType || mimeType === "application/octet-stream") && GALLERY_IMAGE_EXTENSION_PATTERN.test(file?.name || ""));
+};
+const getUploadFileSignature = (file) => `${file.name}:${file.size}:${file.lastModified}`;
+
 const getYouTubeEmbedUrl = (videoId) => {
     if(!videoId) {
         return "";
@@ -44,16 +54,12 @@ export default function GallerySettings({ project, authToken }) {
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [uploadLoading, setUploadLoading] = useState(false);
     const [uploadStep, setUploadStep] = useState(GALLERY_STEPS.FILES);
-    const [uploadFile, setUploadFile] = useState(null);
+	const [uploadItems, setUploadItems] = useState([]);
+	const [uploadIndex, setUploadIndex] = useState(0);
     const [isUploadDragActive, setIsUploadDragActive] = useState(false);
     const uploadFileRef = useRef(null);
-
-    const [uploadFormData, setUploadFormData] = useState({
-        title: "",
-        description: "",
-        ordering: 0,
-        featured: false,
-    });
+	const uploadItemIdRef = useRef(0);
+	const uploadPreviewUrlsRef = useRef(new Set());
 
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
@@ -76,6 +82,11 @@ export default function GallerySettings({ project, authToken }) {
         setTrailerUrl(project?.trailer_youtube_url || "");
         setTrailerVideoId(project?.trailer_youtube_video_id || "");
     }, [project?.gallery, project?.trailer_youtube_url, project?.trailer_youtube_video_id]);
+
+	useEffect(() => () => {
+		uploadPreviewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+		uploadPreviewUrlsRef.current.clear();
+	}, []);
 
     const refreshGallery = async () => {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}`, {
@@ -182,23 +193,34 @@ export default function GallerySettings({ project, authToken }) {
         setTrailerUrl(trailerVideoId ? getYouTubeWatchUrl(trailerVideoId) : "");
     };
 
+	const releaseUploadItems = (items) => {
+		items.forEach((item) => {
+			URL.revokeObjectURL(item.previewUrl);
+			uploadPreviewUrlsRef.current.delete(item.previewUrl);
+		});
+	};
+
     const resetUploadModal = () => {
+		releaseUploadItems(uploadItems);
         setUploadModalOpen(false);
         setUploadLoading(false);
         setUploadStep(GALLERY_STEPS.FILES);
-        setUploadFile(null);
+		setUploadItems([]);
+		setUploadIndex(0);
         setIsUploadDragActive(false);
-        setUploadFormData({
-            title: "",
-            description: "",
-            ordering: 0,
-            featured: false,
-        });
 
         if(uploadFileRef.current) {
             uploadFileRef.current.value = "";
         }
     };
+
+	const closeUploadModal = () => {
+		if(uploadLoading) {
+			return;
+		}
+
+		resetUploadModal();
+	};
 
     const openUploadFilePicker = () => {
         if(uploadLoading || !uploadFileRef.current) {
@@ -209,19 +231,62 @@ export default function GallerySettings({ project, authToken }) {
         uploadFileRef.current.click();
     };
 
-    const handleUploadFileSelected = (file) => {
-        if(!file) {
-            return;
-        }
+	const addUploadFiles = (fileList) => {
+		const files = Array.from(fileList || []);
+		if(files.length === 0) {
+			return;
+		}
 
-        setUploadFile(file);
-        setUploadStep(GALLERY_STEPS.METADATA);
-    };
+		const imageFiles = files.filter(isGalleryImageFile);
+		if(imageFiles.length !== files.length) {
+			toast.error(t("gallerySettings.errors.invalidFiles"));
+		}
 
-    const handleUploadFileChange = (event) => {
-        const file = event.target.files?.[0] || null;
-        handleUploadFileSelected(file);
-    };
+		const filesWithinLimit = imageFiles.filter((file) => file.size <= MAX_GALLERY_IMAGE_SIZE);
+		if(filesWithinLimit.length !== imageFiles.length) {
+			toast.error(t("gallerySettings.errors.fileTooLarge"));
+		}
+
+		const existingSignatures = new Set(uploadItems.map((item) => getUploadFileSignature(item.file)));
+		const uniqueFiles = filesWithinLimit.filter((file) => {
+			const signature = getUploadFileSignature(file);
+			if(existingSignatures.has(signature)) {
+				return false;
+			}
+
+			existingSignatures.add(signature);
+			return true;
+		});
+
+		if(uniqueFiles.length === 0) {
+			return;
+		}
+
+		const existingOrdering = [...galleryImages, ...uploadItems].map((item) => Number(item.ordering)).filter(Number.isFinite);
+		const startingOrder = (existingOrdering.length > 0 ? Math.max(...existingOrdering) : -1) + 1;
+		const nextItems = uniqueFiles.map((file, index) => {
+			const previewUrl = URL.createObjectURL(file);
+			uploadPreviewUrlsRef.current.add(previewUrl);
+			uploadItemIdRef.current += 1;
+
+			return {
+				id: `${getUploadFileSignature(file)}:${uploadItemIdRef.current}`,
+				file,
+				previewUrl,
+				title: "",
+				description: "",
+				ordering: startingOrder + index,
+				featured: false,
+			};
+		});
+
+		setUploadItems([...uploadItems, ...nextItems]);
+	};
+
+	const handleUploadFileChange = (event) => {
+		addUploadFiles(event.target.files);
+		event.target.value = "";
+	};
 
     const handleUploadDragOver = (event) => {
         event.preventDefault();
@@ -243,29 +308,39 @@ export default function GallerySettings({ project, authToken }) {
         event.preventDefault();
         event.stopPropagation();
         setIsUploadDragActive(false);
-
-        const file = event.dataTransfer?.files?.[0] || null;
-        if(!file) {
-            return;
-        }
-
-        handleUploadFileSelected(file);
-
-        if(uploadFileRef.current) {
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            uploadFileRef.current.files = dt.files;
-        }
+		addUploadFiles(event.dataTransfer?.files);
     };
 
-    const handleUploadInputChange = (event) => {
-        const { name, value } = event.target;
-        setUploadFormData((prev) => ({ ...prev, [name]: name === "ordering" ? value : value }));
-    };
+	const removeUploadItem = (itemId) => {
+		if(uploadLoading) {
+			return;
+		}
 
-    const toggleUploadFeatured = () => {
-        setUploadFormData((prev) => ({ ...prev, featured: !prev.featured }));
-    };
+		const itemToRemove = uploadItems.find((item) => item.id === itemId);
+		if(itemToRemove) {
+			releaseUploadItems([itemToRemove]);
+		}
+
+		const nextItems = uploadItems.filter((item) => item.id !== itemId);
+		setUploadItems(nextItems);
+		setUploadIndex((currentIndex) => Math.max(0, Math.min(currentIndex, nextItems.length - 1)));
+
+		if(nextItems.length === 0) {
+			setUploadStep(GALLERY_STEPS.FILES);
+		}
+	};
+
+	const handleUploadInputChange = (event) => {
+		const { name, value } = event.target;
+		setUploadItems((currentItems) => currentItems.map((item, index) => index === uploadIndex ? { ...item, [name]: value } : item));
+	};
+
+	const toggleUploadFeatured = () => {
+		setUploadItems((currentItems) => {
+			const shouldFeature = !currentItems[uploadIndex]?.featured;
+			return currentItems.map((item, index) => ({ ...item, featured: index === uploadIndex ? shouldFeature : false }));
+		});
+	};
 
     const goToUploadFilesStep = () => {
         if(uploadLoading) {
@@ -276,48 +351,81 @@ export default function GallerySettings({ project, authToken }) {
     };
 
     const goToUploadMetadataStep = () => {
-        if(uploadLoading || !uploadFile) {
+		if(uploadLoading || uploadItems.length === 0) {
             return;
         }
 
+		setUploadIndex((currentIndex) => Math.min(currentIndex, uploadItems.length - 1));
         setUploadStep(GALLERY_STEPS.METADATA);
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        if(!uploadFile) {
-            return;
-        }
+	const goToUploadItem = (nextIndex) => {
+		if(uploadLoading || nextIndex < 0 || nextIndex >= uploadItems.length) {
+			return;
+		}
 
-        setUploadLoading(true);
+		setUploadIndex(nextIndex);
+	};
 
-        const formDataToSend = new FormData();
-        formDataToSend.append("image", uploadFile);
-        formDataToSend.append("title", uploadFormData.title);
-        formDataToSend.append("description", uploadFormData.description);
-        formDataToSend.append("ordering", uploadFormData.ordering);
-        formDataToSend.append("featured", uploadFormData.featured);
+	const uploadGalleryItem = async (item) => {
+		const formDataToSend = new FormData();
+		formDataToSend.append("image", item.file);
+		formDataToSend.append("title", item.title);
+		formDataToSend.append("description", item.description);
+		formDataToSend.append("ordering", item.ordering);
+		formDataToSend.append("featured", item.featured);
 
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery`, {
-                method: "POST",
-                headers: { Authorization: `Bearer ${authToken}` },
-                body: formDataToSend,
-            });
+		const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/gallery`, {
+			method: "POST",
+			headers: { Authorization: `Bearer ${authToken}` },
+			body: formDataToSend,
+		});
 
-            if(response.ok) {
-                toast.success(t("gallerySettings.success"));
-                resetUploadModal();
-                await refreshGallery();
-            } else {
-                toast.error(t("gallerySettings.errors.upload"));
-            }
-        } catch {
-            toast.error(t("gallerySettings.errors.upload"));
-        } finally {
-            setUploadLoading(false);
-        }
-    };
+		return response.ok;
+	};
+
+	const handleSubmit = async (event) => {
+		event.preventDefault();
+		if(uploadItems.length === 0 || uploadLoading) {
+			return;
+		}
+
+		setUploadLoading(true);
+		const failedItems = [];
+
+		for(let index = 0; index < uploadItems.length; index += 1) {
+			try {
+				const uploaded = await uploadGalleryItem(uploadItems[index]);
+				if(!uploaded) {
+					failedItems.push(uploadItems[index]);
+				}
+			} catch {
+				failedItems.push(uploadItems[index]);
+			}
+		}
+
+		const failedIds = new Set(failedItems.map((item) => item.id));
+		const uploadedItems = uploadItems.filter((item) => !failedIds.has(item.id));
+
+		if(failedItems.length === 0) {
+			toast.success(t("gallerySettings.successMultiple", { count: uploadItems.length }));
+			resetUploadModal();
+		} else {
+			releaseUploadItems(uploadedItems);
+			setUploadItems(failedItems);
+			setUploadIndex(0);
+			setUploadLoading(false);
+			toast.error(t("gallerySettings.errors.uploadMultiple", { count: failedItems.length }));
+		}
+
+		if(uploadedItems.length > 0) {
+			try {
+				await refreshGallery();
+			} catch {
+				toast.error(t("gallerySettings.errors.refresh"));
+			}
+		}
+	};
 
     const openEditModal = (image) => {
         setSelectedImage(image);
@@ -625,11 +733,12 @@ export default function GallerySettings({ project, authToken }) {
 
             <GalleryUploadModal
                 isOpen={uploadModalOpen}
-                onRequestClose={resetUploadModal}
+				onRequestClose={closeUploadModal}
                 uploadLoading={uploadLoading}
                 uploadStep={uploadStep}
                 uploadSteps={GALLERY_STEPS}
-                uploadFile={uploadFile}
+				uploadItems={uploadItems}
+				uploadIndex={uploadIndex}
                 isUploadDragActive={isUploadDragActive}
                 uploadFileRef={uploadFileRef}
                 openUploadFilePicker={openUploadFilePicker}
@@ -638,10 +747,11 @@ export default function GallerySettings({ project, authToken }) {
                 handleUploadDrop={handleUploadDrop}
                 handleUploadFileChange={handleUploadFileChange}
                 formatFileSize={formatFileSize}
-                goToUploadFilesStep={goToUploadFilesStep}
+				removeUploadItem={removeUploadItem}
+				goToUploadFilesStep={goToUploadFilesStep}
                 goToUploadMetadataStep={goToUploadMetadataStep}
+				goToUploadItem={goToUploadItem}
                 handleSubmit={handleSubmit}
-                uploadFormData={uploadFormData}
                 handleUploadInputChange={handleUploadInputChange}
                 toggleUploadFeatured={toggleUploadFeatured}
                 t={t}

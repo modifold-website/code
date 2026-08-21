@@ -3050,7 +3050,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     gap: 14px;
     min-height: 150px;
     padding: 40px;
-    transition: border-color .2s, background-color .2s, transform 80ms;
+    transition: border-color .2s, background-color .2s;
     display: flex;
     position: relative;
     flex-direction: column;
@@ -3065,7 +3065,6 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .version-upload-dropzone--active {
     border-color: #16a34a;
     background: color-mix(in srgb, #16a34a 8%, var(--theme-color-background-content));
-    transform: scale(.995);
 }
 .version-upload-dropzone__input {
     position: absolute;

@@ -1576,8 +1576,13 @@
     },
     "gallerySettings": {
       "success": "Image uploaded",
+      "successMultiple": "{count, plural, one {Image uploaded} other {# images uploaded}}",
       "errors": {
-        "upload": "Error uploading image"
+        "upload": "Error uploading image",
+        "uploadMultiple": "{count, plural, one {# image could not be uploaded. You can try again.} other {# images could not be uploaded. You can try again.}}",
+        "refresh": "Images were uploaded, but the gallery could not be refreshed",
+        "invalidFiles": "Only JPEG, PNG, GIF, and WebP images can be selected",
+        "fileTooLarge": "Each image must be smaller than 100 MB"
       },
       "title": "Add New Image",
       "media": {
@@ -1586,8 +1591,11 @@
       },
       "fields": {
         "title": "Title",
+        "titleOptional": "Title (optional)",
         "description": "Description",
+        "descriptionOptional": "Description (optional)",
         "order": "Order Index",
+        "orderOptional": "Order index (optional)",
         "featured": "Featured"
       },
       "placeholders": {
@@ -1617,18 +1625,25 @@
       },
       "modal": {
         "steps": {
+          "label": "Gallery upload steps",
           "files": "Files",
           "metadata": "Metadata"
         },
         "dropzone": {
-          "uploadTitle": "Upload image",
-          "uploadHint": "Drag and drop an image or click to browse",
+          "uploadTitle": "Upload images",
+          "uploadHint": "Select multiple images or drag and drop them here",
+          "selected": "{count, plural, one {# image selected} other {# images selected}}",
+          "addMore": "Click or drop more images to add them",
           "replaceTitle": "Replace image (optional)",
           "replaceHint": "Drag and drop a new image or click to browse"
         },
+        "selectedFiles": "Selected images",
+        "removeFile": "Remove {name}",
+        "metadataNavigation": "Selected images",
         "actions": {
           "continue": "Continue",
           "back": "Back",
+          "upload": "Upload",
           "uploading": "Uploading..."
         }
       },
