@@ -2788,6 +2788,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
     justify-content: center;
     padding-top: var(--layout-header-height);
 }
+.modal-overlay--danger {
+	background: linear-gradient(180deg, #b4b4b680 0%, #a2262647 100%);
+}
 .modal-overlay.ReactModal__Overlay--after-open {
     opacity: 1;
 }
@@ -2881,6 +2884,65 @@ input[type="file"]::-webkit-file-upload-button:hover {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 0 var(--layout-content-offset-x) 20px;
+}
+.confirm-modal__content {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+.confirm-modal--message .modal-window__header {
+	border-bottom: 1px solid var(--theme-andropov-border-color);
+}
+.confirm-modal--message .confirm-modal__content {
+	padding-top: 16px;
+}
+.confirm-modal__description {
+	margin: 0;
+}
+.confirm-modal__message {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 18px;
+	border: 1px solid currentColor;
+	border-radius: 16px;
+}
+.confirm-modal__message--danger {
+	color: var(--theme-color-signal-negative-default);
+	background: color-mix(in srgb, var(--theme-color-signal-negative-default) 10%, var(--theme-color-background-content));
+}
+.confirm-modal__message-icon {
+	flex: 0 0 auto;
+	fill: none;
+}
+.confirm-modal__message-copy {
+	min-width: 0;
+}
+.confirm-modal__message-copy h3 {
+	margin: 0 0 6px;
+	color: var(--theme-color-text-primary);
+	font-size: 18px;
+	font-weight: 500;
+	line-height: 24px;
+}
+.confirm-modal__message-copy p {
+	margin: 0;
+	color: var(--theme-color-text-primary);
+	font-size: 15px;
+	line-height: 22px;
+}
+.confirm-modal__actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+@media (max-width: 639px) {
+	.confirm-modal__actions {
+		flex-direction: column-reverse;
+	}
+	.confirm-modal__actions .button {
+		width: 100%;
+	}
 }
 .version-upload-modal {
     max-height: calc(100dvh - var(--layout-header-height));

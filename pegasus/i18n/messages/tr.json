@@ -1194,7 +1194,14 @@
     "save": "Kaydet",
     "unsavedBar": {
       "message": "Kaydedilmemiş değişiklikleriniz var.",
-      "reset": "Sıfırla"
+      "reset": "Sıfırla",
+      "leaveConfirm": {
+        "title": "Sayfadan ayrılsın mı?",
+        "messageTitle": "Kaydedilmemiş değişiklikleriniz var",
+        "description": "Bu sayfadan ayrılırsanız kaydedilmemiş değişiklikleriniz kaybolacak.",
+        "stay": "Sayfada kal",
+        "leave": "Sayfadan ayrıl"
+      }
     },
     "metadata": {
       "title": "Ayarlar - {title} - Modifold"

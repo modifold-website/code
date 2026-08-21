@@ -1285,7 +1285,14 @@
     "save": "Save",
     "unsavedBar": {
       "message": "You have unsaved changes.",
-      "reset": "Reset"
+      "reset": "Reset",
+      "leaveConfirm": {
+        "title": "Leave page?",
+        "messageTitle": "You have unsaved changes",
+        "description": "You have unsaved changes that will be lost if you leave this page.",
+        "stay": "Stay on page",
+        "leave": "Leave page"
+      }
     },
     "metadata": {
       "title": "Settings — {title} — Modifold"

@@ -1194,7 +1194,14 @@
     "save": "Salvar",
     "unsavedBar": {
       "message": "Você tem alterações não salvas.",
-      "reset": "Redefinir"
+      "reset": "Redefinir",
+      "leaveConfirm": {
+        "title": "Sair da página?",
+        "messageTitle": "Você tem alterações não salvas",
+        "description": "As alterações não salvas serão perdidas se você sair desta página.",
+        "stay": "Permanecer na página",
+        "leave": "Sair da página"
+      }
     },
     "metadata": {
       "title": "Configurações — {title} — Modifold"

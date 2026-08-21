@@ -1194,7 +1194,14 @@
     "save": "Guardar",
     "unsavedBar": {
       "message": "Tienes cambios sin guardar.",
-      "reset": "Restablecer"
+      "reset": "Restablecer",
+      "leaveConfirm": {
+        "title": "¿Salir de la página?",
+        "messageTitle": "Tienes cambios sin guardar",
+        "description": "Los cambios sin guardar se perderán si sales de esta página.",
+        "stay": "Permanecer en la página",
+        "leave": "Salir de la página"
+      }
     },
     "metadata": {
       "title": "Ajustes — {title} — Modifold"
