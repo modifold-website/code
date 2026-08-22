@@ -64,6 +64,21 @@ export function useUpdateProjectOwnerAttribution({ authToken, projectSlug }) {
 	});
 }
 
+export function useTransferProjectOwnership({ authToken, projectSlug }) {
+	return useMutation({
+		mutationFn: async ({ newOwnerUserId, confirmation, twoFactorCode }) => {
+			const response = await apiClient.post(`/projects/${projectSlug}/transfer-ownership`, {
+				new_owner_user_id: newOwnerUserId,
+				confirmation,
+				two_factor_code: twoFactorCode || undefined,
+			}, {
+				headers: getAuthHeaders(authToken),
+			});
+			return response.data;
+		},
+	});
+}
+
 export function useRemoveProjectCollaborator({ authToken, projectSlug }) {
 	return useMutation({
 		mutationFn: async ({ userId }) => {

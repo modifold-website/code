@@ -1733,6 +1733,25 @@
         "cancel": "İptal"
       }
     },
+    "transfer": {
+      "cardAction": "Sahipliği devret",
+      "title": "Sahipliği devret",
+      "close": "Kapat",
+      "reviewDescription": "{project} projesinin sahipliği seçilen ekip üyesine devredilecek.",
+      "becomesOwner": "Proje sahibi olur",
+      "becomesMaintainer": "Maintainer olarak kalır",
+      "noticeTitle": "Yeni proje sahibi tam kontrol kazanır",
+      "noticeDescription": "Bunu kendiniz geri alamazsınız. Sahipliği yeniden yalnızca yeni proje sahibi devredebilir.",
+      "cancel": "İptal",
+      "continue": "Devam et",
+      "verifyDescription": "Projeyi yanlışlıkla veya yetkisiz bir sahiplik değişikliğinden korumak için devri onaylayın.",
+      "confirmationLabel": "Onaylamak için {handle} yazın",
+      "confirmationHint": "Kullanıcı adı tam olarak eşleşmelidir.",
+      "twoFactorLabel": "İki faktörlü kimlik doğrulama kodu",
+      "back": "Geri",
+      "confirm": "Sahipliği devret",
+      "transferring": "Devrediliyor..."
+    },
     "actions": {
       "invite": "Davet et",
       "inviting": "Davet ediliyor...",
@@ -1755,14 +1774,21 @@
       "invitedMany": "{count} davet gönderildi",
 	  "permissionsSaved": "Katılımcı ayarları kaydedildi",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Proje sahipliği {username} kullanıcısına devredildi"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count} kullanıcı davet edilemedi",
 	  "save": "Katılımcı ayarları kaydedilemedi",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "Proje sahipliği devredilemedi",
+      "transferConfirmation": "Onay, seçilen katılımcıyla eşleşmiyor",
+      "transferTwoFactorRequired": "İki faktörlü kimlik doğrulama kodunu girin",
+      "transferTwoFactorInvalid": "İki faktörlü kimlik doğrulama kodu geçersiz",
+      "transferTarget": "Yalnızca kabul edilmiş bir katılımcı proje sahibi olabilir",
+      "transferChanged": "Proje sahibi değişti. Sayfayı yenileyip tekrar deneyin"
     }
   },
   "NewsPage": {

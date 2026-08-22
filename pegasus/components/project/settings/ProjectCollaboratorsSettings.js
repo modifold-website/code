@@ -2,13 +2,15 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/modal/ConfirmModal";
+import ProjectOwnershipTransferModal from "@/modal/ProjectOwnershipTransferModal";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import UserName from "@/components/ui/UserName";
 import ProjectCollaboratorCard from "@/components/project/settings/ProjectCollaboratorCard";
 import ProjectOrganizationSettings from "@/components/project/settings/ProjectOrganizationSettings";
-import { useCollaboratorUserSearch, useInviteProjectCollaborator, useRemoveProjectCollaborator, useUpdateProjectCollaborator, useUpdateProjectOwnerAttribution } from "@/utils/collaborators/hooks";
+import { useCollaboratorUserSearch, useInviteProjectCollaborator, useRemoveProjectCollaborator, useTransferProjectOwnership, useUpdateProjectCollaborator, useUpdateProjectOwnerAttribution } from "@/utils/collaborators/hooks";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -68,9 +70,10 @@ const ownerDraftEqual = (owner, draft) => {
 		&& saved.show_as_author === Boolean(draft.show_as_author);
 };
 
-export default function ProjectCollaboratorsSettings({ authToken, project, owner = null, initialCollaborators = [], availablePermissions = [], defaultPermissions = [], organizationOptions = [] }) {
+export default function ProjectCollaboratorsSettings({ authToken, project, owner = null, initialCollaborators = [], availablePermissions = [], defaultPermissions = [], organizationOptions = [], twoFactorEnabled = false }) {
 	const t = useTranslations("ProjectCollaborators");
 	const tUnsaved = useTranslations("SettingsProjectPage.unsavedBar");
+	const router = useRouter();
 	const [collaborators, setCollaborators] = useState(initialCollaborators);
 	const [draftCollaborators, setDraftCollaborators] = useState(() => buildDraftMap(initialCollaborators, availablePermissions));
 	const [projectOwner, setProjectOwner] = useState(owner);
@@ -83,6 +86,10 @@ export default function ProjectCollaboratorsSettings({ authToken, project, owner
 	const [isSearchOpen, setIsSearchOpen] = useState(false);
 	const [highlightedIndex, setHighlightedIndex] = useState(0);
 	const [pendingRemoveCollaborator, setPendingRemoveCollaborator] = useState(null);
+	const [pendingTransferCollaborator, setPendingTransferCollaborator] = useState(null);
+	const [transferError, setTransferError] = useState("");
+	const [transferRequiresTwoFactor, setTransferRequiresTwoFactor] = useState(false);
+	const [isOwner, setIsOwner] = useState(() => Boolean(project.permissions?.is_owner || Number(project.user_id) === Number(project.current_user_id)));
 	const searchFieldRef = useRef(null);
 	const searchInputRef = useRef(null);
 	const listboxId = useId();
@@ -105,7 +112,7 @@ export default function ProjectCollaboratorsSettings({ authToken, project, owner
 	const updateMutation = useUpdateProjectCollaborator({ authToken, projectSlug: project.slug });
 	const updateOwnerMutation = useUpdateProjectOwnerAttribution({ authToken, projectSlug: project.slug });
 	const removeMutation = useRemoveProjectCollaborator({ authToken, projectSlug: project.slug });
-	const isOwner = Boolean(project.permissions?.is_owner || Number(project.user_id) === Number(project.current_user_id));
+	const transferOwnershipMutation = useTransferProjectOwnership({ authToken, projectSlug: project.slug });
 	const canManageInvites = isOwner || Boolean(project.permissions?.can_manage_invites);
 	const canEditMembers = isOwner || Boolean(project.permissions?.can_edit_members);
 	const canRemoveMembers = isOwner || Boolean(project.permissions?.can_remove_members);
@@ -287,6 +294,53 @@ export default function ProjectCollaboratorsSettings({ authToken, project, owner
 		}
 	};
 
+	const handleTransferOwnership = async ({ confirmation, twoFactorCode }) => {
+		if(!pendingTransferCollaborator || isDirty || transferOwnershipMutation.isPending) {
+			return;
+		}
+
+		setTransferError("");
+		try {
+			const result = await transferOwnershipMutation.mutateAsync({
+				newOwnerUserId: pendingTransferCollaborator.user_id,
+				confirmation,
+				twoFactorCode,
+			});
+			const newOwnerId = String(result.owner.user_id);
+			const formerOwnerId = String(result.former_owner.user_id);
+			setCollaborators((current) => [
+				result.former_owner,
+				...current.filter((collaborator) => ![newOwnerId, formerOwnerId].includes(String(collaborator.user_id))),
+			]);
+			setDraftCollaborators((current) => {
+				const next = { ...current };
+				delete next[newOwnerId];
+				next[formerOwnerId] = buildCollaboratorDraft(result.former_owner, availablePermissions);
+				return next;
+			});
+			setProjectOwner(result.owner);
+			setOwnerDraft(buildOwnerDraft(result.owner));
+			setExpandedUserId(null);
+			setIsOwner(false);
+			setPendingTransferCollaborator(null);
+			toast.success(t("success.ownershipTransferred", { username: result.owner.username }));
+			router.refresh();
+		} catch (error) {
+			const errorCode = error.response?.data?.code;
+			if(errorCode === "TWO_FACTOR_REQUIRED") {
+				setTransferRequiresTwoFactor(true);
+			}
+			const errorKey = {
+				CONFIRMATION_MISMATCH: "errors.transferConfirmation",
+				TWO_FACTOR_REQUIRED: "errors.transferTwoFactorRequired",
+				INVALID_TWO_FACTOR_CODE: "errors.transferTwoFactorInvalid",
+				TARGET_NOT_ACCEPTED: "errors.transferTarget",
+				OWNERSHIP_CHANGED: "errors.transferChanged",
+			}[errorCode] || "errors.transfer";
+			setTransferError(t(errorKey));
+		}
+	};
+
 	const isSearchDebouncing = searchInput.trim() !== debouncedSearchInput.trim();
 	const showSearchPopover = isSearchOpen && searchInput.trim().length >= 2;
 
@@ -394,9 +448,13 @@ export default function ProjectCollaboratorsSettings({ authToken, project, owner
 										onToggle={() => setExpandedUserId((current) => current === userId ? null : userId)}
 										onChange={(draft) => setDraftCollaborators((current) => ({ ...current, [userId]: draft }))}
 										onRemove={() => setPendingRemoveCollaborator(collaborator)}
+										onTransferOwnership={() => { if(!isDirty) { setTransferError(""); setTransferRequiresTwoFactor(false); setPendingTransferCollaborator(collaborator); } }}
 										canEdit={canEditMembers && (isOwner || Number(collaborator.user_id) !== Number(project.current_user_id))}
 										canRemove={Number(collaborator.user_id) === Number(project.current_user_id) || (collaborator.status === "pending" ? canManageInvites : canRemoveMembers)}
+										canTransferOwnership={isOwner && collaborator.status === "accepted"}
+										isTransferDisabled={isDirty}
 										isRemoving={removeMutation.isPending && String(pendingRemoveCollaborator?.user_id) === userId}
+										isTransferring={transferOwnershipMutation.isPending && String(pendingTransferCollaborator?.user_id) === userId}
 										t={t}
 									/>
 								);
@@ -418,6 +476,19 @@ export default function ProjectCollaboratorsSettings({ authToken, project, owner
 				isLoading={removeMutation.isPending}
 				onConfirm={handleRemove}
 				onRequestClose={() => { if(!removeMutation.isPending) setPendingRemoveCollaborator(null); }}
+			/>
+
+			<ProjectOwnershipTransferModal
+				isOpen={Boolean(pendingTransferCollaborator)}
+				projectTitle={project.title}
+				owner={projectOwner}
+				collaborator={pendingTransferCollaborator}
+				twoFactorEnabled={twoFactorEnabled || transferRequiresTwoFactor}
+				isLoading={transferOwnershipMutation.isPending}
+				errorMessage={transferError}
+				onClearError={() => setTransferError("")}
+				onConfirm={handleTransferOwnership}
+				onRequestClose={() => { if(!transferOwnershipMutation.isPending) { setPendingTransferCollaborator(null); setTransferError(""); setTransferRequiresTwoFactor(false); } }}
 			/>
 		</>
 	);

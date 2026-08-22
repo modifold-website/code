@@ -14,7 +14,7 @@ function PermissionCheck({ selected }) {
 	);
 }
 
-export default function ProjectCollaboratorCard({ collaborator, draft, availablePermissions, expanded, onToggle, onChange, onRemove, canEdit, canRemove, isRemoving, isProjectOwner = false, t }) {
+export default function ProjectCollaboratorCard({ collaborator, draft, availablePermissions, expanded, onToggle, onChange, onRemove, onTransferOwnership, canEdit, canRemove, canTransferOwnership = false, isTransferDisabled = false, isRemoving, isTransferring = false, isProjectOwner = false, t }) {
 	const permissions = Array.isArray(draft?.permissions) ? draft.permissions : [];
 	const selectedPermissions = new Set(permissions);
 	const role = draft?.role ?? collaborator.role ?? (isProjectOwner ? "Owner" : "Member");
@@ -99,11 +99,19 @@ export default function ProjectCollaboratorCard({ collaborator, draft, available
 							</>
 						) : null}
 
-						{canRemove ? (
+						{canRemove || (canTransferOwnership && !isPending) ? (
 							<div className="organization-member-card__remove-row">
-								<button type="button" className="button button--size-m button--type-danger" onClick={onRemove} disabled={isRemoving}>
-									{isRemoving ? t("actions.removing") : t(isPending ? "actions.cancelInvitation" : "actions.remove")}
-								</button>
+								{canRemove ? (
+									<button type="button" className="button button--size-m button--type-danger" onClick={onRemove} disabled={isRemoving}>
+										{isRemoving ? t("actions.removing") : t(isPending ? "actions.cancelInvitation" : "actions.remove")}
+									</button>
+								) : null}
+
+								{canTransferOwnership && !isPending ? (
+									<button type="button" className="button button--size-m button--type-minimal" onClick={onTransferOwnership} disabled={isTransferDisabled || isTransferring}>
+										{t("transfer.cardAction")}
+									</button>
+								) : null}
 							</div>
 						) : null}
 					</div>

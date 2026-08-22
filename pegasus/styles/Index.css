@@ -2789,7 +2789,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     padding-top: var(--layout-header-height);
 }
 .modal-overlay--danger {
-	background: linear-gradient(180deg, #b4b4b680 0%, #a2262647 100%);
+	background: linear-gradient(180deg, var(--theme-modal-overlay-background) 0%, #a2262647 100%);
 }
 .modal-overlay.ReactModal__Overlay--after-open {
     opacity: 1;
@@ -2919,9 +2919,9 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	min-width: 0;
 }
 .confirm-modal__message-copy h3 {
-	margin: 0 0 6px;
+	margin-bottom: 6px;
 	color: var(--theme-color-text-primary);
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: 500;
 	line-height: 24px;
 }

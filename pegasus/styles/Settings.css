@@ -442,6 +442,9 @@
     opacity: 0.8;
 }
 .organization-member-card__remove-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
     margin-top: 12px;
 }
 @media (max-width: 760px) {
@@ -576,6 +579,104 @@
 .project-collaborator-card__author-toggle:last-child {
 	margin-bottom: 0;
 }
+.ownership-transfer-modal {
+	max-height: calc(100dvh - var(--layout-header-height));
+	overflow: hidden;
+}
+.ownership-transfer-modal .modal-window {
+	max-height: calc(100dvh - var(--layout-header-height));
+}
+.ownership-transfer-modal__header {
+	border-bottom: 1px solid var(--theme-andropov-border-color);
+}
+.ownership-transfer-modal__content {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	padding-top: 20px;
+}
+.ownership-transfer-modal__intro {
+	margin: 0;
+	color: var(--theme-color-text-secondary);
+	line-height: 1.5;
+}
+.ownership-transfer-modal__people {
+	display: grid;
+	gap: 8px;
+}
+.ownership-transfer-modal__person {
+	display: grid;
+	grid-template-columns: 36px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 12px;
+	padding: 12px;
+	border-radius: 14px;
+	background: var(--theme-color-background);
+}
+.ownership-transfer-modal__person > img {
+	width: 36px;
+	height: 36px;
+	border-radius: 999px;
+	object-fit: cover;
+}
+.ownership-transfer-modal__person > div {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+.ownership-transfer-modal__person-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1.2;
+	font-size: 14px;
+	font-weight: 500;
+}
+.ownership-transfer-modal__person-handle {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1.2;
+	color: var(--theme-color-text-secondary);
+	font-size: 13px;
+}
+.ownership-transfer-modal__person small {
+	color: var(--theme-color-text-secondary);
+	font-size: 13px;
+	font-weight: 500;
+	text-align: right;
+}
+.ownership-transfer-modal__continue {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+.ownership-transfer-modal__continue svg {
+	flex: 0 0 auto;
+	fill: none;
+}
+.ownership-transfer-modal__field {
+	display: grid;
+}
+.ownership-transfer-modal__field > p {
+	margin-top: 6px;
+	color: var(--theme-color-text-secondary);
+	font-size: 13px;
+	line-height: 1.4;
+}
+.ownership-transfer-modal__code-input {
+	font-variant-numeric: tabular-nums;
+	letter-spacing: .18em;
+}
+.ownership-transfer-modal__error {
+	margin: 0;
+	padding: 11px 13px;
+	border-radius: 11px;
+	background: color-mix(in srgb, var(--theme-color-signal-negative-default) 9%, var(--theme-color-background-content));
+	color: var(--theme-color-signal-negative-default);
+	font-size: 14px;
+	line-height: 1.4;
+}
 .project-team-settings__organization-description,
 .project-team-settings__organization-hint {
 	color: var(--theme-color-text-secondary);
@@ -677,6 +778,24 @@
 	}
 	.organization-member-card__status {
 		display: none;
+	}
+	.ownership-transfer-modal__content {
+		gap: 15px;
+		padding-top: 16px;
+	}
+	.ownership-transfer-modal__person {
+		grid-template-columns: 33px minmax(0, 1fr);
+	}
+	.ownership-transfer-modal__person > img {
+		width: 33px;
+		height: 33px;
+	}
+	.ownership-transfer-modal__person small {
+		grid-column: 2;
+		text-align: left;
+	}
+	.ownership-transfer-modal__notice {
+		padding: 13px;
 	}
 }
 @media (prefers-reduced-motion: reduce) {

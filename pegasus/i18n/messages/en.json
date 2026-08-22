@@ -1828,6 +1828,25 @@
         "cancel": "Cancel"
       }
     },
+    "transfer": {
+      "cardAction": "Transfer ownership",
+      "title": "Transfer ownership",
+      "close": "Close",
+      "reviewDescription": "Ownership of {project} will pass to the selected collaborator.",
+      "becomesOwner": "Becomes owner",
+      "becomesMaintainer": "Remains as Maintainer",
+      "noticeTitle": "The new owner gets full control",
+      "noticeDescription": "You cannot undo this yourself. Only the new owner can transfer ownership again.",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "verifyDescription": "Confirm the transfer to protect the project from an accidental or unauthorized change of ownership.",
+      "confirmationLabel": "Enter {handle} to confirm",
+      "confirmationHint": "The handle must match exactly.",
+      "twoFactorLabel": "Two-factor authentication code",
+      "back": "Back",
+      "confirm": "Transfer ownership",
+      "transferring": "Transferring..."
+    },
     "actions": {
       "invite": "Invite",
       "inviting": "Inviting...",
@@ -1850,14 +1869,21 @@
       "invitedMany": "{count, plural, one {# invitation sent} other {# invitations sent}}",
 	  "permissionsSaved": "Collaborator settings saved",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Ownership transferred to {username}"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count, plural, one {Could not invite # user} other {Could not invite # users}}",
 	  "save": "Could not save collaborator settings",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "Could not transfer project ownership",
+      "transferConfirmation": "The confirmation does not match the selected collaborator",
+      "transferTwoFactorRequired": "Enter your two-factor authentication code",
+      "transferTwoFactorInvalid": "The two-factor authentication code is invalid",
+      "transferTarget": "Only an accepted collaborator can become the owner",
+      "transferChanged": "The project owner changed. Refresh the page and try again"
     }
   },
   "NewsPage": {

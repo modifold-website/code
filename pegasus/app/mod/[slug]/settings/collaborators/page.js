@@ -33,9 +33,11 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 	if(response.status === 401 || response.status === 403) {
 		redirect("/403");
 	}
+	
 	if(response.status === 404) {
 		notFound();
 	}
+
 	if(!response.ok) {
 		throw new Error(`Could not load project collaborators: API returned ${response.status}`);
 	}
@@ -50,6 +52,7 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 			availablePermissions={Array.isArray(data.available_permissions) ? data.available_permissions : []}
 			defaultPermissions={Array.isArray(data.default_permissions) ? data.default_permissions : []}
 			organizationOptions={Array.isArray(data.organization_options) ? data.organization_options : []}
+			twoFactorEnabled={Boolean(data.security?.two_factor_enabled)}
 		/>
 	);
 }

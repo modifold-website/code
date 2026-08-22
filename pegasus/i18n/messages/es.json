@@ -1733,6 +1733,25 @@
         "cancel": "Cancelar"
       }
     },
+    "transfer": {
+      "cardAction": "Transferir propiedad",
+      "title": "Transferir propiedad",
+      "close": "Cerrar",
+      "reviewDescription": "La propiedad de {project} pasará al colaborador seleccionado.",
+      "becomesOwner": "Se convierte en propietario",
+      "becomesMaintainer": "Permanece como Maintainer",
+      "noticeTitle": "El nuevo propietario tendrá el control total",
+      "noticeDescription": "No podrás deshacerlo por tu cuenta. Solo el nuevo propietario podrá volver a transferir la propiedad.",
+      "cancel": "Cancelar",
+      "continue": "Continuar",
+      "verifyDescription": "Confirma la transferencia para proteger el proyecto de un cambio de propiedad accidental o no autorizado.",
+      "confirmationLabel": "Escribe {handle} para confirmar",
+      "confirmationHint": "El identificador debe coincidir exactamente.",
+      "twoFactorLabel": "Código de autenticación en dos pasos",
+      "back": "Volver",
+      "confirm": "Transferir propiedad",
+      "transferring": "Transfiriendo..."
+    },
     "actions": {
       "invite": "Invitar",
       "inviting": "Invitando...",
@@ -1755,14 +1774,21 @@
       "invitedMany": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
 	  "permissionsSaved": "Ajustes del colaborador guardados",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Propiedad transferida a {username}"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count, plural, one {No se pudo invitar a # usuario} other {No se pudo invitar a # usuarios}}",
 	  "save": "No se pudieron guardar los ajustes del colaborador",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "No se pudo transferir la propiedad del proyecto",
+      "transferConfirmation": "La confirmación no coincide con el colaborador seleccionado",
+      "transferTwoFactorRequired": "Introduce el código de autenticación en dos pasos",
+      "transferTwoFactorInvalid": "El código de autenticación en dos pasos no es válido",
+      "transferTarget": "Solo un colaborador aceptado puede ser propietario",
+      "transferChanged": "El propietario del proyecto ha cambiado. Actualiza la página e inténtalo de nuevo"
     }
   },
   "NewsPage": {

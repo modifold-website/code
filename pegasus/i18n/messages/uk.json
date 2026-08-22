@@ -1734,6 +1734,25 @@
         "cancel": "Скасувати"
       }
     },
+    "transfer": {
+      "cardAction": "Передати володіння",
+      "title": "Передати володіння",
+      "close": "Закрити",
+      "reviewDescription": "Володіння проєктом «{project}» перейде до вибраного учасника.",
+      "becomesOwner": "Стане власником",
+      "becomesMaintainer": "Залишиться Maintainer",
+      "noticeTitle": "Новий власник отримає повний контроль",
+      "noticeDescription": "Ви не зможете скасувати це самостійно. Повернути володіння зможе лише новий власник.",
+      "cancel": "Скасувати",
+      "continue": "Продовжити",
+      "verifyDescription": "Підтвердьте передачу, щоб захистити проєкт від випадкової або чужої зміни власника.",
+      "confirmationLabel": "Введіть {handle} для підтвердження",
+      "confirmationHint": "Ім’я має збігатися повністю.",
+      "twoFactorLabel": "Код двофакторної автентифікації",
+      "back": "Назад",
+      "confirm": "Передати володіння",
+      "transferring": "Передаємо..."
+    },
     "actions": {
       "invite": "Запросити",
       "inviting": "Запрошуємо...",
@@ -1756,14 +1775,21 @@
       "invitedMany": "{count, plural, one {Надіслано # запрошення} few {Надіслано # запрошення} many {Надіслано # запрошень} other {Надіслано # запрошення}}",
 	  "permissionsSaved": "Налаштування учасника збережено",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Володіння проєктом передано користувачу {username}"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count, plural, one {Не вдалося запросити # користувача} few {Не вдалося запросити # користувачів} many {Не вдалося запросити # користувачів} other {Не вдалося запросити # користувача}}",
 	  "save": "Не вдалося зберегти налаштування учасника",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "Не вдалося передати володіння проєктом",
+      "transferConfirmation": "Підтвердження не збігається з вибраним учасником",
+      "transferTwoFactorRequired": "Введіть код двофакторної автентифікації",
+      "transferTwoFactorInvalid": "Неправильний код двофакторної автентифікації",
+      "transferTarget": "Власником може стати лише прийнятий учасник",
+      "transferChanged": "Власник проєкту вже змінився. Оновіть сторінку та спробуйте ще раз"
     }
   },
   "NewsPage": {
