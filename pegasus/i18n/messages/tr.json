@@ -925,6 +925,31 @@
         "generic": "Hytale bağlama başlatılamadı"
       }
     },
+    "authProviders": {
+      "title": "Giriş yöntemleri",
+      "description": "Modifold'a giriş yapmak için kullanabileceğiniz hesapları bağlayın.",
+      "connected": "Bağlı",
+      "connectedAt": "{date} tarihinde bağlandı",
+      "notConnected": "Bağlı değil",
+      "onlyLoginMethod": "Bu tek giriş yönteminiz",
+      "loading": "Yükleniyor...",
+      "connect": "Bağla",
+      "connecting": "Açılıyor...",
+      "disconnect": "Bağlantıyı kes",
+      "disconnecting": "Bağlantı kesiliyor...",
+      "confirm": {
+        "title": "{provider} bağlantısı kesilsin mi?",
+        "description": "Artık {provider} ile giriş yapamazsınız. Hesabı daha sonra tekrar bağlayabilirsiniz.",
+        "cancel": "İptal"
+      },
+      "errors": {
+        "load": "Giriş yöntemleri yüklenemedi",
+        "generic": "Giriş yöntemi güncellenemedi",
+        "lastLoginMethod": "Önce başka bir giriş yöntemi bağlayın",
+        "alreadyConnected": "Bu hesap zaten bağlı",
+        "notConnected": "Bu hesabın bağlantısı zaten kesilmiş"
+      }
+    },
     "passwordChange": {
       "title": "Parolayı değiştir",
       "description": "E-posta ile giriş için mevcut parolanızı ve yeni parolanızı girin.",

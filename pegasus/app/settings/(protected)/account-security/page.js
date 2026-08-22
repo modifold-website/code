@@ -19,36 +19,41 @@ export default async function Page() {
 
     let initialTwoFactor = null;
     let initialPassword = null;
+	let initialProviders = null;
 
     try {
-        const twoFactorResponse = await fetch(`${serverApiBase}/auth/2fa/status`, {
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                Accept: "application/json",
-            },
-            cache: "no-store",
-        });
+		const requestOptions = {
+			headers: {
+				Authorization: `Bearer ${authToken}`,
+				Accept: "application/json",
+			},
+			cache: "no-store",
+		};
+		const [twoFactorResponse, passwordResponse, providersResponse] = await Promise.all([
+			fetch(`${serverApiBase}/auth/2fa/status`, requestOptions),
+			fetch(`${serverApiBase}/auth/password/status`, requestOptions),
+			fetch(`${serverApiBase}/auth/providers`, requestOptions),
+		]);
+		const [twoFactorData, passwordData, providersData] = await Promise.all([
+			twoFactorResponse.json().catch(() => ({})),
+			passwordResponse.json().catch(() => ({})),
+			providersResponse.json().catch(() => ({})),
+		]);
 
-        if(twoFactorResponse.ok) {
-            const data = await twoFactorResponse.json().catch(() => ({}));
-            initialTwoFactor = { enabled: Boolean(data?.enabled) };
-        }
+		if(twoFactorResponse.ok) {
+			initialTwoFactor = { enabled: Boolean(twoFactorData?.enabled) };
+		}
 
-        const passwordResponse = await fetch(`${serverApiBase}/auth/password/status`, {
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                Accept: "application/json",
-            },
-            cache: "no-store",
-        });
+		if(passwordResponse.ok) {
+			initialPassword = { enabled: Boolean(passwordData?.enabled) };
+		}
 
-        if(passwordResponse.ok) {
-            const data = await passwordResponse.json().catch(() => ({}));
-            initialPassword = { enabled: Boolean(data?.enabled) };
-        }
+		if(providersResponse.ok) {
+			initialProviders = providersData;
+		}
     } catch (error) {
         console.error("Failed to preload user settings:", error);
     }
 
-    return <SettingsAccountSecurityPage initialTwoFactor={initialTwoFactor} initialPassword={initialPassword} authToken={authToken} />;
+	return <SettingsAccountSecurityPage initialTwoFactor={initialTwoFactor} initialPassword={initialPassword} initialProviders={initialProviders} authToken={authToken} />;
 }

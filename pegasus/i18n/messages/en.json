@@ -925,6 +925,31 @@
         "generic": "Failed to start Hytale linking"
       }
     },
+    "authProviders": {
+      "title": "Sign-in methods",
+      "description": "Connect accounts you can use to sign in to Modifold.",
+      "connected": "Connected",
+      "connectedAt": "Connected {date}",
+      "notConnected": "Not connected",
+      "onlyLoginMethod": "This is your only sign-in method",
+      "loading": "Loading...",
+      "connect": "Connect",
+      "connecting": "Opening...",
+      "disconnect": "Disconnect",
+      "disconnecting": "Disconnecting...",
+      "confirm": {
+        "title": "Disconnect {provider}?",
+        "description": "You will no longer be able to sign in with {provider}. You can connect it again later.",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "load": "Could not load sign-in methods",
+        "generic": "Could not update the sign-in method",
+        "lastLoginMethod": "Connect another sign-in method first",
+        "alreadyConnected": "This account is already connected",
+        "notConnected": "This account is already disconnected"
+      }
+    },
     "passwordChange": {
       "title": "Change password",
       "description": "Enter your current password and a new password for email sign-in.",

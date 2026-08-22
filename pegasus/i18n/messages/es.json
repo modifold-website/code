@@ -925,6 +925,31 @@
         "generic": "No se pudo iniciar la vinculación de Hytale"
       }
     },
+    "authProviders": {
+      "title": "Métodos de acceso",
+      "description": "Conecta las cuentas que puedes usar para entrar en Modifold.",
+      "connected": "Conectado",
+      "connectedAt": "Conectado el {date}",
+      "notConnected": "No conectado",
+      "onlyLoginMethod": "Este es tu único método de acceso",
+      "loading": "Cargando...",
+      "connect": "Conectar",
+      "connecting": "Abriendo...",
+      "disconnect": "Desconectar",
+      "disconnecting": "Desconectando...",
+      "confirm": {
+        "title": "¿Desconectar {provider}?",
+        "description": "Ya no podrás entrar con {provider}. Puedes volver a conectarlo más tarde.",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "load": "No se pudieron cargar los métodos de acceso",
+        "generic": "No se pudo actualizar el método de acceso",
+        "lastLoginMethod": "Conecta primero otro método de acceso",
+        "alreadyConnected": "Esta cuenta ya está conectada",
+        "notConnected": "Esta cuenta ya está desconectada"
+      }
+    },
     "passwordChange": {
       "title": "Cambiar contraseña",
       "description": "Introduce tu contraseña actual y una nueva contraseña para iniciar sesión con correo.",
