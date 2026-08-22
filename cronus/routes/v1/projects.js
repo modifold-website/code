@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const sharp = require('sharp');
 const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require('../../utils/sanitize');
 const { validateSlug } = require("../../utils/slug");
-const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
+const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
 const optionalAuth = require('../../middleware/optionalAuth');
 const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
@@ -1495,7 +1495,8 @@ router.get('/user/projects', auth, async (req, res) => {
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organization_members om ON om.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci AND om.user_id = ? AND om.status = 'accepted'
-            WHERE p.user_id = ? OR pm.user_id = ? OR om.user_id = ?
+			LEFT JOIN organization_member_project_overrides ompo ON ompo.organization_id = om.organization_id AND ompo.user_id = om.user_id AND ompo.project_id = p.id
+            WHERE p.user_id = ? OR pm.user_id = ? OR (om.user_id = ? AND (om.project_access_mode = 'all' OR ompo.id IS NOT NULL))
             ORDER BY p.updated_at DESC
             LIMIT ? OFFSET ?
             `,
@@ -1509,7 +1510,8 @@ router.get('/user/projects', auth, async (req, res) => {
             LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ? AND pm.status IN ('accept', 'accepted')
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organization_members om ON om.organization_id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci AND om.user_id = ? AND om.status = 'accepted'
-            WHERE p.user_id = ? OR pm.user_id = ? OR om.user_id = ?
+			LEFT JOIN organization_member_project_overrides ompo ON ompo.organization_id = om.organization_id AND ompo.user_id = om.user_id AND ompo.project_id = p.id
+            WHERE p.user_id = ? OR pm.user_id = ? OR (om.user_id = ? AND (om.project_access_mode = 'all' OR ompo.id IS NOT NULL))
             `,
             [req.user.id, req.user.id, req.user.id, req.user.id, req.user.id]
         );
@@ -5697,6 +5699,10 @@ router.put("/:slug/organization", auth, async (req, res) => {
             }
 
             await db.query("DELETE FROM organization_projects WHERE project_id = ?", [project.id]);
+			await db.query(
+				"DELETE FROM organization_member_project_overrides WHERE organization_id = ? AND project_id = ?",
+				[current.organization_id, project.id]
+			);
             await logOrganizationAudit(db, {
                 organizationId: current.organization_id,
                 actorUserId: req.user.id,
@@ -5755,6 +5761,28 @@ router.put("/:slug/organization", auth, async (req, res) => {
             created_at = VALUES(created_at)`,
             [targetOrganization.id, project.id, req.user.id, now]
         );
+		await db.query(
+			"DELETE FROM organization_member_project_overrides WHERE project_id = ? AND organization_id <> ?",
+			[project.id, targetOrganization.id]
+		);
+		await db.query(
+			`INSERT INTO organization_member_project_overrides
+			(organization_id, user_id, project_id, role, project_permissions, created_at, updated_at)
+			SELECT om.organization_id, om.user_id, ?, NULL, ?, ?, ?
+			FROM organization_members om
+			INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = om.organization_id COLLATE utf8mb4_unicode_ci
+			WHERE om.organization_id = ?
+			AND om.status = 'accepted'
+			AND om.user_id <> o.owner_user_id
+			ON DUPLICATE KEY UPDATE updated_at = VALUES(updated_at)`,
+			[
+				project.id,
+				JSON.stringify(DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS),
+				now,
+				now,
+				targetOrganization.id,
+			]
+		);
 
         await logOrganizationAudit(db, {
             organizationId: targetOrganization.id,

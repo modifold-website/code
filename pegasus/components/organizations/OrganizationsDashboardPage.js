@@ -8,93 +8,145 @@ import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
 import CreateOrganizationModal from "@/modal/CreateOrganizationModal";
 
 export default function OrganizationsDashboardPage({ authToken, initialOrganizations = [] }) {
-    const { user } = useAuth();
-    const t = useTranslations("Organizations");
-    const tSidebar = useTranslations("SettingsBlogPage.sidebar");
-    const [organizations, setOrganizations] = useState(initialOrganizations);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+	const { user } = useAuth();
+	const t = useTranslations("Organizations");
+	const tSidebar = useTranslations("SettingsBlogPage.sidebar");
+	const [organizations, setOrganizations] = useState(initialOrganizations);
+	const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-    return (
-        <div className="layout">
-            <div className="page-content settings-page">
-                <UserSettingsSidebar
-                    user={user}
-                    profileIconAlt={tSidebar("profileIconAlt")}
-                    mode="dashboard"
-                    labels={{
-                        projects: tSidebar("projects"),
-                        analytics: tSidebar("analytics"),
-                        likes: tSidebar("likes"),
-                        organizations: tSidebar("organizations"),
-                        jams: tSidebar("jams"),
-                        notifications: tSidebar("notifications"),
-                        settings: tSidebar("settings"),
-                        apiTokens: tSidebar("apiTokens"),
-                        verification: tSidebar("verification"),
-                    }}
-                />
+	return (
+		<div className="layout">
+			<div className="page-content settings-page">
+				<UserSettingsSidebar
+					user={user}
+					profileIconAlt={tSidebar("profileIconAlt")}
+					mode="dashboard"
+					labels={{
+						projects: tSidebar("projects"),
+						analytics: tSidebar("analytics"),
+						likes: tSidebar("likes"),
+						organizations: tSidebar("organizations"),
+						jams: tSidebar("jams"),
+						notifications: tSidebar("notifications"),
+						settings: tSidebar("settings"),
+						apiTokens: tSidebar("apiTokens"),
+						verification: tSidebar("verification"),
+					}}
+				/>
 
-                <div className="notifications settings-wrapper--narrow">
-                    <div className="notifications__header" style={{ justifyContent: "space-between" }}>
-                        <span className="notifications__header-text">{t("dashboard.title")}</span>
-                        
-                        <button type="button" className="button button--size-m button--type-primary button--active-transform" onClick={() => setIsCreateModalOpen(true)}>
-                            {t("dashboard.create")}
-                        </button>
-                    </div>
+				<main className="settings-content organizations-dashboard">
+					<header className="organizations-dashboard__header">
+						<div className="organizations-dashboard__heading">
+							<h1>{t("dashboard.title")}</h1>
+							<p>{t("dashboard.description")}</p>
+						</div>
 
-                    {organizations.length === 0 ? (
-                        <div className="subsite-empty-feed">
-                            <p className="subsite-empty-feed__title">{t("dashboard.empty")}</p>
-                        </div>
-                    ) : (
-                        <div style={{ display: "grid", gap: "12px", marginTop: "12px" }}>
-                            {organizations.map((organization) => (
-                                <Link key={organization.id} href={`/organization/${organization.slug}`} className="new-project-card" style={{ textDecoration: "none", flexDirection: "row", padding: "16px", gap: "12px" }}>
-                                    <img className="new-project-icon" src={organization.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} style={{ width: "80px", height: "80px" }} alt={organization.name} />
-                                    
-                                    <div className="new-project-info">
-                                        <div className="new-project-header">
-                                            <span className="new-project-title" style={{ fontWeight: "500" }}>{organization.name}</span>
-                                        </div>
+						<button type="button" className="button button--size-m button--type-primary button--active-transform organizations-dashboard__create" onClick={() => setIsCreateModalOpen(true)}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+								<path d="M5 12h14" />
+								<path d="M12 5v14" />
+							</svg>
 
-                                        <p className="new-project-description">{organization.summary || t("dashboard.noSummary")}</p>
-                                        
-                                        <p style={{ marginTop: "auto", color: "var(--theme-color-text-secondary)", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "16px" }}>
-                                            <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-round-icon lucide-users-round">
-                                                <path d="M18 21a8 8 0 0 0-16 0"/>
-                                                <circle cx="10" cy="8" r="5"/>
-                                                <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3"/>
-                                            </svg>
+							{t("dashboard.create")}
+						</button>
+					</header>
 
-                                            {t("dashboard.members", { count: organization.members_count || 0 })}
-                                        </p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+					{organizations.length === 0 ? (
+						<div className="content content--padding organizations-dashboard__empty">
+							<div className="organizations-dashboard__empty-icon" aria-hidden="true">
+								<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+									<path d="M10 12h4" />
+									<path d="M10 8h4" />
+									<path d="M14 21v-3a2 2 0 0 0-4 0v3" />
+									<path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
+									<path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+								</svg>
+							</div>
 
-            <CreateOrganizationModal
-                isOpen={isCreateModalOpen}
-                authToken={authToken}
-                onRequestClose={() => setIsCreateModalOpen(false)}
-                onCreated={(created) => {
-                    if(!created?.id) {
-                        return;
-                    }
+							<p>{t("dashboard.empty")}</p>
+						</div>
+					) : (
+						<div className="organizations-dashboard__list">
+							{organizations.map((organization) => (
+								<article key={organization.id} className="new-project-card dashboard-project-card organization-dashboard-card">
+									<Link className="new-project-card__overlay" href={`/organization/${organization.slug}`} aria-label={t("dashboard.open", { organization: organization.name })} />
 
-                    setOrganizations((prev) => ([
-                        {
-                            ...created,
-                            members_count: 1,
-                        },
-                        ...prev,
-                    ]));
-                }}
-            />
-        </div>
-    );
+									<div className="dashboard-project-card__content organization-dashboard-card__content">
+										<img className="new-project-icon organization-dashboard-card__icon" src={organization.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt={t("dashboard.iconAlt", { organization: organization.name })} />
+
+										<div className="new-project-info">
+											<div className="organization-dashboard-card__title-row">
+												<h2 className="new-project-title">{organization.name}</h2>
+												<span className="organization-dashboard-card__role">{organization.role}</span>
+											</div>
+
+											<p className="new-project-description">{organization.summary || t("dashboard.noSummary")}</p>
+
+											<div className="organization-dashboard-card__meta">
+												<span>
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+														<path d="M18 21a8 8 0 0 0-16 0" />
+														<circle cx="10" cy="8" r="5" />
+														<path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" />
+													</svg>
+
+													{t("dashboard.members", { count: organization.members_count || 0 })}
+												</span>
+
+												<span>
+													<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+														<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+														<path d="m3.3 7 8.7 5 8.7-5" />
+														<path d="M12 22V12" />
+													</svg>
+
+													{t("dashboard.projects", { count: organization.projects_count || 0 })}
+												</span>
+											</div>
+										</div>
+									</div>
+
+									{organization.can_manage ? (
+										<div className="dashboard-project-card__actions">
+											<Link href={`/organization/${organization.slug}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
+												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+													<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+													<circle cx="12" cy="12" r="3" />
+												</svg>
+
+												{t("dashboard.settings")}
+											</Link>
+										</div>
+									) : null}
+								</article>
+							))}
+						</div>
+					)}
+				</main>
+			</div>
+
+			<CreateOrganizationModal
+				isOpen={isCreateModalOpen}
+				authToken={authToken}
+				onRequestClose={() => setIsCreateModalOpen(false)}
+				onCreated={(created) => {
+					if(!created?.id) {
+						return;
+					}
+
+					setOrganizations((prev) => ([
+						{
+							...created,
+							members_count: 1,
+							projects_count: 0,
+							role: "Owner",
+							is_owner: true,
+							can_manage: true,
+						},
+						...prev,
+					]));
+				}}
+			/>
+		</div>
+	);
 }

@@ -1739,7 +1739,7 @@
       "close": "Cerrar",
       "reviewDescription": "La propiedad de {project} pasará al colaborador seleccionado.",
       "becomesOwner": "Se convierte en propietario",
-      "becomesMaintainer": "Permanece como Maintainer",
+      "becomesMaintainer": "Sigue siendo miembro",
       "noticeTitle": "El nuevo propietario tendrá el control total",
       "noticeDescription": "No podrás deshacerlo por tu cuenta. Solo el nuevo propietario podrá volver a transferir la propiedad.",
       "cancel": "Cancelar",
@@ -2433,10 +2433,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Organizaciones",
+	  "description": "Gestiona tus organizaciones, miembros y acceso a proyectos.",
       "create": "Crear organización",
       "empty": "Aún no perteneces a ninguna organización.",
       "noSummary": "Sin resumen",
-      "members": "{count, plural, one {# miembro} other {# miembros}}"
+	  "members": "{count, plural, one {# miembro} other {# miembros}}",
+	  "projects": "{count, plural, one {# proyecto} other {# proyectos}}",
+	  "settings": "Configuración",
+	  "open": "Abrir la organización {organization}",
+	  "iconAlt": "Icono de la organización {organization}"
     },
     "create": {
       "title": "Creando una organización",
@@ -2493,8 +2498,41 @@
       "inviteResultsLabel": "Resultados de búsqueda de usuarios",
       "inviteSearching": "Buscando...",
       "inviteNoResults": "No se encontraron usuarios",
-      "projectPermissions": "Permisos de proyecto",
+      "memberRole": {
+        "title": "Rol visible",
+        "description": "Se muestra junto al miembro y no afecta a sus permisos.",
+        "placeholder": "Por ejemplo, desarrollador o diseñador"
+      },
+      "projectAccess": {
+        "title": "Acceso a proyectos",
+        "description": "Elige a qué proyectos puede acceder este miembro. Puedes configurar permisos individuales para cada proyecto.",
+        "accessGranted": "Acceso permitido",
+        "directAccessHint": "Este miembro pertenece a algunos equipos de proyecto. Elimínalo del equipo de un proyecto para revocar ese acceso.",
+        "noAccess": "Sin acceso",
+        "configure": "Permisos",
+        "configureProject": "Configurar permisos para {project}",
+        "configureAccess": "Configurar",
+        "grantAccess": "Dar acceso a {project}",
+        "revokeAccess": "Quitar acceso a {project}",
+        "manageModalTitle": "Acceso a proyectos",
+        "back": "Volver a proyectos",
+        "modalTitle": "Permisos del proyecto",
+        "modalDescription": "Elige qué puede hacer este miembro en este proyecto.",
+        "permissionGroups": {
+          "versions": "Versiones",
+          "content": "Página del proyecto",
+          "team": "Equipo",
+          "analytics": "Analíticas",
+          "danger": "Acciones peligrosas"
+        },
+        "empty": "Esta organización todavía no tiene proyectos.",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "saved": "Acceso a proyectos guardado"
+      },
       "organizationPermissions": "Permisos de organización",
+      "organizationPermissionsDescription": "Define qué puede cambiar el miembro en la propia organización.",
       "publicPage": "Página pública",
       "iconAlt": "Icono de organización {name}",
       "fields": {
@@ -2530,13 +2568,16 @@
         "openProjectSettings": "Ajustes del proyecto",
         "detachProject": "Desvincular proyecto",
         "detachingProject": "Desvinculando...",
+        "moreProjectActions": "Más acciones para el proyecto «{title}»",
         "saveMember": "Guardar cambios",
+        "cancelInvite": "Cancelar",
+        "cancellingInvite": "Cancelando...",
         "removeMember": "Eliminar miembro",
         "removingMember": "Eliminando..."
       },
       "status": {
         "accepted": "Aceptado",
-        "pending": "Pendiente",
+        "pending": "Esperando respuesta",
         "invited": "Invitado",
         "declined": "Rechazado"
       },
@@ -2546,7 +2587,7 @@
         "close": "Cerrar",
         "reviewDescription": "La propiedad de {organization} pasará al miembro seleccionado.",
         "becomesOwner": "Se convierte en propietario",
-        "becomesMaintainer": "Permanece como Maintainer",
+        "becomesMaintainer": "Sigue siendo miembro",
         "noticeTitle": "El nuevo propietario tendrá el control total",
         "noticeDescription": "No podrás deshacerlo por tu cuenta. Solo el nuevo propietario podrá volver a transferir la propiedad.",
         "cancel": "Cancelar",
@@ -2585,19 +2626,23 @@
       "successIconUploaded": "Icono de organización subido",
       "successInviteSent": "Invitación enviada a {username}",
       "successInvitesSent": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
+      "successInviteCancelled": "Invitación para {username} cancelada",
       "successMemberUpdated": "Se actualizó {username}",
       "successMemberRemoved": "Se eliminó a {username}",
       "successProjectDetached": "Se desvinculó el proyecto {title}",
       "confirmDetachProject": "¿Desvincular el proyecto {title} de la organización?",
       "confirmRemoveMember": "¿Eliminar a {username} de la organización?",
+      "removeMemberDirectAccess": "El miembro conservará el acceso a los proyectos cuyos equipos haya unido directamente.",
       "emptyProjects": "Todavía no hay proyectos vinculados a esta organización.",
       "errors": {
         "save": "No se pudo guardar la organización",
         "iconUpload": "No se pudo subir el icono de la organización",
         "invite": "No se pudo invitar al usuario",
         "inviteMany": "{count, plural, one {No se pudo invitar a # usuario} other {No se pudo invitar a # usuarios}}",
+        "cancelInvite": "No se pudo cancelar la invitación",
         "searchUsers": "No se pudo buscar usuarios",
         "memberUpdate": "No se pudo actualizar el miembro",
+        "projectAccess": "No se pudo guardar el acceso a proyectos",
         "memberRemove": "No se pudo eliminar el miembro",
         "projectDetach": "No se pudo desvincular el proyecto",
         "fileTooLarge": "El archivo es demasiado grande. Tamaño máximo: 20 MB"
@@ -2638,11 +2683,11 @@
         "project_delete": "Eliminar proyecto"
       },
       "organization": {
-        "organization_edit_details": "Editar detalles",
-        "organization_manage_invites": "Gestionar invitaciones",
-        "organization_manage_members": "Gestionar miembros",
-        "organization_add_project": "Agregar proyecto",
-        "organization_remove_project": "Eliminar proyecto"
+        "organization_edit_details": "Editar la organización",
+        "organization_manage_invites": "Invitar miembros",
+        "organization_manage_members": "Configurar miembros",
+        "organization_add_project": "Agregar proyectos a la organización",
+        "organization_remove_project": "Desvincular proyectos de la organización"
       }
     }
   },

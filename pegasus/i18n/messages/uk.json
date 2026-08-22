@@ -1740,7 +1740,7 @@
       "close": "Закрити",
       "reviewDescription": "Володіння проєктом «{project}» перейде до вибраного учасника.",
       "becomesOwner": "Стане власником",
-      "becomesMaintainer": "Залишиться Maintainer",
+      "becomesMaintainer": "Залишиться учасником",
       "noticeTitle": "Новий власник отримає повний контроль",
       "noticeDescription": "Ви не зможете скасувати це самостійно. Повернути володіння зможе лише новий власник.",
       "cancel": "Скасувати",
@@ -2434,10 +2434,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Організації",
+	  "description": "Керуйте організаціями, учасниками та доступом до проєктів.",
       "create": "Створити організацію",
       "empty": "Ви ще не є учасником жодної організації.",
       "noSummary": "Немає опису",
-      "members": "{count, plural, one {# учасник} few {# учасники} many {# учасників} other {# учасника}}"
+	  "members": "{count, plural, one {# учасник} few {# учасники} many {# учасників} other {# учасника}}",
+	  "projects": "{count, plural, one {# проєкт} few {# проєкти} many {# проєктів} other {# проєкту}}",
+	  "settings": "Налаштування",
+	  "open": "Відкрити організацію «{organization}»",
+	  "iconAlt": "Іконка організації {organization}"
     },
     "create": {
       "title": "Створення організації",
@@ -2494,8 +2499,41 @@
       "inviteResultsLabel": "Результати пошуку користувачів",
       "inviteSearching": "Пошук...",
       "inviteNoResults": "Користувачів не знайдено",
-      "projectPermissions": "Права проєкту",
+      "memberRole": {
+        "title": "Роль для відображення",
+        "description": "Відображається поруч з учасником і не впливає на його права.",
+        "placeholder": "Наприклад, розробник або дизайнер"
+      },
+      "projectAccess": {
+        "title": "Доступ до проєктів",
+        "description": "Виберіть проєкти, з якими зможе працювати учасник. Для кожного проєкту можна налаштувати окремі права.",
+        "accessGranted": "Доступ дозволено",
+        "directAccessHint": "Учасника додано до команд деяких проєктів. Щоб забрати цей доступ, видаліть його з команди проєкту.",
+        "noAccess": "Немає доступу",
+        "configure": "Права",
+        "configureProject": "Налаштувати права проєкту «{project}»",
+        "configureAccess": "Налаштувати",
+        "grantAccess": "Відкрити доступ до проєкту «{project}»",
+        "revokeAccess": "Закрити доступ до проєкту «{project}»",
+        "manageModalTitle": "Доступ до проєктів",
+        "back": "Назад до проєктів",
+        "modalTitle": "Права проєкту",
+        "modalDescription": "Виберіть, що учасник зможе робити в цьому проєкті.",
+        "permissionGroups": {
+          "versions": "Версії",
+          "content": "Сторінка проєкту",
+          "team": "Команда",
+          "analytics": "Аналітика",
+          "danger": "Небезпечні дії"
+        },
+        "empty": "В організації поки немає проєктів.",
+        "cancel": "Скасувати",
+        "save": "Зберегти",
+        "saving": "Збереження...",
+        "saved": "Доступ до проєктів збережено"
+      },
       "organizationPermissions": "Права організації",
+      "organizationPermissionsDescription": "Визначають, що учасник може змінювати в самій організації.",
       "publicPage": "Публічна сторінка",
       "iconAlt": "Іконка організації {name}",
       "fields": {
@@ -2531,13 +2569,16 @@
         "openProjectSettings": "Налаштування проєкту",
         "detachProject": "Відв'язати проєкт",
         "detachingProject": "Відв'язування...",
+        "moreProjectActions": "Інші дії з проєктом «{title}»",
         "saveMember": "Зберегти зміни",
+        "cancelInvite": "Скасувати",
+        "cancellingInvite": "Скасування...",
         "removeMember": "Видалити учасника",
         "removingMember": "Видалення..."
       },
       "status": {
         "accepted": "Прийнято",
-        "pending": "В очікуванні",
+        "pending": "Очікує відповіді",
         "invited": "Запрошено",
         "declined": "Відхилено"
       },
@@ -2547,7 +2588,7 @@
         "close": "Закрити",
         "reviewDescription": "Володіння організацією «{organization}» перейде до вибраного учасника.",
         "becomesOwner": "Стане власником",
-        "becomesMaintainer": "Залишиться Maintainer",
+        "becomesMaintainer": "Залишиться учасником",
         "noticeTitle": "Новий власник отримає повний контроль",
         "noticeDescription": "Ви не зможете скасувати це самостійно. Повернути володіння зможе лише новий власник.",
         "cancel": "Скасувати",
@@ -2586,19 +2627,23 @@
       "successIconUploaded": "Іконку організації завантажено",
       "successInviteSent": "Запрошення для {username} надіслано",
       "successInvitesSent": "{count, plural, one {Надіслано # запрошення} few {Надіслано # запрошення} many {Надіслано # запрошень} other {Надіслано # запрошення}}",
+      "successInviteCancelled": "Запрошення для {username} скасовано",
       "successMemberUpdated": "Оновлено учасника {username}",
       "successMemberRemoved": "Учасника {username} видалено",
       "successProjectDetached": "Проєкт {title} відв'язано",
       "confirmDetachProject": "Відв'язати проєкт {title} від організації?",
       "confirmRemoveMember": "Видалити {username} з організації?",
+      "removeMemberDirectAccess": "Учасник збереже доступ до проєктів, до команд яких приєднався напряму.",
       "emptyProjects": "До цієї організації ще не прив'язано жодного проєкту.",
       "errors": {
         "save": "Не вдалося зберегти організацію",
         "iconUpload": "Не вдалося завантажити іконку організації",
         "invite": "Не вдалося запросити користувача",
         "inviteMany": "{count, plural, one {Не вдалося запросити # користувача} few {Не вдалося запросити # користувачів} many {Не вдалося запросити # користувачів} other {Не вдалося запросити # користувача}}",
+        "cancelInvite": "Не вдалося скасувати запрошення",
         "searchUsers": "Не вдалося знайти користувачів",
         "memberUpdate": "Не вдалося оновити учасника",
+        "projectAccess": "Не вдалося зберегти доступ до проєктів",
         "memberRemove": "Не вдалося видалити учасника",
         "projectDetach": "Не вдалося відв'язати проєкт",
         "fileTooLarge": "Файл завеликий. Максимум 20 МБ"
@@ -2640,10 +2685,10 @@
       },
       "organization": {
         "organization_edit_details": "Редагувати організацію",
-        "organization_manage_invites": "Керувати запрошеннями",
-        "organization_manage_members": "Керувати учасниками",
-        "organization_add_project": "Додавати проєкти",
-        "organization_remove_project": "Видаляти проєкти"
+        "organization_manage_invites": "Запрошувати учасників",
+        "organization_manage_members": "Налаштовувати учасників",
+        "organization_add_project": "Додавати проєкти до організації",
+        "organization_remove_project": "Відв'язувати проєкти від організації"
       }
     }
   },

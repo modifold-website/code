@@ -12,7 +12,7 @@ import OrganizationSettingsSidebar from "@/components/organizations/settings/Org
 import ConfirmModal from "@/modal/ConfirmModal";
 import OwnershipTransferModal from "@/modal/OwnershipTransferModal";
 import { useCollaboratorUserSearch } from "@/utils/collaborators/hooks";
-import { useTransferOrganizationOwnership } from "@/utils/organizations/hooks";
+import { useTransferOrganizationOwnership, useUpdateOrganizationMemberProjectAccess } from "@/utils/organizations/hooks";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -27,14 +27,6 @@ const useDebouncedValue = (value, delay) => {
     return debouncedValue;
 };
 
-const PROJECT_PERMISSION_KEYS = [
-    "project_edit_details",
-    "project_edit_body",
-    "project_edit_gallery",
-    "project_manage_versions",
-    "project_delete",
-];
-
 const ORGANIZATION_PERMISSION_KEYS = [
     "organization_edit_details",
     "organization_manage_invites",
@@ -45,30 +37,35 @@ const ORGANIZATION_PERMISSION_KEYS = [
 
 const normalizePermissions = (permissions) => Array.from(new Set(Array.isArray(permissions) ? permissions.filter((item) => typeof item === "string") : [])).sort();
 
+const normalizeProjectOverrides = (overrides) => {
+	const entries = Array.isArray(overrides) ? overrides.map((override) => [String(override.project_id), override]) : Object.entries(overrides || {});
+	return Object.fromEntries(entries.map(([projectId, override]) => [projectId, {
+		project_permissions: normalizePermissions(override?.project_permissions),
+	}]));
+};
+
 const buildDraftMember = (member) => ({
     role: member.role || "Member",
-    project_permissions: normalizePermissions(member.project_permissions),
     organization_permissions: normalizePermissions(member.organization_permissions),
+	project_overrides: normalizeProjectOverrides(member.project_overrides),
 });
 
 const buildDraftMap = (members) => Object.fromEntries(members.map((member) => [String(member.user_id), buildDraftMember(member)]));
 
-const isMemberChanged = (member, draft) => {
+const isMemberSettingsChanged = (member, draft) => {
     if(!draft) {
         return false;
     }
 
-    const savedProjectPermissions = normalizePermissions(member.project_permissions);
     const savedOrganizationPermissions = normalizePermissions(member.organization_permissions);
 
     return (
         (member.role || "Member") !== draft.role ||
-        JSON.stringify(savedProjectPermissions) !== JSON.stringify(draft.project_permissions) ||
-        JSON.stringify(savedOrganizationPermissions) !== JSON.stringify(draft.organization_permissions)
+		JSON.stringify(savedOrganizationPermissions) !== JSON.stringify(draft.organization_permissions)
     );
 };
 
-export default function OrganizationMembersSettingsPage({ authToken, organization, members = [], pending_invites = [], security = {}, my_permissions }) {
+export default function OrganizationMembersSettingsPage({ authToken, organization, members = [], pending_invites = [], projects = [], available_project_override_permissions = [], default_project_permissions = [], security = {}, my_permissions }) {
     const t = useTranslations("Organizations");
     const tUnsaved = useTranslations("SettingsProjectPage.unsavedBar");
     const router = useRouter();
@@ -80,6 +77,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
     const [isInviting, setIsInviting] = useState(false);
     const [isSavingMembers, setIsSavingMembers] = useState(false);
     const [removingMemberId, setRemovingMemberId] = useState(null);
+	const [cancellingInviteUserId, setCancellingInviteUserId] = useState(null);
     const [pendingRemoveMember, setPendingRemoveMember] = useState(null);
     const [memberItems, setMemberItems] = useState(members);
     const [pendingInviteItems, setPendingInviteItems] = useState(pending_invites);
@@ -95,8 +93,10 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
     const listboxId = useId();
 
     const transferOwnershipMutation = useTransferOrganizationOwnership({ authToken, organizationSlug: organization.slug });
+	const updateProjectAccessMutation = useUpdateOrganizationMemberProjectAccess({ authToken, organizationSlug: organization.slug });
     const canManageMembers = Boolean(isOrganizationOwner || my_permissions?.organization_permissions?.includes("organization_manage_members"));
     const canManageInvites = Boolean(isOrganizationOwner || my_permissions?.organization_permissions?.includes("organization_manage_invites"));
+	const canManageMemberProjectAccess = (member) => canManageMembers && Number(member.user_id) !== Number(organizationOwnerUserId) && (isOrganizationOwner || Number(member.user_id) !== Number(my_permissions?.user_id));
 
     const sortedMembers = useMemo(
         () => memberItems.slice().sort((a, b) => Number(Number(b.user_id) === Number(organizationOwnerUserId)) - Number(Number(a.user_id) === Number(organizationOwnerUserId))),
@@ -140,7 +140,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
         [pendingInviteMembers, sortedMembers]
     );
 
-    const isDirty = canManageMembers && sortedMembers.some((member) => isMemberChanged(member, draftMembers[String(member.user_id)]));
+	const isDirty = canManageMembers && sortedMembers.some((member) => isMemberSettingsChanged(member, draftMembers[String(member.user_id)]));
 
     useEffect(() => {
         setHighlightedIndex(0);
@@ -252,7 +252,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
             return;
         }
 
-        const changedMembers = sortedMembers.filter((member) => isMemberChanged(member, draftMembers[String(member.user_id)]));
+		const changedMembers = sortedMembers.filter((member) => isMemberSettingsChanged(member, draftMembers[String(member.user_id)]));
         if(changedMembers.length === 0) {
             return;
         }
@@ -260,26 +260,22 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
         setIsSavingMembers(true);
 
         try {
-            await Promise.all(changedMembers.map((member) => {
+            const updateRequests = [];
+            changedMembers.forEach((member) => {
                 const draft = draftMembers[String(member.user_id)];
                 const isOwnerMember = Number(member.user_id) === Number(organizationOwnerUserId);
-                const payload = {
-                    role: draft.role,
-                };
+				const payload = { role: draft.role };
+				if(!isOwnerMember) {
+					payload.organization_permissions = draft.organization_permissions;
+				}
 
-                if(!isOwnerMember) {
-                    payload.project_permissions = draft.project_permissions;
-                    payload.organization_permissions = draft.organization_permissions;
-                }
-
-                return axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/organizations/${organization.slug}/members/${member.user_id}`, {
-                    ...payload,
-                }, {
-                    headers: {
-                        Authorization: `Bearer ${authToken}`,
-                    },
-                });
-            }));
+				updateRequests.push(axios.put(`${process.env.NEXT_PUBLIC_API_BASE}/organizations/${organization.slug}/members/${member.user_id}`, payload, {
+					headers: {
+						Authorization: `Bearer ${authToken}`,
+					},
+				}));
+            });
+			await Promise.all(updateRequests);
 
             const nextMemberItems = memberItems.map((member) => {
                 const draft = draftMembers[String(member.user_id)];
@@ -290,7 +286,6 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                 return {
                     ...member,
                     role: draft.role,
-                    project_permissions: draft.project_permissions,
                     organization_permissions: draft.organization_permissions,
                 };
             });
@@ -298,12 +293,77 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
             setMemberItems(nextMemberItems);
             setDraftMembers(buildDraftMap(nextMemberItems));
             toast.success(t("settings.successSaved"));
-        } catch (error) {
-            toast.error(error.response?.data?.message || t("settings.errors.memberUpdate"));
+		} catch (error) {
+			toast.error(error.response?.data?.message || t("settings.errors.memberUpdate"));
         } finally {
             setIsSavingMembers(false);
         }
-    };
+	};
+
+	const handleSaveMemberProjectAccess = async (member, nextDraft) => {
+		if(!canManageMemberProjectAccess(member) || updateProjectAccessMutation.isPending) {
+			return false;
+		}
+
+		const projectOverrides = normalizeProjectOverrides(nextDraft.project_overrides);
+		try {
+			await updateProjectAccessMutation.mutateAsync({
+				userId: member.user_id,
+				projects: projects.map((project) => {
+					const projectId = String(project.id);
+					const projectSettings = projectOverrides[projectId];
+					return {
+						project_id: projectId,
+						has_access: Boolean(projectSettings),
+						permissions: projectSettings?.project_permissions || [],
+					};
+				}),
+			});
+
+			const savedOverrides = Object.entries(projectOverrides).map(([projectId, override]) => ({
+				project_id: projectId,
+				project_permissions: normalizePermissions(override.project_permissions),
+			}));
+			setMemberItems((current) => current.map((item) => Number(item.user_id) === Number(member.user_id) ? {
+				...item,
+				project_access_mode: "selected",
+				project_overrides: savedOverrides,
+			} : item));
+			setDraftMembers((current) => ({
+				...current,
+				[String(member.user_id)]: {
+					...current[String(member.user_id)],
+					project_overrides: projectOverrides,
+				},
+			}));
+			toast.success(t("settings.projectAccess.saved"));
+			return true;
+		} catch (error) {
+			toast.error(error.response?.data?.message || t("settings.errors.projectAccess"));
+			return false;
+		}
+	};
+
+	const handleCancelInvite = async (member) => {
+		if(!canManageInvites || cancellingInviteUserId) {
+			return;
+		}
+
+		setCancellingInviteUserId(member.user_id);
+		try {
+			await axios.delete(`${process.env.NEXT_PUBLIC_API_BASE}/organizations/${organization.slug}/invites/${member.user_id}`, {
+				headers: {
+					Authorization: `Bearer ${authToken}`,
+				},
+			});
+			setPendingInviteItems((current) => current.filter((invite) => Number(invite.user_id || invite.invited_user_id) !== Number(member.user_id)));
+			toast.success(t("settings.successInviteCancelled", { username: member.username }));
+		} catch (error) {
+			toast.error(error.response?.data?.message || t("settings.errors.cancelInvite"));
+		} finally {
+			setCancellingInviteUserId(null);
+		}
+	};
 
     const handleRemoveMember = async (member) => {
         if(removingMemberId || member.__isPendingInvite) {
@@ -473,12 +533,13 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                             const isOwnerMember = Number(member.user_id) === Number(organizationOwnerUserId);
                             const canExpandCard = !member.__isPendingInvite && canManageMembers;
                             const isExpanded = canExpandCard && expandedMemberId === member.__cardKey;
-                            const canRemoveMember = (
+							const canRemoveMember = (
                                 canManageMembers &&
                                 !member.__isPendingInvite &&
                                 Number(member.user_id) !== Number(organizationOwnerUserId) &&
                                 Number(member.user_id) !== Number(my_permissions?.user_id)
-                            );
+							);
+							const canCancelInvite = canManageInvites && member.__isPendingInvite;
                             const canTransferOwnership = (
                                 isOrganizationOwner &&
                                 !member.__isPendingInvite &&
@@ -500,13 +561,18 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                         setExpandedMemberId((prev) => (prev === member.__cardKey ? null : member.__cardKey));
                                     }}
                                     canManageMembers={canManageMembers}
+									canManageProjectAccess={canManageMemberProjectAccess(member)}
                                     canExpand={canExpandCard}
-                                    canRemove={canRemoveMember}
-                                    canTransferOwnership={canTransferOwnership}
+									canRemove={canRemoveMember}
+									canCancelInvite={canCancelInvite}
+									canTransferOwnership={canTransferOwnership}
                                     isTransferDisabled={isDirty}
-                                    isRemoving={Number(removingMemberId) === Number(member.user_id)}
+									isRemoving={Number(removingMemberId) === Number(member.user_id)}
+									isCancellingInvite={Number(cancellingInviteUserId) === Number(member.user_id)}
+									isSavingProjectAccess={updateProjectAccessMutation.isPending}
                                     isTransferring={transferOwnershipMutation.isPending && Number(pendingTransferMember?.user_id) === Number(member.user_id)}
-                                    onRemove={() => setPendingRemoveMember(member)}
+									onRemove={() => setPendingRemoveMember(member)}
+									onCancelInvite={() => handleCancelInvite(member)}
                                     onTransferOwnership={() => {
                                         if(!isDirty) {
                                             setTransferError("");
@@ -514,7 +580,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                             setPendingTransferMember(member);
                                         }
                                     }}
-                                    onChange={(nextDraft) => {
+									onChange={(nextDraft) => {
                                         if(member.__isPendingInvite) {
                                             return;
                                         }
@@ -523,13 +589,17 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                             ...prev,
                                             [memberKey]: {
                                                 role: nextDraft.role,
-                                                project_permissions: normalizePermissions(nextDraft.project_permissions),
                                                 organization_permissions: normalizePermissions(nextDraft.organization_permissions),
+												project_overrides: normalizeProjectOverrides(nextDraft.project_overrides),
                                             },
                                         }));
-                                    }}
-                                    t={t}
-                                    projectPermissionKeys={PROJECT_PERMISSION_KEYS}
+									}}
+									onSaveProjectAccess={(nextDraft) => handleSaveMemberProjectAccess(member, nextDraft)}
+									t={t}
+									projects={projects}
+									directProjectAccess={member.direct_project_access || []}
+									defaultProjectPermissions={default_project_permissions}
+									projectOverridePermissionKeys={available_project_override_permissions}
                                     organizationPermissionKeys={ORGANIZATION_PERMISSION_KEYS}
                                     defaultIconUrl={"https://media.modifold.com/static/no-project-icon.svg"}
                                     isOwner={isOwnerMember}
@@ -553,9 +623,11 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                     />
                 )}
             </div>
-            <ConfirmModal
+
+			<ConfirmModal
                 isOpen={Boolean(pendingRemoveMember)}
-                title={pendingRemoveMember ? t("settings.confirmRemoveMember", { username: pendingRemoveMember.username }) : ""}
+				title={pendingRemoveMember ? t("settings.confirmRemoveMember", { username: pendingRemoveMember.username }) : ""}
+				description={pendingRemoveMember?.direct_project_access?.length > 0 ? t("settings.removeMemberDirectAccess") : undefined}
                 confirmLabel={t("settings.actions.removeMember")}
                 cancelLabel={t("settings.delete.cancel")}
                 isLoading={Boolean(removingMemberId)}

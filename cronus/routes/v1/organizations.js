@@ -10,21 +10,24 @@ const auth = require("../../middleware/auth");
 const { db } = require("../../config/db");
 const { sanitizePlainText, sanitizeExternalUrl } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
-const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, getOrganizationMemberAccess, hasOrganizationPermission, logOrganizationAudit } = require("../../utils/organizations");
+const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require("../../utils/organizations");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 
 const router = express.Router();
 
 const generateId = () => crypto.randomBytes(6).toString("base64url");
 
-const DEFAULT_MEMBER_PROJECT_PERMISSIONS = [
-    ORG_PROJECT_PERMISSIONS.EDIT_DETAILS,
-    ORG_PROJECT_PERMISSIONS.EDIT_BODY,
-    ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
-    ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS,
-];
+const DEFAULT_MEMBER_PROJECT_PERMISSIONS = [];
 
 const DEFAULT_MEMBER_ORGANIZATION_PERMISSIONS = [];
+const PROJECT_OVERRIDE_PERMISSION_SET = new Set(PROJECT_COLLABORATOR_PERMISSIONS);
+const normalizeProjectOverridePermissions = (permissions) => Array.from(new Set(
+	expandProjectPermissions(permissions).filter((permission) => PROJECT_OVERRIDE_PERMISSION_SET.has(permission))
+));
+const getDefaultProjectPermissions = (permissions) => {
+	const normalizedPermissions = normalizeProjectOverridePermissions(permissions);
+	return normalizedPermissions.length > 0 ? normalizedPermissions : [...DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS];
+};
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 20 * 1024 * 1024 },
@@ -154,7 +157,9 @@ router.get("/dashboard/organizations", auth, async (req, res) => {
             om.status,
             om.project_permissions,
             om.organization_permissions,
-            (SELECT COUNT(*) FROM organization_members om2 WHERE om2.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci AND om2.status = 'accepted') AS members_count
+            om.project_access_mode,
+			(SELECT COUNT(*) FROM organization_members om2 WHERE om2.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci AND om2.status = 'accepted') AS members_count,
+			(SELECT COUNT(*) FROM organization_projects op WHERE op.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci) AS projects_count
             FROM organization_members om
             INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = om.organization_id COLLATE utf8mb4_unicode_ci
             WHERE om.user_id = ?
@@ -172,9 +177,10 @@ router.get("/dashboard/organizations", auth, async (req, res) => {
             return {
                 ...buildOrganizationSummary(row),
                 members_count: Number(row.members_count || 0),
+				projects_count: Number(row.projects_count || 0),
                 role: row.role,
                 is_owner: isOwner,
-                can_manage: isOwner || organizationPermissions.has(ORG_PERMISSIONS.MANAGE_INVITES) || organizationPermissions.has(ORG_PERMISSIONS.MANAGE_MEMBERS) || organizationPermissions.has(ORG_PERMISSIONS.EDIT_DETAILS),
+				can_manage: isOwner || Object.values(ORG_PERMISSIONS).some((permission) => organizationPermissions.has(permission)),
             };
         });
 
@@ -233,7 +239,7 @@ router.post("/", auth, async (req, res) => {
             [
                 organizationId,
                 req.user.id,
-                JSON.stringify(Object.values(ORG_PROJECT_PERMISSIONS)),
+                JSON.stringify([]),
                 JSON.stringify(Object.values(ORG_PERMISSIONS)),
                 now,
                 now,
@@ -396,6 +402,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
             om.status,
             om.project_permissions,
             om.organization_permissions,
+			om.project_access_mode,
             u.username,
             u.slug,
             u.avatar,
@@ -420,13 +427,111 @@ router.get("/:slug/settings", auth, async (req, res) => {
         );
 
         const [projects] = await db.query(
-            `SELECT p.id, p.slug, p.title, p.summary, p.icon_url
+            `SELECT p.id, p.user_id, p.slug, p.title, p.summary, p.icon_url, p.tags
             FROM organization_projects op
             INNER JOIN projects p ON p.id COLLATE utf8mb4_unicode_ci = op.project_id COLLATE utf8mb4_unicode_ci
             WHERE op.organization_id = ?
             ORDER BY p.updated_at DESC`,
             [organization.id]
         );
+
+		const [projectOverrides] = await db.query(
+			`SELECT user_id, project_id, role, project_permissions
+			FROM organization_member_project_overrides
+			WHERE organization_id = ?`,
+			[organization.id]
+		);
+		const [directProjectAccessRows] = await db.query(
+			`SELECT pm.user_id, pm.project_id, pm.permissions
+			FROM project_members pm
+			INNER JOIN organization_projects op
+				ON op.project_id COLLATE utf8mb4_unicode_ci = pm.project_id COLLATE utf8mb4_unicode_ci
+			WHERE op.organization_id = ?
+			AND pm.status IN ('accept', 'accepted')`,
+			[organization.id]
+		);
+		const projectOverridesByUser = new Map();
+		projectOverrides.forEach((override) => {
+			const userId = String(override.user_id);
+			const current = projectOverridesByUser.get(userId) || [];
+			current.push({
+				project_id: override.project_id,
+				role: override.role || null,
+				project_permissions: override.project_permissions === null ? null : normalizeProjectOverridePermissions(override.project_permissions),
+			});
+			projectOverridesByUser.set(userId, current);
+		});
+		const directProjectAccessByUser = new Map();
+		directProjectAccessRows.forEach((projectAccess) => {
+			const userId = String(projectAccess.user_id);
+			const current = directProjectAccessByUser.get(userId) || [];
+			current.push({
+				project_id: projectAccess.project_id,
+				project_permissions: normalizeProjectOverridePermissions(projectAccess.permissions),
+			});
+			directProjectAccessByUser.set(userId, current);
+		});
+		const getMemberProjectOverrides = (member) => {
+			const savedOverrides = new Map((projectOverridesByUser.get(String(member.user_id)) || []).map((override) => [String(override.project_id), override]));
+			const defaultPermissions = getDefaultProjectPermissions(member.project_permissions);
+			if(member.project_access_mode === "selected") {
+				return Array.from(savedOverrides.values()).map((override) => ({
+					...override,
+					project_permissions: override.project_permissions === null ? defaultPermissions : override.project_permissions,
+				}));
+			}
+
+			return projects.map((project) => {
+				const override = savedOverrides.get(String(project.id));
+				return {
+					project_id: project.id,
+					role: override?.role || null,
+					project_permissions: override?.project_permissions === null || override?.project_permissions === undefined
+						? defaultPermissions
+						: override.project_permissions,
+				};
+			});
+		};
+		const [directProjectMembers] = await db.query(
+			`SELECT pm.project_id, pm.permissions
+			FROM project_members pm
+			INNER JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = pm.project_id COLLATE utf8mb4_unicode_ci
+			WHERE op.organization_id = ? AND pm.user_id = ? AND pm.status IN ('accept', 'accepted')`,
+			[organization.id, req.user.id]
+		);
+		const directPermissionsByProject = new Map(directProjectMembers.map((member) => [
+			String(member.project_id),
+			expandProjectPermissions(member.permissions),
+		]));
+		const viewerOverrides = new Map((projectOverridesByUser.get(String(req.user.id)) || []).map((override) => [String(override.project_id), override]));
+		const viewerProjectAccessMode = access.member.project_access_mode === "selected" ? "selected" : "all";
+		const viewerDefaultProjectPermissions = getDefaultProjectPermissions(access.member.project_permissions);
+		const canManageMemberAccess = hasOrganizationPermission(access, ORG_PERMISSIONS.MANAGE_MEMBERS);
+		const projectViews = projects.map((project) => {
+			const projectId = String(project.id);
+			const projectOverride = viewerOverrides.get(projectId);
+			const hasOrganizationProjectAccess = access.isOwner || viewerProjectAccessMode === "all" || Boolean(projectOverride);
+			const organizationProjectPermissions = !hasOrganizationProjectAccess ? [] : access.isOwner
+                ? PROJECT_COLLABORATOR_PERMISSIONS
+                : projectOverride?.project_permissions !== null && projectOverride?.project_permissions !== undefined
+                ? projectOverride.project_permissions
+                : viewerDefaultProjectPermissions;
+			const effectiveProjectPermissions = new Set([
+				...(directPermissionsByProject.get(projectId) || []),
+				...organizationProjectPermissions,
+			]);
+			const isProjectOwner = Number(project.user_id) === Number(req.user.id);
+			const canAccessProject = isProjectOwner || directPermissionsByProject.has(projectId) || hasOrganizationProjectAccess || canManageMemberAccess;
+			const permissionAccess = { isOwner: isProjectOwner, projectPermissions: effectiveProjectPermissions };
+
+			return canAccessProject ? {
+				...project,
+				tags: project.tags ? String(project.tags).split(",").map((tag) => tag.trim()).filter(Boolean) : [],
+				permissions: {
+					can_open_settings: isProjectOwner || PROJECT_COLLABORATOR_PERMISSIONS.some((permission) => hasProjectPermission(permissionAccess, permission)),
+				},
+			} : null;
+		});
 
         return res.json({
             organization: {
@@ -435,7 +540,12 @@ router.get("/:slug/settings", auth, async (req, res) => {
                 created_at: organization.created_at,
                 updated_at: organization.updated_at,
             },
-            members: members.map(getMemberView),
+			members: members.map((member) => ({
+				...getMemberView(member),
+				project_access_mode: Number(member.user_id) === Number(organization.owner_user_id) ? "all" : "selected",
+				project_overrides: getMemberProjectOverrides(member),
+				direct_project_access: directProjectAccessByUser.get(String(member.user_id)) || [],
+			})),
             pending_invites: pendingInvites.map((invite) => ({
                 id: invite.id,
                 user_id: invite.invited_user_id,
@@ -449,7 +559,9 @@ router.get("/:slug/settings", auth, async (req, res) => {
                 organization_permissions: parsePermissions(invite.organization_permissions),
                 created_at: invite.created_at,
             })),
-            projects,
+			projects: projectViews.filter(Boolean),
+			available_project_override_permissions: PROJECT_COLLABORATOR_PERMISSIONS,
+			default_project_permissions: DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS,
             security: {
                 two_factor_enabled: access.isOwner && isTwoFactorEnabled(twoFactorRow),
             },
@@ -722,7 +834,7 @@ router.post("/:slug/invites", auth, async (req, res) => {
 
         const now = Math.floor(Date.now() / 1000);
         const role = sanitizePlainText(req.body?.role || "Member") || "Member";
-        const projectPermissions = Array.isArray(req.body?.project_permissions) ? req.body.project_permissions.filter((item) => typeof item === "string") : DEFAULT_MEMBER_PROJECT_PERMISSIONS;
+        const projectPermissions = DEFAULT_MEMBER_PROJECT_PERMISSIONS;
         const organizationPermissions = Array.isArray(req.body?.organization_permissions) ? req.body.organization_permissions.filter((item) => typeof item === "string") : DEFAULT_MEMBER_ORGANIZATION_PERMISSIONS;
 
         await db.query(
@@ -776,6 +888,195 @@ router.post("/:slug/invites", auth, async (req, res) => {
         console.error("Error inviting organization member:", error);
         return res.status(500).json({ message: "Error inviting member" });
     }
+});
+
+router.delete("/:slug/invites/:userId", auth, async (req, res) => {
+	try {
+		const organization = await getOrganizationBySlug(req.params.slug);
+		if(!organization) {
+			return res.status(404).json({ message: "Organization not found" });
+		}
+
+		const access = await getOrganizationMemberAccess(db, organization.id, req.user.id);
+		if(!access || !hasOrganizationPermission(access, ORG_PERMISSIONS.MANAGE_INVITES)) {
+			return res.status(403).json({ message: "Access denied" });
+		}
+
+		const invitedUserId = Number(req.params.userId);
+		if(!Number.isInteger(invitedUserId) || invitedUserId <= 0) {
+			return res.status(400).json({ message: "Invalid invited user" });
+		}
+
+		const now = Math.floor(Date.now() / 1000);
+		const [result] = await db.query(
+			`UPDATE organization_invitations
+			SET status = 'declined', updated_at = ?
+			WHERE organization_id = ? AND invited_user_id = ? AND status = 'pending'`,
+			[now, organization.id, invitedUserId]
+		);
+		if(!result.affectedRows) {
+			return res.status(404).json({ message: "Invitation not found" });
+		}
+
+		await db.query(
+			`DELETE FROM notification_events
+			WHERE recipient_user_id = ?
+			AND event_type = 'organization_invite'
+			AND object_type = 'organization'
+			AND object_id = ?`,
+			[invitedUserId, organization.id]
+		);
+		await logOrganizationAudit(db, {
+			organizationId: organization.id,
+			actorUserId: req.user.id,
+			action: "organization_invite_cancelled",
+			targetType: "user",
+			targetId: String(invitedUserId),
+		});
+
+		return res.json({ success: true });
+	} catch (error) {
+		console.error("Error cancelling organization invitation:", error);
+		return res.status(500).json({ message: "Error cancelling invitation" });
+	}
+});
+
+router.put("/:slug/members/:userId/project-access", auth, async (req, res) => {
+	const targetUserId = Number(req.params.userId);
+	const requestedProjects = Array.isArray(req.body?.projects) ? req.body.projects : null;
+
+	if(!Number.isInteger(targetUserId) || targetUserId <= 0) {
+		return res.status(400).json({ code: "INVALID_MEMBER", message: "Invalid organization member" });
+	}
+	if(!requestedProjects || requestedProjects.length > 500) {
+		return res.status(400).json({ code: "INVALID_PROJECT_ACCESS", message: "Invalid project access settings" });
+	}
+
+	const connection = await db.getConnection();
+	try {
+		await connection.beginTransaction();
+		const [[organization]] = await connection.query(
+			"SELECT id, owner_user_id FROM organizations WHERE slug = ? LIMIT 1 FOR UPDATE",
+			[req.params.slug]
+		);
+		if(!organization) {
+			await connection.rollback();
+			return res.status(404).json({ code: "ORGANIZATION_NOT_FOUND", message: "Organization not found" });
+		}
+		const actorAccess = await getOrganizationMemberAccess(connection, organization.id, req.user.id);
+		if(!actorAccess || !hasOrganizationPermission(actorAccess, ORG_PERMISSIONS.MANAGE_MEMBERS)) {
+			await connection.rollback();
+			return res.status(403).json({ code: "ACCESS_DENIED", message: "You do not have permission to manage project access" });
+		}
+		if(Number(organization.owner_user_id) === targetUserId) {
+			await connection.rollback();
+			return res.status(400).json({ code: "OWNER_ACCESS_FIXED", message: "The organization owner always has access to every project" });
+		}
+		if(!actorAccess.isOwner && Number(req.user.id) === targetUserId) {
+			await connection.rollback();
+			return res.status(403).json({ code: "SELF_ACCESS_FIXED", message: "Members cannot change their own project access" });
+		}
+
+		const [[member]] = await connection.query(
+			`SELECT user_id, status
+			FROM organization_members
+			WHERE organization_id = ? AND user_id = ?
+			LIMIT 1 FOR UPDATE`,
+			[organization.id, targetUserId]
+		);
+		if(!member || member.status !== "accepted") {
+			await connection.rollback();
+			return res.status(400).json({ code: "MEMBER_NOT_ACCEPTED", message: "Project access can only be changed for accepted members" });
+		}
+
+		const [organizationProjects] = await connection.query(
+			"SELECT project_id FROM organization_projects WHERE organization_id = ?",
+			[organization.id]
+		);
+		const organizationProjectIds = new Set(organizationProjects.map((project) => String(project.project_id)));
+		const settingsByProject = new Map();
+		for(const projectSettings of requestedProjects) {
+			const projectId = String(projectSettings?.project_id || "");
+			if(!organizationProjectIds.has(projectId) || settingsByProject.has(projectId)) {
+				await connection.rollback();
+				return res.status(400).json({ code: "PROJECT_NOT_IN_ORGANIZATION", message: "Every project must belong to the organization and appear once" });
+			}
+			settingsByProject.set(projectId, projectSettings);
+		}
+		if(settingsByProject.size !== organizationProjects.length) {
+			await connection.rollback();
+			return res.status(400).json({ code: "INVALID_PROJECT_ACCESS", message: "Access settings are required for every organization project" });
+		}
+
+		const normalizedOverrides = organizationProjects.flatMap((project) => {
+			const projectId = String(project.project_id);
+			const projectSettings = settingsByProject.get(projectId);
+			if(projectSettings?.has_access === false) {
+				return [];
+			}
+
+			return [{
+				project_id: projectId,
+				project_permissions: Array.isArray(projectSettings?.permissions)
+					? normalizeProjectOverridePermissions(projectSettings.permissions)
+					: [...DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS],
+			}];
+		});
+		const now = Math.floor(Date.now() / 1000);
+		await connection.query(
+			`UPDATE organization_members
+			SET project_access_mode = 'selected', project_permissions = '[]', updated_at = ?
+			WHERE organization_id = ? AND user_id = ?`,
+			[now, organization.id, targetUserId]
+		);
+		await connection.query(
+			"DELETE FROM organization_member_project_overrides WHERE organization_id = ? AND user_id = ?",
+			[organization.id, targetUserId]
+		);
+
+		if(normalizedOverrides.length > 0) {
+			const placeholders = normalizedOverrides.map(() => "(?, ?, ?, NULL, ?, ?, ?)").join(", ");
+			const values = normalizedOverrides.flatMap((override) => [
+				organization.id,
+				targetUserId,
+				override.project_id,
+				override.project_permissions === null ? null : JSON.stringify(override.project_permissions),
+				now,
+				now,
+			]);
+			await connection.query(
+				`INSERT INTO organization_member_project_overrides
+				(organization_id, user_id, project_id, role, project_permissions, created_at, updated_at)
+				VALUES ${placeholders}`,
+				values
+			);
+		}
+
+		await logOrganizationAudit(connection, {
+			organizationId: organization.id,
+			actorUserId: req.user.id,
+			action: "organization_member_project_access_updated",
+			targetType: "user",
+			targetId: String(targetUserId),
+			metadata: {
+				projects_count: organizationProjects.length,
+				accessible_projects_count: normalizedOverrides.length,
+			},
+		});
+		await connection.commit();
+
+		return res.json({
+			success: true,
+			project_access_mode: "selected",
+			project_overrides: normalizedOverrides,
+		});
+	} catch (error) {
+		await connection.rollback();
+		console.error("Error updating organization member project access:", error);
+		return res.status(500).json({ code: "PROJECT_ACCESS_UPDATE_FAILED", message: "Error updating project access" });
+	} finally {
+		connection.release();
+	}
 });
 
 router.post("/:slug/transfer-ownership", auth, async (req, res) => {
@@ -850,8 +1151,9 @@ router.post("/:slug/transfer-ownership", auth, async (req, res) => {
         }
 
         const now = Math.floor(Date.now() / 1000);
-        const projectPermissions = JSON.stringify(Object.values(ORG_PROJECT_PERMISSIONS));
+        const projectPermissions = JSON.stringify([]);
         const organizationPermissions = JSON.stringify(Object.values(ORG_PERMISSIONS));
+		const formerOwnerProjectPermissions = JSON.stringify(PROJECT_COLLABORATOR_PERMISSIONS);
         const [organizationUpdate] = await connection.query(
             `UPDATE organizations
             SET owner_user_id = ?, updated_at = ?
@@ -865,16 +1167,32 @@ router.post("/:slug/transfer-ownership", auth, async (req, res) => {
 
         await connection.query(
             `UPDATE organization_members
-            SET role = 'Owner', status = 'accepted', project_permissions = ?, organization_permissions = ?, updated_at = ?
+            SET role = 'Owner', status = 'accepted', project_permissions = ?, organization_permissions = ?, project_access_mode = 'all', updated_at = ?
             WHERE organization_id = ? AND user_id = ?`,
             [projectPermissions, organizationPermissions, now, organization.id, target.user_id]
         );
         await connection.query(
             `UPDATE organization_members
-            SET role = 'Maintainer', status = 'accepted', project_permissions = ?, organization_permissions = ?, updated_at = ?
+            SET role = 'Member', status = 'accepted', project_permissions = ?, organization_permissions = ?, project_access_mode = 'selected', updated_at = ?
             WHERE organization_id = ? AND user_id = ?`,
             [projectPermissions, organizationPermissions, now, organization.id, organization.owner_user_id]
         );
+		await connection.query(
+			"DELETE FROM organization_member_project_overrides WHERE organization_id = ? AND user_id IN (?, ?)",
+			[organization.id, target.user_id, organization.owner_user_id]
+		);
+		await connection.query(
+			`INSERT INTO organization_member_project_overrides
+			(organization_id, user_id, project_id, role, project_permissions, created_at, updated_at)
+			SELECT op.organization_id, ?, op.project_id, NULL, ?, ?, ?
+			FROM organization_projects op
+			WHERE op.organization_id = ?`,
+			[organization.owner_user_id, formerOwnerProjectPermissions, now, now, organization.id]
+		);
+		const [formerOwnerProjects] = await connection.query(
+			"SELECT project_id FROM organization_projects WHERE organization_id = ?",
+			[organization.id]
+		);
         if(twoFactorEnabled) {
             await connection.query(
                 "UPDATE user_two_factor SET last_used_at = ? WHERE user_id = ?",
@@ -906,8 +1224,10 @@ router.post("/:slug/transfer-ownership", auth, async (req, res) => {
                 activeProfileBadge: target.activeProfileBadge,
                 role: "Owner",
                 status: "accepted",
-                project_permissions: Object.values(ORG_PROJECT_PERMISSIONS),
+                project_permissions: [],
                 organization_permissions: Object.values(ORG_PERMISSIONS),
+				project_access_mode: "all",
+				project_overrides: [],
             },
             former_owner: {
                 user_id: organization.owner_user_id,
@@ -916,10 +1236,15 @@ router.post("/:slug/transfer-ownership", auth, async (req, res) => {
                 avatar: organization.owner_avatar,
                 isVerified: Number(organization.owner_isVerified || 0),
                 activeProfileBadge: organization.owner_activeProfileBadge,
-                role: "Maintainer",
+                role: "Member",
                 status: "accepted",
-                project_permissions: Object.values(ORG_PROJECT_PERMISSIONS),
+                project_permissions: [],
                 organization_permissions: Object.values(ORG_PERMISSIONS),
+				project_access_mode: "selected",
+				project_overrides: formerOwnerProjects.map((project) => ({
+					project_id: project.project_id,
+					project_permissions: PROJECT_COLLABORATOR_PERMISSIONS,
+				})),
             },
         });
     } catch (error) {
@@ -958,19 +1283,13 @@ router.put("/:slug/members/:userId", auth, async (req, res) => {
         }
 
         const isOwnerMember = Number(targetUserId) === Number(organization.owner_user_id);
-        if(isOwnerMember && (req.body?.project_permissions !== undefined || req.body?.organization_permissions !== undefined || req.body?.status !== undefined)) {
+        if(isOwnerMember && (req.body?.organization_permissions !== undefined || req.body?.status !== undefined)) {
             return res.status(400).json({ message: "Cannot update organization owner permissions" });
         }
 
         const updates = {};
         if(req.body?.role !== undefined) {
             updates.role = sanitizePlainText(req.body.role || "Member") || "Member";
-        }
-
-        if(req.body?.project_permissions !== undefined) {
-            updates.project_permissions = JSON.stringify(
-                Array.isArray(req.body.project_permissions) ? req.body.project_permissions.filter((item) => typeof item === "string") : []
-            );
         }
 
         if(req.body?.organization_permissions !== undefined) {
@@ -1108,24 +1427,42 @@ router.post("/invites/:inviteId/accept", auth, async (req, res) => {
 
         await db.query(
             `INSERT INTO organization_members
-            (organization_id, user_id, role, status, project_permissions, organization_permissions, created_at, updated_at)
-            VALUES (?, ?, ?, 'accepted', ?, ?, ?, ?)
+            (organization_id, user_id, role, status, project_permissions, organization_permissions, project_access_mode, created_at, updated_at)
+            VALUES (?, ?, ?, 'accepted', '[]', ?, 'selected', ?, ?)
             ON DUPLICATE KEY UPDATE
             role = VALUES(role),
             status = 'accepted',
-            project_permissions = VALUES(project_permissions),
+            project_permissions = '[]',
             organization_permissions = VALUES(organization_permissions),
+            project_access_mode = 'selected',
             updated_at = VALUES(updated_at)`,
             [
                 invite.organization_id,
                 invite.invited_user_id,
                 invite.role,
-                invite.project_permissions,
                 invite.organization_permissions,
                 now,
                 now,
             ]
         );
+
+		await db.query(
+			`INSERT INTO organization_member_project_overrides
+			(organization_id, user_id, project_id, role, project_permissions, created_at, updated_at)
+			SELECT op.organization_id, ?, op.project_id, NULL, ?, ?, ?
+			FROM organization_projects op
+			WHERE op.organization_id = ?
+			ON DUPLICATE KEY UPDATE
+			project_permissions = VALUES(project_permissions),
+			updated_at = VALUES(updated_at)`,
+			[
+				invite.invited_user_id,
+				JSON.stringify(DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS),
+				now,
+				now,
+				invite.organization_id,
+			]
+		);
 
         await db.query(
             `UPDATE notification_events

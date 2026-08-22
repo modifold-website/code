@@ -44,6 +44,11 @@ const PROJECT_COLLABORATOR_PERMISSIONS = [
 	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_MEMBERS,
 	PROJECT_COLLABORATOR_PERMISSION_KEYS.DELETE_PROJECT,
 ];
+const DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS = [
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.UPLOAD_VERSION,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION,
+	PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_BODY,
+];
 const PROJECT_ACCESS_PERMISSION_SET = new Set([
 	...PROJECT_COLLABORATOR_PERMISSIONS,
 	ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS,
@@ -223,7 +228,16 @@ const resolveProjectAccess = async (db, projectId, userId) => {
     }
 
     const organization = organizationRows[0];
-    const memberAccess = await getOrganizationMemberAccess(db, organization.id, userId);
+    const [memberAccess, overrideRowsResult] = await Promise.all([
+        getOrganizationMemberAccess(db, organization.id, userId),
+        db.query(
+            `SELECT role, project_permissions
+            FROM organization_member_project_overrides
+            WHERE organization_id = ? AND user_id = ? AND project_id = ?
+            LIMIT 1`,
+            [organization.id, userId, projectId]
+        ),
+    ]);
 
     if(!memberAccess) {
         return {
@@ -237,19 +251,32 @@ const resolveProjectAccess = async (db, projectId, userId) => {
         };
     }
 
+	const projectOverride = overrideRowsResult[0][0] || null;
+	const projectAccessMode = memberAccess.member.project_access_mode === "selected" ? "selected" : "all";
+	const hasOrganizationProjectAccess = memberAccess.isOwner || Boolean(projectOverride) || projectAccessMode === "all";
+	const legacyProjectPermissions = expandProjectPermissions(memberAccess.member.project_permissions) .filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission));
+	const organizationProjectPermissions = !hasOrganizationProjectAccess ? [] : memberAccess.isOwner
+		? PROJECT_COLLABORATOR_PERMISSIONS
+		: projectOverride?.project_permissions !== null && projectOverride?.project_permissions !== undefined
+		? expandProjectPermissions(projectOverride.project_permissions).filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission))
+        : legacyProjectPermissions.length > 0 ? legacyProjectPermissions : DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS;
 	const projectPermissions = new Set([
 		...directPermissions,
-		...memberAccess.projectPermissions,
+		...organizationProjectPermissions,
 	]);
 
     return {
         isOwner: false,
 		hasDirectAccess: Boolean(directMember),
-        hasOrganizationAccess: true,
+        hasOrganizationAccess: hasOrganizationProjectAccess,
 		directMember,
         organization,
 		projectPermissions,
         organizationPermissions: memberAccess.organizationPermissions,
+		organizationProjectOverride: projectOverride ? {
+			role: projectOverride.role || null,
+			projectPermissions: projectOverride.project_permissions === null ? null : parsePermissions(projectOverride.project_permissions),
+		} : null,
     };
 };
 
@@ -286,6 +313,7 @@ module.exports = {
     ORG_PROJECT_PERMISSIONS,
 	PROJECT_COLLABORATOR_PERMISSION_KEYS,
 	PROJECT_COLLABORATOR_PERMISSIONS,
+	DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS,
     parsePermissions,
 	expandProjectPermissions,
     getOrganizationMemberAccess,

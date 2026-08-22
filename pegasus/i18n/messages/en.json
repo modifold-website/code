@@ -1834,7 +1834,7 @@
       "close": "Close",
       "reviewDescription": "Ownership of {project} will pass to the selected collaborator.",
       "becomesOwner": "Becomes owner",
-      "becomesMaintainer": "Remains as Maintainer",
+      "becomesMaintainer": "Remains a member",
       "noticeTitle": "The new owner gets full control",
       "noticeDescription": "You cannot undo this yourself. Only the new owner can transfer ownership again.",
       "cancel": "Cancel",
@@ -2528,10 +2528,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Organizations",
+	  "description": "Manage your organizations, members, and project access.",
       "create": "Create organization",
       "empty": "You are not a member of any organization yet.",
       "noSummary": "No summary",
-      "members": "{count, plural, one {# member} other {# members}}"
+	  "members": "{count, plural, one {# member} other {# members}}",
+	  "projects": "{count, plural, one {# project} other {# projects}}",
+	  "settings": "Settings",
+	  "open": "Open {organization}",
+	  "iconAlt": "{organization} organization icon"
     },
     "create": {
       "title": "Creating an organization",
@@ -2588,8 +2593,41 @@
       "inviteResultsLabel": "User search results",
       "inviteSearching": "Searching...",
       "inviteNoResults": "No users found",
-      "projectPermissions": "Project permissions",
+      "memberRole": {
+        "title": "Display role",
+        "description": "Shown next to the member and does not affect their permissions.",
+        "placeholder": "For example, developer or designer"
+      },
+      "projectAccess": {
+        "title": "Project access",
+        "description": "Choose which projects this member can access. You can configure custom permissions for each project.",
+        "accessGranted": "Access granted",
+        "directAccessHint": "This member belongs to some project teams. Remove them from a project's team to revoke that access.",
+        "noAccess": "No access",
+        "configure": "Permissions",
+        "configureProject": "Configure permissions for {project}",
+        "configureAccess": "Configure",
+        "grantAccess": "Grant access to {project}",
+        "revokeAccess": "Revoke access to {project}",
+        "manageModalTitle": "Project access",
+        "back": "Back to projects",
+        "modalTitle": "Project permissions",
+        "modalDescription": "Choose what this member can do in this project.",
+        "permissionGroups": {
+          "versions": "Versions",
+          "content": "Project page",
+          "team": "Team",
+          "analytics": "Analytics",
+          "danger": "Dangerous actions"
+        },
+        "empty": "This organization has no projects yet.",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Project access saved"
+      },
       "organizationPermissions": "Organization permissions",
+      "organizationPermissionsDescription": "Controls what the member can change in the organization itself.",
       "publicPage": "Public page",
       "iconAlt": "Organization icon {name}",
       "fields": {
@@ -2625,13 +2663,16 @@
         "openProjectSettings": "Project settings",
         "detachProject": "Detach project",
         "detachingProject": "Detaching...",
+        "moreProjectActions": "More actions for project “{title}”",
         "saveMember": "Save changes",
+        "cancelInvite": "Cancel",
+        "cancellingInvite": "Cancelling...",
         "removeMember": "Remove member",
         "removingMember": "Removing..."
       },
       "status": {
         "accepted": "Accepted",
-        "pending": "Pending",
+        "pending": "Awaiting response",
         "invited": "Invited",
         "declined": "Declined"
       },
@@ -2641,7 +2682,7 @@
         "close": "Close",
         "reviewDescription": "Ownership of {organization} will pass to the selected member.",
         "becomesOwner": "Becomes owner",
-        "becomesMaintainer": "Remains as Maintainer",
+        "becomesMaintainer": "Remains a member",
         "noticeTitle": "The new owner gets full control",
         "noticeDescription": "You cannot undo this yourself. Only the new owner can transfer ownership again.",
         "cancel": "Cancel",
@@ -2680,19 +2721,23 @@
       "successIconUploaded": "Organization icon uploaded",
       "successInviteSent": "Invitation sent to {username}",
       "successInvitesSent": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+      "successInviteCancelled": "Invitation for {username} cancelled",
       "successMemberUpdated": "Updated {username}",
       "successMemberRemoved": "Removed {username}",
       "successProjectDetached": "Project {title} detached",
       "confirmDetachProject": "Detach project {title} from organization?",
       "confirmRemoveMember": "Remove {username} from organization?",
+      "removeMemberDirectAccess": "The member will keep access to projects whose teams they joined directly.",
       "emptyProjects": "No projects are linked to this organization yet.",
       "errors": {
         "save": "Failed to save organization",
         "iconUpload": "Failed to upload organization icon",
         "invite": "Failed to invite user",
         "inviteMany": "{count, plural, one {Could not invite # user} other {Could not invite # users}}",
+        "cancelInvite": "Could not cancel the invitation",
         "searchUsers": "Could not search users",
         "memberUpdate": "Failed to update member",
+        "projectAccess": "Failed to save project access",
         "memberRemove": "Failed to remove member",
         "projectDetach": "Failed to detach project",
         "fileTooLarge": "File is too large. Maximum size is 20 MB"
@@ -2733,11 +2778,11 @@
         "project_delete": "Delete project"
       },
       "organization": {
-        "organization_edit_details": "Edit details",
-        "organization_manage_invites": "Manage invites",
-        "organization_manage_members": "Manage members",
-        "organization_add_project": "Add project",
-        "organization_remove_project": "Remove project"
+        "organization_edit_details": "Edit organization",
+        "organization_manage_invites": "Invite members",
+        "organization_manage_members": "Manage member settings",
+        "organization_add_project": "Add projects to the organization",
+        "organization_remove_project": "Detach projects from the organization"
       }
     }
   },

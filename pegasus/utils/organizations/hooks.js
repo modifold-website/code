@@ -17,3 +17,16 @@ export function useTransferOrganizationOwnership({ authToken, organizationSlug }
 		},
 	});
 }
+
+export function useUpdateOrganizationMemberProjectAccess({ authToken, organizationSlug }) {
+	return useMutation({
+		mutationFn: async ({ userId, projects }) => {
+			const response = await apiClient.put(`/organizations/${organizationSlug}/members/${userId}/project-access`, {
+				projects,
+			}, {
+				headers: getAuthHeaders(authToken),
+			});
+			return response.data;
+		},
+	});
+}

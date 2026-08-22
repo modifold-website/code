@@ -1739,7 +1739,7 @@
       "close": "Kapat",
       "reviewDescription": "{project} projesinin sahipliği seçilen ekip üyesine devredilecek.",
       "becomesOwner": "Proje sahibi olur",
-      "becomesMaintainer": "Maintainer olarak kalır",
+      "becomesMaintainer": "Üye olarak kalır",
       "noticeTitle": "Yeni proje sahibi tam kontrol kazanır",
       "noticeDescription": "Bunu kendiniz geri alamazsınız. Sahipliği yeniden yalnızca yeni proje sahibi devredebilir.",
       "cancel": "İptal",
@@ -2433,10 +2433,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Organizasyonlar",
+	  "description": "Organizasyonlarınızı, üyeleri ve proje erişimini yönetin.",
       "create": "Organizasyon oluştur",
       "empty": "Henüz hiçbir organizasyona üye değilsin.",
       "noSummary": "Özet yok",
-      "members": "{count, plural, one {# üye} other {# üye}}"
+	  "members": "{count, plural, one {# üye} other {# üye}}",
+	  "projects": "{count, plural, one {# proje} other {# proje}}",
+	  "settings": "Ayarlar",
+	  "open": "{organization} organizasyonunu aç",
+	  "iconAlt": "{organization} organizasyonunun simgesi"
     },
     "create": {
       "title": "Organizasyon oluşturma",
@@ -2493,8 +2498,41 @@
       "inviteResultsLabel": "Kullanıcı arama sonuçları",
       "inviteSearching": "Aranıyor...",
       "inviteNoResults": "Kullanıcı bulunamadı",
-      "projectPermissions": "Proje izinleri",
+      "memberRole": {
+        "title": "Görünen rol",
+        "description": "Üyenin yanında görünür ve izinlerini etkilemez.",
+        "placeholder": "Örneğin, geliştirici veya tasarımcı"
+      },
+      "projectAccess": {
+        "title": "Proje erişimi",
+        "description": "Bu üyenin erişebileceği projeleri seçin. Her proje için özel izinler yapılandırabilirsiniz.",
+        "accessGranted": "Erişim verildi",
+        "directAccessHint": "Bu üye bazı proje ekiplerinde yer alıyor. Bu erişimi kaldırmak için üyeyi proje ekibinden çıkarın.",
+        "noAccess": "Erişim yok",
+        "configure": "İzinler",
+        "configureProject": "{project} izinlerini yapılandır",
+        "configureAccess": "Yapılandır",
+        "grantAccess": "{project} projesine erişim ver",
+        "revokeAccess": "{project} projesinin erişimini kaldır",
+        "manageModalTitle": "Proje erişimi",
+        "back": "Projelere dön",
+        "modalTitle": "Proje izinleri",
+        "modalDescription": "Bu üyenin bu projede neler yapabileceğini seçin.",
+        "permissionGroups": {
+          "versions": "Sürümler",
+          "content": "Proje sayfası",
+          "team": "Ekip",
+          "analytics": "Analitik",
+          "danger": "Tehlikeli işlemler"
+        },
+        "empty": "Bu organizasyonda henüz proje yok.",
+        "cancel": "İptal",
+        "save": "Kaydet",
+        "saving": "Kaydediliyor...",
+        "saved": "Proje erişimi kaydedildi"
+      },
       "organizationPermissions": "Organizasyon izinleri",
+      "organizationPermissionsDescription": "Üyenin organizasyonun kendisinde neleri değiştirebileceğini belirler.",
       "publicPage": "Herkese açık sayfa",
       "iconAlt": "Organizasyon simgesi {name}",
       "fields": {
@@ -2530,13 +2568,16 @@
         "openProjectSettings": "Proje ayarları",
         "detachProject": "Projeyi ayır",
         "detachingProject": "Ayrılıyor...",
+        "moreProjectActions": "“{title}” projesi için diğer işlemler",
         "saveMember": "Değişiklikleri kaydet",
+        "cancelInvite": "İptal et",
+        "cancellingInvite": "İptal ediliyor...",
         "removeMember": "Üyeyi kaldır",
         "removingMember": "Kaldırılıyor..."
       },
       "status": {
         "accepted": "Kabul edildi",
-        "pending": "Beklemede",
+        "pending": "Yanıt bekleniyor",
         "invited": "Davet edildi",
         "declined": "Reddedildi"
       },
@@ -2546,7 +2587,7 @@
         "close": "Kapat",
         "reviewDescription": "{organization} organizasyonunun sahipliği seçilen üyeye devredilecek.",
         "becomesOwner": "Organizasyon sahibi olur",
-        "becomesMaintainer": "Maintainer olarak kalır",
+        "becomesMaintainer": "Üye olarak kalır",
         "noticeTitle": "Yeni organizasyon sahibi tam kontrol kazanır",
         "noticeDescription": "Bunu kendiniz geri alamazsınız. Sahipliği yeniden yalnızca yeni organizasyon sahibi devredebilir.",
         "cancel": "İptal",
@@ -2585,19 +2626,23 @@
       "successIconUploaded": "Organizasyon simgesi yüklendi",
       "successInviteSent": "{username} kullanıcısına davet gönderildi",
       "successInvitesSent": "{count} davet gönderildi",
+      "successInviteCancelled": "{username} için davet iptal edildi",
       "successMemberUpdated": "{username} güncellendi",
       "successMemberRemoved": "{username} kaldırıldı",
       "successProjectDetached": "{title} projesi ayrıldı",
       "confirmDetachProject": "{title} projesi organizasyondan ayrılsın mı?",
       "confirmRemoveMember": "{username} organizasyondan kaldırılsın mı?",
+      "removeMemberDirectAccess": "Üye, doğrudan katıldığı proje ekiplerindeki erişimini korur.",
       "emptyProjects": "Bu organizasyona henüz proje bağlı değil.",
       "errors": {
         "save": "Organizasyon kaydedilemedi",
         "iconUpload": "Organizasyon simgesi yüklenemedi",
         "invite": "Kullanıcı davet edilemedi",
         "inviteMany": "{count} kullanıcı davet edilemedi",
+        "cancelInvite": "Davet iptal edilemedi",
         "searchUsers": "Kullanıcılar aranamadı",
         "memberUpdate": "Üye güncellenemedi",
+        "projectAccess": "Proje erişimi kaydedilemedi",
         "memberRemove": "Üye kaldırılamadı",
         "projectDetach": "Proje ayrılamadı",
         "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB"
@@ -2638,11 +2683,11 @@
         "project_delete": "Projeyi sil"
       },
       "organization": {
-        "organization_edit_details": "Detayları düzenle",
-        "organization_manage_invites": "Davetleri yönet",
-        "organization_manage_members": "Üyeleri yönet",
-        "organization_add_project": "Proje ekle",
-        "organization_remove_project": "Projeyi kaldır"
+        "organization_edit_details": "Organizasyonu düzenle",
+        "organization_manage_invites": "Üye davet et",
+        "organization_manage_members": "Üyeleri yapılandır",
+        "organization_add_project": "Organizasyona proje ekle",
+        "organization_remove_project": "Projeleri organizasyondan ayır"
       }
     }
   },
