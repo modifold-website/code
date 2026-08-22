@@ -794,9 +794,6 @@
 		grid-column: 2;
 		text-align: left;
 	}
-	.ownership-transfer-modal__notice {
-		padding: 13px;
-	}
 }
 @media (prefers-reduced-motion: reduce) {
 	.organization-member-card__expand .icon,

@@ -1,13 +1,28 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
+import UserName from "@/components/ui/UserName";
 import OrganizationMemberCard from "@/components/organizations/settings/OrganizationMemberCard";
 import OrganizationSettingsSidebar from "@/components/organizations/settings/OrganizationSettingsSidebar";
 import ConfirmModal from "@/modal/ConfirmModal";
+import { useCollaboratorUserSearch } from "@/utils/collaborators/hooks";
+
+const SEARCH_DEBOUNCE_MS = 300;
+
+const useDebouncedValue = (value, delay) => {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => setDebouncedValue(value), delay);
+        return () => window.clearTimeout(timeoutId);
+    }, [delay, value]);
+
+    return debouncedValue;
+};
 
 const PROJECT_PERMISSION_KEYS = [
     "project_edit_details",
@@ -53,14 +68,22 @@ const isMemberChanged = (member, draft) => {
 export default function OrganizationMembersSettingsPage({ authToken, organization, members = [], pending_invites = [], my_permissions }) {
     const t = useTranslations("Organizations");
     const tUnsaved = useTranslations("SettingsProjectPage.unsavedBar");
-    const [inviteSlug, setInviteSlug] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const debouncedSearchInput = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
+    const [selectedUsers, setSelectedUsers] = useState([]);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(0);
     const [isInviting, setIsInviting] = useState(false);
     const [isSavingMembers, setIsSavingMembers] = useState(false);
     const [removingMemberId, setRemovingMemberId] = useState(null);
     const [pendingRemoveMember, setPendingRemoveMember] = useState(null);
     const [memberItems, setMemberItems] = useState(members);
+    const [pendingInviteItems, setPendingInviteItems] = useState(pending_invites);
     const [draftMembers, setDraftMembers] = useState(buildDraftMap(members));
     const [expandedMemberId, setExpandedMemberId] = useState(null);
+    const searchFieldRef = useRef(null);
+    const searchInputRef = useRef(null);
+    const listboxId = useId();
 
     const canManageMembers = Boolean(my_permissions?.is_owner || my_permissions?.organization_permissions?.includes("organization_manage_members"));
     const canManageInvites = Boolean(my_permissions?.is_owner || my_permissions?.organization_permissions?.includes("organization_manage_invites"));
@@ -69,8 +92,22 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
         () => memberItems.slice().sort((a, b) => Number(b.user_id === organization.owner_user_id) - Number(a.user_id === organization.owner_user_id)),
         [memberItems, organization.owner_user_id]
     );
+    const existingUserIds = useMemo(() => new Set([
+        ...memberItems.map((member) => String(member.user_id)),
+        ...pendingInviteItems.map((invite) => String(invite.user_id || invite.invited_user_id)),
+    ]), [memberItems, pendingInviteItems]);
+    const selectedUserIds = useMemo(() => new Set(selectedUsers.map((user) => String(user.id))), [selectedUsers]);
+    const searchQuery = useCollaboratorUserSearch({
+        authToken,
+        query: debouncedSearchInput,
+        enabled: canManageInvites && isSearchOpen,
+    });
+    const searchResults = useMemo(
+        () => (searchQuery.data || []).filter((user) => !existingUserIds.has(String(user.id)) && !selectedUserIds.has(String(user.id))),
+        [existingUserIds, searchQuery.data, selectedUserIds]
+    );
     const pendingInviteMembers = useMemo(
-        () => pending_invites.map((invite) => ({
+        () => pendingInviteItems.map((invite) => ({
             ...invite,
             status: "pending",
             user_id: invite.user_id || invite.invited_user_id,
@@ -79,7 +116,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
             __cardKey: `invite-${invite.id}`,
             __isPendingInvite: true,
         })),
-        [pending_invites]
+        [pendingInviteItems]
     );
     const displayedMembers = useMemo(
         () => [
@@ -91,32 +128,106 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
 
     const isDirty = canManageMembers && sortedMembers.some((member) => isMemberChanged(member, draftMembers[String(member.user_id)]));
 
+    useEffect(() => {
+        setHighlightedIndex(0);
+    }, [debouncedSearchInput, searchResults.length]);
+
+    useEffect(() => {
+        const handlePointerDown = (event) => {
+            if(!searchFieldRef.current?.contains(event.target)) {
+                setIsSearchOpen(false);
+            }
+        };
+        const handleKeyDown = (event) => {
+            if(event.key === "Escape") {
+                setIsSearchOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
+
+    const selectUser = (user) => {
+        setSelectedUsers((current) => current.some((selectedUser) => String(selectedUser.id) === String(user.id)) ? current : [...current, user]);
+        setSearchInput("");
+        setIsSearchOpen(false);
+        window.requestAnimationFrame(() => searchInputRef.current?.focus());
+    };
+
+    const removeSelectedUser = (userId) => {
+        setSelectedUsers((current) => current.filter((user) => String(user.id) !== String(userId)));
+    };
+
+    const handleSearchKeyDown = (event) => {
+        if(!isSearchOpen || isSearchDebouncing || searchResults.length === 0) {
+            return;
+        }
+
+        if(event.key === "ArrowDown") {
+            event.preventDefault();
+            setHighlightedIndex((current) => (current + 1) % searchResults.length);
+        } else if(event.key === "ArrowUp") {
+            event.preventDefault();
+            setHighlightedIndex((current) => (current - 1 + searchResults.length) % searchResults.length);
+        } else if(event.key === "Enter") {
+            event.preventDefault();
+            selectUser(searchResults[highlightedIndex]);
+        }
+    };
+
     const handleInvite = async () => {
-        if(isInviting) {
+        if(selectedUsers.length === 0 || isInviting) {
             return;
         }
 
-        const slug = inviteSlug.trim().toLowerCase();
-        if(!slug) {
-            toast.error(t("settings.errors.inviteSlugRequired"));
-            return;
-        }
-
+        const usersToInvite = [...selectedUsers];
         setIsInviting(true);
 
         try {
-            await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/organizations/${organization.slug}/invites`, {
-                slug,
+            const results = await Promise.allSettled(usersToInvite.map((user) => axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/organizations/${organization.slug}/invites`, {
+                slug: user.slug,
             }, {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                 },
-            });
+            })));
+            const invitedUsers = usersToInvite.filter((user, index) => results[index].status === "fulfilled");
+            const failedUsers = usersToInvite.filter((user, index) => results[index].status === "rejected");
 
-            toast.success(t("settings.successInviteSent"));
-            setInviteSlug("");
-        } catch (error) {
-            toast.error(error.response?.data?.message || t("settings.errors.invite"));
+            if(invitedUsers.length > 0) {
+                const invitedAt = Math.floor(Date.now() / 1000);
+                setPendingInviteItems((current) => [
+                    ...invitedUsers.map((user) => ({
+                        id: `local-${user.id}`,
+                        user_id: user.id,
+                        username: user.username,
+                        slug: user.slug,
+                        avatar: user.avatar,
+                        isVerified: user.isVerified,
+                        activeProfileBadge: user.activeProfileBadge,
+                        role: "Member",
+                        project_permissions: [],
+                        organization_permissions: [],
+                        created_at: invitedAt,
+                    })),
+                    ...current.filter((invite) => !invitedUsers.some((user) => String(user.id) === String(invite.user_id || invite.invited_user_id))),
+                ]);
+            }
+
+            setSelectedUsers(failedUsers);
+            if(invitedUsers.length === 1) {
+                toast.success(t("settings.successInviteSent", { username: invitedUsers[0].username }));
+            } else if(invitedUsers.length > 1) {
+                toast.success(t("settings.successInvitesSent", { count: invitedUsers.length }));
+            }
+            if(failedUsers.length > 0) {
+                toast.error(t("settings.errors.inviteMany", { count: failedUsers.length }));
+            }
         } finally {
             setIsInviting(false);
         }
@@ -207,26 +318,81 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
         }
     };
 
+    const isSearchDebouncing = searchInput.trim() !== debouncedSearchInput.trim();
+    const showSearchPopover = isSearchOpen && searchInput.trim().length >= 2;
+
     return (
         <div className="layout">
             <div className="page-content settings-page">
                 <OrganizationSettingsSidebar organization={organization} />
 
-                <div className="settings-content" style={{ display: "grid", gap: "16px" }}>
+                <div className="settings-content project-collaborators-settings">
                     <div className="content content--padding">
                         <h2 style={{ marginTop: 0 }}>{t("settings.membersTitle")}</h2>
 
                         {canManageInvites && (
                             <>
                                 <p className="blog-settings__field-title">{t("settings.inviteTitle")}</p>
-                                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                                    <div className="field field--default blog-settings__input" style={{ flex: "1 1 280px", marginBottom: 0 }}>
+
+                                <p className="project-collaborators-settings__description">{t("settings.inviteDescription")}</p>
+
+                                <p className="project-collaborators-settings__hint">{t("settings.inviteHint")}</p>
+
+                                {selectedUsers.length > 0 ? (
+                                    <div className="project-collaborators-settings__selected-users" aria-label={t("settings.inviteSelectedLabel")}>
+                                        {selectedUsers.map((user) => (
+                                            <button key={user.id} type="button" className="browse-selected-filter-chip project-collaborators-settings__selected-chip" onClick={() => removeSelectedUser(user.id)} aria-label={t("settings.inviteRemoveSelection", { username: user.username })}>
+                                                <img src={user.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+
+                                                <span>{user.username}</span>
+
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : null}
+
+                                <div className="project-collaborators-settings__invite-row">
+                                    <div className="field field--default blog-settings__input project-collaborators-settings__search" ref={searchFieldRef}>
                                         <label className="field__wrapper">
-                                            <input className="text-input" placeholder={t("settings.invitePlaceholder")} value={inviteSlug} onChange={(event) => setInviteSlug(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} />
+                                            <svg className="icon icon--search field__icon field__icon--left" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                                <circle cx="11" cy="11" r="8" />
+                                                <path d="m21 21-4.3-4.3" />
+                                            </svg>
+
+                                            <input ref={searchInputRef} className="text-input" type="text" inputMode="search" autoComplete="off" spellCheck="false" value={searchInput} onChange={(event) => { setSearchInput(event.target.value); setIsSearchOpen(true); }} onFocus={() => setIsSearchOpen(true)} onKeyDown={handleSearchKeyDown} placeholder={t("settings.invitePlaceholder")} role="combobox" aria-autocomplete="list" aria-expanded={showSearchPopover} aria-controls={showSearchPopover ? listboxId : undefined} aria-activedescendant={showSearchPopover && !isSearchDebouncing && searchResults[highlightedIndex] ? `${listboxId}-${searchResults[highlightedIndex].id}` : undefined} />
                                         </label>
+
+                                        {showSearchPopover ? (
+                                            <div className="popover project-collaborators-settings__search-popover" id={listboxId} role="listbox" aria-label={t("settings.inviteResultsLabel")}>
+                                                <div className="context-list" data-scrollable>
+                                                    {isSearchDebouncing || searchQuery.isPending ? (
+                                                        <div className="project-collaborators-settings__search-state">{t("settings.inviteSearching")}</div>
+                                                    ) : searchQuery.isError ? (
+                                                        <div className="project-collaborators-settings__search-state">{t("settings.errors.searchUsers")}</div>
+                                                    ) : searchResults.length === 0 ? (
+                                                        <div className="project-collaborators-settings__search-state">{t("settings.inviteNoResults")}</div>
+                                                    ) : searchResults.map((user, index) => (
+                                                        <button key={user.id} id={`${listboxId}-${user.id}`} type="button" role="option" aria-selected={index === highlightedIndex} className={`context-list-option context-list-option--with-art project-collaborators-settings__search-option ${index === highlightedIndex ? "context-list-option--focused" : ""}`} onMouseEnter={() => setHighlightedIndex(index)} onClick={() => selectUser(user)}>
+                                                            <span className="context-list-option__art">
+                                                                <img src={user.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+                                                            </span>
+
+                                                            <span className="project-collaborators-settings__search-copy">
+                                                                <span className="context-list-option__label">
+                                                                    <UserName user={user} />
+                                                                </span>
+
+                                                                <span>@{user.slug || user.username}</span>
+                                                            </span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : null}
                                     </div>
 
-                                    <button type="button" className="button button--size-l button--type-primary" onClick={handleInvite} disabled={isInviting}>
+                                    <button type="button" className="button button--size-l button--type-primary project-collaborators-settings__invite-button" onClick={handleInvite} disabled={selectedUsers.length === 0 || isInviting}>
                                         {isInviting ? t("settings.actions.inviting") : t("settings.actions.invite")}
                                     </button>
                                 </div>
@@ -235,7 +401,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
 
                     </div>
 
-                    <div style={{ display: "grid", gap: "14px" }}>
+                    <div className="project-collaborators-settings__list">
                         {displayedMembers.map((member) => {
                             const memberKey = String(member.user_id);
                             const draft = draftMembers[memberKey] || buildDraftMember(member);
