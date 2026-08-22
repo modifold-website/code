@@ -4,12 +4,15 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import UserName from "@/components/ui/UserName";
 import OrganizationMemberCard from "@/components/organizations/settings/OrganizationMemberCard";
 import OrganizationSettingsSidebar from "@/components/organizations/settings/OrganizationSettingsSidebar";
 import ConfirmModal from "@/modal/ConfirmModal";
+import OwnershipTransferModal from "@/modal/OwnershipTransferModal";
 import { useCollaboratorUserSearch } from "@/utils/collaborators/hooks";
+import { useTransferOrganizationOwnership } from "@/utils/organizations/hooks";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -65,9 +68,10 @@ const isMemberChanged = (member, draft) => {
     );
 };
 
-export default function OrganizationMembersSettingsPage({ authToken, organization, members = [], pending_invites = [], my_permissions }) {
+export default function OrganizationMembersSettingsPage({ authToken, organization, members = [], pending_invites = [], security = {}, my_permissions }) {
     const t = useTranslations("Organizations");
     const tUnsaved = useTranslations("SettingsProjectPage.unsavedBar");
+    const router = useRouter();
     const [searchInput, setSearchInput] = useState("");
     const debouncedSearchInput = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
     const [selectedUsers, setSelectedUsers] = useState([]);
@@ -81,16 +85,26 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
     const [pendingInviteItems, setPendingInviteItems] = useState(pending_invites);
     const [draftMembers, setDraftMembers] = useState(buildDraftMap(members));
     const [expandedMemberId, setExpandedMemberId] = useState(null);
+    const [pendingTransferMember, setPendingTransferMember] = useState(null);
+    const [transferError, setTransferError] = useState("");
+    const [transferRequiresTwoFactor, setTransferRequiresTwoFactor] = useState(false);
+    const [organizationOwnerUserId, setOrganizationOwnerUserId] = useState(organization.owner_user_id);
+    const [isOrganizationOwner, setIsOrganizationOwner] = useState(() => Boolean(my_permissions?.is_owner));
     const searchFieldRef = useRef(null);
     const searchInputRef = useRef(null);
     const listboxId = useId();
 
-    const canManageMembers = Boolean(my_permissions?.is_owner || my_permissions?.organization_permissions?.includes("organization_manage_members"));
-    const canManageInvites = Boolean(my_permissions?.is_owner || my_permissions?.organization_permissions?.includes("organization_manage_invites"));
+    const transferOwnershipMutation = useTransferOrganizationOwnership({ authToken, organizationSlug: organization.slug });
+    const canManageMembers = Boolean(isOrganizationOwner || my_permissions?.organization_permissions?.includes("organization_manage_members"));
+    const canManageInvites = Boolean(isOrganizationOwner || my_permissions?.organization_permissions?.includes("organization_manage_invites"));
 
     const sortedMembers = useMemo(
-        () => memberItems.slice().sort((a, b) => Number(b.user_id === organization.owner_user_id) - Number(a.user_id === organization.owner_user_id)),
-        [memberItems, organization.owner_user_id]
+        () => memberItems.slice().sort((a, b) => Number(Number(b.user_id) === Number(organizationOwnerUserId)) - Number(Number(a.user_id) === Number(organizationOwnerUserId))),
+        [memberItems, organizationOwnerUserId]
+    );
+    const organizationOwner = useMemo(
+        () => memberItems.find((member) => Number(member.user_id) === Number(organizationOwnerUserId)) || null,
+        [memberItems, organizationOwnerUserId]
     );
     const existingUserIds = useMemo(() => new Set([
         ...memberItems.map((member) => String(member.user_id)),
@@ -248,7 +262,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
         try {
             await Promise.all(changedMembers.map((member) => {
                 const draft = draftMembers[String(member.user_id)];
-                const isOwnerMember = Number(member.user_id) === Number(organization.owner_user_id);
+                const isOwnerMember = Number(member.user_id) === Number(organizationOwnerUserId);
                 const payload = {
                     role: draft.role,
                 };
@@ -315,6 +329,57 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
             toast.error(error.response?.data?.message || t("settings.errors.memberRemove"));
         } finally {
             setRemovingMemberId(null);
+        }
+    };
+
+    const handleTransferOwnership = async ({ confirmation, twoFactorCode }) => {
+        if(!pendingTransferMember || isDirty || transferOwnershipMutation.isPending) {
+            return;
+        }
+
+        setTransferError("");
+        try {
+            const result = await transferOwnershipMutation.mutateAsync({
+                newOwnerUserId: pendingTransferMember.user_id,
+                confirmation,
+                twoFactorCode,
+            });
+            const newOwnerId = String(result.owner.user_id);
+            const formerOwnerId = String(result.former_owner.user_id);
+
+            setMemberItems((current) => current.map((member) => {
+                if(String(member.user_id) === newOwnerId) {
+                    return result.owner;
+                }
+                if(String(member.user_id) === formerOwnerId) {
+                    return result.former_owner;
+                }
+                return member;
+            }));
+            setDraftMembers((current) => ({
+                ...current,
+                [newOwnerId]: buildDraftMember(result.owner),
+                [formerOwnerId]: buildDraftMember(result.former_owner),
+            }));
+            setOrganizationOwnerUserId(result.owner.user_id);
+            setIsOrganizationOwner(false);
+            setExpandedMemberId(null);
+            setPendingTransferMember(null);
+            toast.success(t("settings.transfer.success", { username: result.owner.username }));
+            router.refresh();
+        } catch (error) {
+            const errorCode = error.response?.data?.code;
+            if(errorCode === "TWO_FACTOR_REQUIRED") {
+                setTransferRequiresTwoFactor(true);
+            }
+            const errorKey = {
+                CONFIRMATION_MISMATCH: "settings.transfer.errors.confirmation",
+                TWO_FACTOR_REQUIRED: "settings.transfer.errors.twoFactorRequired",
+                INVALID_TWO_FACTOR_CODE: "settings.transfer.errors.twoFactorInvalid",
+                TARGET_NOT_ACCEPTED: "settings.transfer.errors.target",
+                OWNERSHIP_CHANGED: "settings.transfer.errors.changed",
+            }[errorCode] || "settings.transfer.errors.generic";
+            setTransferError(t(errorKey));
         }
     };
 
@@ -405,14 +470,20 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                         {displayedMembers.map((member) => {
                             const memberKey = String(member.user_id);
                             const draft = draftMembers[memberKey] || buildDraftMember(member);
-                            const isOwnerMember = Number(member.user_id) === Number(organization.owner_user_id);
+                            const isOwnerMember = Number(member.user_id) === Number(organizationOwnerUserId);
                             const canExpandCard = !member.__isPendingInvite && canManageMembers;
                             const isExpanded = canExpandCard && expandedMemberId === member.__cardKey;
                             const canRemoveMember = (
                                 canManageMembers &&
                                 !member.__isPendingInvite &&
-                                Number(member.user_id) !== Number(organization.owner_user_id) &&
+                                Number(member.user_id) !== Number(organizationOwnerUserId) &&
                                 Number(member.user_id) !== Number(my_permissions?.user_id)
+                            );
+                            const canTransferOwnership = (
+                                isOrganizationOwner &&
+                                !member.__isPendingInvite &&
+                                member.status === "accepted" &&
+                                !isOwnerMember
                             );
                             
                             return (
@@ -431,8 +502,18 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                     canManageMembers={canManageMembers}
                                     canExpand={canExpandCard}
                                     canRemove={canRemoveMember}
+                                    canTransferOwnership={canTransferOwnership}
+                                    isTransferDisabled={isDirty}
                                     isRemoving={Number(removingMemberId) === Number(member.user_id)}
+                                    isTransferring={transferOwnershipMutation.isPending && Number(pendingTransferMember?.user_id) === Number(member.user_id)}
                                     onRemove={() => setPendingRemoveMember(member)}
+                                    onTransferOwnership={() => {
+                                        if(!isDirty) {
+                                            setTransferError("");
+                                            setTransferRequiresTwoFactor(false);
+                                            setPendingTransferMember(member);
+                                        }
+                                    }}
                                     onChange={(nextDraft) => {
                                         if(member.__isPendingInvite) {
                                             return;
@@ -482,6 +563,26 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                 onRequestClose={() => {
                     if(!removingMemberId) {
                         setPendingRemoveMember(null);
+                    }
+                }}
+            />
+
+            <OwnershipTransferModal
+                isOpen={Boolean(pendingTransferMember)}
+                resourceTitle={organization.name}
+                translationNamespace="Organizations.settings.transfer"
+                owner={organizationOwner}
+                newOwner={pendingTransferMember}
+                twoFactorEnabled={Boolean(security.two_factor_enabled) || transferRequiresTwoFactor}
+                isLoading={transferOwnershipMutation.isPending}
+                errorMessage={transferError}
+                onClearError={() => setTransferError("")}
+                onConfirm={handleTransferOwnership}
+                onRequestClose={() => {
+                    if(!transferOwnershipMutation.isPending) {
+                        setPendingTransferMember(null);
+                        setTransferError("");
+                        setTransferRequiresTwoFactor(false);
                     }
                 }}
             />

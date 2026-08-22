@@ -11,6 +11,7 @@ const { db } = require("../../config/db");
 const { sanitizePlainText, sanitizeExternalUrl } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, parsePermissions, getOrganizationMemberAccess, hasOrganizationPermission, logOrganizationAudit } = require("../../utils/organizations");
+const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 
 const router = express.Router();
 
@@ -351,7 +352,6 @@ router.get("/:slug", async (req, res) => {
 			ORDER BY p.updated_at DESC`,
             [organization.id]
         );
-
         return res.json({
             organization: {
                 ...buildOrganizationSummary(organization),
@@ -387,6 +387,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
         if(!access) {
             return res.status(403).json({ message: "Access denied" });
         }
+        const twoFactorRow = access.isOwner ? await getTwoFactorRow(req.user.id) : null;
 
         const [members] = await db.query(
             `SELECT
@@ -449,6 +450,9 @@ router.get("/:slug/settings", auth, async (req, res) => {
                 created_at: invite.created_at,
             })),
             projects,
+            security: {
+                two_factor_enabled: access.isOwner && isTwoFactorEnabled(twoFactorRow),
+            },
             my_permissions: {
                 user_id: req.user.id,
                 is_owner: access.isOwner,
@@ -771,6 +775,159 @@ router.post("/:slug/invites", auth, async (req, res) => {
     } catch (error) {
         console.error("Error inviting organization member:", error);
         return res.status(500).json({ message: "Error inviting member" });
+    }
+});
+
+router.post("/:slug/transfer-ownership", auth, async (req, res) => {
+    const targetUserId = Number(req.body?.new_owner_user_id);
+    const confirmation = String(req.body?.confirmation || "").trim();
+    const twoFactorCode = String(req.body?.two_factor_code || "").replace(/\s+/g, "");
+
+    if(!Number.isInteger(targetUserId) || targetUserId <= 0) {
+        return res.status(400).json({ code: "INVALID_TARGET", message: "A valid new owner is required" });
+    }
+    if(req.user.viaApiToken) {
+        return res.status(403).json({ code: "INTERACTIVE_AUTH_REQUIRED", message: "Ownership transfer requires an interactive session" });
+    }
+
+    const connection = await db.getConnection();
+    try {
+        await connection.beginTransaction();
+        const [[organization]] = await connection.query(
+            `SELECT
+            o.id, o.slug, o.name, o.summary, o.icon_url, o.owner_user_id,
+            u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar,
+            u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge
+            FROM organizations o
+            INNER JOIN users u ON u.id = o.owner_user_id
+            WHERE o.slug = ?
+            LIMIT 1 FOR UPDATE`,
+            [req.params.slug]
+        );
+        if(!organization) {
+            await connection.rollback();
+            return res.status(404).json({ code: "ORGANIZATION_NOT_FOUND", message: "Organization not found" });
+        }
+        if(Number(organization.owner_user_id) !== Number(req.user.id)) {
+            await connection.rollback();
+            return res.status(403).json({ code: "OWNER_ONLY", message: "Only the organization owner can transfer ownership" });
+        }
+        if(targetUserId === Number(organization.owner_user_id)) {
+            await connection.rollback();
+            return res.status(400).json({ code: "INVALID_TARGET", message: "The current owner cannot be selected" });
+        }
+
+        const [[target]] = await connection.query(
+            `SELECT
+            om.user_id, om.status,
+            u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
+            FROM organization_members om
+            INNER JOIN users u ON u.id = om.user_id
+            WHERE om.organization_id = ? AND om.user_id = ?
+            LIMIT 1 FOR UPDATE`,
+            [organization.id, targetUserId]
+        );
+        if(!target || target.status !== "accepted") {
+            await connection.rollback();
+            return res.status(400).json({ code: "TARGET_NOT_ACCEPTED", message: "The new owner must be an accepted organization member" });
+        }
+
+        const targetHandle = String(target.slug || target.username || "");
+        if(!targetHandle || confirmation !== targetHandle) {
+            await connection.rollback();
+            return res.status(400).json({ code: "CONFIRMATION_MISMATCH", message: "Confirmation does not match the new owner" });
+        }
+
+        const twoFactorRow = await getTwoFactorRow(req.user.id, connection);
+        const twoFactorEnabled = isTwoFactorEnabled(twoFactorRow);
+        if(twoFactorEnabled && !twoFactorCode) {
+            await connection.rollback();
+            return res.status(400).json({ code: "TWO_FACTOR_REQUIRED", message: "Two-factor authentication code is required" });
+        }
+        if(twoFactorEnabled && !verifyTwoFactorCode(twoFactorRow, twoFactorCode)) {
+            await connection.rollback();
+            return res.status(400).json({ code: "INVALID_TWO_FACTOR_CODE", message: "Invalid two-factor authentication code" });
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        const projectPermissions = JSON.stringify(Object.values(ORG_PROJECT_PERMISSIONS));
+        const organizationPermissions = JSON.stringify(Object.values(ORG_PERMISSIONS));
+        const [organizationUpdate] = await connection.query(
+            `UPDATE organizations
+            SET owner_user_id = ?, updated_at = ?
+            WHERE id = ? AND owner_user_id = ?`,
+            [target.user_id, now, organization.id, organization.owner_user_id]
+        );
+        if(!organizationUpdate.affectedRows) {
+            await connection.rollback();
+            return res.status(409).json({ code: "OWNERSHIP_CHANGED", message: "Organization ownership changed before the transfer completed" });
+        }
+
+        await connection.query(
+            `UPDATE organization_members
+            SET role = 'Owner', status = 'accepted', project_permissions = ?, organization_permissions = ?, updated_at = ?
+            WHERE organization_id = ? AND user_id = ?`,
+            [projectPermissions, organizationPermissions, now, organization.id, target.user_id]
+        );
+        await connection.query(
+            `UPDATE organization_members
+            SET role = 'Maintainer', status = 'accepted', project_permissions = ?, organization_permissions = ?, updated_at = ?
+            WHERE organization_id = ? AND user_id = ?`,
+            [projectPermissions, organizationPermissions, now, organization.id, organization.owner_user_id]
+        );
+        if(twoFactorEnabled) {
+            await connection.query(
+                "UPDATE user_two_factor SET last_used_at = ? WHERE user_id = ?",
+                [Date.now(), req.user.id]
+            );
+        }
+        await logOrganizationAudit(connection, {
+            organizationId: organization.id,
+            actorUserId: req.user.id,
+            action: "organization_ownership_transferred",
+            targetType: "user",
+            targetId: String(target.user_id),
+            metadata: { former_owner_user_id: organization.owner_user_id },
+        });
+        await connection.commit();
+
+        return res.json({
+            success: true,
+            organization: {
+                ...buildOrganizationSummary(organization),
+                owner_user_id: target.user_id,
+            },
+            owner: {
+                user_id: target.user_id,
+                username: target.username,
+                slug: target.slug,
+                avatar: target.avatar,
+                isVerified: Number(target.isVerified || 0),
+                activeProfileBadge: target.activeProfileBadge,
+                role: "Owner",
+                status: "accepted",
+                project_permissions: Object.values(ORG_PROJECT_PERMISSIONS),
+                organization_permissions: Object.values(ORG_PERMISSIONS),
+            },
+            former_owner: {
+                user_id: organization.owner_user_id,
+                username: organization.owner_username,
+                slug: organization.owner_slug,
+                avatar: organization.owner_avatar,
+                isVerified: Number(organization.owner_isVerified || 0),
+                activeProfileBadge: organization.owner_activeProfileBadge,
+                role: "Maintainer",
+                status: "accepted",
+                project_permissions: Object.values(ORG_PROJECT_PERMISSIONS),
+                organization_permissions: Object.values(ORG_PERMISSIONS),
+            },
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error transferring organization ownership:", error);
+        return res.status(500).json({ code: "OWNERSHIP_TRANSFER_FAILED", message: "Error transferring organization ownership" });
+    } finally {
+        connection.release();
     }
 });
 

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/modal/ConfirmModal";
-import ProjectOwnershipTransferModal from "@/modal/ProjectOwnershipTransferModal";
+import OwnershipTransferModal from "@/modal/OwnershipTransferModal";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import UserName from "@/components/ui/UserName";
 import ProjectCollaboratorCard from "@/components/project/settings/ProjectCollaboratorCard";
@@ -478,11 +478,12 @@ export default function ProjectCollaboratorsSettings({ authToken, project, owner
 				onRequestClose={() => { if(!removeMutation.isPending) setPendingRemoveCollaborator(null); }}
 			/>
 
-			<ProjectOwnershipTransferModal
+			<OwnershipTransferModal
 				isOpen={Boolean(pendingTransferCollaborator)}
-				projectTitle={project.title}
+				resourceTitle={project.title}
+				translationNamespace="ProjectCollaborators.transfer"
 				owner={projectOwner}
-				collaborator={pendingTransferCollaborator}
+				newOwner={pendingTransferCollaborator}
 				twoFactorEnabled={twoFactorEnabled || transferRequiresTwoFactor}
 				isLoading={transferOwnershipMutation.isPending}
 				errorMessage={transferError}

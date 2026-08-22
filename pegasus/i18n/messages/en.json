@@ -2635,6 +2635,34 @@
         "invited": "Invited",
         "declined": "Declined"
       },
+      "transfer": {
+        "cardAction": "Transfer ownership",
+        "title": "Transfer organization",
+        "close": "Close",
+        "reviewDescription": "Ownership of {organization} will pass to the selected member.",
+        "becomesOwner": "Becomes owner",
+        "becomesMaintainer": "Remains as Maintainer",
+        "noticeTitle": "The new owner gets full control",
+        "noticeDescription": "You cannot undo this yourself. Only the new owner can transfer ownership again.",
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "verifyDescription": "Confirm the transfer to protect the organization from an accidental or unauthorized change of ownership.",
+        "confirmationLabel": "Enter {handle} to confirm",
+        "confirmationHint": "The handle must match exactly.",
+        "twoFactorLabel": "Two-factor authentication code",
+        "back": "Back",
+        "confirm": "Transfer organization",
+        "transferring": "Transferring...",
+        "success": "Organization ownership transferred to {username}",
+        "errors": {
+          "generic": "Could not transfer organization ownership",
+          "confirmation": "Confirmation does not match the selected member",
+          "twoFactorRequired": "Enter your two-factor authentication code",
+          "twoFactorInvalid": "Invalid two-factor authentication code",
+          "target": "Only an accepted member can become the owner",
+          "changed": "The organization owner has already changed. Refresh the page and try again"
+        }
+      },
       "delete": {
         "title": "Delete organization",
         "description": "Deleting the organization permanently removes members, invites and project links.",

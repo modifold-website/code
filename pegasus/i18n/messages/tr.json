@@ -2540,6 +2540,34 @@
         "invited": "Davet edildi",
         "declined": "Reddedildi"
       },
+      "transfer": {
+        "cardAction": "Sahipliği devret",
+        "title": "Organizasyonu devret",
+        "close": "Kapat",
+        "reviewDescription": "{organization} organizasyonunun sahipliği seçilen üyeye devredilecek.",
+        "becomesOwner": "Organizasyon sahibi olur",
+        "becomesMaintainer": "Maintainer olarak kalır",
+        "noticeTitle": "Yeni organizasyon sahibi tam kontrol kazanır",
+        "noticeDescription": "Bunu kendiniz geri alamazsınız. Sahipliği yeniden yalnızca yeni organizasyon sahibi devredebilir.",
+        "cancel": "İptal",
+        "continue": "Devam et",
+        "verifyDescription": "Organizasyonu yanlışlıkla veya yetkisiz bir sahiplik değişikliğinden korumak için devri onaylayın.",
+        "confirmationLabel": "Onaylamak için {handle} yazın",
+        "confirmationHint": "Kullanıcı adı tam olarak eşleşmelidir.",
+        "twoFactorLabel": "İki faktörlü kimlik doğrulama kodu",
+        "back": "Geri",
+        "confirm": "Organizasyonu devret",
+        "transferring": "Devrediliyor...",
+        "success": "Organizasyon sahipliği {username} kullanıcısına devredildi",
+        "errors": {
+          "generic": "Organizasyon sahipliği devredilemedi",
+          "confirmation": "Onay seçilen üyeyle eşleşmiyor",
+          "twoFactorRequired": "İki faktörlü kimlik doğrulama kodunu girin",
+          "twoFactorInvalid": "İki faktörlü kimlik doğrulama kodu geçersiz",
+          "target": "Yalnızca kabul edilmiş bir üye organizasyon sahibi olabilir",
+          "changed": "Organizasyon sahibi zaten değişti. Sayfayı yenileyip tekrar deneyin"
+        }
+      },
       "delete": {
         "title": "Organizasyonu sil",
         "description": "Organizasyonu silmek üyeleri, davetleri ve proje bağlantılarını kalıcı olarak kaldırır.",

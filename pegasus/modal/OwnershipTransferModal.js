@@ -20,13 +20,13 @@ function UserSummary({ user, outcome }) {
 	);
 }
 
-export default function ProjectOwnershipTransferModal({ isOpen, projectTitle, owner, collaborator, twoFactorEnabled = false, isLoading = false, errorMessage = "", onClearError, onConfirm, onRequestClose }) {
-	const t = useTranslations("ProjectCollaborators.transfer");
+export default function OwnershipTransferModal({ isOpen, resourceTitle, translationNamespace, owner, newOwner, twoFactorEnabled = false, isLoading = false, errorMessage = "", onClearError, onConfirm, onRequestClose }) {
+	const t = useTranslations(translationNamespace);
 	const appElement = typeof document !== "undefined" ? document.getElementById("app") : undefined;
 	const [step, setStep] = useState(1);
 	const [confirmation, setConfirmation] = useState("");
 	const [twoFactorCode, setTwoFactorCode] = useState("");
-	const confirmationHandle = String(collaborator?.slug || collaborator?.username || "");
+	const confirmationHandle = String(newOwner?.slug || newOwner?.username || "");
 	const canSubmit = confirmation === confirmationHandle && (!twoFactorEnabled || /^\d{6}$/.test(twoFactorCode));
 
 	useEffect(() => {
@@ -35,7 +35,7 @@ export default function ProjectOwnershipTransferModal({ isOpen, projectTitle, ow
 			setConfirmation("");
 			setTwoFactorCode("");
 		}
-	}, [collaborator?.user_id, isOpen]);
+	}, [newOwner?.user_id, isOpen]);
 
 	const close = () => {
 		if(!isLoading) onRequestClose();
@@ -76,11 +76,11 @@ export default function ProjectOwnershipTransferModal({ isOpen, projectTitle, ow
 
 				{step === 1 ? (
 					<div className="modal-window__content ownership-transfer-modal__content">
-						<p className="ownership-transfer-modal__intro">{t("reviewDescription", { project: projectTitle })}</p>
+						<p className="ownership-transfer-modal__intro">{t("reviewDescription", { project: resourceTitle, organization: resourceTitle })}</p>
 
 						<div className="ownership-transfer-modal__people">
-							<UserSummary user={collaborator} outcome={t("becomesOwner")} />
-							
+							<UserSummary user={newOwner} outcome={t("becomesOwner")} />
+
 							<UserSummary user={owner} outcome={t("becomesMaintainer")} />
 						</div>
 
@@ -102,7 +102,7 @@ export default function ProjectOwnershipTransferModal({ isOpen, projectTitle, ow
 							<button type="button" className="button button--size-m button--type-minimal" onClick={close}>
 								{t("cancel")}
 							</button>
-							
+
 							<button type="button" className="button button--size-m button--type-primary ownership-transfer-modal__continue" onClick={() => setStep(2)}>
 								{t("continue")}
 
@@ -119,7 +119,7 @@ export default function ProjectOwnershipTransferModal({ isOpen, projectTitle, ow
 
 						<div className="ownership-transfer-modal__field">
 							<label className="blog-settings__field-title" htmlFor="ownership-transfer-confirmation">{t("confirmationLabel", { handle: confirmationHandle })}</label>
-							
+
 							<div className="field field--default">
 								<label className="field__wrapper">
 									<input id="ownership-transfer-confirmation" className="text-input" type="text" autoComplete="off" spellCheck="false" value={confirmation} onChange={changeConfirmation} placeholder={confirmationHandle} autoFocus />

@@ -2540,6 +2540,34 @@
         "invited": "Invitado",
         "declined": "Rechazado"
       },
+      "transfer": {
+        "cardAction": "Transferir propiedad",
+        "title": "Transferir organización",
+        "close": "Cerrar",
+        "reviewDescription": "La propiedad de {organization} pasará al miembro seleccionado.",
+        "becomesOwner": "Se convierte en propietario",
+        "becomesMaintainer": "Permanece como Maintainer",
+        "noticeTitle": "El nuevo propietario tendrá el control total",
+        "noticeDescription": "No podrás deshacerlo por tu cuenta. Solo el nuevo propietario podrá volver a transferir la propiedad.",
+        "cancel": "Cancelar",
+        "continue": "Continuar",
+        "verifyDescription": "Confirma la transferencia para proteger la organización de un cambio de propiedad accidental o no autorizado.",
+        "confirmationLabel": "Escribe {handle} para confirmar",
+        "confirmationHint": "El identificador debe coincidir exactamente.",
+        "twoFactorLabel": "Código de autenticación en dos pasos",
+        "back": "Volver",
+        "confirm": "Transferir organización",
+        "transferring": "Transfiriendo...",
+        "success": "La propiedad de la organización se transfirió a {username}",
+        "errors": {
+          "generic": "No se pudo transferir la propiedad de la organización",
+          "confirmation": "La confirmación no coincide con el miembro seleccionado",
+          "twoFactorRequired": "Introduce el código de autenticación en dos pasos",
+          "twoFactorInvalid": "El código de autenticación en dos pasos no es válido",
+          "target": "Solo un miembro aceptado puede convertirse en propietario",
+          "changed": "El propietario de la organización ya ha cambiado. Actualiza la página e inténtalo de nuevo"
+        }
+      },
       "delete": {
         "title": "Eliminar organización",
         "description": "Eliminar la organización borra permanentemente miembros, invitaciones y enlaces de proyectos.",
