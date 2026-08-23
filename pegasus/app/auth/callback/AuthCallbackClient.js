@@ -45,7 +45,7 @@ export default function AuthCallbackClient() {
         const twoFactorRequired = params.get("twofactor");
         const twoFactorToken = params.get("twofactor_token");
         const error = params.get("error");
-        const hytaleLinked = params.get("hytale_linked");
+		const providerLinked = params.get("provider_linked") || params.get("hytale_linked");
         const nextPath = getSafeNextPath(params.get("next"));
 
         if(error) {
@@ -59,7 +59,7 @@ export default function AuthCallbackClient() {
             return;
         }
 
-        if(hytaleLinked) {
+		if(providerLinked) {
             window.location.replace(nextPath);
             return;
         }

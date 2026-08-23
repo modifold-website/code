@@ -925,6 +925,31 @@
         "generic": "No se pudo iniciar la vinculación de Hytale"
       }
     },
+    "authProviders": {
+      "title": "Métodos de acceso",
+      "description": "Conecta las cuentas que puedes usar para entrar en Modifold.",
+      "connected": "Conectado",
+      "connectedAt": "Conectado el {date}",
+      "notConnected": "No conectado",
+      "onlyLoginMethod": "Este es tu único método de acceso",
+      "loading": "Cargando...",
+      "connect": "Conectar",
+      "connecting": "Abriendo...",
+      "disconnect": "Desconectar",
+      "disconnecting": "Desconectando...",
+      "confirm": {
+        "title": "¿Desconectar {provider}?",
+        "description": "Ya no podrás entrar con {provider}. Puedes volver a conectarlo más tarde.",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "load": "No se pudieron cargar los métodos de acceso",
+        "generic": "No se pudo actualizar el método de acceso",
+        "lastLoginMethod": "Conecta primero otro método de acceso",
+        "alreadyConnected": "Esta cuenta ya está conectada",
+        "notConnected": "Esta cuenta ya está desconectada"
+      }
+    },
     "passwordChange": {
       "title": "Cambiar contraseña",
       "description": "Introduce tu contraseña actual y una nueva contraseña para iniciar sesión con correo.",
@@ -1733,6 +1758,25 @@
         "cancel": "Cancelar"
       }
     },
+    "transfer": {
+      "cardAction": "Transferir propiedad",
+      "title": "Transferir propiedad",
+      "close": "Cerrar",
+      "reviewDescription": "La propiedad de {project} pasará al colaborador seleccionado.",
+      "becomesOwner": "Se convierte en propietario",
+      "becomesMaintainer": "Sigue siendo miembro",
+      "noticeTitle": "El nuevo propietario tendrá el control total",
+      "noticeDescription": "No podrás deshacerlo por tu cuenta. Solo el nuevo propietario podrá volver a transferir la propiedad.",
+      "cancel": "Cancelar",
+      "continue": "Continuar",
+      "verifyDescription": "Confirma la transferencia para proteger el proyecto de un cambio de propiedad accidental o no autorizado.",
+      "confirmationLabel": "Escribe {handle} para confirmar",
+      "confirmationHint": "El identificador debe coincidir exactamente.",
+      "twoFactorLabel": "Código de autenticación en dos pasos",
+      "back": "Volver",
+      "confirm": "Transferir propiedad",
+      "transferring": "Transfiriendo..."
+    },
     "actions": {
       "invite": "Invitar",
       "inviting": "Invitando...",
@@ -1755,14 +1799,21 @@
       "invitedMany": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
 	  "permissionsSaved": "Ajustes del colaborador guardados",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Propiedad transferida a {username}"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count, plural, one {No se pudo invitar a # usuario} other {No se pudo invitar a # usuarios}}",
 	  "save": "No se pudieron guardar los ajustes del colaborador",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "No se pudo transferir la propiedad del proyecto",
+      "transferConfirmation": "La confirmación no coincide con el colaborador seleccionado",
+      "transferTwoFactorRequired": "Introduce el código de autenticación en dos pasos",
+      "transferTwoFactorInvalid": "El código de autenticación en dos pasos no es válido",
+      "transferTarget": "Solo un colaborador aceptado puede ser propietario",
+      "transferChanged": "El propietario del proyecto ha cambiado. Actualiza la página e inténtalo de nuevo"
     }
   },
   "NewsPage": {
@@ -2174,8 +2225,7 @@
       "organizationFallback": "organización",
       "organizationInviteTail": "te invitó a",
       "organizationRemovedTail": "te eliminó de",
-      "projectCollaborationInvitePrefix": "El usuario",
-      "projectCollaborationInviteTail": "te invitó a colaborar en"
+      "projectCollaborationInviteTail": "te invita a colaborar en"
     },
     "errors": {
       "fetch": "No se pudieron cargar las notificaciones",
@@ -2407,10 +2457,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Organizaciones",
+	  "description": "Gestiona tus organizaciones, miembros y acceso a proyectos.",
       "create": "Crear organización",
       "empty": "Aún no perteneces a ninguna organización.",
       "noSummary": "Sin resumen",
-      "members": "{count, plural, one {# miembro} other {# miembros}}"
+	  "members": "{count, plural, one {# miembro} other {# miembros}}",
+	  "projects": "{count, plural, one {# proyecto} other {# proyectos}}",
+	  "settings": "Configuración",
+	  "open": "Abrir la organización {organization}",
+	  "iconAlt": "Icono de la organización {organization}"
     },
     "create": {
       "title": "Creando una organización",
@@ -2459,9 +2514,49 @@
       "navMembers": "Miembros",
       "navProjects": "Proyectos",
       "inviteTitle": "Invitar a un miembro",
-      "invitePlaceholder": "Slug del usuario",
-      "projectPermissions": "Permisos de proyecto",
+      "inviteDescription": "Las personas invitadas recibirán una notificación y, después de aceptar, podrán trabajar con los proyectos de la organización dentro de los permisos que les concedas.",
+      "inviteHint": "Busca por nombre de usuario o slug y selecciona a todas las personas que quieras invitar.",
+      "invitePlaceholder": "Buscar usuarios",
+      "inviteSelectedLabel": "Usuarios seleccionados",
+      "inviteRemoveSelection": "Quitar a {username} de la invitación",
+      "inviteResultsLabel": "Resultados de búsqueda de usuarios",
+      "inviteSearching": "Buscando...",
+      "inviteNoResults": "No se encontraron usuarios",
+      "memberRole": {
+        "title": "Rol visible",
+        "description": "Se muestra junto al miembro y no afecta a sus permisos.",
+        "placeholder": "Por ejemplo, desarrollador o diseñador"
+      },
+      "projectAccess": {
+        "title": "Acceso a proyectos",
+        "description": "Elige a qué proyectos puede acceder este miembro. Puedes configurar permisos individuales para cada proyecto.",
+        "accessGranted": "Acceso permitido",
+        "directAccessHint": "Este miembro pertenece a algunos equipos de proyecto. Elimínalo del equipo de un proyecto para revocar ese acceso.",
+        "noAccess": "Sin acceso",
+        "configure": "Permisos",
+        "configureProject": "Configurar permisos para {project}",
+        "configureAccess": "Configurar",
+        "grantAccess": "Dar acceso a {project}",
+        "revokeAccess": "Quitar acceso a {project}",
+        "manageModalTitle": "Acceso a proyectos",
+        "back": "Volver a proyectos",
+        "modalTitle": "Permisos del proyecto",
+        "modalDescription": "Elige qué puede hacer este miembro en este proyecto.",
+        "permissionGroups": {
+          "versions": "Versiones",
+          "content": "Página del proyecto",
+          "team": "Equipo",
+          "analytics": "Analíticas",
+          "danger": "Acciones peligrosas"
+        },
+        "empty": "Esta organización todavía no tiene proyectos.",
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "saved": "Acceso a proyectos guardado"
+      },
       "organizationPermissions": "Permisos de organización",
+      "organizationPermissionsDescription": "Define qué puede cambiar el miembro en la propia organización.",
       "publicPage": "Página pública",
       "iconAlt": "Icono de organización {name}",
       "fields": {
@@ -2497,15 +2592,46 @@
         "openProjectSettings": "Ajustes del proyecto",
         "detachProject": "Desvincular proyecto",
         "detachingProject": "Desvinculando...",
+        "moreProjectActions": "Más acciones para el proyecto «{title}»",
         "saveMember": "Guardar cambios",
+        "cancelInvite": "Cancelar",
+        "cancellingInvite": "Cancelando...",
         "removeMember": "Eliminar miembro",
         "removingMember": "Eliminando..."
       },
       "status": {
         "accepted": "Aceptado",
-        "pending": "Pendiente",
+        "pending": "Esperando respuesta",
         "invited": "Invitado",
         "declined": "Rechazado"
+      },
+      "transfer": {
+        "cardAction": "Transferir propiedad",
+        "title": "Transferir organización",
+        "close": "Cerrar",
+        "reviewDescription": "La propiedad de {organization} pasará al miembro seleccionado.",
+        "becomesOwner": "Se convierte en propietario",
+        "becomesMaintainer": "Sigue siendo miembro",
+        "noticeTitle": "El nuevo propietario tendrá el control total",
+        "noticeDescription": "No podrás deshacerlo por tu cuenta. Solo el nuevo propietario podrá volver a transferir la propiedad.",
+        "cancel": "Cancelar",
+        "continue": "Continuar",
+        "verifyDescription": "Confirma la transferencia para proteger la organización de un cambio de propiedad accidental o no autorizado.",
+        "confirmationLabel": "Escribe {handle} para confirmar",
+        "confirmationHint": "El identificador debe coincidir exactamente.",
+        "twoFactorLabel": "Código de autenticación en dos pasos",
+        "back": "Volver",
+        "confirm": "Transferir organización",
+        "transferring": "Transfiriendo...",
+        "success": "La propiedad de la organización se transfirió a {username}",
+        "errors": {
+          "generic": "No se pudo transferir la propiedad de la organización",
+          "confirmation": "La confirmación no coincide con el miembro seleccionado",
+          "twoFactorRequired": "Introduce el código de autenticación en dos pasos",
+          "twoFactorInvalid": "El código de autenticación en dos pasos no es válido",
+          "target": "Solo un miembro aceptado puede convertirse en propietario",
+          "changed": "El propietario de la organización ya ha cambiado. Actualiza la página e inténtalo de nuevo"
+        }
       },
       "delete": {
         "title": "Eliminar organización",
@@ -2522,19 +2648,25 @@
       },
       "successSaved": "Organización guardada",
       "successIconUploaded": "Icono de organización subido",
-      "successInviteSent": "Invitación enviada",
+      "successInviteSent": "Invitación enviada a {username}",
+      "successInvitesSent": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
+      "successInviteCancelled": "Invitación para {username} cancelada",
       "successMemberUpdated": "Se actualizó {username}",
       "successMemberRemoved": "Se eliminó a {username}",
       "successProjectDetached": "Se desvinculó el proyecto {title}",
       "confirmDetachProject": "¿Desvincular el proyecto {title} de la organización?",
       "confirmRemoveMember": "¿Eliminar a {username} de la organización?",
+      "removeMemberDirectAccess": "El miembro conservará el acceso a los proyectos cuyos equipos haya unido directamente.",
       "emptyProjects": "Todavía no hay proyectos vinculados a esta organización.",
       "errors": {
         "save": "No se pudo guardar la organización",
         "iconUpload": "No se pudo subir el icono de la organización",
         "invite": "No se pudo invitar al usuario",
-        "inviteSlugRequired": "Ingresa el slug del usuario",
+        "inviteMany": "{count, plural, one {No se pudo invitar a # usuario} other {No se pudo invitar a # usuarios}}",
+        "cancelInvite": "No se pudo cancelar la invitación",
+        "searchUsers": "No se pudo buscar usuarios",
         "memberUpdate": "No se pudo actualizar el miembro",
+        "projectAccess": "No se pudo guardar el acceso a proyectos",
         "memberRemove": "No se pudo eliminar el miembro",
         "projectDetach": "No se pudo desvincular el proyecto",
         "fileTooLarge": "El archivo es demasiado grande. Tamaño máximo: 20 MB"
@@ -2575,11 +2707,11 @@
         "project_delete": "Eliminar proyecto"
       },
       "organization": {
-        "organization_edit_details": "Editar detalles",
-        "organization_manage_invites": "Gestionar invitaciones",
-        "organization_manage_members": "Gestionar miembros",
-        "organization_add_project": "Agregar proyecto",
-        "organization_remove_project": "Eliminar proyecto"
+        "organization_edit_details": "Editar la organización",
+        "organization_manage_invites": "Invitar miembros",
+        "organization_manage_members": "Configurar miembros",
+        "organization_add_project": "Agregar proyectos a la organización",
+        "organization_remove_project": "Desvincular proyectos de la organización"
       }
     }
   },

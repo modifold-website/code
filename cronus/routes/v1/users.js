@@ -498,6 +498,22 @@ router.get("/:username/projects", async (req, res) => {
                     INNER JOIN users member_user ON member_user.id = pm.user_id
                     WHERE pm.project_id = p.id AND member_user.slug = ? AND pm.status IN ('accept', 'accepted')
                 )
+				OR EXISTS (
+					SELECT 1
+					FROM organization_projects member_organization_project
+					INNER JOIN organization_members organization_member
+						ON organization_member.organization_id COLLATE utf8mb4_unicode_ci = member_organization_project.organization_id COLLATE utf8mb4_unicode_ci
+					INNER JOIN users organization_member_user
+						ON organization_member_user.id = organization_member.user_id
+					LEFT JOIN organization_member_project_overrides project_override
+						ON project_override.organization_id = organization_member.organization_id
+						AND project_override.user_id = organization_member.user_id
+						AND project_override.project_id COLLATE utf8mb4_unicode_ci = member_organization_project.project_id COLLATE utf8mb4_unicode_ci
+					WHERE member_organization_project.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+						AND organization_member_user.slug = ?
+						AND organization_member.status = 'accepted'
+						AND (organization_member.project_access_mode = 'all' OR project_override.id IS NOT NULL)
+				)
             )
             ORDER BY ${orderBy}
             LIMIT ? OFFSET ?
@@ -516,11 +532,27 @@ router.get("/:username/projects", async (req, res) => {
                     INNER JOIN users member_user ON member_user.id = pm.user_id
                     WHERE pm.project_id = p.id AND member_user.slug = ? AND pm.status IN ('accept', 'accepted')
                 )
+				OR EXISTS (
+					SELECT 1
+					FROM organization_projects member_organization_project
+					INNER JOIN organization_members organization_member
+						ON organization_member.organization_id COLLATE utf8mb4_unicode_ci = member_organization_project.organization_id COLLATE utf8mb4_unicode_ci
+					INNER JOIN users organization_member_user
+						ON organization_member_user.id = organization_member.user_id
+					LEFT JOIN organization_member_project_overrides project_override
+						ON project_override.organization_id = organization_member.organization_id
+						AND project_override.user_id = organization_member.user_id
+						AND project_override.project_id COLLATE utf8mb4_unicode_ci = member_organization_project.project_id COLLATE utf8mb4_unicode_ci
+					WHERE member_organization_project.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+						AND organization_member_user.slug = ?
+						AND organization_member.status = 'accepted'
+						AND (organization_member.project_access_mode = 'all' OR project_override.id IS NOT NULL)
+				)
             )
         `;
 
-        const params = [username, username, Number(limit), Number(offset)];
-        const statsParams = [username, username];
+        const params = [username, username, username, Number(limit), Number(offset)];
+        const statsParams = [username, username, username];
 
         const [projects] = await db.query(query, params);
         const [[{ total, totalDownloads }]] = await db.query(statsQuery, statsParams);

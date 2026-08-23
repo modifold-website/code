@@ -4,13 +4,11 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Modal from "react-modal";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import OrganizationSettingsSidebar from "@/components/organizations/settings/OrganizationSettingsSidebar";
+import ConfirmModal from "@/modal/ConfirmModal";
 import { SLUG_MAX_LENGTH, normalizeSlugInput, validateSlug } from "@/utils/slug";
-
-Modal.setAppElement("body");
 
 export default function OrganizationOverviewSettingsPage({ authToken, organization, my_permissions }) {
     const t = useTranslations("Organizations");
@@ -210,35 +208,21 @@ export default function OrganizationOverviewSettingsPage({ authToken, organizati
                     )}
                 </div>
 
-                <Modal closeTimeoutMS={150} isOpen={isDeleteModalOpen} onRequestClose={() => setIsDeleteModalOpen(false)} className="modal active" overlayClassName="modal-overlay">
-                    <div className="modal-window">
-                        <div className="modal-window__header">
-                            <button className="icon-button modal-window__close" type="button" onClick={() => setIsDeleteModalOpen(false)} disabled={isDeletingOrganization} aria-label={t("settings.delete.close")}>
-                                <svg className="icon icon--cross" height="24" width="24">
-                                    <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="modal-window__content">
-                            <p className="blog-settings__field-title">{t("settings.delete.confirmTitle")}</p>
-
-                            <p style={{ lineHeight: 1.5, margin: "16px 0 24px" }}>
-                                {t("settings.delete.description")}
-                            </p>
-
-                            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
-                                <button type="button" onClick={() => setIsDeleteModalOpen(false)} className="button button--size-m button--type-minimal" disabled={isDeletingOrganization}>
-                                    {t("settings.delete.cancel")}
-                                </button>
-
-                                <button type="button" onClick={handleDeleteOrganization} className="button button--size-m button--type-danger" disabled={isDeletingOrganization}>
-                                    {isDeletingOrganization ? t("settings.delete.deleting") : t("settings.delete.confirmAction")}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </Modal>
+				<ConfirmModal
+					isOpen={isDeleteModalOpen}
+					title={t("settings.delete.confirmTitle")}
+					messageTitle={t("settings.delete.title")}
+					description={t("settings.delete.description")}
+					confirmLabel={isDeletingOrganization ? t("settings.delete.deleting") : t("settings.delete.confirmAction")}
+					cancelLabel={t("settings.delete.cancel")}
+					isLoading={isDeletingOrganization}
+					onConfirm={handleDeleteOrganization}
+					onRequestClose={() => {
+						if(!isDeletingOrganization) {
+							setIsDeleteModalOpen(false);
+						}
+					}}
+				/>
 
                 {canEditDetails && (
                     <UnsavedChangesBar

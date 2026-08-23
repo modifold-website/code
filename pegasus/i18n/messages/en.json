@@ -925,6 +925,31 @@
         "generic": "Failed to start Hytale linking"
       }
     },
+    "authProviders": {
+      "title": "Sign-in methods",
+      "description": "Connect accounts you can use to sign in to Modifold.",
+      "connected": "Connected",
+      "connectedAt": "Connected {date}",
+      "notConnected": "Not connected",
+      "onlyLoginMethod": "This is your only sign-in method",
+      "loading": "Loading...",
+      "connect": "Connect",
+      "connecting": "Opening...",
+      "disconnect": "Disconnect",
+      "disconnecting": "Disconnecting...",
+      "confirm": {
+        "title": "Disconnect {provider}?",
+        "description": "You will no longer be able to sign in with {provider}. You can connect it again later.",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "load": "Could not load sign-in methods",
+        "generic": "Could not update the sign-in method",
+        "lastLoginMethod": "Connect another sign-in method first",
+        "alreadyConnected": "This account is already connected",
+        "notConnected": "This account is already disconnected"
+      }
+    },
     "passwordChange": {
       "title": "Change password",
       "description": "Enter your current password and a new password for email sign-in.",
@@ -1828,6 +1853,25 @@
         "cancel": "Cancel"
       }
     },
+    "transfer": {
+      "cardAction": "Transfer ownership",
+      "title": "Transfer ownership",
+      "close": "Close",
+      "reviewDescription": "Ownership of {project} will pass to the selected collaborator.",
+      "becomesOwner": "Becomes owner",
+      "becomesMaintainer": "Remains a member",
+      "noticeTitle": "The new owner gets full control",
+      "noticeDescription": "You cannot undo this yourself. Only the new owner can transfer ownership again.",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "verifyDescription": "Confirm the transfer to protect the project from an accidental or unauthorized change of ownership.",
+      "confirmationLabel": "Enter {handle} to confirm",
+      "confirmationHint": "The handle must match exactly.",
+      "twoFactorLabel": "Two-factor authentication code",
+      "back": "Back",
+      "confirm": "Transfer ownership",
+      "transferring": "Transferring..."
+    },
     "actions": {
       "invite": "Invite",
       "inviting": "Inviting...",
@@ -1850,14 +1894,21 @@
       "invitedMany": "{count, plural, one {# invitation sent} other {# invitations sent}}",
 	  "permissionsSaved": "Collaborator settings saved",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Ownership transferred to {username}"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count, plural, one {Could not invite # user} other {Could not invite # users}}",
 	  "save": "Could not save collaborator settings",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "Could not transfer project ownership",
+      "transferConfirmation": "The confirmation does not match the selected collaborator",
+      "transferTwoFactorRequired": "Enter your two-factor authentication code",
+      "transferTwoFactorInvalid": "The two-factor authentication code is invalid",
+      "transferTarget": "Only an accepted collaborator can become the owner",
+      "transferChanged": "The project owner changed. Refresh the page and try again"
     }
   },
   "NewsPage": {
@@ -2269,8 +2320,7 @@
       "organizationFallback": "organization",
       "organizationInviteTail": "invited you to",
       "organizationRemovedTail": "removed you from",
-      "projectCollaborationInvitePrefix": "User",
-      "projectCollaborationInviteTail": "invited you to collaborate on"
+      "projectCollaborationInviteTail": "invites you to collaborate on"
     },
     "errors": {
       "fetch": "Failed to load notifications",
@@ -2502,10 +2552,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Organizations",
+	  "description": "Manage your organizations, members, and project access.",
       "create": "Create organization",
       "empty": "You are not a member of any organization yet.",
       "noSummary": "No summary",
-      "members": "{count, plural, one {# member} other {# members}}"
+	  "members": "{count, plural, one {# member} other {# members}}",
+	  "projects": "{count, plural, one {# project} other {# projects}}",
+	  "settings": "Settings",
+	  "open": "Open {organization}",
+	  "iconAlt": "{organization} organization icon"
     },
     "create": {
       "title": "Creating an organization",
@@ -2554,9 +2609,49 @@
       "navMembers": "Members",
       "navProjects": "Projects",
       "inviteTitle": "Invite a member",
-      "invitePlaceholder": "User slug",
-      "projectPermissions": "Project permissions",
+      "inviteDescription": "Invited users receive a notification and, after accepting, can work with organization projects within the permissions you grant them.",
+      "inviteHint": "Search by username or profile slug and select everyone you want to invite.",
+      "invitePlaceholder": "Search users",
+      "inviteSelectedLabel": "Selected users",
+      "inviteRemoveSelection": "Remove {username} from the invitation",
+      "inviteResultsLabel": "User search results",
+      "inviteSearching": "Searching...",
+      "inviteNoResults": "No users found",
+      "memberRole": {
+        "title": "Display role",
+        "description": "Shown next to the member and does not affect their permissions.",
+        "placeholder": "For example, developer or designer"
+      },
+      "projectAccess": {
+        "title": "Project access",
+        "description": "Choose which projects this member can access. You can configure custom permissions for each project.",
+        "accessGranted": "Access granted",
+        "directAccessHint": "This member belongs to some project teams. Remove them from a project's team to revoke that access.",
+        "noAccess": "No access",
+        "configure": "Permissions",
+        "configureProject": "Configure permissions for {project}",
+        "configureAccess": "Configure",
+        "grantAccess": "Grant access to {project}",
+        "revokeAccess": "Revoke access to {project}",
+        "manageModalTitle": "Project access",
+        "back": "Back to projects",
+        "modalTitle": "Project permissions",
+        "modalDescription": "Choose what this member can do in this project.",
+        "permissionGroups": {
+          "versions": "Versions",
+          "content": "Project page",
+          "team": "Team",
+          "analytics": "Analytics",
+          "danger": "Dangerous actions"
+        },
+        "empty": "This organization has no projects yet.",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Project access saved"
+      },
       "organizationPermissions": "Organization permissions",
+      "organizationPermissionsDescription": "Controls what the member can change in the organization itself.",
       "publicPage": "Public page",
       "iconAlt": "Organization icon {name}",
       "fields": {
@@ -2592,15 +2687,46 @@
         "openProjectSettings": "Project settings",
         "detachProject": "Detach project",
         "detachingProject": "Detaching...",
+        "moreProjectActions": "More actions for project “{title}”",
         "saveMember": "Save changes",
+        "cancelInvite": "Cancel",
+        "cancellingInvite": "Cancelling...",
         "removeMember": "Remove member",
         "removingMember": "Removing..."
       },
       "status": {
         "accepted": "Accepted",
-        "pending": "Pending",
+        "pending": "Awaiting response",
         "invited": "Invited",
         "declined": "Declined"
+      },
+      "transfer": {
+        "cardAction": "Transfer ownership",
+        "title": "Transfer organization",
+        "close": "Close",
+        "reviewDescription": "Ownership of {organization} will pass to the selected member.",
+        "becomesOwner": "Becomes owner",
+        "becomesMaintainer": "Remains a member",
+        "noticeTitle": "The new owner gets full control",
+        "noticeDescription": "You cannot undo this yourself. Only the new owner can transfer ownership again.",
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "verifyDescription": "Confirm the transfer to protect the organization from an accidental or unauthorized change of ownership.",
+        "confirmationLabel": "Enter {handle} to confirm",
+        "confirmationHint": "The handle must match exactly.",
+        "twoFactorLabel": "Two-factor authentication code",
+        "back": "Back",
+        "confirm": "Transfer organization",
+        "transferring": "Transferring...",
+        "success": "Organization ownership transferred to {username}",
+        "errors": {
+          "generic": "Could not transfer organization ownership",
+          "confirmation": "Confirmation does not match the selected member",
+          "twoFactorRequired": "Enter your two-factor authentication code",
+          "twoFactorInvalid": "Invalid two-factor authentication code",
+          "target": "Only an accepted member can become the owner",
+          "changed": "The organization owner has already changed. Refresh the page and try again"
+        }
       },
       "delete": {
         "title": "Delete organization",
@@ -2617,19 +2743,25 @@
       },
       "successSaved": "Organization saved",
       "successIconUploaded": "Organization icon uploaded",
-      "successInviteSent": "Invite sent",
+      "successInviteSent": "Invitation sent to {username}",
+      "successInvitesSent": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+      "successInviteCancelled": "Invitation for {username} cancelled",
       "successMemberUpdated": "Updated {username}",
       "successMemberRemoved": "Removed {username}",
       "successProjectDetached": "Project {title} detached",
       "confirmDetachProject": "Detach project {title} from organization?",
       "confirmRemoveMember": "Remove {username} from organization?",
+      "removeMemberDirectAccess": "The member will keep access to projects whose teams they joined directly.",
       "emptyProjects": "No projects are linked to this organization yet.",
       "errors": {
         "save": "Failed to save organization",
         "iconUpload": "Failed to upload organization icon",
         "invite": "Failed to invite user",
-        "inviteSlugRequired": "Enter user slug",
+        "inviteMany": "{count, plural, one {Could not invite # user} other {Could not invite # users}}",
+        "cancelInvite": "Could not cancel the invitation",
+        "searchUsers": "Could not search users",
         "memberUpdate": "Failed to update member",
+        "projectAccess": "Failed to save project access",
         "memberRemove": "Failed to remove member",
         "projectDetach": "Failed to detach project",
         "fileTooLarge": "File is too large. Maximum size is 20 MB"
@@ -2670,11 +2802,11 @@
         "project_delete": "Delete project"
       },
       "organization": {
-        "organization_edit_details": "Edit details",
-        "organization_manage_invites": "Manage invites",
-        "organization_manage_members": "Manage members",
-        "organization_add_project": "Add project",
-        "organization_remove_project": "Remove project"
+        "organization_edit_details": "Edit organization",
+        "organization_manage_invites": "Invite members",
+        "organization_manage_members": "Manage member settings",
+        "organization_add_project": "Add projects to the organization",
+        "organization_remove_project": "Detach projects from the organization"
       }
     }
   },

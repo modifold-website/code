@@ -281,14 +281,6 @@
 .new-project-card.project-page-card > * {
     pointer-events: auto !important;
 }
-.project-page-card.new-project-card:not(.skeleton):hover,
-.project-page-card.new-project-card:not(.skeleton):active {
-    filter: none;
-    transform: none;
-}
-.project-page-card.new-project-card:not(.skeleton):hover .new-project-title {
-    text-decoration: none;
-}
 .project-page-card__main {
     display: flex;
     gap: 12px;

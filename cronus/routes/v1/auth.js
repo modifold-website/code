@@ -4,7 +4,7 @@ const { db } = require("../../config/db");
 const slugify = require("slugify");
 const crypto = require("crypto");
 const axios = require("axios");
-const { authenticator } = require("otplib");
+const { authenticator, getTwoFactorRow, isTwoFactorEnabled } = require("../../utils/twoFactor");
 const { sendMail } = require("../../utils/smtpMailer");
 const router = express.Router();
 const auth = require("../../middleware/auth");
@@ -15,14 +15,29 @@ const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;
 
-authenticator.options = { window: 1 };
-
-const getTwoFactorRow = async (userId) => {
-    const [rows] = await db.query("SELECT secret, enabled FROM user_two_factor WHERE user_id = ? LIMIT 1", [userId]);
-    return rows[0] || null;
+const AUTH_PROVIDERS = {
+	discord: {
+		idColumn: "discord_id",
+		linkedAtColumn: "discord_linked_at",
+	},
+	github: {
+		idColumn: "github_id",
+		linkedAtColumn: "github_linked_at",
+	},
+	telegram: {
+		idColumn: "telegram_id",
+		linkedAtColumn: "telegram_linked_at",
+	},
+	hytale: {
+		idColumn: "hytale_sub",
+		linkedAtColumn: "hytale_linked_at",
+	},
 };
 
-const isTwoFactorEnabled = (row) => Boolean(row && row.enabled === 1 && row.secret);
+const trimTrailingSlash = (value) => String(value || "").replace(/\/+$/, "");
+const getPublicApiBase = () => trimTrailingSlash(process.env.PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_BASE || "https://api.modifold.com");
+const getFrontendBase = () => trimTrailingSlash(process.env.FRONTEND_BASE || "https://modifold.com");
+const getProviderRedirectUri = (provider) => `${getPublicApiBase()}/auth/${provider}-callback`;
 
 const issueTwoFactorToken = (userId) => jwt.sign({ id: userId, type: "2fa" }, process.env.JWT_SECRET, { expiresIn: "10m" });
 
@@ -37,6 +52,118 @@ function normalizeReturnPath(nextPath) {
 
     return nextPath;
 }
+
+const hasProviderValue = (value) => value !== null && value !== undefined && String(value).trim().length > 0;
+
+const createProviderLinkState = ({ provider, userId, next }) => {
+	const token = jwt.sign({
+		type: "provider_link",
+		provider,
+		userId,
+		next: normalizeReturnPath(next),
+	}, process.env.JWT_SECRET, { expiresIn: "10m" });
+
+	return `link_${token}`;
+};
+
+const parseProviderCallbackState = (state, provider) => {
+	const rawState = String(state || "");
+	if(!rawState.startsWith("link_")) {
+		return {
+			mode: "login",
+			next: normalizeReturnPath(rawState),
+		};
+	}
+
+	try {
+		const payload = jwt.verify(rawState.slice("link_".length), process.env.JWT_SECRET);
+		if(payload?.type !== "provider_link" || payload?.provider !== provider || !payload?.userId) {
+			throw new Error("Invalid provider link state");
+		}
+
+		return {
+			mode: "link",
+			next: normalizeReturnPath(payload.next),
+			userId: payload.userId,
+		};
+	} catch {
+		return {
+			mode: "invalid",
+			next: "/settings/account-security",
+		};
+	}
+};
+
+const getLoginMethodCount = (user) => {
+	const providerCount = Object.values(AUTH_PROVIDERS).reduce((count, provider) => {
+		return count + (hasProviderValue(user?.[provider.idColumn]) ? 1 : 0);
+	}, 0);
+	const hasPassword = hasProviderValue(user?.email_login_key) && hasProviderValue(user?.password_hash);
+
+	return providerCount + (hasPassword ? 1 : 0);
+};
+
+const buildAuthProviderPayload = (user) => {
+	const loginMethodCount = getLoginMethodCount(user);
+	const providers = Object.fromEntries(Object.entries(AUTH_PROVIDERS).map(([providerName, provider]) => {
+		const connected = hasProviderValue(user?.[provider.idColumn]);
+		const providerData = {
+			connected,
+			connected_at: connected && user?.[provider.linkedAtColumn] ? Number(user[provider.linkedAtColumn]) : null,
+			can_disconnect: connected && loginMethodCount > 1,
+		};
+
+		if(providerName === "hytale") {
+			providerData.account_name = user?.hytale_profile_username || null;
+		}
+
+		return [providerName, providerData];
+	}));
+
+	return {
+		providers,
+		login_method_count: loginMethodCount,
+		password_enabled: hasProviderValue(user?.email_login_key) && hasProviderValue(user?.password_hash),
+	};
+};
+
+const getAuthProviderUser = async (queryable, userId, lock = false) => {
+	const [users] = await queryable.query(
+		`SELECT id, email_login_key, password_hash,
+		telegram_id, telegram_linked_at,
+		github_id, github_linked_at,
+		discord_id, discord_linked_at,
+		hytale_sub, hytale_profile_uuid, hytale_profile_username, hytale_linked_at
+		FROM users
+		WHERE id = ?
+		LIMIT 1${lock ? " FOR UPDATE" : ""}`,
+		[userId]
+	);
+
+	return users[0] || null;
+};
+
+const linkProviderToUser = async ({ provider, externalId, userId }) => {
+	const providerConfig = AUTH_PROVIDERS[provider];
+	if(!providerConfig || !hasProviderValue(externalId)) {
+		return { success: false, code: "invalid_provider" };
+	}
+
+	const [existingUsers] = await db.query(
+		`SELECT id FROM users WHERE ${providerConfig.idColumn} = ? AND id <> ? LIMIT 1`,
+		[externalId, userId]
+	);
+	if(existingUsers.length > 0) {
+		return { success: false, code: "provider_in_use" };
+	}
+
+	const [result] = await db.query(
+		`UPDATE users SET ${providerConfig.idColumn} = ?, ${providerConfig.linkedAtColumn} = ? WHERE id = ?`,
+		[externalId, Date.now(), userId]
+	);
+
+	return result.affectedRows > 0 ? { success: true } : { success: false, code: "user_not_found" };
+};
 
 const awardHytaleLinkedAchievement = async (userId, hytaleProfileUuid = null) => awardAchievementToUser(db, {
 	userId,
@@ -211,11 +338,9 @@ async function verifyPassword(password, hash) {
     return Bun.password.verify(password, hash);
 }
 
-// shit
 function redirectToFrontendAuth(res, params) {
     const hash = new URLSearchParams(params).toString();
-    //return res.redirect(`http://localhost:3000/auth/callback#${hash}`);
-    return res.redirect(`https://modifold.com/auth/callback#${hash}`);
+    return res.redirect(`${getFrontendBase()}/auth/callback#${hash}`);
 }
 
 function verifyTelegramData(data, botToken) {
@@ -252,6 +377,101 @@ router.post("/hytale-link/start", auth, async (req, res) => {
 	} catch (error) {
 		console.error("Hytale Link Start Error:", error);
 		return res.status(500).json({ success: false, message: error.message || "Error starting Hytale account linking" });
+	}
+});
+
+router.post("/providers/:provider/link/start", auth, async (req, res) => {
+	const provider = String(req.params.provider || "").toLowerCase();
+	const providerConfig = AUTH_PROVIDERS[provider];
+	if(!providerConfig) {
+		return res.status(400).json({ success: false, code: "invalid_provider", message: "Unknown authentication provider" });
+	}
+
+	if(req.user.viaApiToken) {
+		return res.status(403).json({ success: false, code: "session_required", message: "A signed-in browser session is required" });
+	}
+
+	try {
+		const user = await getAuthProviderUser(db, req.user.id);
+		if(!user) {
+			return res.status(404).json({ success: false, code: "user_not_found", message: "User not found" });
+		}
+
+		if(hasProviderValue(user[providerConfig.idColumn])) {
+			return res.status(409).json({ success: false, code: "provider_already_connected", message: "This provider is already connected" });
+		}
+
+		const nextPath = normalizeReturnPath(req.body?.next || "/settings/account-security");
+		if(provider === "hytale") {
+			const url = await createHytaleAuthorizationUrl({
+				mode: "link",
+				next: nextPath,
+				userId: req.user.id,
+			});
+
+			return res.json({ success: true, url });
+		}
+
+		const state = createProviderLinkState({ provider, userId: req.user.id, next: nextPath });
+		let url;
+
+		if(provider === "discord") {
+			if(!process.env.DISCORD_CLIENT_ID) {
+				throw new Error("Discord OAuth is not configured");
+			}
+
+			const params = new URLSearchParams({
+				client_id: process.env.DISCORD_CLIENT_ID,
+				redirect_uri: getProviderRedirectUri("discord"),
+				response_type: "code",
+				scope: "identify email",
+				state,
+			});
+			url = `https://discord.com/api/oauth2/authorize?${params.toString()}`;
+		}
+
+		if(provider === "github") {
+			if(!process.env.GITHUB_CLIENT_ID) {
+				throw new Error("GitHub OAuth is not configured");
+			}
+
+			const params = new URLSearchParams({
+				client_id: process.env.GITHUB_CLIENT_ID,
+				redirect_uri: getProviderRedirectUri("github"),
+				scope: "user:email",
+				state,
+			});
+			url = `https://github.com/login/oauth/authorize?${params.toString()}`;
+		}
+
+		if(provider === "telegram") {
+			const botId = String(process.env.TELEGRAM_BOT_ID || process.env.TELEGRAM_BOT_TOKEN || "").split(":")[0];
+			if(!botId) {
+				throw new Error("Telegram OAuth is not configured");
+			}
+
+			const callbackUrl = new URL(getProviderRedirectUri("telegram"));
+			callbackUrl.searchParams.set("link_state", state);
+			const params = new URLSearchParams({
+				bot_id: botId,
+				origin: getFrontendBase(),
+				return_to: callbackUrl.toString(),
+			});
+			url = `https://oauth.telegram.org/auth?${params.toString()}`;
+		}
+
+		if(!url) {
+			return res.status(400).json({ success: false, code: "invalid_provider", message: "Unknown authentication provider" });
+		}
+
+		return res.json({ success: true, url });
+	} catch (error) {
+		console.error("Provider link start error:", {
+			message: error?.message || "unknown error",
+			provider,
+			user_id: req.user.id,
+		});
+		return res.status(500).json({ success: false, code: "generic", message: error?.message || "Unable to start account linking" });
 	}
 });
 
@@ -301,7 +521,7 @@ router.get("/hytale-callback", async (req, res) => {
 
 			await awardHytaleLinkedAchievement(oauthState.userId, hytaleAccount.hytaleProfileUuid);
 
-			return redirectToFrontendAuth(res, { hytale_linked: "1", next: nextPath });
+			return redirectToFrontendAuth(res, { provider_linked: "hytale", next: nextPath });
 		}
 
 		const [existingUsers] = await db.query("SELECT id, username, slug FROM users WHERE hytale_sub = ? LIMIT 1", [hytaleAccount.hytaleSub]);
@@ -523,7 +743,7 @@ router.post("/discord-login", async (req, res) => {
                 client_secret: process.env.DISCORD_CLIENT_SECRET,
                 grant_type: "authorization_code",
                 code,
-                redirect_uri: `https://api.modifold.com/auth/discord-callback`,
+				redirect_uri: getProviderRedirectUri("discord"),
             }),
             {
                 headers: {
@@ -546,7 +766,9 @@ router.post("/discord-login", async (req, res) => {
         const [existingUser] = await db.query("SELECT id, username, slug FROM users WHERE discord_id = ?", [discordId]);
         let user = existingUser[0];
 
-        if(user) {
+		if(user) {
+			await db.query("UPDATE users SET discord_linked_at = COALESCE(discord_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
+
             const twoFactorRow = await getTwoFactorRow(user.id);
             if(isTwoFactorEnabled(twoFactorRow)) {
                 const twoFactorToken = issueTwoFactorToken(user.id);
@@ -591,10 +813,10 @@ router.post("/discord-login", async (req, res) => {
         const createdAt = Date.now();
         const avatarUrl = avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png` : "https://modifold.com/images/user/default_ava.png";
 
-        const [result] = await db.query(
-            "INSERT INTO users (username, slug, discord_id, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)",
-            [displayName, slug, discordId, email, createdAt, avatarUrl]
-        );
+		const [result] = await db.query(
+			"INSERT INTO users (username, slug, discord_id, discord_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)",
+			[displayName, slug, discordId, createdAt, email, createdAt, avatarUrl]
+		);
 
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: displayName, slug }, success: true });
@@ -606,9 +828,14 @@ router.post("/discord-login", async (req, res) => {
 
 router.get("/discord-callback", async (req, res) => {
     const { code } = req.query;
-    const nextPath = normalizeReturnPath(req.query.state);
+	const callbackState = parseProviderCallbackState(req.query.state, "discord");
+	const nextPath = callbackState.next;
 
     try {
+		if(callbackState.mode === "invalid") {
+			return redirectToFrontendAuth(res, { error: "Discord linking request is invalid or expired", next: nextPath });
+		}
+
         if(!code) {
             console.error("No code provided in Discord callback");
             return redirectToFrontendAuth(res, { error: "No code provided", next: nextPath });
@@ -621,7 +848,7 @@ router.get("/discord-callback", async (req, res) => {
                 client_secret: process.env.DISCORD_CLIENT_SECRET,
                 grant_type: "authorization_code",
                 code,
-                redirect_uri: `https://api.modifold.com/auth/discord-callback`,
+				redirect_uri: getProviderRedirectUri("discord"),
             }),
             {
                 headers: {
@@ -648,6 +875,22 @@ router.get("/discord-callback", async (req, res) => {
         });
 
         const { id: discordId, username, discriminator, avatar, email } = userResponse.data;
+
+		if(callbackState.mode === "link") {
+			const linkResult = await linkProviderToUser({
+				provider: "discord",
+				externalId: discordId,
+				userId: callbackState.userId,
+			});
+			if(!linkResult.success) {
+				const message = linkResult.code === "provider_in_use"
+					? "This Discord account is already linked to another Modifold account"
+					: "Unable to link Discord account";
+				return redirectToFrontendAuth(res, { error: message, next: nextPath });
+			}
+
+			return redirectToFrontendAuth(res, { provider_linked: "discord", next: nextPath });
+		}
 
         const [existingUser] = await db.query("SELECT id, username, slug FROM users WHERE discord_id = ?", [discordId]);
         let user = existingUser[0];
@@ -679,12 +922,14 @@ router.get("/discord-callback", async (req, res) => {
             const createdAt = Date.now();
             const avatarUrl = avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png` : "https://modifold.com/images/user/default_ava.png";
 
-            const [result] = await db.query(
-                "INSERT INTO users (username, slug, discord_id, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)",
-                [displayName, slug, discordId, email, createdAt, avatarUrl]
-            );
+			const [result] = await db.query(
+				"INSERT INTO users (username, slug, discord_id, discord_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				[displayName, slug, discordId, createdAt, email, createdAt, avatarUrl]
+			);
 
-            user = { id: result.insertId, username: displayName, slug };
+			user = { id: result.insertId, username: displayName, slug };
+		} else {
+			await db.query("UPDATE users SET discord_linked_at = COALESCE(discord_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
         }
 
         const twoFactorRow = await getTwoFactorRow(user.id);
@@ -703,8 +948,16 @@ router.get("/discord-callback", async (req, res) => {
 
 router.get("/telegram-callback", async (req, res) => {
     const telegramData = { ...req.query };
-    const nextPath = normalizeReturnPath(telegramData.next);
+	const callbackState = telegramData.link_state
+		? parseProviderCallbackState(telegramData.link_state, "telegram")
+		: { mode: "login", next: normalizeReturnPath(telegramData.next) };
+	const nextPath = callbackState.next;
     delete telegramData.next;
+	delete telegramData.link_state;
+
+	if(callbackState.mode === "invalid") {
+		return redirectToFrontendAuth(res, { error: "Telegram linking request is invalid or expired", next: nextPath });
+	}
 
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -719,6 +972,22 @@ router.get("/telegram-callback", async (req, res) => {
     const { id: telegramId, first_name, last_name, photo_url } = telegramData;
 
     try {
+		if(callbackState.mode === "link") {
+			const linkResult = await linkProviderToUser({
+				provider: "telegram",
+				externalId: telegramId,
+				userId: callbackState.userId,
+			});
+			if(!linkResult.success) {
+				const message = linkResult.code === "provider_in_use"
+					? "This Telegram account is already linked to another Modifold account"
+					: "Unable to link Telegram account";
+				return redirectToFrontendAuth(res, { error: message, next: nextPath });
+			}
+
+			return redirectToFrontendAuth(res, { provider_linked: "telegram", next: nextPath });
+		}
+
         const [existingUser] = await db.query("SELECT id, username, slug FROM users WHERE telegram_id = ?", [telegramId]);
         let user = existingUser[0];
 
@@ -757,8 +1026,10 @@ router.get("/telegram-callback", async (req, res) => {
             const createdAt = Date.now();
             const avatar = photo_url || "https://modifold.com/images/user/default_ava.png";
 
-            const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, created_at, avatar) VALUES (?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, avatar]);
+			const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, telegram_linked_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, createdAt, avatar]);
             user = { id: result.insertId, username, slug };
+		} else {
+			await db.query("UPDATE users SET telegram_linked_at = COALESCE(telegram_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
         }
 
         const twoFactorRow = await getTwoFactorRow(user.id);
@@ -798,6 +1069,8 @@ router.post("/telegram-login", async (req, res) => {
         let user = existingUser[0];
 
         if(user) {
+			await db.query("UPDATE users SET telegram_linked_at = COALESCE(telegram_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
+
             const twoFactorRow = await getTwoFactorRow(user.id);
             if(isTwoFactorEnabled(twoFactorRow)) {
                 const twoFactorToken = issueTwoFactorToken(user.id);
@@ -842,7 +1115,7 @@ router.post("/telegram-login", async (req, res) => {
         const createdAt = Date.now();
         const avatar = photo_url || "https://modifold.com/images/user/default_ava.png";
 
-        const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, created_at, avatar) VALUES (?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, avatar]);
+		const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, telegram_linked_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, createdAt, avatar]);
 
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username, slug }, success: true });
@@ -866,6 +1139,7 @@ router.post("/github-login", async (req, res) => {
                 client_id: process.env.GITHUB_CLIENT_ID,
                 client_secret: process.env.GITHUB_CLIENT_SECRET,
                 code,
+				redirect_uri: getProviderRedirectUri("github"),
             },
             {
                 headers: { Accept: "application/json" },
@@ -893,6 +1167,8 @@ router.post("/github-login", async (req, res) => {
         let user = existingUser[0];
 
         if(user) {
+			await db.query("UPDATE users SET github_linked_at = COALESCE(github_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
+
             const twoFactorRow = await getTwoFactorRow(user.id);
             if(isTwoFactorEnabled(twoFactorRow)) {
                 const twoFactorToken = issueTwoFactorToken(user.id);
@@ -937,7 +1213,7 @@ router.post("/github-login", async (req, res) => {
         const createdAt = Date.now();
         const avatar = avatar_url || "https://modifold.com/images/user/default_ava.png";
 
-        const [result] = await db.query("INSERT INTO users (username, slug, github_id, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [displayName, slug, githubId, email, createdAt, avatar]);
+		const [result] = await db.query("INSERT INTO users (username, slug, github_id, github_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)", [displayName, slug, githubId, createdAt, email, createdAt, avatar]);
 
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: displayName, slug }, success: true });
@@ -949,9 +1225,14 @@ router.post("/github-login", async (req, res) => {
 
 router.get("/github-callback", async (req, res) => {
     const { code } = req.query;
-    const nextPath = normalizeReturnPath(req.query.state);
+	const callbackState = parseProviderCallbackState(req.query.state, "github");
+	const nextPath = callbackState.next;
 
     try {
+		if(callbackState.mode === "invalid") {
+			return redirectToFrontendAuth(res, { error: "GitHub linking request is invalid or expired", next: nextPath });
+		}
+
         if(!code) {
             console.error("No code provided in GitHub callback");
             return redirectToFrontendAuth(res, { error: "No code provided", next: nextPath });
@@ -963,6 +1244,7 @@ router.get("/github-callback", async (req, res) => {
                 client_id: process.env.GITHUB_CLIENT_ID,
                 client_secret: process.env.GITHUB_CLIENT_SECRET,
                 code,
+				redirect_uri: getProviderRedirectUri("github"),
             },
             {
                 headers: { Accept: "application/json" },
@@ -991,6 +1273,22 @@ router.get("/github-callback", async (req, res) => {
         });
 
         const email = emailResponse.data.find((e) => e.primary)?.email || null;
+
+		if(callbackState.mode === "link") {
+			const linkResult = await linkProviderToUser({
+				provider: "github",
+				externalId: githubId,
+				userId: callbackState.userId,
+			});
+			if(!linkResult.success) {
+				const message = linkResult.code === "provider_in_use"
+					? "This GitHub account is already linked to another Modifold account"
+					: "Unable to link GitHub account";
+				return redirectToFrontendAuth(res, { error: message, next: nextPath });
+			}
+
+			return redirectToFrontendAuth(res, { provider_linked: "github", next: nextPath });
+		}
 
         const [existingUser] = await db.query("SELECT id, username, slug FROM users WHERE github_id = ?", [githubId]);
 
@@ -1023,12 +1321,14 @@ router.get("/github-callback", async (req, res) => {
             const createdAt = Date.now();
             const avatar = avatar_url || "https://modifold.com/images/user/default_ava.png";
 
-            const [result] = await db.query(
-                "INSERT INTO users (username, slug, github_id, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)",
-                [displayName, slug, githubId, email, createdAt, avatar]
-            );
+			const [result] = await db.query(
+				"INSERT INTO users (username, slug, github_id, github_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				[displayName, slug, githubId, createdAt, email, createdAt, avatar]
+			);
 
-            user = { id: result.insertId, username: displayName, slug };
+			user = { id: result.insertId, username: displayName, slug };
+		} else {
+			await db.query("UPDATE users SET github_linked_at = COALESCE(github_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
         }
 
         const twoFactorRow = await getTwoFactorRow(user.id);
@@ -1045,9 +1345,96 @@ router.get("/github-callback", async (req, res) => {
     }
 });
 
+router.get("/providers", auth, async (req, res) => {
+	try {
+		const user = await getAuthProviderUser(db, req.user.id);
+		if(!user) {
+			return res.status(404).json({ success: false, code: "user_not_found", message: "User not found" });
+		}
+
+		return res.json({ success: true, ...buildAuthProviderPayload(user) });
+	} catch (error) {
+		console.error("Auth providers status error:", {
+			message: error?.message || "unknown error",
+			user_id: req.user?.id || null,
+		});
+		return res.status(500).json({ success: false, code: "generic", message: "Unable to load connected providers" });
+	}
+});
+
+router.delete("/providers/:provider", auth, async (req, res) => {
+	const provider = String(req.params.provider || "").toLowerCase();
+	const providerConfig = AUTH_PROVIDERS[provider];
+	if(!providerConfig) {
+		return res.status(400).json({ success: false, code: "invalid_provider", message: "Unknown authentication provider" });
+	}
+
+	if(req.user.viaApiToken) {
+		return res.status(403).json({ success: false, code: "session_required", message: "A signed-in browser session is required" });
+	}
+
+	const connection = await db.getConnection();
+	let transactionStarted = false;
+
+	try {
+		await connection.beginTransaction();
+		transactionStarted = true;
+
+		const user = await getAuthProviderUser(connection, req.user.id, true);
+		if(!user) {
+			await connection.rollback();
+			transactionStarted = false;
+			return res.status(404).json({ success: false, code: "user_not_found", message: "User not found" });
+		}
+
+		if(!hasProviderValue(user[providerConfig.idColumn])) {
+			await connection.rollback();
+			transactionStarted = false;
+			return res.status(400).json({ success: false, code: "provider_not_connected", message: "This provider is not connected" });
+		}
+
+		if(getLoginMethodCount(user) <= 1) {
+			await connection.rollback();
+			transactionStarted = false;
+			return res.status(409).json({ success: false, code: "last_login_method", message: "Connect another sign-in method before disconnecting this one" });
+		}
+
+		if(provider === "hytale") {
+			await connection.query(
+				"UPDATE users SET hytale_sub = NULL, hytale_profile_uuid = NULL, hytale_profile_username = NULL, hytale_linked_at = NULL WHERE id = ?",
+				[req.user.id]
+			);
+		} else {
+			await connection.query(
+				`UPDATE users SET ${providerConfig.idColumn} = NULL, ${providerConfig.linkedAtColumn} = NULL WHERE id = ?`,
+				[req.user.id]
+			);
+		}
+
+		await connection.commit();
+		transactionStarted = false;
+
+		const updatedUser = await getAuthProviderUser(db, req.user.id);
+		return res.json({ success: true, ...buildAuthProviderPayload(updatedUser) });
+	} catch (error) {
+		if(transactionStarted) {
+			await connection.rollback();
+		}
+
+		console.error("Auth provider disconnect error:", {
+			message: error?.message || "unknown error",
+			provider,
+			user_id: req.user?.id || null,
+		});
+		return res.status(500).json({ success: false, code: "generic", message: "Unable to disconnect provider" });
+	} finally {
+		connection.release();
+	}
+});
+
 router.get("/user", auth, async (req, res) => {
     try {
-        const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, github_id, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
+		const [users] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, telegram_id, telegram_linked_at, github_id, github_linked_at, discord_id, discord_linked_at, hytale_sub, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, isRole, active_profile_badge, social_links FROM users WHERE id = ?", [req.user.id]);
 
         if(!users.length) {
             return res.status(404).json({ message: "User not found" });

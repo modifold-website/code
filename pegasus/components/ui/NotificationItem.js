@@ -154,7 +154,7 @@ function NotificationText({ notification, t }) {
 
 		return (
 			<>
-				{t("messages.projectCollaborationInvitePrefix")} {firstActorView} {t("messages.projectCollaborationInviteTail")} <ProjectLink project={notification.project}>{projectTitle}</ProjectLink>
+				{firstActorView} {t("messages.projectCollaborationInviteTail")} <ProjectLink project={notification.project}>{projectTitle}</ProjectLink>
 			</>
 		);
 	}

@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const sharp = require('sharp');
 const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require('../../utils/sanitize');
 const { validateSlug } = require("../../utils/slug");
-const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
+const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
 const optionalAuth = require('../../middleware/optionalAuth');
 const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
@@ -21,6 +21,7 @@ const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
+const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 const router = express.Router();
 
 const DISCLOSURE_TEXT_LIMIT = 2000;
@@ -1494,7 +1495,8 @@ router.get('/user/projects', auth, async (req, res) => {
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organization_members om ON om.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci AND om.user_id = ? AND om.status = 'accepted'
-            WHERE p.user_id = ? OR pm.user_id = ? OR om.user_id = ?
+			LEFT JOIN organization_member_project_overrides ompo ON ompo.organization_id = om.organization_id AND ompo.user_id = om.user_id AND ompo.project_id = p.id
+            WHERE p.user_id = ? OR pm.user_id = ? OR (om.user_id = ? AND (om.project_access_mode = 'all' OR ompo.id IS NOT NULL))
             ORDER BY p.updated_at DESC
             LIMIT ? OFFSET ?
             `,
@@ -1508,7 +1510,8 @@ router.get('/user/projects', auth, async (req, res) => {
             LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ? AND pm.status IN ('accept', 'accepted')
             LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
             LEFT JOIN organization_members om ON om.organization_id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci AND om.user_id = ? AND om.status = 'accepted'
-            WHERE p.user_id = ? OR pm.user_id = ? OR om.user_id = ?
+			LEFT JOIN organization_member_project_overrides ompo ON ompo.organization_id = om.organization_id AND ompo.user_id = om.user_id AND ompo.project_id = p.id
+            WHERE p.user_id = ? OR pm.user_id = ? OR (om.user_id = ? AND (om.project_access_mode = 'all' OR ompo.id IS NOT NULL))
             `,
             [req.user.id, req.user.id, req.user.id, req.user.id, req.user.id]
         );
@@ -3315,6 +3318,172 @@ const updateProjectOwnerAttribution = async (req, res) => {
 	}
 };
 
+const transferProjectOwnership = async (req, res) => {
+	const targetUserId = Number(req.body?.new_owner_user_id);
+	const confirmation = String(req.body?.confirmation || "").trim();
+	const twoFactorCode = String(req.body?.two_factor_code || "").replace(/\s+/g, "");
+
+	if(!Number.isInteger(targetUserId) || targetUserId <= 0) {
+		return res.status(400).json({ code: "INVALID_TARGET", message: "A valid new owner is required" });
+	}
+	if(req.user.viaApiToken) {
+		return res.status(403).json({ code: "INTERACTIVE_AUTH_REQUIRED", message: "Ownership transfer requires an interactive session" });
+	}
+
+	const connection = await db.getConnection();
+	try {
+		await connection.beginTransaction();
+		const [[project]] = await connection.query(
+			`SELECT
+				p.id, p.user_id, p.slug, p.title, p.project_type, p.icon_url,
+				p.show_owner_as_author,
+				u.username AS owner_username, u.slug AS owner_slug, u.avatar AS owner_avatar,
+				u.isVerified AS owner_isVerified, u.active_profile_badge AS owner_activeProfileBadge
+			FROM projects p
+			INNER JOIN users u ON u.id = p.user_id
+			WHERE p.slug = ?
+			LIMIT 1 FOR UPDATE`,
+			[req.params.slug]
+		);
+		if(!project) {
+			await connection.rollback();
+			return res.status(404).json({ code: "PROJECT_NOT_FOUND", message: "Project not found" });
+		}
+		if(Number(project.user_id) !== Number(req.user.id)) {
+			await connection.rollback();
+			return res.status(403).json({ code: "OWNER_ONLY", message: "Only the project owner can transfer ownership" });
+		}
+		if(targetUserId === Number(project.user_id)) {
+			await connection.rollback();
+			return res.status(400).json({ code: "INVALID_TARGET", message: "The current owner cannot be selected" });
+		}
+
+		const [[target]] = await connection.query(
+			`SELECT
+				pm.id AS member_id, pm.user_id, pm.status,
+				u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
+			FROM project_members pm
+			INNER JOIN users u ON u.id = pm.user_id
+			WHERE pm.project_id = ? AND pm.user_id = ?
+			LIMIT 1 FOR UPDATE`,
+			[project.id, targetUserId]
+		);
+		if(!target || !["accept", "accepted"].includes(target.status)) {
+			await connection.rollback();
+			return res.status(400).json({ code: "TARGET_NOT_ACCEPTED", message: "The new owner must be an accepted project collaborator" });
+		}
+
+		const targetHandle = String(target.slug || target.username || "");
+		if(!targetHandle || confirmation !== targetHandle) {
+			await connection.rollback();
+			return res.status(400).json({ code: "CONFIRMATION_MISMATCH", message: "Confirmation does not match the new owner" });
+		}
+
+		const twoFactorRow = await getTwoFactorRow(req.user.id, connection);
+		const twoFactorEnabled = isTwoFactorEnabled(twoFactorRow);
+		if(twoFactorEnabled && !twoFactorCode) {
+			await connection.rollback();
+			return res.status(400).json({ code: "TWO_FACTOR_REQUIRED", message: "Two-factor authentication code is required" });
+		}
+		if(twoFactorEnabled && !verifyTwoFactorCode(twoFactorRow, twoFactorCode)) {
+			await connection.rollback();
+			return res.status(400).json({ code: "INVALID_TWO_FACTOR_CODE", message: "Invalid two-factor authentication code" });
+		}
+
+		const now = Math.floor(Date.now() / 1000);
+		await connection.query(
+			"DELETE FROM project_members WHERE project_id = ? AND user_id = ?",
+			[project.id, target.user_id]
+		);
+		const [projectUpdate] = await connection.query(
+			`UPDATE projects
+			SET user_id = ?, owner_role = 'Owner', show_owner_as_author = 1, updated_at = NOW()
+			WHERE id = ? AND user_id = ?`,
+			[target.user_id, project.id, project.user_id]
+		);
+		if(!projectUpdate.affectedRows) {
+			await connection.rollback();
+			return res.status(409).json({ code: "OWNERSHIP_CHANGED", message: "Project ownership changed before the transfer completed" });
+		}
+		await connection.query(
+			`INSERT INTO project_members
+			(project_id, user_id, role, status, show_as_author, permissions, invited_by_user_id, created_at, updated_at)
+			VALUES (?, ?, 'Maintainer', 'accepted', ?, ?, NULL, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			role = 'Maintainer', status = 'accepted', show_as_author = VALUES(show_as_author),
+			permissions = VALUES(permissions), invited_by_user_id = NULL, updated_at = VALUES(updated_at)`,
+			[
+				project.id,
+				project.user_id,
+				normalizeBoolean(project.show_owner_as_author) ? 1 : 0,
+				JSON.stringify(PROJECT_COLLABORATOR_PERMISSIONS),
+				now,
+				now,
+			]
+		);
+		await connection.query(
+			`DELETE FROM notification_events
+			WHERE recipient_user_id = ? AND event_type = 'project_collaboration_invite'
+			AND object_type = 'project' AND object_id = ?`,
+			[target.user_id, project.id]
+		);
+		if(twoFactorEnabled) {
+			await connection.query(
+				"UPDATE user_two_factor SET last_used_at = ? WHERE user_id = ?",
+				[Date.now(), req.user.id]
+			);
+		}
+		await connection.commit();
+
+		try {
+			await bumpProjectCacheVersion(project.slug);
+		} catch (cacheError) {
+			console.warn("Failed to invalidate project cache after ownership transfer:", cacheError.message);
+		}
+		return res.json({
+			success: true,
+			project: {
+				id: project.id,
+				slug: project.slug,
+				title: project.title,
+				project_type: project.project_type,
+				user_id: target.user_id,
+			},
+			owner: {
+				user_id: target.user_id,
+				username: target.username,
+				slug: target.slug,
+				avatar: target.avatar,
+				isVerified: Number(target.isVerified || 0),
+				activeProfileBadge: target.activeProfileBadge,
+				role: "Owner",
+				show_as_author: true,
+				status: "owner",
+			},
+			former_owner: {
+				user_id: project.user_id,
+				username: project.owner_username,
+				slug: project.owner_slug,
+				avatar: project.owner_avatar,
+				isVerified: Number(project.owner_isVerified || 0),
+				activeProfileBadge: project.owner_activeProfileBadge,
+				role: "Maintainer",
+				status: "accepted",
+				show_as_author: Boolean(project.show_owner_as_author),
+				permissions: [...PROJECT_COLLABORATOR_PERMISSIONS],
+				created_at: now,
+				updated_at: now,
+			},
+		});
+	} catch (error) {
+		await connection.rollback();
+		console.error("Error transferring project ownership:", error);
+		return res.status(500).json({ code: "OWNERSHIP_TRANSFER_FAILED", message: "Error transferring project ownership" });
+	} finally {
+		connection.release();
+	}
+};
+
 const removeProjectCollaborator = async (req, res) => {
 	try {
 		const management = await getProjectCollaboratorManagementAccess(req.params.slug, req.user.id);
@@ -3383,7 +3552,7 @@ router.get("/:slug/collaborators", auth, async (req, res) => {
 		}
 		const { project, access, isOwner, canManageInvites, canEditMembers, canRemoveMembers } = management;
 
-		const [collaboratorRowsResult, organizationSettings] = await Promise.all([
+		const [collaboratorRowsResult, organizationSettings, twoFactorRow] = await Promise.all([
 				db.query(
 				`SELECT
 				pm.id AS invitation_id, pm.user_id, pm.role, pm.status, pm.show_as_author, pm.permissions, pm.created_at, pm.updated_at,
@@ -3395,6 +3564,7 @@ router.get("/:slug/collaborators", auth, async (req, res) => {
 				[project.id, project.user_id]
 			),
 			isOwner ? getProjectOrganizationSettings({ projectId: project.id, userId: req.user.id }) : Promise.resolve({ organization: null, organizationOptions: [] }),
+			isOwner ? getTwoFactorRow(req.user.id) : Promise.resolve(null),
 		]);
 		const rows = collaboratorRowsResult[0];
 
@@ -3427,6 +3597,9 @@ router.get("/:slug/collaborators", auth, async (req, res) => {
 				status: "owner",
 			},
 			organization_options: organizationSettings.organizationOptions,
+			security: {
+				two_factor_enabled: isOwner && isTwoFactorEnabled(twoFactorRow),
+			},
 			available_permissions: isOwner ? PROJECT_COLLABORATOR_PERMISSIONS : PROJECT_COLLABORATOR_PERMISSIONS.filter((permission) => hasProjectPermission(access, permission)),
 			default_permissions: DEFAULT_PROJECT_COLLABORATOR_PERMISSIONS,
 			collaborators: rows.map((member) => ({
@@ -3448,6 +3621,7 @@ router.get("/:slug/collaborators", auth, async (req, res) => {
 router.post("/:slug/collaborators/invitations", auth, inviteProjectCollaborator);
 router.post("/:slug/members", auth, inviteProjectCollaborator);
 router.patch("/:slug/owner-attribution", auth, updateProjectOwnerAttribution);
+router.post("/:slug/transfer-ownership", auth, transferProjectOwnership);
 router.patch("/:slug/collaborators/:userId", auth, updateProjectCollaborator);
 router.put("/:slug/members/:userId", auth, updateProjectCollaborator);
 router.delete("/:slug/collaborators/:userId", auth, removeProjectCollaborator);
@@ -5525,6 +5699,10 @@ router.put("/:slug/organization", auth, async (req, res) => {
             }
 
             await db.query("DELETE FROM organization_projects WHERE project_id = ?", [project.id]);
+			await db.query(
+				"DELETE FROM organization_member_project_overrides WHERE organization_id = ? AND project_id = ?",
+				[current.organization_id, project.id]
+			);
             await logOrganizationAudit(db, {
                 organizationId: current.organization_id,
                 actorUserId: req.user.id,
@@ -5583,6 +5761,28 @@ router.put("/:slug/organization", auth, async (req, res) => {
             created_at = VALUES(created_at)`,
             [targetOrganization.id, project.id, req.user.id, now]
         );
+		await db.query(
+			"DELETE FROM organization_member_project_overrides WHERE project_id = ? AND organization_id <> ?",
+			[project.id, targetOrganization.id]
+		);
+		await db.query(
+			`INSERT INTO organization_member_project_overrides
+			(organization_id, user_id, project_id, role, project_permissions, created_at, updated_at)
+			SELECT om.organization_id, om.user_id, ?, NULL, ?, ?, ?
+			FROM organization_members om
+			INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = om.organization_id COLLATE utf8mb4_unicode_ci
+			WHERE om.organization_id = ?
+			AND om.status = 'accepted'
+			AND om.user_id <> o.owner_user_id
+			ON DUPLICATE KEY UPDATE updated_at = VALUES(updated_at)`,
+			[
+				project.id,
+				JSON.stringify(DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS),
+				now,
+				now,
+				targetOrganization.id,
+			]
+		);
 
         await logOrganizationAudit(db, {
             organizationId: targetOrganization.id,

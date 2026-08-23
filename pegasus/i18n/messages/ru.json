@@ -925,6 +925,31 @@
         "generic": "Не удалось начать привязку Hytale"
       }
     },
+    "authProviders": {
+      "title": "Способы входа",
+      "description": "Подключайте аккаунты, через которые можно входить в Modifold.",
+      "connected": "Подключён",
+      "connectedAt": "Подключён {date}",
+      "notConnected": "Не подключён",
+      "onlyLoginMethod": "Это единственный способ входа",
+      "loading": "Загрузка...",
+      "connect": "Привязать",
+      "connecting": "Открываем...",
+      "disconnect": "Отвязать",
+      "disconnecting": "Отвязываем...",
+      "confirm": {
+        "title": "Отвязать {provider}?",
+        "description": "Войти через {provider} больше не получится. Позже аккаунт можно привязать снова.",
+        "cancel": "Отмена"
+      },
+      "errors": {
+        "load": "Не удалось загрузить способы входа",
+        "generic": "Не удалось изменить способ входа",
+        "lastLoginMethod": "Сначала привяжите другой способ входа",
+        "alreadyConnected": "Этот аккаунт уже привязан",
+        "notConnected": "Этот аккаунт уже отвязан"
+      }
+    },
     "passwordChange": {
       "title": "Смена пароля",
       "description": "Введите текущий пароль и новый пароль для входа через почту.",
@@ -1828,6 +1853,25 @@
         "cancel": "Отмена"
       }
     },
+    "transfer": {
+      "cardAction": "Передать владение",
+      "title": "Передать владение",
+      "close": "Закрыть",
+      "reviewDescription": "Владение проектом «{project}» перейдёт выбранному участнику.",
+      "becomesOwner": "Станет владельцем",
+      "becomesMaintainer": "Останется участником",
+      "noticeTitle": "Новый владелец получит полный контроль",
+      "noticeDescription": "Вы не сможете отменить это самостоятельно. Передать владение обратно сможет только новый владелец.",
+      "cancel": "Отмена",
+      "continue": "Продолжить",
+      "verifyDescription": "Подтвердите передачу, чтобы защитить проект от случайной или чужой смены владельца.",
+      "confirmationLabel": "Введите {handle} для подтверждения",
+      "confirmationHint": "Имя должно совпадать полностью.",
+      "twoFactorLabel": "Код двухфакторной аутентификации",
+      "back": "Назад",
+      "confirm": "Передать владение",
+      "transferring": "Передаём..."
+    },
     "actions": {
       "invite": "Пригласить",
       "inviting": "Приглашаем...",
@@ -1850,14 +1894,21 @@
       "invitedMany": "{count, plural, one {Отправлено # приглашение} few {Отправлено # приглашения} many {Отправлено # приглашений} other {Отправлено # приглашения}}",
 	  "permissionsSaved": "Настройки участника сохранены",
       "removed": "У пользователя {username} больше нет доступа",
-      "invitationCancelled": "Приглашение для {username} отменено"
+      "invitationCancelled": "Приглашение для {username} отменено",
+      "ownershipTransferred": "Владение проектом передано пользователю {username}"
     },
     "errors": {
       "search": "Не удалось найти пользователей",
       "invite": "Не удалось отправить приглашение",
       "inviteMany": "{count, plural, one {Не удалось пригласить # пользователя} few {Не удалось пригласить # пользователей} many {Не удалось пригласить # пользователей} other {Не удалось пригласить # пользователя}}",
 	  "save": "Не удалось сохранить настройки участника",
-      "remove": "Не удалось удалить участника"
+      "remove": "Не удалось удалить участника",
+      "transfer": "Не удалось передать владение проектом",
+      "transferConfirmation": "Подтверждение не совпадает с выбранным участником",
+      "transferTwoFactorRequired": "Введите код двухфакторной аутентификации",
+      "transferTwoFactorInvalid": "Неверный код двухфакторной аутентификации",
+      "transferTarget": "Владельцем может стать только принятый участник",
+      "transferChanged": "Владелец проекта уже изменился. Обновите страницу и повторите попытку"
     }
   },
   "NewsPage": {
@@ -2269,8 +2320,7 @@
       "organizationFallback": "организацию",
       "organizationInviteTail": "пригласил(а) вас в",
       "organizationRemovedTail": "удалил(а) вас из",
-      "projectCollaborationInvitePrefix": "Пользователь",
-      "projectCollaborationInviteTail": "пригласил(а) вас участвовать в проекте"
+      "projectCollaborationInviteTail": "приглашает вас присоединиться к проекту"
     },
     "errors": {
       "fetch": "Не удалось загрузить уведомления",
@@ -2502,10 +2552,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Организации",
+	  "description": "Управляйте организациями, участниками и доступом к проектам.",
       "create": "Создать организацию",
       "empty": "Вы пока не состоите ни в одной организации.",
       "noSummary": "Нет описания",
-      "members": "{count, plural, one {# участник} few {# участника} many {# участников} other {# участника}}"
+	  "members": "{count, plural, one {# участник} few {# участника} many {# участников} other {# участника}}",
+	  "projects": "{count, plural, one {# проект} few {# проекта} many {# проектов} other {# проекта}}",
+	  "settings": "Настройки",
+	  "open": "Открыть организацию «{organization}»",
+	  "iconAlt": "Иконка организации {organization}"
     },
     "create": {
       "title": "Создание организации",
@@ -2554,9 +2609,49 @@
       "navMembers": "Участники",
       "navProjects": "Проекты",
       "inviteTitle": "Пригласить участника",
-      "invitePlaceholder": "Slug пользователя",
-      "projectPermissions": "Права проекта",
+      "inviteDescription": "Приглашённые пользователи получат уведомление и после принятия смогут работать с проектами организации в пределах выданных вами прав.",
+      "inviteHint": "Найдите пользователей по никнейму или slug профиля и выберите всех, кого хотите пригласить.",
+      "invitePlaceholder": "Поиск пользователей",
+      "inviteSelectedLabel": "Выбранные пользователи",
+      "inviteRemoveSelection": "Убрать {username} из приглашения",
+      "inviteResultsLabel": "Результаты поиска пользователей",
+      "inviteSearching": "Поиск...",
+      "inviteNoResults": "Пользователи не найдены",
+      "memberRole": {
+        "title": "Роль для отображения",
+        "description": "Отображается рядом с участником и не влияет на его права.",
+        "placeholder": "Например, разработчик или дизайнер"
+      },
+      "projectAccess": {
+        "title": "Доступ к проектам",
+        "description": "Выберите проекты, с которыми сможет работать участник. Для каждого проекта можно настроить отдельные права.",
+        "accessGranted": "Доступ разрешён",
+        "directAccessHint": "Участник добавлен в команды некоторых проектов. Убрать доступ к ним можно в настройках команды проекта.",
+        "noAccess": "Нет доступа",
+        "configure": "Права",
+        "configureProject": "Настроить права проекта «{project}»",
+        "configureAccess": "Настроить",
+        "grantAccess": "Открыть доступ к проекту «{project}»",
+        "revokeAccess": "Закрыть доступ к проекту «{project}»",
+        "manageModalTitle": "Доступ к проектам",
+        "back": "Назад к проектам",
+        "modalTitle": "Права проекта",
+        "modalDescription": "Выберите, что участник сможет делать в этом проекте.",
+        "permissionGroups": {
+          "versions": "Версии",
+          "content": "Страница проекта",
+          "team": "Команда",
+          "analytics": "Аналитика",
+          "danger": "Опасные действия"
+        },
+        "empty": "В организации пока нет проектов.",
+        "cancel": "Отмена",
+        "save": "Сохранить",
+        "saving": "Сохраняем...",
+        "saved": "Доступ к проектам сохранён"
+      },
       "organizationPermissions": "Права организации",
+      "organizationPermissionsDescription": "Определяют, что участник сможет менять в самой организации.",
       "publicPage": "Публичная страница",
       "iconAlt": "Иконка организации {name}",
       "fields": {
@@ -2592,15 +2687,46 @@
         "openProjectSettings": "Настройки проекта",
         "detachProject": "Открепить проект",
         "detachingProject": "Открепление...",
+        "moreProjectActions": "Другие действия с проектом «{title}»",
         "saveMember": "Сохранить изменения",
+        "cancelInvite": "Отменить",
+        "cancellingInvite": "Отменяем...",
         "removeMember": "Удалить участника",
         "removingMember": "Удаление..."
       },
       "status": {
         "accepted": "Принят",
-        "pending": "Ожидание",
+        "pending": "Ожидает ответа",
         "invited": "Приглашен",
         "declined": "Отклонен"
+      },
+      "transfer": {
+        "cardAction": "Передать владение",
+        "title": "Передать организацию",
+        "close": "Закрыть",
+        "reviewDescription": "Владение организацией «{organization}» перейдёт выбранному участнику.",
+        "becomesOwner": "Станет владельцем",
+        "becomesMaintainer": "Останется участником",
+        "noticeTitle": "Новый владелец получит полный контроль",
+        "noticeDescription": "Вы не сможете отменить это самостоятельно. Передать владение обратно сможет только новый владелец.",
+        "cancel": "Отмена",
+        "continue": "Продолжить",
+        "verifyDescription": "Подтвердите передачу, чтобы защитить организацию от случайной или чужой смены владельца.",
+        "confirmationLabel": "Введите {handle} для подтверждения",
+        "confirmationHint": "Имя должно совпадать полностью.",
+        "twoFactorLabel": "Код двухфакторной аутентификации",
+        "back": "Назад",
+        "confirm": "Передать организацию",
+        "transferring": "Передаём...",
+        "success": "Владение организацией передано пользователю {username}",
+        "errors": {
+          "generic": "Не удалось передать владение организацией",
+          "confirmation": "Подтверждение не совпадает с выбранным участником",
+          "twoFactorRequired": "Введите код двухфакторной аутентификации",
+          "twoFactorInvalid": "Неверный код двухфакторной аутентификации",
+          "target": "Владельцем может стать только принятый участник",
+          "changed": "Владелец организации уже изменился. Обновите страницу и повторите попытку"
+        }
       },
       "delete": {
         "title": "Удаление организации",
@@ -2617,19 +2743,25 @@
       },
       "successSaved": "Организация сохранена",
       "successIconUploaded": "Иконка организации загружена",
-      "successInviteSent": "Приглашение отправлено",
+      "successInviteSent": "Приглашение для {username} отправлено",
+      "successInvitesSent": "{count, plural, one {Отправлено # приглашение} few {Отправлено # приглашения} many {Отправлено # приглашений} other {Отправлено # приглашения}}",
+      "successInviteCancelled": "Приглашение для {username} отменено",
       "successMemberUpdated": "Обновлен участник {username}",
       "successMemberRemoved": "Участник {username} удалён",
       "successProjectDetached": "Проект {title} откреплен",
       "confirmDetachProject": "Открепить проект {title} от организации?",
       "confirmRemoveMember": "Удалить участника {username} из организации?",
+      "removeMemberDirectAccess": "Участник продолжит иметь доступ к проектам, в командах которых состоит напрямую.",
       "emptyProjects": "К этой организации пока не привязано ни одного проекта.",
       "errors": {
         "save": "Не удалось сохранить организацию",
         "iconUpload": "Не удалось загрузить иконку организации",
         "invite": "Не удалось пригласить пользователя",
-        "inviteSlugRequired": "Введите slug пользователя",
+        "inviteMany": "{count, plural, one {Не удалось пригласить # пользователя} few {Не удалось пригласить # пользователей} many {Не удалось пригласить # пользователей} other {Не удалось пригласить # пользователя}}",
+        "cancelInvite": "Не удалось отменить приглашение",
+        "searchUsers": "Не удалось найти пользователей",
         "memberUpdate": "Не удалось обновить участника",
+        "projectAccess": "Не удалось сохранить доступ к проектам",
         "memberRemove": "Не удалось удалить участника",
         "projectDetach": "Не удалось открепить проект",
         "fileTooLarge": "Файл слишком большой. Максимальный размер 20 МБ"
@@ -2671,10 +2803,10 @@
       },
       "organization": {
         "organization_edit_details": "Редактировать организацию",
-        "organization_manage_invites": "Управлять приглашениями",
-        "organization_manage_members": "Управлять участниками",
-        "organization_add_project": "Добавлять проекты",
-        "organization_remove_project": "Удалять проекты"
+        "organization_manage_invites": "Приглашать участников",
+        "organization_manage_members": "Настраивать участников",
+        "organization_add_project": "Добавлять проекты в организацию",
+        "organization_remove_project": "Откреплять проекты от организации"
       }
     }
   },

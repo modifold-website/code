@@ -925,6 +925,31 @@
         "generic": "Hytale bağlama başlatılamadı"
       }
     },
+    "authProviders": {
+      "title": "Giriş yöntemleri",
+      "description": "Modifold'a giriş yapmak için kullanabileceğiniz hesapları bağlayın.",
+      "connected": "Bağlı",
+      "connectedAt": "{date} tarihinde bağlandı",
+      "notConnected": "Bağlı değil",
+      "onlyLoginMethod": "Bu tek giriş yönteminiz",
+      "loading": "Yükleniyor...",
+      "connect": "Bağla",
+      "connecting": "Açılıyor...",
+      "disconnect": "Bağlantıyı kes",
+      "disconnecting": "Bağlantı kesiliyor...",
+      "confirm": {
+        "title": "{provider} bağlantısı kesilsin mi?",
+        "description": "Artık {provider} ile giriş yapamazsınız. Hesabı daha sonra tekrar bağlayabilirsiniz.",
+        "cancel": "İptal"
+      },
+      "errors": {
+        "load": "Giriş yöntemleri yüklenemedi",
+        "generic": "Giriş yöntemi güncellenemedi",
+        "lastLoginMethod": "Önce başka bir giriş yöntemi bağlayın",
+        "alreadyConnected": "Bu hesap zaten bağlı",
+        "notConnected": "Bu hesabın bağlantısı zaten kesilmiş"
+      }
+    },
     "passwordChange": {
       "title": "Parolayı değiştir",
       "description": "E-posta ile giriş için mevcut parolanızı ve yeni parolanızı girin.",
@@ -1733,6 +1758,25 @@
         "cancel": "İptal"
       }
     },
+    "transfer": {
+      "cardAction": "Sahipliği devret",
+      "title": "Sahipliği devret",
+      "close": "Kapat",
+      "reviewDescription": "{project} projesinin sahipliği seçilen ekip üyesine devredilecek.",
+      "becomesOwner": "Proje sahibi olur",
+      "becomesMaintainer": "Üye olarak kalır",
+      "noticeTitle": "Yeni proje sahibi tam kontrol kazanır",
+      "noticeDescription": "Bunu kendiniz geri alamazsınız. Sahipliği yeniden yalnızca yeni proje sahibi devredebilir.",
+      "cancel": "İptal",
+      "continue": "Devam et",
+      "verifyDescription": "Projeyi yanlışlıkla veya yetkisiz bir sahiplik değişikliğinden korumak için devri onaylayın.",
+      "confirmationLabel": "Onaylamak için {handle} yazın",
+      "confirmationHint": "Kullanıcı adı tam olarak eşleşmelidir.",
+      "twoFactorLabel": "İki faktörlü kimlik doğrulama kodu",
+      "back": "Geri",
+      "confirm": "Sahipliği devret",
+      "transferring": "Devrediliyor..."
+    },
     "actions": {
       "invite": "Davet et",
       "inviting": "Davet ediliyor...",
@@ -1755,14 +1799,21 @@
       "invitedMany": "{count} davet gönderildi",
 	  "permissionsSaved": "Katılımcı ayarları kaydedildi",
       "removed": "{username} no longer has access",
-      "invitationCancelled": "Invitation for {username} cancelled"
+      "invitationCancelled": "Invitation for {username} cancelled",
+      "ownershipTransferred": "Proje sahipliği {username} kullanıcısına devredildi"
     },
     "errors": {
       "search": "Could not search users",
       "invite": "Could not send the invitation",
       "inviteMany": "{count} kullanıcı davet edilemedi",
 	  "save": "Katılımcı ayarları kaydedilemedi",
-      "remove": "Could not remove the collaborator"
+      "remove": "Could not remove the collaborator",
+      "transfer": "Proje sahipliği devredilemedi",
+      "transferConfirmation": "Onay, seçilen katılımcıyla eşleşmiyor",
+      "transferTwoFactorRequired": "İki faktörlü kimlik doğrulama kodunu girin",
+      "transferTwoFactorInvalid": "İki faktörlü kimlik doğrulama kodu geçersiz",
+      "transferTarget": "Yalnızca kabul edilmiş bir katılımcı proje sahibi olabilir",
+      "transferChanged": "Proje sahibi değişti. Sayfayı yenileyip tekrar deneyin"
     }
   },
   "NewsPage": {
@@ -2174,8 +2225,7 @@
       "organizationFallback": "organizasyon",
       "organizationInviteTail": "seni şuraya davet etti",
       "organizationRemovedTail": "seni şuradan çıkardı",
-      "projectCollaborationInvitePrefix": "Kullanıcı",
-      "projectCollaborationInviteTail": "seni şu projede iş birliğine davet etti:"
+      "projectCollaborationInviteTail": "seni projeye davet ediyor:"
     },
     "errors": {
       "fetch": "Bildirimler yüklenemedi",
@@ -2407,10 +2457,15 @@
   "Organizations": {
     "dashboard": {
       "title": "Organizasyonlar",
+	  "description": "Organizasyonlarınızı, üyeleri ve proje erişimini yönetin.",
       "create": "Organizasyon oluştur",
       "empty": "Henüz hiçbir organizasyona üye değilsin.",
       "noSummary": "Özet yok",
-      "members": "{count, plural, one {# üye} other {# üye}}"
+	  "members": "{count, plural, one {# üye} other {# üye}}",
+	  "projects": "{count, plural, one {# proje} other {# proje}}",
+	  "settings": "Ayarlar",
+	  "open": "{organization} organizasyonunu aç",
+	  "iconAlt": "{organization} organizasyonunun simgesi"
     },
     "create": {
       "title": "Organizasyon oluşturma",
@@ -2459,9 +2514,49 @@
       "navMembers": "Üyeler",
       "navProjects": "Projeler",
       "inviteTitle": "Üye davet et",
-      "invitePlaceholder": "Kullanıcı slug'ı",
-      "projectPermissions": "Proje izinleri",
+      "inviteDescription": "Davet edilen kullanıcılar bildirim alır ve kabul ettikten sonra verdiğiniz izinler kapsamında kuruluş projelerinde çalışabilir.",
+      "inviteHint": "Kullanıcı adı veya profil slug'ı ile arayın ve davet etmek istediğiniz herkesi seçin.",
+      "invitePlaceholder": "Kullanıcı ara",
+      "inviteSelectedLabel": "Seçilen kullanıcılar",
+      "inviteRemoveSelection": "{username} kullanıcısını davetten çıkar",
+      "inviteResultsLabel": "Kullanıcı arama sonuçları",
+      "inviteSearching": "Aranıyor...",
+      "inviteNoResults": "Kullanıcı bulunamadı",
+      "memberRole": {
+        "title": "Görünen rol",
+        "description": "Üyenin yanında görünür ve izinlerini etkilemez.",
+        "placeholder": "Örneğin, geliştirici veya tasarımcı"
+      },
+      "projectAccess": {
+        "title": "Proje erişimi",
+        "description": "Bu üyenin erişebileceği projeleri seçin. Her proje için özel izinler yapılandırabilirsiniz.",
+        "accessGranted": "Erişim verildi",
+        "directAccessHint": "Bu üye bazı proje ekiplerinde yer alıyor. Bu erişimi kaldırmak için üyeyi proje ekibinden çıkarın.",
+        "noAccess": "Erişim yok",
+        "configure": "İzinler",
+        "configureProject": "{project} izinlerini yapılandır",
+        "configureAccess": "Yapılandır",
+        "grantAccess": "{project} projesine erişim ver",
+        "revokeAccess": "{project} projesinin erişimini kaldır",
+        "manageModalTitle": "Proje erişimi",
+        "back": "Projelere dön",
+        "modalTitle": "Proje izinleri",
+        "modalDescription": "Bu üyenin bu projede neler yapabileceğini seçin.",
+        "permissionGroups": {
+          "versions": "Sürümler",
+          "content": "Proje sayfası",
+          "team": "Ekip",
+          "analytics": "Analitik",
+          "danger": "Tehlikeli işlemler"
+        },
+        "empty": "Bu organizasyonda henüz proje yok.",
+        "cancel": "İptal",
+        "save": "Kaydet",
+        "saving": "Kaydediliyor...",
+        "saved": "Proje erişimi kaydedildi"
+      },
       "organizationPermissions": "Organizasyon izinleri",
+      "organizationPermissionsDescription": "Üyenin organizasyonun kendisinde neleri değiştirebileceğini belirler.",
       "publicPage": "Herkese açık sayfa",
       "iconAlt": "Organizasyon simgesi {name}",
       "fields": {
@@ -2497,15 +2592,46 @@
         "openProjectSettings": "Proje ayarları",
         "detachProject": "Projeyi ayır",
         "detachingProject": "Ayrılıyor...",
+        "moreProjectActions": "“{title}” projesi için diğer işlemler",
         "saveMember": "Değişiklikleri kaydet",
+        "cancelInvite": "İptal et",
+        "cancellingInvite": "İptal ediliyor...",
         "removeMember": "Üyeyi kaldır",
         "removingMember": "Kaldırılıyor..."
       },
       "status": {
         "accepted": "Kabul edildi",
-        "pending": "Beklemede",
+        "pending": "Yanıt bekleniyor",
         "invited": "Davet edildi",
         "declined": "Reddedildi"
+      },
+      "transfer": {
+        "cardAction": "Sahipliği devret",
+        "title": "Organizasyonu devret",
+        "close": "Kapat",
+        "reviewDescription": "{organization} organizasyonunun sahipliği seçilen üyeye devredilecek.",
+        "becomesOwner": "Organizasyon sahibi olur",
+        "becomesMaintainer": "Üye olarak kalır",
+        "noticeTitle": "Yeni organizasyon sahibi tam kontrol kazanır",
+        "noticeDescription": "Bunu kendiniz geri alamazsınız. Sahipliği yeniden yalnızca yeni organizasyon sahibi devredebilir.",
+        "cancel": "İptal",
+        "continue": "Devam et",
+        "verifyDescription": "Organizasyonu yanlışlıkla veya yetkisiz bir sahiplik değişikliğinden korumak için devri onaylayın.",
+        "confirmationLabel": "Onaylamak için {handle} yazın",
+        "confirmationHint": "Kullanıcı adı tam olarak eşleşmelidir.",
+        "twoFactorLabel": "İki faktörlü kimlik doğrulama kodu",
+        "back": "Geri",
+        "confirm": "Organizasyonu devret",
+        "transferring": "Devrediliyor...",
+        "success": "Organizasyon sahipliği {username} kullanıcısına devredildi",
+        "errors": {
+          "generic": "Organizasyon sahipliği devredilemedi",
+          "confirmation": "Onay seçilen üyeyle eşleşmiyor",
+          "twoFactorRequired": "İki faktörlü kimlik doğrulama kodunu girin",
+          "twoFactorInvalid": "İki faktörlü kimlik doğrulama kodu geçersiz",
+          "target": "Yalnızca kabul edilmiş bir üye organizasyon sahibi olabilir",
+          "changed": "Organizasyon sahibi zaten değişti. Sayfayı yenileyip tekrar deneyin"
+        }
       },
       "delete": {
         "title": "Organizasyonu sil",
@@ -2522,19 +2648,25 @@
       },
       "successSaved": "Organizasyon kaydedildi",
       "successIconUploaded": "Organizasyon simgesi yüklendi",
-      "successInviteSent": "Davet gönderildi",
+      "successInviteSent": "{username} kullanıcısına davet gönderildi",
+      "successInvitesSent": "{count} davet gönderildi",
+      "successInviteCancelled": "{username} için davet iptal edildi",
       "successMemberUpdated": "{username} güncellendi",
       "successMemberRemoved": "{username} kaldırıldı",
       "successProjectDetached": "{title} projesi ayrıldı",
       "confirmDetachProject": "{title} projesi organizasyondan ayrılsın mı?",
       "confirmRemoveMember": "{username} organizasyondan kaldırılsın mı?",
+      "removeMemberDirectAccess": "Üye, doğrudan katıldığı proje ekiplerindeki erişimini korur.",
       "emptyProjects": "Bu organizasyona henüz proje bağlı değil.",
       "errors": {
         "save": "Organizasyon kaydedilemedi",
         "iconUpload": "Organizasyon simgesi yüklenemedi",
         "invite": "Kullanıcı davet edilemedi",
-        "inviteSlugRequired": "Kullanıcı slug'ını girin",
+        "inviteMany": "{count} kullanıcı davet edilemedi",
+        "cancelInvite": "Davet iptal edilemedi",
+        "searchUsers": "Kullanıcılar aranamadı",
         "memberUpdate": "Üye güncellenemedi",
+        "projectAccess": "Proje erişimi kaydedilemedi",
         "memberRemove": "Üye kaldırılamadı",
         "projectDetach": "Proje ayrılamadı",
         "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB"
@@ -2575,11 +2707,11 @@
         "project_delete": "Projeyi sil"
       },
       "organization": {
-        "organization_edit_details": "Detayları düzenle",
-        "organization_manage_invites": "Davetleri yönet",
-        "organization_manage_members": "Üyeleri yönet",
-        "organization_add_project": "Proje ekle",
-        "organization_remove_project": "Projeyi kaldır"
+        "organization_edit_details": "Organizasyonu düzenle",
+        "organization_manage_invites": "Üye davet et",
+        "organization_manage_members": "Üyeleri yapılandır",
+        "organization_add_project": "Organizasyona proje ekle",
+        "organization_remove_project": "Projeleri organizasyondan ayır"
       }
     }
   },

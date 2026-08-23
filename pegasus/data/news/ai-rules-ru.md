@@ -5,7 +5,7 @@ author: ["bogdan"]
 date: 2026-08-13
 slug: /blog/ai-rules
 image: https://media.modifold.com/news/new_ai_content_rules.png
-featured: true
+featured: false
 locale: ru
 ---
 
