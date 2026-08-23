@@ -1357,6 +1357,35 @@
       "preview": "Önizleme",
       "actions": {
         "save": "Kaydet"
+      },
+      "imageModal": {
+        "title": "Görsel ekle",
+        "close": "Görsel penceresini kapat",
+        "required": "*",
+        "altLabel": "Açıklama (alternatif metin)",
+        "altHelp": "Görseli göremeyen kişiler için açıklayın.",
+        "altPlaceholder": "Görseli açıklayın...",
+        "urlLabel": "Görsel kaynağı",
+        "sourceLabel": "Görsel kaynağını seçin",
+        "upload": "Yükle",
+        "link": "Bağlantı",
+        "dropzoneTitle": "Bir görsel sürükleyin veya dosya seçmek için tıklayın",
+        "dropzoneHint": "En fazla 10 MB PNG, JPG, GIF veya WebP",
+        "dropzoneReplace": "Değiştirmek için tıklayın veya başka bir görsel sürükleyin",
+        "uploading": "Görsel yükleniyor...",
+        "linkPlaceholder": "Görsel URL’sini girin...",
+        "preview": "Önizleme",
+        "previewEmpty": "Görsel önizlemesi burada görünecek",
+        "previewLoading": "Önizleme yükleniyor...",
+        "cancel": "İptal",
+        "insert": "Ekle",
+        "errors": {
+          "invalidType": "PNG, JPG, GIF veya WebP görsel seçin.",
+          "fileTooLarge": "Görsel en fazla 10 MB olabilir.",
+          "upload": "Görsel yüklenemedi. Tekrar deneyin.",
+          "invalidUrl": "Geçerli bir HTTP veya HTTPS görsel URL’si girin.",
+          "preview": "Görsel bu URL’den yüklenemedi."
+        }
       }
     },
     "links": {

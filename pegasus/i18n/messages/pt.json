@@ -1357,6 +1357,35 @@
       "preview": "Prévia",
       "actions": {
         "save": "Salvar"
+      },
+      "imageModal": {
+        "title": "Inserir imagem",
+        "close": "Fechar diálogo de imagem",
+        "required": "*",
+        "altLabel": "Descrição (texto alternativo)",
+        "altHelp": "Descreva a imagem para pessoas que não podem vê-la.",
+        "altPlaceholder": "Descreva a imagem...",
+        "urlLabel": "Origem da imagem",
+        "sourceLabel": "Escolher origem da imagem",
+        "upload": "Enviar",
+        "link": "Link",
+        "dropzoneTitle": "Arraste uma imagem ou clique para escolher um arquivo",
+        "dropzoneHint": "PNG, JPG, GIF ou WebP de até 10 MB",
+        "dropzoneReplace": "Clique ou arraste outra imagem para substituir",
+        "uploading": "Enviando imagem...",
+        "linkPlaceholder": "Insira a URL da imagem...",
+        "preview": "Prévia",
+        "previewEmpty": "A prévia da imagem aparecerá aqui",
+        "previewLoading": "Carregando prévia...",
+        "cancel": "Cancelar",
+        "insert": "Inserir",
+        "errors": {
+          "invalidType": "Escolha uma imagem PNG, JPG, GIF ou WebP.",
+          "fileTooLarge": "A imagem deve ter no máximo 10 MB.",
+          "upload": "Não foi possível enviar a imagem. Tente novamente.",
+          "invalidUrl": "Insira uma URL de imagem HTTP ou HTTPS válida.",
+          "preview": "Não foi possível carregar a imagem desta URL."
+        }
       }
     },
     "links": {

@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import Tooltip from "@/components/ui/Tooltip";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
+import MarkdownImageModal from "@/modal/MarkdownImageModal";
 import { prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
 import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
 
@@ -24,12 +25,15 @@ function MarkdownToolbarButton({ label, onClick, disabled, children }) {
 
 export default function DescriptionSettings({ project, authToken }) {
     const t = useTranslations("SettingsProjectPage");
+    const tImage = useTranslations("SettingsProjectPage.description.imageModal");
     const initialDescription = project.description || "";
     const [description, setDescription] = useState(initialDescription);
     const [savedDescription, setSavedDescription] = useState(initialDescription);
     const [isSaving, setIsSaving] = useState(false);
     const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
     const textareaRef = useRef(null);
+    const imageInsertionSelectionRef = useRef({ start: 0, end: 0 });
     const isDirty = description !== savedDescription;
 
     useEffect(() => {
@@ -191,6 +195,25 @@ export default function DescriptionSettings({ project, authToken }) {
         updateTextareaValue(nextValue, lineStart, lineStart + transformed.length);
     };
 
+    const openImageModal = () => {
+        const textarea = textareaRef.current;
+        imageInsertionSelectionRef.current = {
+            start: textarea?.selectionStart ?? description.length,
+            end: textarea?.selectionEnd ?? description.length,
+        };
+        setIsImageModalOpen(true);
+    };
+
+    const insertImage = ({ altText, url }) => {
+        const { start, end } = imageInsertionSelectionRef.current;
+        const escapedAltText = altText.replace(/\\/g, "\\\\").replace(/\[/g, "\\[").replace(/\]/g, "\\]").replace(/\s+/g, " ").trim();
+        const escapedUrl = url.replace(/\(/g, "%28").replace(/\)/g, "%29");
+        const markdown = `![${escapedAltText}](${escapedUrl})`;
+        const nextValue = `${description.slice(0, start)}${markdown}${description.slice(end)}`;
+        const caret = start + markdown.length;
+        updateTextareaValue(nextValue, caret, caret);
+    };
+
     useEffect(() => {
         if(isPreviewVisible) {
             return;
@@ -255,7 +278,7 @@ export default function DescriptionSettings({ project, authToken }) {
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                             </MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Image" onClick={() => insertAtSelection("![alt text](https://)")} disabled={isPreviewVisible}>
+                                            <MarkdownToolbarButton label="Image" onClick={openImageModal} disabled={isPreviewVisible}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                             </MarkdownToolbarButton>
 
@@ -308,6 +331,15 @@ export default function DescriptionSettings({ project, authToken }) {
                 saveLabel={t("description.actions.save")}
                 resetLabel={t("unsavedBar.reset")}
                 message={t("unsavedBar.message")}
+            />
+
+            <MarkdownImageModal
+                isOpen={isImageModalOpen}
+                onRequestClose={() => setIsImageModalOpen(false)}
+                onInsert={insertImage}
+                projectId={project.id || project.slug}
+                authToken={authToken}
+                t={tImage}
             />
         </>
     );
