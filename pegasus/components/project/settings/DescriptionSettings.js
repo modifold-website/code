@@ -122,6 +122,43 @@ export default function DescriptionSettings({ project, authToken }) {
         updateTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
     };
 
+    const formatCodeSelection = () => {
+        const textarea = textareaRef.current;
+        if(!textarea) {
+            return;
+        }
+
+        const start = textarea.selectionStart ?? 0;
+        const end = textarea.selectionEnd ?? 0;
+        const selected = description.slice(start, end);
+        const before = description.slice(0, start);
+        const after = description.slice(end);
+        const leadingNewline = before && !before.endsWith("\n") ? "\n" : "";
+        const trailingNewline = after && !after.startsWith("\n") ? "\n" : "";
+        let language = "";
+
+        try {
+            const value = selected.trim();
+            if(value && ["{", "["].includes(value[0])) {
+                JSON.parse(value);
+                language = "json";
+            }
+        } catch {
+            language = "";
+        }
+
+        if(!selected.includes("\n") && !language) {
+            wrapSelection("`", "`");
+            return;
+        }
+
+        const prefix = `${leadingNewline}\`\`\`${language}\n`;
+        const suffix = `\n\`\`\`${trailingNewline}`;
+        const nextValue = `${before}${prefix}${selected}${suffix}${after}`;
+        const selectionStart = start + prefix.length;
+        updateTextareaValue(nextValue, selectionStart, selectionStart + selected.length);
+    };
+
     const prefixLines = (prefix) => {
         const textarea = textareaRef.current;
         if(!textarea) {
@@ -191,7 +228,7 @@ export default function DescriptionSettings({ project, authToken }) {
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-strikethrough-icon lucide-strikethrough"><path d="M16 4H9a3 3 0 0 0-2.83 4"/><path d="M14 12a4 4 0 0 1 0 8H6"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
                                             </button>
 
-                                            <button type="button" className="markdown-editor__tool" onClick={() => wrapSelection("`", "`")} aria-label="Code" title="Code" disabled={isPreviewVisible}>
+                                            <button type="button" className="markdown-editor__tool" onClick={formatCodeSelection} aria-label="Code" title="Code" disabled={isPreviewVisible}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code-xml-icon lucide-code-xml"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
                                             </button>
 

@@ -325,6 +325,103 @@ strong {
     overflow-x: auto;
     padding: 14px;
 }
+.markdown-body .markdown-code-block {
+	--markdown-code-color: var(--theme-color-text-primary);
+	--markdown-code-comment: #6e7781;
+	--markdown-code-keyword: #cf222e;
+	--markdown-code-string: #116329;
+	--markdown-code-number: #0550ae;
+	--markdown-code-function: #8250df;
+	--markdown-code-class: #953800;
+	margin: 1rem 0;
+	max-width: 100%;
+	overflow: hidden;
+	background: var(--theme-color-background);
+	border: 1px solid var(--theme-color-border);
+	border-radius: 12px;
+	color: var(--markdown-code-color);
+}
+body.dark .markdown-body .markdown-code-block {
+	--markdown-code-comment: #8b949e;
+	--markdown-code-keyword: #ff7b72;
+	--markdown-code-string: #a5d6ff;
+	--markdown-code-number: #79c0ff;
+	--markdown-code-function: #d2a8ff;
+	--markdown-code-class: #ffa657;
+}
+.markdown-body .markdown-code-block__pre {
+	margin: 0;
+	max-width: 100%;
+	overflow-x: auto;
+	padding: 16px;
+	background: transparent;
+	border-radius: 0;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	font-size: 0.875rem;
+	font-variant-ligatures: none;
+	line-height: 1.65;
+	tab-size: 4;
+}
+.markdown-body .markdown-code-block__pre code {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border-radius: 0;
+	font: inherit;
+	overflow-wrap: normal;
+	white-space: pre;
+	word-break: normal;
+}
+.markdown-code-block .markdown-code-token--comment,
+.markdown-code-block .markdown-code-token--prolog,
+.markdown-code-block .markdown-code-token--doctype,
+.markdown-code-block .markdown-code-token--cdata {
+	color: var(--markdown-code-comment);
+}
+.markdown-code-block .markdown-code-token--property,
+.markdown-code-block .markdown-code-token--tag,
+.markdown-code-block .markdown-code-token--constant,
+.markdown-code-block .markdown-code-token--symbol,
+.markdown-code-block .markdown-code-token--deleted,
+.markdown-code-block .markdown-code-token--keyword,
+.markdown-code-block .markdown-code-token--atrule {
+	color: var(--markdown-code-keyword);
+}
+.markdown-code-block .markdown-code-token--boolean,
+.markdown-code-block .markdown-code-token--number {
+	color: var(--markdown-code-number);
+}
+.markdown-code-block .markdown-code-token--selector,
+.markdown-code-block .markdown-code-token--attr-name,
+.markdown-code-block .markdown-code-token--string,
+.markdown-code-block .markdown-code-token--char,
+.markdown-code-block .markdown-code-token--builtin,
+.markdown-code-block .markdown-code-token--inserted {
+	color: var(--markdown-code-string);
+}
+.markdown-code-block .markdown-code-token--operator,
+.markdown-code-block .markdown-code-token--entity,
+.markdown-code-block .markdown-code-token--url,
+.markdown-code-block .language-css .markdown-code-token--string,
+.markdown-code-block .style .markdown-code-token--string,
+.markdown-code-block .markdown-code-token--variable {
+	color: var(--markdown-code-number);
+}
+.markdown-code-block .markdown-code-token--function {
+	color: var(--markdown-code-function);
+}
+.markdown-code-block .markdown-code-token--class-name,
+.markdown-code-block .markdown-code-token--regex,
+.markdown-code-block .markdown-code-token--important {
+	color: var(--markdown-code-class);
+}
+.markdown-code-block .markdown-code-token--bold,
+.markdown-code-block .markdown-code-token--important {
+	font-weight: 600;
+}
+.markdown-code-block .markdown-code-token--italic {
+	font-style: italic;
+}
 .markdown-body pre code {
     border-radius: 0;
     font-size: 80%;
@@ -338,6 +435,12 @@ strong {
     border-radius: 8px;
     font-size: 80%;
     padding: 0.2em 0.4em;
+}
+@media (max-width: 640px) {
+	.markdown-body .markdown-code-block__pre {
+		padding: 14px;
+		font-size: 0.8125rem;
+	}
 }
 .markdown-body .markdown-mermaid {
     margin: 16px 0;
