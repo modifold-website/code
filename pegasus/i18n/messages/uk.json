@@ -2226,8 +2226,7 @@
       "organizationFallback": "організацію",
       "organizationInviteTail": "запросив(ла) вас до",
       "organizationRemovedTail": "видалив(ла) вас з",
-      "projectCollaborationInvitePrefix": "Користувач",
-      "projectCollaborationInviteTail": "запросив(ла) вас до участі в проєкті"
+      "projectCollaborationInviteTail": "запрошує вас долучитися до проєкту"
     },
     "errors": {
       "fetch": "Не вдалося завантажити сповіщення",

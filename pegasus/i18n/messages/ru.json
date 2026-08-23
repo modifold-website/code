@@ -2320,8 +2320,7 @@
       "organizationFallback": "организацию",
       "organizationInviteTail": "пригласил(а) вас в",
       "organizationRemovedTail": "удалил(а) вас из",
-      "projectCollaborationInvitePrefix": "Пользователь",
-      "projectCollaborationInviteTail": "пригласил(а) вас участвовать в проекте"
+      "projectCollaborationInviteTail": "приглашает вас присоединиться к проекту"
     },
     "errors": {
       "fetch": "Не удалось загрузить уведомления",

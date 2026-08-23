@@ -2320,8 +2320,7 @@
       "organizationFallback": "organization",
       "organizationInviteTail": "invited you to",
       "organizationRemovedTail": "removed you from",
-      "projectCollaborationInvitePrefix": "User",
-      "projectCollaborationInviteTail": "invited you to collaborate on"
+      "projectCollaborationInviteTail": "invites you to collaborate on"
     },
     "errors": {
       "fetch": "Failed to load notifications",

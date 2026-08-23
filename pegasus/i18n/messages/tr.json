@@ -2225,8 +2225,7 @@
       "organizationFallback": "organizasyon",
       "organizationInviteTail": "seni şuraya davet etti",
       "organizationRemovedTail": "seni şuradan çıkardı",
-      "projectCollaborationInvitePrefix": "Kullanıcı",
-      "projectCollaborationInviteTail": "seni şu projede iş birliğine davet etti:"
+      "projectCollaborationInviteTail": "seni projeye davet ediyor:"
     },
     "errors": {
       "fetch": "Bildirimler yüklenemedi",

@@ -2225,8 +2225,7 @@
       "organizationFallback": "organización",
       "organizationInviteTail": "te invitó a",
       "organizationRemovedTail": "te eliminó de",
-      "projectCollaborationInvitePrefix": "El usuario",
-      "projectCollaborationInviteTail": "te invitó a colaborar en"
+      "projectCollaborationInviteTail": "te invita a colaborar en"
     },
     "errors": {
       "fetch": "No se pudieron cargar las notificaciones",
