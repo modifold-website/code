@@ -16,6 +16,7 @@ const notificationsRouter = require("./routes/v1/notifications");
 const projectRoutes = require("./routes/v1/projects");
 const versionRoutesV2 = require("./routes/v2/versions");
 const discoverRoutesV2 = require("./routes/v2/discover");
+const imageRoutesV2 = require("./routes/v2/images");
 const moderationTags = require("./routes/v1/moderation");
 const usersModerationRouter = require("./routes/v1/users_moderation");
 const ApiTokensRouter = require("./routes/v1/api-tokens");
@@ -148,6 +149,7 @@ const startServer = () => {
 	mountV1Route("/projects", projectsLimiterMiddleware, projectRoutes);
 	app.use("/v2/version", projectsLimiterMiddleware, versionRoutesV2);
 	app.use("/v2/discover", projectsLimiterMiddleware, discoverRoutesV2);
+	app.use("/v2/image", projectsLimiterMiddleware, imageRoutesV2);
 	mountV1Route("/auth", authRoutes);
 	mountV1Route("/users", usersRoutes);
 	mountV1Route("/subscriptions", subscriptionRoutes);

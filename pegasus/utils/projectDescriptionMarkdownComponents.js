@@ -1,4 +1,5 @@
 import React from "react";
+import MarkdownCodeBlock from "@/components/markdown/MarkdownCodeBlock";
 import { getSafeMarkdownHref, getSafeMarkdownImageSizeProps, getSafeMarkdownImageSrc, getSafeMarkdownTextAlignStyle } from "@/utils/projectDescriptionContent";
 
 const renderAlignedBlock = (Tag) => ({ align, children, style }) => (
@@ -29,6 +30,7 @@ export const projectDescriptionMarkdownComponents = {
 
 		return <img src={safeSrc} alt={alt || ""} title={title} loading="lazy" {...getSafeMarkdownImageSizeProps({ width, height })} />;
 	},
+	pre: MarkdownCodeBlock,
 	p: renderAlignedBlock("p"),
 	div: renderAlignedBlock("div"),
 	span: renderAlignedBlock("span"),

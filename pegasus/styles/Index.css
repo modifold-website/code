@@ -3195,7 +3195,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     fill: none;
 }
 .version-upload-dropzone__text {
-    text-align: left;
+    text-align: center;
     flex-direction: column;
     gap: 4px;
     display: flex;
