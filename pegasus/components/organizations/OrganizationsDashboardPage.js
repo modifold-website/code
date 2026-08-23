@@ -34,7 +34,7 @@ export default function OrganizationsDashboardPage({ authToken, initialOrganizat
 					}}
 				/>
 
-				<main className="settings-content organizations-dashboard">
+				<main className="settings-content organizations-dashboard settings-wrapper--narrow">
 					<header className="organizations-dashboard__header">
 						<div className="organizations-dashboard__heading">
 							<h1>{t("dashboard.title")}</h1>
