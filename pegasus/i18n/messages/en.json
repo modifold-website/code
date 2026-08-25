@@ -711,9 +711,7 @@
       "noImages": "No images in the gallery.",
       "lightboxLabel": "Image lightbox",
       "openInNewTab": "Open image in new tab",
-      "trailer": "Trailer",
       "video": "Video",
-      "openTrailer": "Open trailer",
       "openVideo": "Open video {title}",
       "title": "Title",
       "description": "Description",
@@ -1712,22 +1710,6 @@
         "deleteError": "The video could not be deleted",
         "deleteConfirm": "Remove this video from the gallery?",
         "untitled": "Video {position}"
-      },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Add trailer",
-        "title": "Project trailer",
-        "description": "Add one YouTube video. It appears first in the gallery, before screenshots.",
-        "modalDescription": "Paste a YouTube link or video ID. One trailer can be active at a time.",
-        "urlLabel": "YouTube link",
-        "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Save trailer",
-        "remove": "Remove trailer",
-        "success": "Trailer saved",
-        "deleted": "Trailer removed",
-        "error": "Error saving trailer",
-        "previewTitle": "Trailer preview",
-        "cardDescription": "Shown before gallery images."
       },
       "modal": {
         "steps": {

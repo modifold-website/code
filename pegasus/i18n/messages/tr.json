@@ -711,9 +711,7 @@
       "noImages": "Galeride görsel yok.",
       "lightboxLabel": "Görsel lightbox",
       "openInNewTab": "Görseli yeni sekmede aç",
-      "trailer": "Fragman",
       "video": "Video",
-      "openTrailer": "Fragmanı aç",
       "openVideo": "{title} videosunu aç",
       "title": "Başlık",
       "description": "Açıklama",
@@ -1621,22 +1619,6 @@
         "deleteError": "Video silinemedi",
         "deleteConfirm": "Bu video galeriden kaldırılsın mı?",
         "untitled": "Video {position}"
-      },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Fragman ekle",
-        "title": "Proje fragmanı",
-        "description": "Bir YouTube videosu ekleyin. Galeride ekran görüntülerinden önce görünür.",
-        "modalDescription": "Bir YouTube bağlantısı veya video ID'si yapıştırın. Aynı anda yalnızca bir fragman aktif olabilir.",
-        "urlLabel": "YouTube bağlantısı",
-        "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Fragmanı kaydet",
-        "remove": "Fragmanı kaldır",
-        "success": "Fragman kaydedildi",
-        "deleted": "Fragman kaldırıldı",
-        "error": "Fragman kaydedilemedi",
-        "previewTitle": "Fragman önizlemesi",
-        "cardDescription": "Galeri görsellerinden önce gösterilir."
       },
       "modal": {
         "steps": {

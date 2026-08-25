@@ -336,24 +336,12 @@
 	transform: translate(-50%, -50%);
 	pointer-events: none;
 }
-.gallery-settings-card--trailer {
-    grid-column: 1 / -1;
-}
-.gallery-settings-card--trailer-compact {
-    order: -1;
-}
-.gallery-settings-card--trailer-editor {
-    order: -1;
-}
 .gallery-settings-card__preview {
     position: relative;
 }
 .gallery-settings-card__preview--video {
     aspect-ratio: 16 / 9;
     background: var(--theme-color-background);
-}
-.gallery-settings-card--trailer-compact .gallery-settings-card__preview--video {
-    min-height: 10rem;
 }
 .gallery-settings-card__preview--video iframe {
     display: block;

@@ -711,9 +711,7 @@
       "noImages": "В галерее нет изображений.",
       "lightboxLabel": "Просмотр изображения",
       "openInNewTab": "Открыть изображение в новой вкладке",
-      "trailer": "Трейлер",
       "video": "Видео",
-      "openTrailer": "Открыть трейлер",
       "openVideo": "Открыть видео «{title}»",
       "title": "Название",
       "description": "Описание",
@@ -1712,22 +1710,6 @@
         "deleteError": "Не удалось удалить видео",
         "deleteConfirm": "Удалить это видео из галереи?",
         "untitled": "Видео {position}"
-      },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Добавить трейлер",
-        "title": "Трейлер проекта",
-        "description": "Добавьте один ролик YouTube. Он будет первым в галерее, перед скриншотами.",
-        "modalDescription": "Вставьте ссылку YouTube или ID ролика. Одновременно активен только один трейлер.",
-        "urlLabel": "Ссылка YouTube",
-        "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Сохранить трейлер",
-        "remove": "Удалить трейлер",
-        "success": "Трейлер сохранен",
-        "deleted": "Трейлер удален",
-        "error": "Не удалось сохранить трейлер",
-        "previewTitle": "Предпросмотр трейлера",
-        "cardDescription": "Показывается перед изображениями галереи."
       },
       "modal": {
         "steps": {

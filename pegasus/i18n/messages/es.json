@@ -711,9 +711,7 @@
       "noImages": "No hay imágenes en la galería.",
       "lightboxLabel": "Visor de imágenes",
       "openInNewTab": "Abrir imagen en una nueva pestaña",
-      "trailer": "Tráiler",
       "video": "Video",
-      "openTrailer": "Abrir tráiler",
       "openVideo": "Abrir video {title}",
       "title": "Título",
       "description": "Descripción",
@@ -1621,22 +1619,6 @@
         "deleteError": "No se pudo eliminar el video",
         "deleteConfirm": "¿Quitar este video de la galería?",
         "untitled": "Video {position}"
-      },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Añadir tráiler",
-        "title": "Tráiler del proyecto",
-        "description": "Añade un video de YouTube. Aparece primero en la galería, antes de las capturas.",
-        "modalDescription": "Pega un enlace de YouTube o el ID del video. Solo puede haber un tráiler activo.",
-        "urlLabel": "Enlace de YouTube",
-        "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Guardar tráiler",
-        "remove": "Quitar tráiler",
-        "success": "Tráiler guardado",
-        "deleted": "Tráiler eliminado",
-        "error": "Error al guardar el tráiler",
-        "previewTitle": "Vista previa del tráiler",
-        "cardDescription": "Se muestra antes de las imágenes de la galería."
       },
       "modal": {
         "steps": {

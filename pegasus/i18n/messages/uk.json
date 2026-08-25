@@ -712,9 +712,7 @@
       "noImages": "У галереї немає зображень.",
       "lightboxLabel": "Лайтбокс зображення",
       "openInNewTab": "Відкрити зображення у новій вкладці",
-      "trailer": "Трейлер",
       "video": "Відео",
-      "openTrailer": "Відкрити трейлер",
       "openVideo": "Відкрити відео «{title}»",
       "title": "Заголовок",
       "description": "Опис",
@@ -1622,22 +1620,6 @@
         "deleteError": "Не вдалося видалити відео",
         "deleteConfirm": "Видалити це відео з галереї?",
         "untitled": "Відео {position}"
-      },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Додати трейлер",
-        "title": "Трейлер проєкту",
-        "description": "Додайте одне відео YouTube. Воно буде першим у галереї, перед скриншотами.",
-        "modalDescription": "Вставте посилання YouTube або ID відео. Одночасно активний лише один трейлер.",
-        "urlLabel": "Посилання YouTube",
-        "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Зберегти трейлер",
-        "remove": "Видалити трейлер",
-        "success": "Трейлер збережено",
-        "deleted": "Трейлер видалено",
-        "error": "Не вдалося зберегти трейлер",
-        "previewTitle": "Попередній перегляд трейлера",
-        "cardDescription": "Показується перед зображеннями галереї."
       },
       "modal": {
         "steps": {
