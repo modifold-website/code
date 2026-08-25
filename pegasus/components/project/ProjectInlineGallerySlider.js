@@ -8,6 +8,38 @@ import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl, isGalleryVideo, normalizeGa
 const SLIDE_DURATION_MS = 440;
 const AUTO_PLAY_MS = 6500;
 
+const getSlidePosition = (index, activeIndex, transitionState, length) => {
+	if(length < 2) {
+		return index === activeIndex ? "active" : "hidden";
+	}
+
+	if(!transitionState) {
+		return index === activeIndex ? "active" : "hidden";
+	}
+
+	if(index === transitionState.from) {
+		return "leave";
+	}
+
+	if(index === transitionState.to) {
+		return "enter";
+	}
+
+	return "hidden";
+};
+
+const getTransitionClassName = (position, direction) => {
+	if(position === "leave") {
+		return direction === "right" ? "to-left" : "to-right";
+	}
+
+	if(position === "enter") {
+		return direction === "right" ? "from-right" : "from-left";
+	}
+
+	return "";
+};
+
 export default function ProjectInlineGallerySlider({ media = [], projectTitle = "" }) {
 	const t = useTranslations("ProjectPage");
 	const preparedMedia = useMemo(() => {
@@ -88,9 +120,6 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 		}
 	}, [activeIndex, preparedMedia.length]);
 
-	const activeMedia = preparedMedia[activeIndex];
-	const leavingMedia = transitionState ? preparedMedia[transitionState.from] : null;
-	const enteringMedia = transitionState ? preparedMedia[transitionState.to] : null;
 	const getThumbWindowStart = (index) => (
 		(() => {
 			if(preparedMedia.length <= visibleThumbsCount) {
@@ -110,11 +139,22 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 	const hasSingleVisibleThumb = !isThumbsAnimating && displayedThumbsCount === 1;
 	const getImageAlt = (media, index) => media.title || `${projectTitle} image ${index + 1}`;
 	const getThumbAlt = (media, index) => media.title || `${projectTitle} thumbnail ${index + 1}`;
-	const renderMedia = (media, index) => {
+	const renderMedia = (media, index, isActive) => {
 		if(media?.type === "youtube") {
+			if(!isActive) {
+				return (
+					<img
+						src={media.thumbnailUrl}
+						alt={getImageAlt(media, index)}
+						className="project-inline-gallery__main-image project-inline-gallery__video-thumbnail"
+						loading="eager"
+						draggable={false}
+					/>
+				);
+			}
+
 			return (
 				<iframe
-					key={media.id}
 					src={getYouTubeEmbedUrl(media.videoId, { autoplay: true })}
 					title={media.title || t("gallery.video")}
 					className="project-inline-gallery__video"
@@ -126,7 +166,6 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 
 		return (
 			<img
-				key={media.id || media.url}
 				src={media.url}
 				alt={getImageAlt(media, index)}
 				className="project-inline-gallery__main-image"
@@ -135,6 +174,37 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 			/>
 		);
 	};
+
+	const renderPane = (media, index) => {
+		const position = getSlidePosition(index, activeIndex, transitionState, preparedMedia.length);
+		const positionClassName = `project-inline-gallery__pane--${position}`;
+		const transitionClassName = getTransitionClassName(position, transitionState?.direction);
+		const isActive = index === activeIndex;
+		const paneClassName = `project-inline-gallery__pane ${media.type === "youtube" ? "" : "project-inline-gallery__pane--button"} ${positionClassName} ${transitionClassName}`;
+
+		if(media.type === "youtube") {
+			return (
+				<div key={media.id || media.videoId || index} className={paneClassName} aria-hidden={position === "hidden" ? "true" : undefined}>
+					{renderMedia(media, index, isActive)}
+				</div>
+			);
+		}
+
+		return (
+			<button
+				key={media.id || media.url || index}
+				type="button"
+				className={paneClassName}
+				{...getLightboxTriggerProps(media)}
+				aria-label={t("gallery.viewImage", { title: media.title || t("gallery.image") })}
+				aria-hidden={position === "hidden" ? "true" : undefined}
+				tabIndex={position === "hidden" ? -1 : undefined}
+			>
+				{renderMedia(media, index, isActive)}
+			</button>
+		);
+	};
+	
 	const renderThumb = (media, index, keyPrefix = "") => (
 		<button key={`${keyPrefix}${media.id || media.url}-${index}`} type="button" className={`project-inline-gallery__thumb ${index === activeThumbIndex ? "is-active" : ""}`} onClick={() => openAt(index)} aria-label={media.type === "youtube" ? t("gallery.openVideo", { title: media.title || t("gallery.video") }) : `Open image ${index + 1}`} disabled={isAnimating}>
 			<img src={media.type === "youtube" ? media.thumbnailUrl : media.url} alt={getThumbAlt(media, index)} loading="lazy" />
@@ -153,25 +223,7 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 	return (
 		<div className="project-inline-gallery">
 			<div className={`project-inline-gallery__stage ${!hasMultipleImages ? "is-static" : ""}`} onDragStart={(event) => event.preventDefault()}>
-				{transitionState ? (
-					<>
-						<div className={`project-inline-gallery__pane project-inline-gallery__pane--leave ${transitionState.direction === "right" ? "to-left" : "to-right"}`}>
-							{renderMedia(leavingMedia, transitionState.from)}
-						</div>
-
-						<div className={`project-inline-gallery__pane project-inline-gallery__pane--enter ${transitionState.direction === "right" ? "from-right" : "from-left"}`}>
-							{renderMedia(enteringMedia, transitionState.to)}
-						</div>
-					</>
-				) : activeMedia.type === "youtube" ? (
-					<div className="project-inline-gallery__pane">
-						{renderMedia(activeMedia, activeIndex)}
-					</div>
-				) : (
-					<button type="button" className="project-inline-gallery__pane project-inline-gallery__pane--button" aria-label={t("gallery.viewImage", { title: activeMedia.title || t("gallery.image") })} {...getLightboxTriggerProps(activeMedia)}>
-						{renderMedia(activeMedia, activeIndex)}
-					</button>
-				)}
+				{preparedMedia.map((item, index) => renderPane(item, index))}
 			</div>
 
 			<div className="project-inline-gallery__thumbs-row">

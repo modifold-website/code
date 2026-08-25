@@ -387,6 +387,12 @@
 	position: absolute;
     background: var(--theme-color-background);
 	inset: 0;
+	display: none;
+}
+.project-inline-gallery__pane--active,
+.project-inline-gallery__pane--leave,
+.project-inline-gallery__pane--enter {
+	display: block;
 }
 .project-inline-gallery__pane--button {
 	width: 100%;
@@ -396,7 +402,14 @@
 	cursor: pointer;
 }
 .project-inline-gallery__pane--active {
+	z-index: 1;
 	transform: translateX(0);
+}
+.project-inline-gallery__pane--leave {
+	z-index: 1;
+}
+.project-inline-gallery__pane--enter {
+	z-index: 2;
 }
 .project-inline-gallery__pane--leave.to-left {
 	animation: project-inline-gallery-pane-leave-left .44s cubic-bezier(.22, .61, .36, 1) forwards;
