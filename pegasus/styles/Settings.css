@@ -337,6 +337,9 @@
 	transform: translate(-50%, -50%);
 	pointer-events: none;
 }
+.gallery-settings-card__play svg {
+	fill: none;
+}
 .gallery-settings-card__preview {
     position: relative;
 }
