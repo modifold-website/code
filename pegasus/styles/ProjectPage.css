@@ -905,6 +905,10 @@
 	gap: 6px;
 	min-width: 0;
 }
+.all-versions--table .version-table__game-versions {
+	width: 100%;
+	max-width: 100%;
+}
 .all-versions--table .version-table__value {
 	display: flex;
 	align-items: center;
@@ -915,6 +919,7 @@
 .all-versions--table .version-table__game-versions .version-table__value {
 	flex-direction: column;
 	align-items: flex-start;
+	width: 100%;
 }
 .all-versions--table .version-table__game-versions .version__game-versions {
 	width: max-content;
@@ -1223,7 +1228,16 @@
 .version__game-versions-range {
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 4px;
+    max-width: 100%;
+    min-width: 0;
+}
+.version__game-versions-range-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
 }
 .version__game-versions-separator {
     color: var(--theme-color-text-secondary);
