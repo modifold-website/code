@@ -1996,7 +1996,6 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
             ]);
 
             await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
-            await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
             await connection.commit();
         } catch (error) {
             await connection.rollback();
@@ -3135,7 +3134,11 @@ router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req
             );
 
             await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
-            await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+
+            if(!fileUrl && version[0].moderation_status === "approved") {
+                await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+            }
+
             await connection.commit();
         } catch (error) {
             await connection.rollback();
@@ -3184,7 +3187,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
             return;
         }
 
-        const [version] = await db.query("SELECT id, file_url FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
+        const [version] = await db.query("SELECT id, file_url, moderation_status FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: "Version not found" });
         }
@@ -3219,7 +3222,9 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
             [String(versionId)]
         );
 
-        await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+        if(version[0].moderation_status === "approved") {
+            await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+        }
 
         res.json({ success: true, message: "Version deleted successfully" });
     } catch (error) {
