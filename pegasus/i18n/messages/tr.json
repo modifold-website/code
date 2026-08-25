@@ -711,8 +711,8 @@
       "noImages": "Galeride görsel yok.",
       "lightboxLabel": "Görsel lightbox",
       "openInNewTab": "Görseli yeni sekmede aç",
-      "trailer": "Fragman",
-      "openTrailer": "Fragmanı aç",
+      "video": "Video",
+      "openVideo": "{title} videosunu aç",
       "title": "Başlık",
       "description": "Açıklama",
       "orderIndex": "Sıra indeksi",
@@ -1247,6 +1247,13 @@
         "lineAria": "Çizgi grafik olarak göster",
         "barAria": "Sütun grafik olarak göster"
       },
+      "seriesModes": {
+        "label": "Görüntüleme modu",
+        "daily": "Günlük",
+        "cumulative": "Birikimli",
+        "dailyAria": "Günlük değerleri göster",
+        "cumulativeAria": "Birikimli değerleri göster"
+      },
       "stats": {
         "downloads": "İndirmeler",
         "views": "Görüntülenmeler",
@@ -1545,12 +1552,13 @@
         "uploadMultiple": "{count, plural, one {# görsel yüklenemedi. Tekrar deneyebilirsiniz.} other {# görsel yüklenemedi. Tekrar deneyebilirsiniz.}}",
         "refresh": "Görseller yüklendi ancak galeri yenilenemedi",
         "invalidFiles": "Yalnızca JPEG, PNG, GIF ve WebP görselleri seçilebilir",
-        "fileTooLarge": "Her görsel 100 MB'den küçük olmalıdır"
+        "fileTooLarge": "Her görsel 100 MB'den küçük olmalıdır",
+        "delete": "Görsel silinemedi"
       },
       "title": "Yeni görsel ekle",
       "media": {
         "title": "Galeri medyası",
-        "description": "Bir fragman ve ekran görüntüleri ekleyin. Fragman her zaman ilk gösterilir."
+        "description": "Görseller ve birden fazla YouTube videosu ekleyip istediğiniz sıraya yerleştirin."
       },
       "fields": {
         "title": "Başlık",
@@ -1567,24 +1575,57 @@
         "order": "Sıra numarası"
       },
       "featuredHint": "Öne çıkan galeri görseli arama sonuçlarında ve proje kartınızda görünür. Galeride yalnızca bir görsel öne çıkarılabilir.",
-      "actions": {
-        "add": "Görsel ekle"
+      "imageDeleted": "Görsel silindi",
+      "imageDeleteConfirm": "Bu görsel galeriden kaldırılsın mı?",
+      "imageUntitled": "Görsel {position}",
+      "empty": {
+        "title": "Galeriniz boş",
+        "description": "Görsel veya YouTube videosu ekleyin. Sıralamayı istediğiniz zaman değiştirebilirsiniz."
       },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Fragman ekle",
-        "title": "Proje fragmanı",
-        "description": "Bir YouTube videosu ekleyin. Galeride ekran görüntülerinden önce görünür.",
-        "modalDescription": "Bir YouTube bağlantısı veya video ID'si yapıştırın. Aynı anda yalnızca bir fragman aktif olabilir.",
+      "picker": {
+        "title": "Medya ekle",
+        "description": "Proje galerisine eklemek istediğiniz medya türünü seçin."
+      },
+      "types": {
+        "image": "Görsel",
+        "video": "Video"
+      },
+      "sort": {
+        "title": "Galeri sırası",
+        "description": "Öğeyi tutamacından sürükleyin veya okları kullanın. Yeni sıra otomatik kaydedilir.",
+        "count": "{count, plural, one {# öğe} other {# öğe}}",
+        "position": "Konum {position}",
+        "drag": "{title} öğesini sürükle",
+        "dragging": "Öğe taşınıyor",
+        "moveUp": "{title} öğesini yukarı taşı",
+        "moveDown": "{title} öğesini aşağı taşı",
+        "saving": "Sıra kaydediliyor",
+        "saved": "Sıra kaydedildi",
+        "error": "Galeri sırası kaydedilemedi"
+      },
+      "actions": {
+        "add": "Görsel ekle",
+        "addMedia": "Medya ekle",
+        "edit": "Düzenle"
+      },
+      "video": {
+        "add": "Video ekle",
+        "addTitle": "YouTube videosu ekle",
+        "editTitle": "Videoyu düzenle",
+        "modalDescription": "Bir YouTube bağlantısı veya video ID'si yapıştırın. Aynı galeriye birden fazla video ekleyebilirsiniz.",
         "urlLabel": "YouTube bağlantısı",
         "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Fragmanı kaydet",
-        "remove": "Fragmanı kaldır",
-        "success": "Fragman kaydedildi",
-        "deleted": "Fragman kaldırıldı",
-        "error": "Fragman kaydedilemedi",
-        "previewTitle": "Fragman önizlemesi",
-        "cardDescription": "Galeri görsellerinden önce gösterilir."
+        "titlePlaceholder": "Örneğin, proje tanıtımı",
+        "descriptionPlaceholder": "Videonun ne gösterdiğini kısaca açıklayın",
+        "previewTitle": "Video önizlemesi",
+        "save": "Kaydet",
+        "added": "Video eklendi",
+        "updated": "Video güncellendi",
+        "deleted": "Video silindi",
+        "error": "Video kaydedilemedi",
+        "deleteError": "Video silinemedi",
+        "deleteConfirm": "Bu video galeriden kaldırılsın mı?",
+        "untitled": "Video {position}"
       },
       "modal": {
         "steps": {
@@ -2243,9 +2284,9 @@
       "projectLikeOneMiddle": "projenizi beğendi",
       "projectLikeManyMiddle": "ve {count} kişi daha projenizi beğendi",
       "projectReleaseMiddle": "yeni bir proje yayınladı",
-      "projectVersionReleaseMiddle": "{version} sürümünü şu proje için yayınladı",
-      "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
-      "projectVersionRejectedMiddle": "{version} sürümünüz şu proje için moderasyondan geçmedi",
+      "projectVersionReleaseMiddle": "<versionLink>{version}</versionLink> sürümünü şu proje için yayınladı",
+      "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "<versionLink>{version}</versionLink> sürümünüz şu proje için moderasyondan geçmedi",
       "projectApprovedMiddle": "Projeniz moderasyondan geçti ve artık kullanılabilir:",
       "projectRejectedMiddle": "Projeniz moderasyondan geçmedi:",
       "projectFallback": "projenizi",

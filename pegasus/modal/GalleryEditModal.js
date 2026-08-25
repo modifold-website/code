@@ -107,14 +107,7 @@ export default function GalleryEditModal({ isOpen, onRequestClose, editLoading, 
                                     </label>
                                 </div>
 
-                                <p className="blog-settings__field-title">{tProject("gallery.orderIndex")}</p>
-                                <div className="field field--default">
-                                    <label className="field__wrapper">
-                                        <input type="number" name="ordering" min="0" step="1" value={editFormData.ordering} className="text-input" disabled={editLoading} onChange={handleEditInputChange} />
-                                    </label>
-                                </div>
-
-                                <p className="blog-settings__field-title">{tProject("gallery.featured")}</p>
+								<p className="blog-settings__field-title">{tProject("gallery.featured")}</p>
 
                                 <button type="button" className="button button--size-m button--type-minimal" aria-pressed={editFormData.featured} onClick={toggleEditFeatured} disabled={editLoading}>
                                     {editFormData.featured ? t("gallerySettings.states.enabled") : t("gallerySettings.states.disabled")}

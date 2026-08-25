@@ -711,8 +711,8 @@
       "noImages": "No hay imágenes en la galería.",
       "lightboxLabel": "Visor de imágenes",
       "openInNewTab": "Abrir imagen en una nueva pestaña",
-      "trailer": "Tráiler",
-      "openTrailer": "Abrir tráiler",
+      "video": "Video",
+      "openVideo": "Abrir video {title}",
       "title": "Título",
       "description": "Descripción",
       "orderIndex": "Índice de orden",
@@ -1247,6 +1247,13 @@
         "lineAria": "Mostrar como gráfico de líneas",
         "barAria": "Mostrar como gráfico de barras"
       },
+      "seriesModes": {
+        "label": "Modo de visualización",
+        "daily": "Diarias",
+        "cumulative": "Acumuladas",
+        "dailyAria": "Mostrar valores diarios",
+        "cumulativeAria": "Mostrar valores acumulados"
+      },
       "stats": {
         "downloads": "Descargas",
         "views": "Vistas",
@@ -1545,12 +1552,13 @@
         "uploadMultiple": "{count, plural, one {No se pudo subir # imagen. Puedes intentarlo de nuevo.} other {No se pudieron subir # imágenes. Puedes intentarlo de nuevo.}}",
         "refresh": "Las imágenes se subieron, pero no se pudo actualizar la galería",
         "invalidFiles": "Solo se pueden seleccionar imágenes JPEG, PNG, GIF y WebP",
-        "fileTooLarge": "Cada imagen debe ocupar menos de 100 MB"
+        "fileTooLarge": "Cada imagen debe ocupar menos de 100 MB",
+        "delete": "No se pudo eliminar la imagen"
       },
       "title": "Añadir nueva imagen",
       "media": {
         "title": "Medios de la galería",
-        "description": "Añade un tráiler y capturas. El tráiler siempre se muestra primero."
+        "description": "Añade imágenes y varios videos de YouTube y ordénalos como quieras."
       },
       "fields": {
         "title": "Título",
@@ -1567,24 +1575,57 @@
         "order": "Índice de orden"
       },
       "featuredHint": "Una imagen destacada de la galería aparece en la búsqueda y en la tarjeta de tu proyecto. Solo una imagen de la galería puede estar destacada.",
-      "actions": {
-        "add": "Añadir imagen"
+      "imageDeleted": "Imagen eliminada",
+      "imageDeleteConfirm": "¿Quitar esta imagen de la galería?",
+      "imageUntitled": "Imagen {position}",
+      "empty": {
+        "title": "Tu galería está vacía",
+        "description": "Añade imágenes o videos de YouTube. Puedes reordenarlos en cualquier momento."
       },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Añadir tráiler",
-        "title": "Tráiler del proyecto",
-        "description": "Añade un video de YouTube. Aparece primero en la galería, antes de las capturas.",
-        "modalDescription": "Pega un enlace de YouTube o el ID del video. Solo puede haber un tráiler activo.",
+      "picker": {
+        "title": "Añadir contenido",
+        "description": "Elige el tipo de contenido que quieres añadir a la galería del proyecto."
+      },
+      "types": {
+        "image": "Imagen",
+        "video": "Video"
+      },
+      "sort": {
+        "title": "Orden de la galería",
+        "description": "Arrastra un elemento por el controlador o usa las flechas. El orden se guarda automáticamente.",
+        "count": "{count, plural, one {# elemento} other {# elementos}}",
+        "position": "Posición {position}",
+        "drag": "Arrastrar {title}",
+        "dragging": "Moviendo elemento",
+        "moveUp": "Subir {title}",
+        "moveDown": "Bajar {title}",
+        "saving": "Guardando el orden",
+        "saved": "Orden guardado",
+        "error": "No se pudo guardar el orden de la galería"
+      },
+      "actions": {
+        "add": "Añadir imagen",
+        "addMedia": "Añadir contenido",
+        "edit": "Editar"
+      },
+      "video": {
+        "add": "Añadir video",
+        "addTitle": "Añadir video de YouTube",
+        "editTitle": "Editar video",
+        "modalDescription": "Pega un enlace de YouTube o un ID de video. Puedes añadir varios videos a la misma galería.",
         "urlLabel": "Enlace de YouTube",
         "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Guardar tráiler",
-        "remove": "Quitar tráiler",
-        "success": "Tráiler guardado",
-        "deleted": "Tráiler eliminado",
-        "error": "Error al guardar el tráiler",
-        "previewTitle": "Vista previa del tráiler",
-        "cardDescription": "Se muestra antes de las imágenes de la galería."
+        "titlePlaceholder": "Por ejemplo, presentación del proyecto",
+        "descriptionPlaceholder": "Describe brevemente qué muestra este video",
+        "previewTitle": "Vista previa del video",
+        "save": "Guardar",
+        "added": "Video añadido",
+        "updated": "Video actualizado",
+        "deleted": "Video eliminado",
+        "error": "No se pudo guardar el video",
+        "deleteError": "No se pudo eliminar el video",
+        "deleteConfirm": "¿Quitar este video de la galería?",
+        "untitled": "Video {position}"
       },
       "modal": {
         "steps": {
@@ -2243,9 +2284,9 @@
       "projectLikeOneMiddle": "le dio like a tu proyecto",
       "projectLikeManyMiddle": "y {count} personas más le dieron like a tu proyecto",
       "projectReleaseMiddle": "publicó un nuevo proyecto",
-      "projectVersionReleaseMiddle": "publicó la versión {version} de",
-      "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
-      "projectVersionRejectedMiddle": "Tu versión {version} no pasó la moderación para",
+      "projectVersionReleaseMiddle": "publicó la versión <versionLink>{version}</versionLink> de",
+      "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "Tu versión <versionLink>{version}</versionLink> no pasó la moderación para",
       "projectApprovedMiddle": "Tu proyecto pasó la moderación y ya está disponible:",
       "projectRejectedMiddle": "Tu proyecto no pasó la moderación:",
       "projectFallback": "tu proyecto",

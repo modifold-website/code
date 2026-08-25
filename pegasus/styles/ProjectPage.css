@@ -387,6 +387,12 @@
 	position: absolute;
     background: var(--theme-color-background);
 	inset: 0;
+	display: none;
+}
+.project-inline-gallery__pane--active,
+.project-inline-gallery__pane--leave,
+.project-inline-gallery__pane--enter {
+	display: block;
 }
 .project-inline-gallery__pane--button {
 	width: 100%;
@@ -396,7 +402,14 @@
 	cursor: pointer;
 }
 .project-inline-gallery__pane--active {
+	z-index: 1;
 	transform: translateX(0);
+}
+.project-inline-gallery__pane--leave {
+	z-index: 1;
+}
+.project-inline-gallery__pane--enter {
+	z-index: 2;
 }
 .project-inline-gallery__pane--leave.to-left {
 	animation: project-inline-gallery-pane-leave-left .44s cubic-bezier(.22, .61, .36, 1) forwards;
@@ -892,6 +905,10 @@
 	gap: 6px;
 	min-width: 0;
 }
+.all-versions--table .version-table__game-versions {
+	width: 100%;
+	max-width: 100%;
+}
 .all-versions--table .version-table__value {
 	display: flex;
 	align-items: center;
@@ -902,6 +919,7 @@
 .all-versions--table .version-table__game-versions .version-table__value {
 	flex-direction: column;
 	align-items: flex-start;
+	width: 100%;
 }
 .all-versions--table .version-table__game-versions .version__game-versions {
 	width: max-content;
@@ -1210,7 +1228,16 @@
 .version__game-versions-range {
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 4px;
+    max-width: 100%;
+    min-width: 0;
+}
+.version__game-versions-range-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
 }
 .version__game-versions-separator {
     color: var(--theme-color-text-secondary);

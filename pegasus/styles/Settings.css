@@ -204,6 +204,20 @@
     color: var(--theme-color-text-secondary);
     cursor: pointer;
 }
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+.gallery-settings {
+	width: 100%;
+}
 .gallery-media-toolbar {
     display: flex;
     justify-content: space-between;
@@ -235,24 +249,38 @@
 .gallery-media-toolbar__button svg {
     fill: none;
 }
-.gallery-trailer-modal__description {
+.gallery-video-modal__description {
     margin: 0 0 18px;
     color: var(--theme-color-text-secondary);
     font-size: 16px;
     line-height: 1.35;
 }
-.gallery-trailer-modal__preview {
+.gallery-video-modal__preview {
     aspect-ratio: 16 / 9;
     margin-top: 16px;
     overflow: hidden;
     border-radius: 14px;
     background: var(--theme-color-background);
 }
-.gallery-trailer-modal__preview iframe {
+.gallery-video-modal__preview iframe {
     display: block;
     width: 100%;
     height: 100%;
     border: 0;
+}
+.gallery-media-modal__tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+@media (max-width: 540px) {
+	.gallery-media-modal__tabs {
+		width: 100%;
+	}
+	.gallery-media-modal__tabs .button {
+		flex: 1 1 0;
+	}
 }
 .gallery-settings-grid {
     display: grid;
@@ -270,14 +298,47 @@
     display: flex;
     flex-direction: column;
 }
-.gallery-settings-card--trailer {
-    grid-column: 1 / -1;
+.gallery-settings-card--draggable {
+	cursor: grab;
+	user-select: none;
+	transition: box-shadow 150ms ease, opacity 150ms ease, transform 150ms ease;
 }
-.gallery-settings-card--trailer-compact {
-    order: -1;
+.gallery-settings-card--draggable:active {
+	cursor: grabbing;
 }
-.gallery-settings-card--trailer-editor {
-    order: -1;
+.gallery-settings-card--draggable.is-dragging {
+	opacity: .45;
+	transform: scale(.98);
+}
+.gallery-settings-card--draggable.is-drop-before,
+.gallery-settings-card--draggable.is-drop-after {
+	outline: 2px dashed var(--theme-color-brand-primary);
+	outline-offset: -2px;
+}
+.gallery-settings-card--draggable .gallery-settings-card__preview {
+	aspect-ratio: 16 / 9;
+	overflow: hidden;
+}
+.gallery-settings-card--draggable .gallery-settings-card__image {
+	display: block;
+	height: 100%;
+}
+.gallery-settings-card__play {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 999px;
+	background: rgb(0 0 0 / 70%);
+	color: #fff;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+}
+.gallery-settings-card__play svg {
+	fill: none;
 }
 .gallery-settings-card__preview {
     position: relative;
@@ -285,9 +346,6 @@
 .gallery-settings-card__preview--video {
     aspect-ratio: 16 / 9;
     background: var(--theme-color-background);
-}
-.gallery-settings-card--trailer-compact .gallery-settings-card__preview--video {
-    min-height: 10rem;
 }
 .gallery-settings-card__preview--video iframe {
     display: block;
@@ -309,7 +367,7 @@
 }
 .gallery-settings-card__body {
     flex: 1;
-    padding: 4px 12px 12px 12px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1456,6 +1514,17 @@
         align-items: flex-start;
     }
 }
+@media (max-width: 540px) {
+	.gallery-media-toolbar__actions .button {
+		flex: 1 1 auto;
+		justify-content: center;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.gallery-settings-card--draggable {
+		transition: none;
+	}
+}
 .project-analytics {
     display: grid;
     gap: 16px;
@@ -1530,6 +1599,13 @@
     gap: 16px;
     align-items: center;
     margin-bottom: 20px;
+}
+.project-analytics-card__controls {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 .project-analytics-card__eyebrow {
     margin: 0 0 6px;
@@ -1986,6 +2062,13 @@
 	}
 	.project-analytics-chart-toggle__item {
 		justify-content: center;
+		flex: 1;
+	}
+	.project-analytics-card__controls {
+		width: 100%;
+	}
+	.project-analytics-card__controls .project-analytics-chart-toggle {
+		width: auto;
 		flex: 1;
 	}
 	.dashboard-analytics-filters {

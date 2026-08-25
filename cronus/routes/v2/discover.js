@@ -102,14 +102,14 @@ const getProjectSelect = (extraSelect = "") => `
 	(
 		SELECT pg.url
 		FROM project_gallery pg
-		WHERE pg.project_id = p.id
+		WHERE pg.project_id = p.id AND pg.media_type = 'image'
 		ORDER BY pg.ordering ASC, pg.id ASC
 		LIMIT 1
 	) AS cover_url,
 	(
 		SELECT pg.featured
 		FROM project_gallery pg
-		WHERE pg.project_id = p.id
+		WHERE pg.project_id = p.id AND pg.media_type = 'image'
 		ORDER BY pg.ordering ASC, pg.id ASC
 		LIMIT 1
 	) AS cover_featured

@@ -14,11 +14,22 @@ const ProjectLink = ({ project, children }) => (
 
 const OrganizationLink = ({ organization, children }) => (
     organization?.slug ? (
-        <Link href={`/organization/${organization.slug}`}><b>{children}</b></Link>
+        <Link href={`/organization/${organization.slug}`} className="notification-item__organization-link"><b>{children}</b></Link>
     ) : (
         <b>{children}</b>
     )
 );
+
+const VersionLink = ({ projectVersion, children }) => {
+    const project = projectVersion?.project;
+    const href = project?.slug && projectVersion?.id ? `${getProjectPath(project)}/version/${projectVersion.id}` : "";
+
+    return href ? (
+        <Link href={href} className="notification-item__version-link">{children}</Link>
+    ) : (
+        <span>{children}</span>
+    );
+};
 
 const PROJECT_IMAGE_EVENT_TYPES = new Set(["project_approved", "project_rejected", "project_version_approved", "project_version_rejected"]);
 
@@ -34,10 +45,10 @@ function getNotificationProject(notification) {
     return null;
 }
 
-function NotificationText({ notification, t }) {
+function NotificationText({ notification, t, disableActorLink = false }) {
     const firstActor = notification.actors?.[0];
     const firstActorView = firstActor ? (
-        firstActor.slug ? (
+        firstActor.slug && !disableActorLink ? (
             <Link href={`/user/${firstActor.slug}`} className="notification-item__actor-link"><b><UserName user={firstActor} /></b></Link>
         ) : (
             <b><UserName user={firstActor} /></b>
@@ -70,7 +81,10 @@ function NotificationText({ notification, t }) {
 
         return (
             <>
-                {firstActorView} {t("messages.projectVersionReleaseMiddle", { version: versionNumber })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
+                {firstActorView} {t.rich("messages.projectVersionReleaseMiddle", {
+                    version: versionNumber,
+                    versionLink: (chunks) => <VersionLink projectVersion={notification.projectVersion}>{chunks}</VersionLink>,
+                })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
             </>
         );
     }
@@ -112,7 +126,10 @@ function NotificationText({ notification, t }) {
 
         return (
             <>
-                {t("messages.projectVersionApprovedMiddle", { version: versionNumber })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
+                {t.rich("messages.projectVersionApprovedMiddle", {
+                    version: versionNumber,
+                    versionLink: (chunks) => <VersionLink projectVersion={notification.projectVersion}>{chunks}</VersionLink>,
+                })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
             </>
         );
     }
@@ -124,7 +141,10 @@ function NotificationText({ notification, t }) {
 
         return (
             <>
-                {t("messages.projectVersionRejectedMiddle", { version: versionNumber })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
+                {t.rich("messages.projectVersionRejectedMiddle", {
+                    version: versionNumber,
+                    versionLink: (chunks) => <VersionLink projectVersion={notification.projectVersion}>{chunks}</VersionLink>,
+                })} <ProjectLink project={versionProject}>{projectTitle}</ProjectLink>
             </>
         );
     }
@@ -254,7 +274,7 @@ function ProjectThumbnail({ project }) {
     return (
         <div className="notification-item__etc">
             {project.slug ? (
-                <Link href={getProjectPath(project)}>
+                <Link href={getProjectPath(project)} className="notification-item__project-thumb-link">
                     {image}
                 </Link>
             ) : image}
@@ -282,18 +302,26 @@ function ProjectAvatar({ project }) {
 
 export default function NotificationItem({ notification, timeFormatter, t, onOrganizationInviteAction, onProjectCollaboratorInviteAction, isInviteActionPending = false }) {
     const approvedIconClipId = `notification-approved-icon-${notification.id}`;
-	const thumbnailProject = notification.eventType === "project_like" ? notification.project : notification.eventType === "project_version_release" ? notification.projectVersion?.project : null;
+    const thumbnailProject = notification.eventType === "project_like" ? notification.project : notification.eventType === "project_version_release" ? notification.projectVersion?.project : null;
     const notificationProject = getNotificationProject(notification);
     const shouldShowProjectAvatar = PROJECT_IMAGE_EVENT_TYPES.has(notification.eventType) && notificationProject?.iconUrl;
+    const isSingleFollowNotification = Boolean(notification.eventType === "follow" && Number(notification.totalCount || notification.actors?.length || 0) === 1 && notification.actors?.[0]?.slug);
+    const NotificationItemWrapper = isSingleFollowNotification ? Link : "div";
+    const notificationWrapperProps = isSingleFollowNotification ? {
+        href: `/user/${notification.actors[0].slug}`,
+        className: "notification-item notification-item--link",
+    } : {
+        className: "notification-item",
+    };
 
     return (
-        <div className="notification-item">
+        <NotificationItemWrapper {...notificationWrapperProps}>
             <div className="notification-item__image">
                 <div className="notification-avatars-stack">
                     {shouldShowProjectAvatar ? (
                         <ProjectAvatar project={notificationProject} />
                     ) : notification.actors?.slice(0, 3).map((actor) => (
-                        actor.slug ? (
+                        actor.slug && !isSingleFollowNotification ? (
                             <Link key={actor.id} href={`/user/${actor.slug}`} className="notification-avatars-stack__item">
                                 <img src={actor.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />
                             </Link>
@@ -309,7 +337,10 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
             </div>
 
             <div className="notification-item__body">
-                <div className="notification-item__text"><NotificationText notification={notification} t={t} /></div>
+                <div className="notification-item__text">
+                    <NotificationText notification={notification} t={t} disableActorLink={isSingleFollowNotification} />
+                </div>
+                
                 <div className="notification-item__date">
                     {timeFormatter.format(new Date((notification.latestAt || 0) * 1000))}
                 </div>
@@ -340,6 +371,6 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
 					</button>
 				</div>
 			) : null}
-        </div>
+        </NotificationItemWrapper>
     );
 }

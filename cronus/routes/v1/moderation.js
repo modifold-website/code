@@ -5,6 +5,7 @@ const auth = require("../../middleware/auth");
 const { sanitizePlainText } = require("../../utils/sanitize");
 const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
+const { bumpProjectCacheVersion } = require("../../utils/projectCache");
 const router = express.Router();
 
 const isModeratorRole = (role) => role === "admin" || role === "moderator";
@@ -451,22 +452,44 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 			return res.status(404).json({ message: "Version not found" });
 		}
 
-		await db.query(
-			`UPDATE project_versions
-			SET moderation_status = ?,
-			moderation_reason = ?,
-			moderated_by = ?,
-			moderated_at = NOW()
-			WHERE id = ?`,
-			[decision, decision === "blocked" ? reason : null, req.user.id, versionId]
-		);
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
 
-		await db.query(
-			`INSERT INTO project_moderation_logs
-			(project_id, action, moderator_id, reason, created_at)
-			VALUES (?, ?, ?, ?, NOW())`,
-			[version.project_id, decision === "approved" ? "approved" : "rejected", req.user.id, decision === "blocked" ? reason : "Version approved by technical review"]
-		);
+			await connection.query(
+				`UPDATE project_versions
+				SET moderation_status = ?,
+				moderation_reason = ?,
+				moderated_by = ?,
+				moderated_at = NOW()
+				WHERE id = ?`,
+				[decision, decision === "blocked" ? reason : null, req.user.id, versionId]
+			);
+
+			if(decision === "approved" && version.moderation_status !== "approved") {
+				await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [version.project_id]);
+			}
+
+			await connection.query(
+				`INSERT INTO project_moderation_logs
+				(project_id, action, moderator_id, reason, created_at)
+				VALUES (?, ?, ?, ?, NOW())`,
+				[version.project_id, decision === "approved" ? "approved" : "rejected", req.user.id, decision === "blocked" ? reason : "Version approved by technical review"]
+			);
+
+			await connection.commit();
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
+		if(decision === "approved" && version.moderation_status !== "approved") {
+			await bumpProjectCacheVersion(version.project_slug).catch((error) => {
+				console.warn(`Failed to bump project cache after approving version: ${error.message}`);
+			});
+		}
 
 		if(decision === "approved") {
 			await notifyVersionApproved({ version, createdAt });

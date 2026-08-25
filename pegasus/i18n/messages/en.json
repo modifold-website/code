@@ -711,8 +711,8 @@
       "noImages": "No images in the gallery.",
       "lightboxLabel": "Image lightbox",
       "openInNewTab": "Open image in new tab",
-      "trailer": "Trailer",
-      "openTrailer": "Open trailer",
+      "video": "Video",
+      "openVideo": "Open video {title}",
       "title": "Title",
       "description": "Description",
       "orderIndex": "Order Index",
@@ -1338,6 +1338,13 @@
         "lineAria": "Show as line chart",
         "barAria": "Show as bar chart"
       },
+      "seriesModes": {
+        "label": "Display mode",
+        "daily": "Daily",
+        "cumulative": "Cumulative",
+        "dailyAria": "Show daily values",
+        "cumulativeAria": "Show cumulative values"
+      },
       "stats": {
         "downloads": "Downloads",
         "views": "Views",
@@ -1636,12 +1643,13 @@
         "uploadMultiple": "{count, plural, one {# image could not be uploaded. You can try again.} other {# images could not be uploaded. You can try again.}}",
         "refresh": "Images were uploaded, but the gallery could not be refreshed",
         "invalidFiles": "Only JPEG, PNG, GIF, and WebP images can be selected",
-        "fileTooLarge": "Each image must be smaller than 100 MB"
+        "fileTooLarge": "Each image must be smaller than 100 MB",
+        "delete": "The image could not be deleted"
       },
       "title": "Add New Image",
       "media": {
         "title": "Gallery media",
-        "description": "Add a trailer and screenshots. The trailer is always shown first."
+        "description": "Add images and multiple YouTube videos, then arrange them in the order you want."
       },
       "fields": {
         "title": "Title",
@@ -1658,24 +1666,57 @@
         "order": "Order index"
       },
       "featuredHint": "A featured gallery image shows up in search and your project card. Only one gallery image can be featured.",
-      "actions": {
-        "add": "Add Image"
+      "imageDeleted": "Image deleted",
+      "imageDeleteConfirm": "Remove this image from the gallery?",
+      "imageUntitled": "Image {position}",
+      "empty": {
+        "title": "Your gallery is empty",
+        "description": "Add images or YouTube videos. You can rearrange them at any time."
       },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Add trailer",
-        "title": "Project trailer",
-        "description": "Add one YouTube video. It appears first in the gallery, before screenshots.",
-        "modalDescription": "Paste a YouTube link or video ID. One trailer can be active at a time.",
+      "picker": {
+        "title": "Add media",
+        "description": "Choose the type of media to add to the project gallery."
+      },
+      "types": {
+        "image": "Image",
+        "video": "Video"
+      },
+      "sort": {
+        "title": "Gallery order",
+        "description": "Drag an item by its handle or use the arrows. The new order is saved automatically.",
+        "count": "{count, plural, one {# item} other {# items}}",
+        "position": "Position {position}",
+        "drag": "Drag {title}",
+        "dragging": "Moving gallery item",
+        "moveUp": "Move {title} up",
+        "moveDown": "Move {title} down",
+        "saving": "Saving gallery order",
+        "saved": "Gallery order saved",
+        "error": "The gallery order could not be saved"
+      },
+      "actions": {
+        "add": "Add image",
+        "addMedia": "Add media",
+        "edit": "Edit"
+      },
+      "video": {
+        "add": "Add video",
+        "addTitle": "Add YouTube video",
+        "editTitle": "Edit video",
+        "modalDescription": "Paste a YouTube link or video ID. You can add multiple videos to the same gallery.",
         "urlLabel": "YouTube link",
         "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Save trailer",
-        "remove": "Remove trailer",
-        "success": "Trailer saved",
-        "deleted": "Trailer removed",
-        "error": "Error saving trailer",
-        "previewTitle": "Trailer preview",
-        "cardDescription": "Shown before gallery images."
+        "titlePlaceholder": "For example, project showcase",
+        "descriptionPlaceholder": "Briefly describe what this video demonstrates",
+        "previewTitle": "Video preview",
+        "save": "Save",
+        "added": "Video added",
+        "updated": "Video updated",
+        "deleted": "Video deleted",
+        "error": "The video could not be saved",
+        "deleteError": "The video could not be deleted",
+        "deleteConfirm": "Remove this video from the gallery?",
+        "untitled": "Video {position}"
       },
       "modal": {
         "steps": {
@@ -2340,9 +2381,9 @@
       "projectReleaseMiddle": "published a new project",
       "projectApprovedMiddle": "Your project passed moderation and is now available:",
       "projectRejectedMiddle": "Your project did not pass moderation:",
-      "projectVersionReleaseMiddle": "released version {version} for",
-      "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
-      "projectVersionRejectedMiddle": "Your version {version} did not pass moderation for",
+      "projectVersionReleaseMiddle": "released version <versionLink>{version}</versionLink> for",
+      "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "Your version <versionLink>{version}</versionLink> did not pass moderation for",
       "projectFallback": "your project",
       "versionFallback": "new",
       "unknown": "New notification",

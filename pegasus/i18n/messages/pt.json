@@ -711,8 +711,8 @@
       "noImages": "Não há imagens na galeria.",
       "lightboxLabel": "Visualizador de imagens",
       "openInNewTab": "Abrir imagem em uma nova aba",
-      "trailer": "Trailer",
-      "openTrailer": "Abrir trailer",
+      "video": "Vídeo",
+      "openVideo": "Abrir vídeo {title}",
       "title": "Título",
       "description": "Descrição",
       "orderIndex": "Índice de ordem",
@@ -1247,6 +1247,13 @@
         "lineAria": "Mostrar como gráfico de linhas",
         "barAria": "Mostrar como gráfico de barras"
       },
+      "seriesModes": {
+        "label": "Modo de visualização",
+        "daily": "Diários",
+        "cumulative": "Acumulados",
+        "dailyAria": "Mostrar valores diários",
+        "cumulativeAria": "Mostrar valores acumulados"
+      },
       "stats": {
         "downloads": "Downloads",
         "views": "Views",
@@ -1545,12 +1552,13 @@
         "uploadMultiple": "{count, plural, one {Não foi possível enviar # imagem. Você pode tentar novamente.} other {Não foi possível enviar # imagens. Você pode tentar novamente.}}",
         "refresh": "As imagens foram enviadas, mas não foi possível atualizar a galeria",
         "invalidFiles": "Apenas imagens JPEG, PNG, GIF e WebP podem ser selecionadas",
-        "fileTooLarge": "Cada imagem deve ter menos de 100 MB"
+        "fileTooLarge": "Cada imagem deve ter menos de 100 MB",
+        "delete": "Não foi possível excluir a imagem"
       },
       "title": "Adicionar nova imagem",
       "media": {
         "title": "Mídia da galeria",
-        "description": "Adicione um trailer e capturas. O trailer sempre aparece primeiro."
+        "description": "Adicione imagens e vários vídeos do YouTube e organize-os como quiser."
       },
       "fields": {
         "title": "Título",
@@ -1567,24 +1575,57 @@
         "order": "Índice de ordem"
       },
       "featuredHint": "Uma imagem em destaque da galeria aparece na busca e no cartão do seu projeto. Apenas uma imagem da galeria pode ficar em destaque.",
-      "actions": {
-        "add": "Adicionar imagem"
+      "imageDeleted": "Imagem excluída",
+      "imageDeleteConfirm": "Remover esta imagem da galeria?",
+      "imageUntitled": "Imagem {position}",
+      "empty": {
+        "title": "Sua galeria está vazia",
+        "description": "Adicione imagens ou vídeos do YouTube. Você pode reorganizá-los a qualquer momento."
       },
-      "trailer": {
-        "eyebrow": "YouTube",
-        "add": "Adicionar trailer",
-        "title": "Trailer do projeto",
-        "description": "Adicione um vídeo do YouTube. Ele aparece primeiro na galeria, antes das capturas.",
-        "modalDescription": "Cole um link do YouTube ou o ID do vídeo. Apenas um trailer pode ficar ativo.",
+      "picker": {
+        "title": "Adicionar mídia",
+        "description": "Escolha o tipo de mídia que deseja adicionar à galeria do projeto."
+      },
+      "types": {
+        "image": "Imagem",
+        "video": "Vídeo"
+      },
+      "sort": {
+        "title": "Ordem da galeria",
+        "description": "Arraste um item pela alça ou use as setas. A nova ordem é salva automaticamente.",
+        "count": "{count, plural, one {# item} other {# itens}}",
+        "position": "Posição {position}",
+        "drag": "Arrastar {title}",
+        "dragging": "Movendo item",
+        "moveUp": "Mover {title} para cima",
+        "moveDown": "Mover {title} para baixo",
+        "saving": "Salvando a ordem",
+        "saved": "Ordem salva",
+        "error": "Não foi possível salvar a ordem da galeria"
+      },
+      "actions": {
+        "add": "Adicionar imagem",
+        "addMedia": "Adicionar mídia",
+        "edit": "Editar"
+      },
+      "video": {
+        "add": "Adicionar vídeo",
+        "addTitle": "Adicionar vídeo do YouTube",
+        "editTitle": "Editar vídeo",
+        "modalDescription": "Cole um link do YouTube ou ID do vídeo. Você pode adicionar vários vídeos à mesma galeria.",
         "urlLabel": "Link do YouTube",
         "placeholder": "https://www.youtube.com/watch?v=...",
-        "save": "Salvar trailer",
-        "remove": "Remover trailer",
-        "success": "Trailer salvo",
-        "deleted": "Trailer removido",
-        "error": "Erro ao salvar trailer",
-        "previewTitle": "Prévia do trailer",
-        "cardDescription": "Exibido antes das imagens da galeria."
+        "titlePlaceholder": "Por exemplo, apresentação do projeto",
+        "descriptionPlaceholder": "Descreva brevemente o que este vídeo demonstra",
+        "previewTitle": "Prévia do vídeo",
+        "save": "Salvar",
+        "added": "Vídeo adicionado",
+        "updated": "Vídeo atualizado",
+        "deleted": "Vídeo excluído",
+        "error": "Não foi possível salvar o vídeo",
+        "deleteError": "Não foi possível excluir o vídeo",
+        "deleteConfirm": "Remover este vídeo da galeria?",
+        "untitled": "Vídeo {position}"
       },
       "modal": {
         "steps": {
@@ -2243,9 +2284,9 @@
       "projectLikeOneMiddle": "curtiu seu projeto",
       "projectLikeManyMiddle": "e mais {count} pessoas curtiram seu projeto",
       "projectReleaseMiddle": "publicou um novo projeto",
-      "projectVersionReleaseMiddle": "lançou a versão {version} para",
-      "projectVersionApprovedMiddle": "Your version {version} passed moderation and is now available for",
-      "projectVersionRejectedMiddle": "Sua versão {version} não passou pela moderação para",
+      "projectVersionReleaseMiddle": "lançou a versão <versionLink>{version}</versionLink> para",
+      "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
+      "projectVersionRejectedMiddle": "Sua versão <versionLink>{version}</versionLink> não passou pela moderação para",
       "projectApprovedMiddle": "Seu projeto passou pela moderação e agora está disponível:",
       "projectRejectedMiddle": "Seu projeto não passou pela moderação:",
       "projectFallback": "seu projeto",

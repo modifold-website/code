@@ -155,8 +155,10 @@ export default function VersionDisplay({ gameVersions, allGameVersions = default
                     version.type === "range" ? (
                         <span key={index} className="version__game-versions-range">
                             <span className="version__game-versions">{version.start}</span>
-                            <span className="version__game-versions-separator" aria-hidden="true">—</span>
-                            <span className="version__game-versions">{version.end}</span>
+                            <span className="version__game-versions-range-end">
+                                <span className="version__game-versions-separator" aria-hidden="true">—</span>
+                                <span className="version__game-versions">{version.end}</span>
+                            </span>
                         </span>
                     ) : (
                         <span key={index} className="version__game-versions">
