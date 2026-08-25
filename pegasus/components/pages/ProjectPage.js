@@ -57,7 +57,7 @@ export default function ProjectPage({ project, authToken, showInlineGallery = fa
                     ) : null}
 
                     {showInlineGallery ? (
-                        <ProjectInlineGallerySlider images={project?.gallery || []} projectTitle={project?.title || ""} trailerVideoId={project?.trailer_youtube_video_id || ""} />
+                        <ProjectInlineGallerySlider media={project?.gallery || []} projectTitle={project?.title || ""} />
                     ) : null}
 
                     <div className="content content--padding markdown-body">

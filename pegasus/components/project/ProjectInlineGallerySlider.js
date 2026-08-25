@@ -3,38 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
+import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl, isGalleryVideo, normalizeGalleryMedia } from "@/utils/gallery/media";
 
 const SLIDE_DURATION_MS = 440;
 const AUTO_PLAY_MS = 6500;
 
-const getYouTubeEmbedUrl = (videoId) => `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0`;
-const getYouTubeThumbnailUrl = (videoId) => `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-export default function ProjectInlineGallerySlider({ images = [], projectTitle = "", trailerVideoId = "" }) {
+export default function ProjectInlineGallerySlider({ media = [], projectTitle = "" }) {
 	const t = useTranslations("ProjectPage");
 	const preparedMedia = useMemo(() => {
-		const media = [];
-
-		if(trailerVideoId) {
-			media.push({
-				id: `youtube-${trailerVideoId}`,
-				type: "youtube",
-				videoId: trailerVideoId,
-				title: t("gallery.trailer"),
-				thumbnailUrl: getYouTubeThumbnailUrl(trailerVideoId),
-			});
-		}
-
-		if(Array.isArray(images)) {
-			for(const image of images) {
-				if(typeof image?.url === "string" && image.url.length > 0) {
-					media.push({ ...image, type: "image" });
-				}
-			}
-		}
-
-		return media;
-	}, [images, trailerVideoId, t]);
+		return normalizeGalleryMedia(media).map((item) => isGalleryVideo(item) ? {
+			...item,
+			type: "youtube",
+			videoId: item.youtube_video_id,
+			title: item.title || t("gallery.video"),
+			thumbnailUrl: getYouTubeThumbnailUrl(item.youtube_video_id),
+		} : { ...item, type: "image" });
+	}, [media, t]);
 	const visibleThumbsCount = 5;
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [transitionState, setTransitionState] = useState(null);
@@ -131,8 +115,8 @@ export default function ProjectInlineGallerySlider({ images = [], projectTitle =
 			return (
 				<iframe
 					key={media.id}
-					src={getYouTubeEmbedUrl(media.videoId)}
-					title={media.title || t("gallery.trailer")}
+					src={getYouTubeEmbedUrl(media.videoId, { autoplay: true })}
+					title={media.title || t("gallery.video")}
 					className="project-inline-gallery__video"
 					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 					allowFullScreen
@@ -152,7 +136,7 @@ export default function ProjectInlineGallerySlider({ images = [], projectTitle =
 		);
 	};
 	const renderThumb = (media, index, keyPrefix = "") => (
-		<button key={`${keyPrefix}${media.id || media.url}-${index}`} type="button" className={`project-inline-gallery__thumb ${index === activeThumbIndex ? "is-active" : ""}`} onClick={() => openAt(index)} aria-label={media.type === "youtube" ? t("gallery.openTrailer") : `Open image ${index + 1}`} disabled={isAnimating}>
+		<button key={`${keyPrefix}${media.id || media.url}-${index}`} type="button" className={`project-inline-gallery__thumb ${index === activeThumbIndex ? "is-active" : ""}`} onClick={() => openAt(index)} aria-label={media.type === "youtube" ? t("gallery.openVideo", { title: media.title || t("gallery.video") }) : `Open image ${index + 1}`} disabled={isAnimating}>
 			<img src={media.type === "youtube" ? media.thumbnailUrl : media.url} alt={getThumbAlt(media, index)} loading="lazy" />
 
 			{media.type === "youtube" && (
@@ -206,6 +190,7 @@ export default function ProjectInlineGallerySlider({ images = [], projectTitle =
 									return renderThumb(image, index, "leave-");
 								})}
 							</div>
+
 							<div className={`project-inline-gallery__thumbs-track project-inline-gallery__thumbs-track--enter ${nextVisibleThumbs.length === 1 ? "project-inline-gallery__thumbs-track--single" : ""} ${transitionState.direction === "right" ? "from-right" : "from-left"}`}>
 								{nextVisibleThumbs.map((image, offset) => {
 									const index = nextThumbsWindowStart + offset;

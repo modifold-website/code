@@ -8,16 +8,9 @@ import { useTranslations, useLocale } from "next-intl";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
 import ProjectSidebar from "../project/ProjectSidebar";
 import ConfirmModal from "@/modal/ConfirmModal";
+import { getYouTubeEmbedUrl, isGalleryVideo, normalizeGalleryMedia } from "@/utils/gallery/media";
 
 Modal.setAppElement("body");
-
-const getYouTubeEmbedUrl = (videoId) => {
-    if(!videoId) {
-        return "";
-    }
-
-    return `https://www.youtube.com/embed/${videoId}`;
-};
 
 export default function GalleryPage({ project, authToken }) {
     const t = useTranslations("ProjectPage");
@@ -27,15 +20,12 @@ export default function GalleryPage({ project, authToken }) {
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
     const [pendingDeleteGalleryId, setPendingDeleteGalleryId] = useState(null);
-    const [galleryImages, setGalleryImages] = useState(Array.isArray(project?.gallery) ? project.gallery : []);
-    const trailerVideoId = project?.trailer_youtube_video_id || "";
-    const hasTrailer = Boolean(trailerVideoId);
-    const hasGalleryMedia = hasTrailer || galleryImages.length > 0;
+    const [galleryMedia, setGalleryMedia] = useState(() => normalizeGalleryMedia(project?.gallery));
+    const hasGalleryMedia = galleryMedia.length > 0;
     const [editLoading, setEditLoading] = useState(false);
     const [editFormData, setEditFormData] = useState({
         title: "",
         description: "",
-        ordering: 0,
         featured: false,
     });
 
@@ -46,8 +36,7 @@ export default function GalleryPage({ project, authToken }) {
         setEditFormData({
             title: image?.title || "",
             description: image?.description || "",
-			ordering: Math.max(0, Number.parseInt(image?.ordering, 10) || 0),
-            featured: false,
+            featured: Boolean(Number(image?.featured)),
         });
         setEditModalOpen(true);
     };
@@ -59,7 +48,7 @@ export default function GalleryPage({ project, authToken }) {
     };
 
     useEffect(() => {
-        setGalleryImages(Array.isArray(project?.gallery) ? project.gallery : []);
+        setGalleryMedia(normalizeGalleryMedia(project?.gallery));
     }, [project?.gallery]);
 
     const refreshGallery = async () => {
@@ -75,7 +64,7 @@ export default function GalleryPage({ project, authToken }) {
         }
 
         const nextProject = await response.json();
-        setGalleryImages(Array.isArray(nextProject?.gallery) ? nextProject.gallery : []);
+        setGalleryMedia(normalizeGalleryMedia(nextProject?.gallery));
     };
 
     const handleUpdate = async (e) => {
@@ -89,7 +78,6 @@ export default function GalleryPage({ project, authToken }) {
         const formDataToSend = new FormData();
         formDataToSend.append("title", editFormData.title);
         formDataToSend.append("description", editFormData.description);
-        formDataToSend.append("ordering", editFormData.ordering);
         formDataToSend.append("featured", editFormData.featured);
 
         try {
@@ -167,69 +155,62 @@ export default function GalleryPage({ project, authToken }) {
                         <p style={{ color: "var(--theme-color-text-secondary)" }}>{t("gallery.noImages")}</p>
                     ) : (
                         <div className="gallery-settings-grid gallery-page-grid">
-                            {hasTrailer && (
-                                <div className="gallery-settings-card gallery-settings-card--trailer-compact">
-                                    <div className="gallery-settings-card__preview gallery-settings-card__preview--video">
-                                        <iframe
-                                            src={getYouTubeEmbedUrl(trailerVideoId)}
-                                            title={t("gallery.trailer")}
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                            allowFullScreen
-                                        />
-                                    </div>
+                            {galleryMedia.map((media) => {
+                                const isVideo = isGalleryVideo(media);
 
-                                    <div className="gallery-settings-card__body" style={{ paddingTop: "12px" }}>
-                                        <div className="gallery-settings-card__date">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="m6 3 14 9-14 9V3Z"></path>
-                                            </svg>
-
-                                            {t("gallery.trailer")}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {galleryImages.map((image) => (
-                                <div key={image.id} className="gallery-settings-card">
-                                    <div className="gallery-settings-card__preview" aria-label={t("gallery.viewImage", { title: image.title || t("gallery.image") })} {...getLightboxTriggerProps(image)}>
-                                        <img src={image.url} alt={image.title || t("gallery.image")} style={{ cursor: "pointer" }} className="gallery-settings-card__image" loading={Boolean(Number(image?.featured)) ? "eager" : "lazy"} />
-                                    </div>
-
-                                    <div className="gallery-settings-card__body">
-                                        {(image.title || image.description) &&
-                                            <div className="gallery-settings-card__info">
-                                                {image.title && <h2>{image.title}</h2>}
-
-                                                {image.description && <p>{image.description}</p>}
+                                return (
+                                    <div key={media.id} className="gallery-settings-card">
+                                        {isVideo ? (
+                                            <div className="gallery-settings-card__preview gallery-settings-card__preview--video">
+                                                <iframe src={getYouTubeEmbedUrl(media.youtube_video_id)} title={media.title || t("gallery.video")} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen />
                                             </div>
-                                        }
-
-                                        <div className="gallery-settings-card__date">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M8 2v4" />
-                                                <path d="M16 2v4" />
-                                                <rect width="18" height="18" x="3" y="4" rx="2" />
-                                                <path d="M3 10h18" />
-                                            </svg>
-
-                                            {formatDate(image.created_at)}
-                                        </div>
-
-                                        {user && project.user_id === user.id && (
-                                            <div className="gallery-settings-card__actions">
-                                                <button type="button" className="button button--size-m button--type-minimal" onClick={() => openEditModal(image)}>
-                                                    {t("gallery.editImage")}
-                                                </button>
-
-                                                <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDeleteById(image.id)}>
-                                                    {t("delete")}
-                                                </button>
+                                        ) : (
+                                            <div className="gallery-settings-card__preview" aria-label={t("gallery.viewImage", { title: media.title || t("gallery.image") })} {...getLightboxTriggerProps(media)}>
+                                                <img src={media.url} alt={media.title || t("gallery.image")} style={{ cursor: "pointer" }} className="gallery-settings-card__image" loading={Boolean(Number(media?.featured)) ? "eager" : "lazy"} />
                                             </div>
                                         )}
+
+                                        <div className="gallery-settings-card__body">
+                                            {(media.title || media.description) ? (
+                                                <div className="gallery-settings-card__info">
+                                                    {media.title ? <h2>{media.title}</h2> : null}
+                                                    
+                                                    {media.description ? <p>{media.description}</p> : null}
+                                                </div>
+                                            ) : null}
+
+                                            <div className="gallery-settings-card__date">
+                                                {isVideo ? (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                                        <path d="m6 3 14 9-14 9V3Z" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                                        <path d="M8 2v4" />
+                                                        <path d="M16 2v4" />
+                                                        <rect width="18" height="18" x="3" y="4" rx="2" />
+                                                        <path d="M3 10h18" />
+                                                    </svg>
+                                                )}
+
+                                                {isVideo ? t("gallery.video") : formatDate(media.created_at)}
+                                            </div>
+
+                                            {!isVideo && user && project.user_id === user.id ? (
+                                                <div className="gallery-settings-card__actions">
+                                                    <button type="button" className="button button--size-m button--type-minimal" onClick={() => openEditModal(media)}>
+                                                        {t("gallery.editImage")}
+                                                    </button>
+                                                    
+                                                    <button type="button" className="button button--size-m button--type-minimal" onClick={() => handleDeleteById(media.id)}>
+                                                        {t("delete")}
+                                                    </button>
+                                                </div>
+                                            ) : null}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
 
@@ -265,13 +246,6 @@ export default function GalleryPage({ project, authToken }) {
                                         <div className="field field--default textarea blog-settings__input">
                                             <label className="field__wrapper">
                                                 <textarea name="description" value={editFormData.description} className="autosize textarea__input" style={{ height: "100px" }} disabled={editLoading} onChange={(e) => setEditFormData((prev) => ({ ...prev, description: e.target.value }))} />
-                                            </label>
-                                        </div>
-
-                                        <p className="blog-settings__field-title">{t("gallery.orderIndex")}</p>
-                                        <div className="field field--default blog-settings__input">
-                                            <label className="field__wrapper">
-                                                <input type="number" name="ordering" min="0" step="1" value={editFormData.ordering} className="text-input" disabled={editLoading} onChange={(event) => setEditFormData((prev) => ({ ...prev, ordering: event.target.value === "" ? "" : Math.max(0, Number.parseInt(event.target.value, 10) || 0) }))} />
                                             </label>
                                         </div>
 

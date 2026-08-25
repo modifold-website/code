@@ -712,7 +712,9 @@
       "lightboxLabel": "Image lightbox",
       "openInNewTab": "Open image in new tab",
       "trailer": "Trailer",
+      "video": "Video",
       "openTrailer": "Open trailer",
+      "openVideo": "Open video {title}",
       "title": "Title",
       "description": "Description",
       "orderIndex": "Order Index",
@@ -1636,12 +1638,13 @@
         "uploadMultiple": "{count, plural, one {# image could not be uploaded. You can try again.} other {# images could not be uploaded. You can try again.}}",
         "refresh": "Images were uploaded, but the gallery could not be refreshed",
         "invalidFiles": "Only JPEG, PNG, GIF, and WebP images can be selected",
-        "fileTooLarge": "Each image must be smaller than 100 MB"
+        "fileTooLarge": "Each image must be smaller than 100 MB",
+        "delete": "The image could not be deleted"
       },
       "title": "Add New Image",
       "media": {
         "title": "Gallery media",
-        "description": "Add a trailer and screenshots. The trailer is always shown first."
+        "description": "Add images and multiple YouTube videos, then arrange them in the order you want."
       },
       "fields": {
         "title": "Title",
@@ -1658,8 +1661,57 @@
         "order": "Order index"
       },
       "featuredHint": "A featured gallery image shows up in search and your project card. Only one gallery image can be featured.",
+      "imageDeleted": "Image deleted",
+      "imageDeleteConfirm": "Remove this image from the gallery?",
+      "imageUntitled": "Image {position}",
+      "empty": {
+        "title": "Your gallery is empty",
+        "description": "Add images or YouTube videos. You can rearrange them at any time."
+      },
+      "picker": {
+        "title": "Add media",
+        "description": "Choose the type of media to add to the project gallery."
+      },
+      "types": {
+        "image": "Image",
+        "video": "Video"
+      },
+      "sort": {
+        "title": "Gallery order",
+        "description": "Drag an item by its handle or use the arrows. The new order is saved automatically.",
+        "count": "{count, plural, one {# item} other {# items}}",
+        "position": "Position {position}",
+        "drag": "Drag {title}",
+        "dragging": "Moving gallery item",
+        "moveUp": "Move {title} up",
+        "moveDown": "Move {title} down",
+        "saving": "Saving gallery order",
+        "saved": "Gallery order saved",
+        "error": "The gallery order could not be saved"
+      },
       "actions": {
-        "add": "Add Image"
+        "add": "Add image",
+        "addMedia": "Add media",
+        "edit": "Edit"
+      },
+      "video": {
+        "add": "Add video",
+        "addTitle": "Add YouTube video",
+        "editTitle": "Edit video",
+        "modalDescription": "Paste a YouTube link or video ID. You can add multiple videos to the same gallery.",
+        "urlLabel": "YouTube link",
+        "placeholder": "https://www.youtube.com/watch?v=...",
+        "titlePlaceholder": "For example, project showcase",
+        "descriptionPlaceholder": "Briefly describe what this video demonstrates",
+        "previewTitle": "Video preview",
+        "save": "Save",
+        "added": "Video added",
+        "updated": "Video updated",
+        "deleted": "Video deleted",
+        "error": "The video could not be saved",
+        "deleteError": "The video could not be deleted",
+        "deleteConfirm": "Remove this video from the gallery?",
+        "untitled": "Video {position}"
       },
       "trailer": {
         "eyebrow": "YouTube",

@@ -709,6 +709,30 @@ const getProjectById = async (projectId) => {
     return rows[0] || null;
 };
 
+const getNextGalleryOrdering = async (connection, projectId) => {
+	await connection.query("SELECT id FROM projects WHERE id = ? FOR UPDATE", [projectId]);
+	const [rows] = await connection.query(
+		"SELECT COALESCE(MAX(ordering), -1) + 1 AS next_ordering FROM project_gallery WHERE project_id = ?",
+		[projectId]
+	);
+
+	return Number(rows[0]?.next_ordering) || 0;
+};
+
+const normalizeGalleryOrdering = async (connection, projectId) => {
+	const [galleryItems] = await connection.query(
+		"SELECT id FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC",
+		[projectId]
+	);
+
+	for(let index = 0; index < galleryItems.length; index += 1) {
+		await connection.query(
+			"UPDATE project_gallery SET ordering = ? WHERE id = ? AND project_id = ?",
+			[index, galleryItems[index].id, projectId]
+		);
+	}
+};
+
 const VISIBLE_VERSION_STATUSES = ["approved"];
 const PRIVATE_VERSION_STATUSES = ["draft", "pending", "scanning", "needs_review", "blocked", "error"];
 
@@ -2003,7 +2027,7 @@ router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => 
 });
 
 router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => {
-    const { title, description, ordering, featured } = req.body;
+    const { title, description, featured } = req.body;
     try {
         const project = await getProjectBySlug(req.params.slug);
         if(!project) {
@@ -2025,79 +2049,333 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
         }
 
         const galleryFile = await convertImageToWebp(req.file);
-
-        if(featured === 'true') {
-            await db.query('UPDATE project_gallery SET featured = FALSE WHERE project_id = ?', [project.id]);
-        }
-
         const url = `https://media.modifold.com/projects/${project.id}/${galleryFile.filename}`;
         const rawUrl = url;
-        await db.query(
-            'INSERT INTO project_gallery (project_id, url, raw_url, title, description, ordering, featured) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [
-                project.id,
-                url,
-                rawUrl,
-                title ? sanitizePlainText(title) : null,
-                description ? sanitizePlainText(description, { preserveNewlines: true }) : null,
-                parseInt(ordering) || 0,
-                featured === 'true',
-            ]
-        );
+		const connection = await db.getConnection();
 
-        await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+		try {
+			await connection.beginTransaction();
 
-        res.json({ success: true, url });
+			if(featured === 'true') {
+				await connection.query('UPDATE project_gallery SET featured = FALSE WHERE project_id = ?', [project.id]);
+			}
+
+			const nextOrdering = await getNextGalleryOrdering(connection, project.id);
+			const [result] = await connection.query(
+				'INSERT INTO project_gallery (project_id, media_type, url, raw_url, title, description, ordering, featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+				[
+					project.id,
+					'image',
+					url,
+					rawUrl,
+					title ? sanitizePlainText(title) : null,
+					description ? sanitizePlainText(description, { preserveNewlines: true }) : null,
+					nextOrdering,
+					featured === 'true',
+				]
+			);
+
+			await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+			await connection.commit();
+			await bumpProjectCacheVersion(project.slug).catch((error) => {
+				console.warn(`Failed to bump project cache after adding gallery image: ${error.message}`);
+			});
+
+			res.status(201).json({ success: true, id: result.insertId, url, ordering: nextOrdering });
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
     } catch (error) {
         console.error('Error uploading gallery image:', error);
         res.status(500).json({ message: 'Error uploading gallery image', error: error.message });
     }
 });
 
+router.post("/:slug/gallery/videos", auth, async (req, res) => {
+	const { youtube_url, title, description } = req.body || {};
+
+	try {
+		const project = await getProjectBySlug(req.params.slug);
+		if(!project) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+
+		const access = await requireProjectPermission(res, {
+			project,
+			userId: req.user.id,
+			permission: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
+		});
+
+		if(!access) {
+			return;
+		}
+
+		const video = normalizeYouTubeTrailer(typeof youtube_url === "string" ? youtube_url.trim() : "");
+		if(!video) {
+			return res.status(400).json({ message: "Invalid YouTube URL" });
+		}
+
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
+			const nextOrdering = await getNextGalleryOrdering(connection, project.id);
+			const [result] = await connection.query(
+				`INSERT INTO project_gallery
+					(project_id, media_type, url, raw_url, youtube_url, youtube_video_id, title, description, ordering, featured)
+				VALUES (?, 'video', NULL, NULL, ?, ?, ?, ?, ?, FALSE)`,
+				[
+					project.id,
+					video.url,
+					video.videoId,
+					title ? sanitizePlainText(title) : null,
+					description ? sanitizePlainText(description, { preserveNewlines: true }) : null,
+					nextOrdering,
+				]
+			);
+			await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+			await connection.commit();
+
+			await bumpProjectCacheVersion(project.slug).catch((error) => {
+				console.warn(`Failed to bump project cache after adding gallery video: ${error.message}`);
+			});
+
+			return res.status(201).json({
+				success: true,
+				item: {
+					id: result.insertId,
+					project_id: project.id,
+					media_type: "video",
+					youtube_url: video.url,
+					youtube_video_id: video.videoId,
+					title: title ? sanitizePlainText(title) : null,
+					description: description ? sanitizePlainText(description, { preserveNewlines: true }) : null,
+					ordering: nextOrdering,
+					featured: 0,
+				},
+			});
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+	} catch(error) {
+		console.error("Error adding gallery video:", error);
+		return res.status(500).json({ message: "Error adding gallery video", error: error.message });
+	}
+});
+
+router.put("/:slug/gallery/videos/:galleryId", auth, async (req, res) => {
+	const { youtube_url, title, description } = req.body || {};
+
+	try {
+		const project = await getProjectBySlug(req.params.slug);
+		if(!project) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+
+		const access = await requireProjectPermission(res, {
+			project,
+			userId: req.user.id,
+			permission: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
+		});
+
+		if(!access) {
+			return;
+		}
+
+		const video = normalizeYouTubeTrailer(typeof youtube_url === "string" ? youtube_url.trim() : "");
+		if(!video) {
+			return res.status(400).json({ message: "Invalid YouTube URL" });
+		}
+
+		const [galleryItems] = await db.query(
+			"SELECT id FROM project_gallery WHERE id = ? AND project_id = ? AND media_type = 'video' LIMIT 1",
+			[req.params.galleryId, project.id]
+		);
+		if(!galleryItems.length) {
+			return res.status(404).json({ message: "Gallery video not found" });
+		}
+
+		await db.query(
+			`UPDATE project_gallery
+			SET youtube_url = ?, youtube_video_id = ?, title = ?, description = ?
+			WHERE id = ? AND project_id = ?`,
+			[
+				video.url,
+				video.videoId,
+				title ? sanitizePlainText(title) : null,
+				description ? sanitizePlainText(description, { preserveNewlines: true }) : null,
+				req.params.galleryId,
+				project.id,
+			]
+		);
+		await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+		await bumpProjectCacheVersion(project.slug).catch((error) => {
+			console.warn(`Failed to bump project cache after updating gallery video: ${error.message}`);
+		});
+
+		return res.json({ success: true, message: "Gallery video updated" });
+	} catch(error) {
+		console.error("Error updating gallery video:", error);
+		return res.status(500).json({ message: "Error updating gallery video", error: error.message });
+	}
+});
+
+router.put("/:slug/gallery/order", auth, async (req, res) => {
+	const orderedIds = Array.isArray(req.body?.ordered_ids) ? req.body.ordered_ids.map(Number) : [];
+	const uniqueIds = [...new Set(orderedIds.filter(Number.isInteger))];
+
+	if(orderedIds.length !== uniqueIds.length) {
+		return res.status(400).json({ message: "Gallery order must contain unique numeric IDs" });
+	}
+
+	try {
+		const project = await getProjectBySlug(req.params.slug);
+		if(!project) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+
+		const access = await requireProjectPermission(res, {
+			project,
+			userId: req.user.id,
+			permission: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
+		});
+
+		if(!access) {
+			return;
+		}
+
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
+			const [galleryItems] = await connection.query(
+				"SELECT id FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC FOR UPDATE",
+				[project.id]
+			);
+			const existingIds = galleryItems.map((item) => Number(item.id));
+
+			if(existingIds.length !== uniqueIds.length || uniqueIds.some((id) => !existingIds.includes(id))) {
+				await connection.rollback();
+				return res.status(409).json({ message: "Gallery changed. Refresh it and try again." });
+			}
+
+			for(let index = 0; index < uniqueIds.length; index += 1) {
+				await connection.query(
+					"UPDATE project_gallery SET ordering = ? WHERE id = ? AND project_id = ?",
+					[index, uniqueIds[index], project.id]
+				);
+			}
+
+			await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+			await connection.commit();
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
+		await bumpProjectCacheVersion(project.slug).catch((error) => {
+			console.warn(`Failed to bump project cache after reordering gallery: ${error.message}`);
+		});
+
+		return res.json({ success: true, ordered_ids: uniqueIds });
+	} catch(error) {
+		console.error("Error reordering gallery:", error);
+		return res.status(500).json({ message: "Error reordering gallery", error: error.message });
+	}
+});
+
 router.put("/:slug/gallery/trailer", auth, async (req, res) => {
-    const { youtube_url } = req.body || {};
+	const { youtube_url } = req.body || {};
 
-    try {
-        const project = await getProjectBySlug(req.params.slug);
-        if(!project) {
-            return res.status(404).json({ message: "Project not found" });
-        }
+	try {
+		const project = await getProjectBySlug(req.params.slug);
+		if(!project) {
+			return res.status(404).json({ message: "Project not found" });
+		}
 
-        const access = await requireProjectPermission(res, {
-            project,
-            userId: req.user.id,
-            permission: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
-        });
+		const access = await requireProjectPermission(res, {
+			project,
+			userId: req.user.id,
+			permission: ORG_PROJECT_PERMISSIONS.EDIT_GALLERY,
+		});
 
-        if(!access) {
-            return;
-        }
+		if(!access) {
+			return;
+		}
 
-        const trimmedUrl = typeof youtube_url === "string" ? youtube_url.trim() : "";
-        const trailer = trimmedUrl ? normalizeYouTubeTrailer(trimmedUrl) : null;
+		const trimmedUrl = typeof youtube_url === "string" ? youtube_url.trim() : "";
+		const trailer = trimmedUrl ? normalizeYouTubeTrailer(trimmedUrl) : null;
+		if(trimmedUrl && !trailer) {
+			return res.status(400).json({ message: "Invalid YouTube URL" });
+		}
 
-        if(trimmedUrl && !trailer) {
-            return res.status(400).json({ message: "Invalid YouTube URL" });
-        }
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
+			const [legacyProjects] = await connection.query(
+				"SELECT trailer_youtube_video_id FROM projects WHERE id = ? FOR UPDATE",
+				[project.id]
+			);
+			const legacyVideoId = legacyProjects[0]?.trailer_youtube_video_id || null;
+			const [legacyGalleryVideos] = legacyVideoId ? await connection.query(
+				"SELECT id FROM project_gallery WHERE project_id = ? AND media_type = 'video' AND youtube_video_id = ? ORDER BY ordering ASC, id ASC LIMIT 1",
+				[project.id, legacyVideoId]
+			) : [[]];
+			const legacyGalleryVideoId = legacyGalleryVideos[0]?.id || null;
 
-        await db.query(
-            "UPDATE projects SET trailer_youtube_url = ?, trailer_youtube_video_id = ?, updated_at = NOW() WHERE id = ?",
-            [trailer?.url || null, trailer?.videoId || null, project.id]
-        );
+			if(trailer && legacyGalleryVideoId) {
+				await connection.query(
+					"UPDATE project_gallery SET youtube_url = ?, youtube_video_id = ? WHERE id = ? AND project_id = ?",
+					[trailer.url, trailer.videoId, legacyGalleryVideoId, project.id]
+				);
+			} else if(trailer) {
+				const nextOrdering = await getNextGalleryOrdering(connection, project.id);
+				await connection.query(
+					`INSERT INTO project_gallery
+						(project_id, media_type, url, raw_url, youtube_url, youtube_video_id, title, description, ordering, featured)
+					VALUES (?, 'video', NULL, NULL, ?, ?, NULL, NULL, ?, FALSE)`,
+					[project.id, trailer.url, trailer.videoId, nextOrdering]
+				);
+			} else if(legacyGalleryVideoId) {
+				await connection.query("DELETE FROM project_gallery WHERE id = ? AND project_id = ?", [legacyGalleryVideoId, project.id]);
+				await normalizeGalleryOrdering(connection, project.id);
+			}
 
-        res.json({
-            success: true,
-            trailer_youtube_url: trailer?.url || null,
-            trailer_youtube_video_id: trailer?.videoId || null,
-        });
-    } catch (error) {
-        console.error("Error updating gallery trailer:", error);
-        res.status(500).json({ message: "Error updating gallery trailer", error: error.message });
-    }
+			await connection.query(
+				"UPDATE projects SET trailer_youtube_url = ?, trailer_youtube_video_id = ?, updated_at = NOW() WHERE id = ?",
+				[trailer?.url || null, trailer?.videoId || null, project.id]
+			);
+			await connection.commit();
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
+		await bumpProjectCacheVersion(project.slug).catch((error) => {
+			console.warn(`Failed to bump project cache after updating legacy gallery trailer: ${error.message}`);
+		});
+
+		return res.json({
+			success: true,
+			trailer_youtube_url: trailer?.url || null,
+			trailer_youtube_video_id: trailer?.videoId || null,
+		});
+	} catch(error) {
+		console.error("Error updating gallery trailer:", error);
+		return res.status(500).json({ message: "Error updating gallery trailer", error: error.message });
+	}
 });
 
 router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req, res) => {
-    const { title, description, ordering, featured } = req.body;
+    const { title, description, featured } = req.body;
     try {
         const project = await getProjectBySlug(req.params.slug);
         if(!project) {
@@ -2114,22 +2392,18 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
             return;
         }
 
-        const [gallery] = await db.query('SELECT id FROM project_gallery WHERE id = ? AND project_id = ?', [req.params.galleryId, project.id]);
+        const [gallery] = await db.query("SELECT id FROM project_gallery WHERE id = ? AND project_id = ? AND media_type = 'image'", [req.params.galleryId, project.id]);
         if(!gallery.length) {
             return res.status(404).json({ message: 'Gallery image not found' });
         }
 
         const updates = {};
-        if(title) {
-            updates.title = sanitizePlainText(title);
+        if(title !== undefined) {
+            updates.title = title ? sanitizePlainText(title) : null;
         }
 
-        if(description) {
-            updates.description = sanitizePlainText(description, { preserveNewlines: true });
-        }
-
-        if(ordering) {
-            updates.ordering = parseInt(ordering);
+        if(description !== undefined) {
+            updates.description = description ? sanitizePlainText(description, { preserveNewlines: true }) : null;
         }
 
         if(featured !== undefined) {
@@ -2153,6 +2427,9 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
         await db.query('UPDATE project_gallery SET ? WHERE id = ?', [updates, req.params.galleryId]);
 
         await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+		await bumpProjectCacheVersion(project.slug).catch((error) => {
+			console.warn(`Failed to bump project cache after updating gallery image: ${error.message}`);
+		});
 
         res.json({ success: true, message: 'Gallery image updated' });
     } catch (error) {
@@ -2180,12 +2457,12 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
             return;
         }
 
-        const [gallery] = await db.query("SELECT id, url, raw_url FROM project_gallery WHERE id = ? AND project_id = ?", [galleryId, project.id]);
+        const [gallery] = await db.query("SELECT id, media_type, url, raw_url FROM project_gallery WHERE id = ? AND project_id = ?", [galleryId, project.id]);
         if(!gallery.length) {
-            return res.status(404).json({ message: "Gallery image not found" });
+            return res.status(404).json({ message: "Gallery item not found" });
         }
 
-        const fileUrls = [gallery[0].url, gallery[0].raw_url].filter(Boolean);
+        const fileUrls = gallery[0].media_type === "image" ? [gallery[0].url, gallery[0].raw_url].filter(Boolean) : [];
         for(const fileUrl of fileUrls) {
             const filePath = path.join(process.env.MEDIA_ROOT, fileUrl.replace(/^https:\/\/media\.modifold\.com\//, ""));
             try {
@@ -2198,11 +2475,25 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
             }
         }
 
-        await db.query("DELETE FROM project_gallery WHERE id = ?", [galleryId]);
+		const connection = await db.getConnection();
+		try {
+			await connection.beginTransaction();
+			await connection.query("DELETE FROM project_gallery WHERE id = ? AND project_id = ?", [galleryId, project.id]);
+			await normalizeGalleryOrdering(connection, project.id);
+			await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+			await connection.commit();
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
 
-        await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
+		await bumpProjectCacheVersion(project.slug).catch((error) => {
+			console.warn(`Failed to bump project cache after deleting gallery item: ${error.message}`);
+		});
 
-        res.json({ success: true, message: "Gallery image deleted successfully" });
+		res.json({ success: true, message: "Gallery item deleted successfully" });
     } catch (error) {
         console.error("Error deleting gallery image:", error);
         res.status(500).json({ message: "Error deleting gallery image", error: error.message });
@@ -2285,7 +2576,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         );
 
         const [gallery] = await db.query(
-            'SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering',
+            'SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC',
             [projectData.id]
         );
 
