@@ -312,7 +312,8 @@
 }
 .gallery-settings-card--draggable.is-drop-before,
 .gallery-settings-card--draggable.is-drop-after {
-	box-shadow: inset 0 0 0 2px var(--theme-color-brand-primary);
+	outline: 2px dashed var(--theme-color-brand-primary);
+	outline-offset: -2px;
 }
 .gallery-settings-card--draggable .gallery-settings-card__preview {
 	aspect-ratio: 16 / 9;
