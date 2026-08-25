@@ -933,13 +933,16 @@ const resolveVersionDependencies = async ({ connection, dependenciesRaw }) => {
         const resolvedVersionId = dependency.version_id || null;
 
         if(!resolvedProjectId && resolvedProjectSlug) {
-            const [projectRowsBySlug] = await connection.query("SELECT id, slug FROM projects WHERE slug = ? LIMIT 1", [resolvedProjectSlug]);
-            if(!projectRowsBySlug.length) {
+            const [projectRowsByIdentifier] = await connection.query(
+                "SELECT id, slug FROM projects WHERE slug = ? OR BINARY id = BINARY ? LIMIT 1",
+                [resolvedProjectSlug, resolvedProjectSlug]
+            );
+            if(!projectRowsByIdentifier.length) {
                 throw Object.assign(new Error(`Dependency project not found: ${resolvedProjectSlug}`), { statusCode: 400 });
             }
 
-            resolvedProjectId = projectRowsBySlug[0].id;
-            resolvedProjectSlug = projectRowsBySlug[0].slug || resolvedProjectSlug;
+            resolvedProjectId = projectRowsByIdentifier[0].id;
+            resolvedProjectSlug = projectRowsByIdentifier[0].slug || resolvedProjectSlug;
         }
 
         if(resolvedVersionId) {
