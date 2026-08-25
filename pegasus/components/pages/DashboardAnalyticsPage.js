@@ -10,7 +10,7 @@ import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
 import DatePopover from "@/components/ui/DatePopover";
 import AnalyticsOnlineInfoModal from "@/modal/AnalyticsOnlineInfoModal";
 import DownloadCount from "@/components/ui/DownloadCount";
-import { AnalyticsChart, BarTooltipCursor, ChartTypeToggle, OnlineChart, formatChartDate } from "@/components/project/settings/ProjectAnalyticsSettingsPage";
+import { AnalyticsChart, AnalyticsSeriesModeToggle, BarTooltipCursor, ChartTypeToggle, OnlineChart, formatChartDate } from "@/components/project/settings/ProjectAnalyticsSettingsPage";
 
 const FALLBACK_COLORS = ["#00af5c", "#307df0", "#ff4f5e", "#e6833f", "#8b5cf6", "#14b8a6", "#f97316", "#ec4899"];
 
@@ -138,7 +138,7 @@ function DashboardChartLegend({ payload, hiddenSeries, onToggleSeries, isExpande
 	);
 }
 
-function MultiProjectChart({ title, projects, seriesByProject, locale, t, tSettings }) {
+function MultiProjectChart({ title, projects, seriesByProject, locale, t, tSettings, seriesMode = null, onSeriesModeChange }) {
 	const [chartType, setChartType] = useState("line");
 	const [hiddenSeries, setHiddenSeries] = useState({});
 	const [isLegendExpanded, setIsLegendExpanded] = useState(false);
@@ -157,15 +157,21 @@ function MultiProjectChart({ title, projects, seriesByProject, locale, t, tSetti
 			new Map((Array.isArray(seriesByProject?.[project.slug]) ? seriesByProject[project.slug] : []).map((point) => [point.date, Number(point.count) || 0])),
 		]));
 
+		const cumulativeTotals = new Map();
+
 		return sortedDates.map((date) => {
 			const point = { date };
 			selectedProjects.forEach((project) => {
-				point[project.slug] = countsByProject.get(project.slug)?.get(date) || 0;
+				const dailyCount = countsByProject.get(project.slug)?.get(date) || 0;
+				const count = seriesMode === "cumulative" ? (cumulativeTotals.get(project.slug) || 0) + dailyCount : dailyCount;
+
+				cumulativeTotals.set(project.slug, count);
+				point[project.slug] = count;
 			});
 
 			return point;
 		});
-	}, [projects, seriesByProject]);
+	}, [projects, seriesByProject, seriesMode]);
 
 	const toggleSeries = (entry) => {
 		const dataKey = entry?.dataKey;
@@ -216,7 +222,11 @@ function MultiProjectChart({ title, projects, seriesByProject, locale, t, tSetti
 					<h2 className="project-analytics-card__title">{title}</h2>
 				</div>
 
-				<ChartTypeToggle chartType={chartType} onChange={setChartType} t={tSettings} />
+				<div className="project-analytics-card__controls">
+					{seriesMode ? <AnalyticsSeriesModeToggle mode={seriesMode} onChange={onSeriesModeChange} t={tSettings} /> : null}
+					
+					<ChartTypeToggle chartType={chartType} onChange={setChartType} t={tSettings} />
+				</div>
 			</div>
 
 			<div className="project-analytics-chart dashboard-analytics-chart">
@@ -288,6 +298,8 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 	const [draftProjectIds, setDraftProjectIds] = useState(() => normalizeProjectIds(initialProjectIds));
 	const [isProjectFilterOpen, setIsProjectFilterOpen] = useState(false);
 	const [isOnlineInfoModalOpen, setIsOnlineInfoModalOpen] = useState(false);
+	const [downloadsMode, setDownloadsMode] = useState("daily");
+	const [viewsMode, setViewsMode] = useState("daily");
 	const projectFilterRef = useRef(null);
 
 	const analytics = initialAnalytics || {};
@@ -455,6 +467,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 
 									<div className="version-filters dashboard-analytics-filters">
 										<DatePopover id="analytics-from" label={t("filters.from")} value={from} onChange={setFrom} locale={locale} labels={datePopoverLabels} />
+										
 										<DatePopover id="analytics-to" label={t("filters.to")} value={to} onChange={setTo} locale={locale} labels={datePopoverLabels} />
 									</div>
 								</div>
@@ -475,6 +488,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 										<div className="field field--default" ref={projectFilterRef}>
 											<button className="button button--size-m button--type-secondary dashboard-analytics-project-filter" onClick={() => setIsProjectFilterOpen((prev) => !prev)} aria-expanded={isProjectFilterOpen} type="button">
 												<span className="dashboard-analytics-project-filter__dot" />
+												
 												<span className="dashboard-analytics-project-filter__label">
 													{projectFilterLabel}
 												</span>
@@ -550,7 +564,9 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong><DownloadCount className="project-analytics-stat__number" value={totals.downloads} /></strong>
+										<strong>
+											<DownloadCount className="project-analytics-stat__number" value={totals.downloads} />
+										</strong>
 									</div>
 
 									<div className="content content--padding project-analytics-stat">
@@ -565,7 +581,9 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong><NumberFlow className="project-analytics-stat__number" value={activeServersNow} /></strong>
+										<strong>
+											<NumberFlow className="project-analytics-stat__number" value={activeServersNow} />
+										</strong>
 									</div>
 
 									<div className="content content--padding project-analytics-stat project-analytics-stat--online">
@@ -590,7 +608,9 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 											</svg>
 										</p>
 
-										<strong><NumberFlow className="project-analytics-stat__number" value={playersOnlineNow} /></strong>
+										<strong>
+											<NumberFlow className="project-analytics-stat__number" value={playersOnlineNow} />
+										</strong>
 									</div>
 								</div>
 
@@ -616,6 +636,8 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 										locale={locale}
 										t={t}
 										tSettings={tSettings}
+										seriesMode={downloadsMode}
+										onSeriesModeChange={setDownloadsMode}
 									/>
 								) : (
 									<AnalyticsChart
@@ -626,6 +648,8 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 										gradientId="dashboardAnalyticsDownloads"
 										tooltipLabelKey="analytics.downloads.tooltip"
 										t={tSettings}
+										seriesMode={downloadsMode}
+										onSeriesModeChange={setDownloadsMode}
 									/>
 								)}
 
@@ -634,6 +658,7 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 										<div className="project-analytics-card__header">
 											<div>
 												<p className="project-analytics-card__eyebrow">{tSettings("analytics.countries.eyebrow")}</p>
+												
 												<h2 className="project-analytics-card__title" style={{ marginBottom: "0" }}>{tSettings("analytics.countries.title")}</h2>
 											</div>
 										</div>
@@ -664,6 +689,8 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 										locale={locale}
 										t={t}
 										tSettings={tSettings}
+										seriesMode={viewsMode}
+										onSeriesModeChange={setViewsMode}
 									/>
 								) : (
 									<AnalyticsChart
@@ -674,6 +701,8 @@ export default function DashboardAnalyticsPage({ initialAnalytics, initialFrom, 
 										gradientId="dashboardAnalyticsViews"
 										tooltipLabelKey="analytics.views.tooltip"
 										t={tSettings}
+										seriesMode={viewsMode}
+										onSeriesModeChange={setViewsMode}
 									/>
 								)}
 							</>

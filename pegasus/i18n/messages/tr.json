@@ -1247,6 +1247,13 @@
         "lineAria": "Çizgi grafik olarak göster",
         "barAria": "Sütun grafik olarak göster"
       },
+      "seriesModes": {
+        "label": "Görüntüleme modu",
+        "daily": "Günlük",
+        "cumulative": "Birikimli",
+        "dailyAria": "Günlük değerleri göster",
+        "cumulativeAria": "Birikimli değerleri göster"
+      },
       "stats": {
         "downloads": "İndirmeler",
         "views": "Görüntülenmeler",

@@ -1338,6 +1338,13 @@
         "lineAria": "Show as line chart",
         "barAria": "Show as bar chart"
       },
+      "seriesModes": {
+        "label": "Display mode",
+        "daily": "Daily",
+        "cumulative": "Cumulative",
+        "dailyAria": "Show daily values",
+        "cumulativeAria": "Show cumulative values"
+      },
       "stats": {
         "downloads": "Downloads",
         "views": "Views",

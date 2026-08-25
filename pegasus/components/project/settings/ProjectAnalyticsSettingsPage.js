@@ -31,6 +31,19 @@ export const formatChartDateTime = (date, locale) => {
 	});
 };
 
+export const getCumulativeSeries = (data) => {
+	let total = 0;
+
+	return (Array.isArray(data) ? data : []).map((point) => {
+		total += Number(point.count) || 0;
+
+		return {
+			...point,
+			count: total,
+		};
+	});
+};
+
 function AnalyticsTooltip({ active, payload, locale, labelKey, t }) {
     if(!active || !payload?.length) {
         return null;
@@ -44,6 +57,7 @@ function AnalyticsTooltip({ active, payload, locale, labelKey, t }) {
     return (
         <div className="project-analytics-tooltip">
             <p>{formatChartDate(point.date, locale)}</p>
+			
             <span>{t(labelKey, { count: point.count })}</span>
         </div>
 	);
@@ -62,7 +76,9 @@ function OnlineTooltip({ active, payload, locale, t, visibleSeries }) {
 	return (
 		<div className="project-analytics-tooltip">
 			<p>{formatChartDateTime(point.date, locale)}</p>
+
 			{visibleSeries.servers ? <span>{t("analytics.online.tooltipServers", { count: Number(point.servers) || 0 })}</span> : null}
+			
 			{visibleSeries.players ? <span>{t("analytics.online.tooltipPlayers", { count: Number(point.players) || 0 })}</span> : null}
 		</div>
 	);
@@ -116,8 +132,41 @@ export function ChartTypeToggle({ chartType, onChange, t }) {
 	);
 }
 
-export function AnalyticsChart({ title, data, locale, lineColor, gradientId, tooltipLabelKey, t }) {
+export function AnalyticsSeriesModeToggle({ mode, onChange, t }) {
+	return (
+		<div className="project-analytics-chart-toggle" role="group" aria-label={t("analytics.seriesModes.label")}>
+			<button type="button" className={`project-analytics-chart-toggle__item button--active-transform ${mode === "daily" ? "is-active" : ""}`} onClick={() => onChange("daily")} aria-pressed={mode === "daily"} aria-label={t("analytics.seriesModes.dailyAria")}>
+				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+					<path d="M8 2v4" />
+					<path d="M16 2v4" />
+					<rect width="18" height="18" x="3" y="4" rx="2" />
+					<path d="M3 10h18" />
+					<path d="M8 14h.01" />
+					<path d="M12 14h.01" />
+					<path d="M16 14h.01" />
+					<path d="M8 18h.01" />
+					<path d="M12 18h.01" />
+					<path d="M16 18h.01" />
+				</svg>
+
+				<span>{t("analytics.seriesModes.daily")}</span>
+			</button>
+
+			<button type="button" className={`project-analytics-chart-toggle__item button--active-transform ${mode === "cumulative" ? "is-active" : ""}`} onClick={() => onChange("cumulative")} aria-pressed={mode === "cumulative"} aria-label={t("analytics.seriesModes.cumulativeAria")}>
+				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+					<path d="M3 17 9 11l4 4 8-8" />
+					<path d="M14 7h7v7" />
+				</svg>
+
+				<span>{t("analytics.seriesModes.cumulative")}</span>
+			</button>
+		</div>
+	);
+}
+
+export function AnalyticsChart({ title, data, locale, lineColor, gradientId, tooltipLabelKey, t, seriesMode = null, onSeriesModeChange }) {
 	const [chartType, setChartType] = useState("line");
+	const chartData = seriesMode === "cumulative" ? getCumulativeSeries(data) : data;
 	const commonChartChildren = (
 		<>
 			<CartesianGrid stroke="var(--theme-color-text-primary)" strokeDasharray="4 4" strokeOpacity={0.1} vertical={false} />
@@ -142,18 +191,21 @@ export function AnalyticsChart({ title, data, locale, lineColor, gradientId, too
                     <h2 className="project-analytics-card__title">{title}</h2>
                 </div>
 
-				<ChartTypeToggle chartType={chartType} onChange={setChartType} t={t} />
+				<div className="project-analytics-card__controls">
+					{seriesMode ? <AnalyticsSeriesModeToggle mode={seriesMode} onChange={onSeriesModeChange} t={t} /> : null}
+					<ChartTypeToggle chartType={chartType} onChange={setChartType} t={t} />
+				</div>
             </div>
 
             <div className="project-analytics-chart">
                 <ResponsiveContainer width="100%" height={280}>
 					{chartType === "bar" ? (
-						<BarChart data={data} barCategoryGap="20%">
+						<BarChart data={chartData} barCategoryGap="20%">
 							{commonChartChildren}
 							<Bar dataKey="count" fill={lineColor} radius={[6, 6, 0, 0]} maxBarSize={34} />
 						</BarChart>
 					) : (
-						<AreaChart data={data}>
+						<AreaChart data={chartData}>
 							<defs>
 								<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
 									<stop offset="5%" stopColor={lineColor} stopOpacity={0.32} />
@@ -261,6 +313,8 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 	const router = useRouter();
 	const [isSortOpen, setIsSortOpen] = useState(false);
 	const [isOnlineInfoModalOpen, setIsOnlineInfoModalOpen] = useState(false);
+	const [downloadsMode, setDownloadsMode] = useState("daily");
+	const [viewsMode, setViewsMode] = useState("daily");
 	const sortRef = useRef(null);
 	const regionNames = typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames([locale], { type: "region" }) : null;
 	const downloads = Array.isArray(analytics?.downloads) ? analytics.downloads : [];
@@ -445,6 +499,8 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				gradientId="projectAnalyticsDownloads"
 				tooltipLabelKey="analytics.downloads.tooltip"
 				t={t}
+				seriesMode={downloadsMode}
+				onSeriesModeChange={setDownloadsMode}
 			/>
 
 			{countries.length ? (
@@ -482,6 +538,8 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				gradientId="projectAnalyticsViews"
 				tooltipLabelKey="analytics.views.tooltip"
 				t={t}
+				seriesMode={viewsMode}
+				onSeriesModeChange={setViewsMode}
 			/>
 		</div>
 	);

@@ -1600,6 +1600,13 @@
     align-items: center;
     margin-bottom: 20px;
 }
+.project-analytics-card__controls {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 8px;
+}
 .project-analytics-card__eyebrow {
     margin: 0 0 6px;
     color: var(--theme-color-text-secondary);
@@ -2055,6 +2062,13 @@
 	}
 	.project-analytics-chart-toggle__item {
 		justify-content: center;
+		flex: 1;
+	}
+	.project-analytics-card__controls {
+		width: 100%;
+	}
+	.project-analytics-card__controls .project-analytics-chart-toggle {
+		width: auto;
 		flex: 1;
 	}
 	.dashboard-analytics-filters {

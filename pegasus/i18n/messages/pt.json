@@ -1247,6 +1247,13 @@
         "lineAria": "Mostrar como gráfico de linhas",
         "barAria": "Mostrar como gráfico de barras"
       },
+      "seriesModes": {
+        "label": "Modo de visualização",
+        "daily": "Diários",
+        "cumulative": "Acumulados",
+        "dailyAria": "Mostrar valores diários",
+        "cumulativeAria": "Mostrar valores acumulados"
+      },
       "stats": {
         "downloads": "Downloads",
         "views": "Views",
