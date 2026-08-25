@@ -111,7 +111,13 @@ export default function GallerySettings({ project, authToken }) {
 		}
 
 		try {
-			return new Intl.DateTimeFormat(locale || undefined, { year: "numeric", month: "long", day: "numeric" }).format(new Date(dateValue));
+			const date = new Date(dateValue);
+			const options = { month: "long", day: "numeric" };
+			if(date.getFullYear() !== new Date().getFullYear()) {
+				options.year = "numeric";
+			}
+
+			return new Intl.DateTimeFormat(locale || undefined, options).format(date);
 		} catch {
 			return String(dateValue);
 		}
