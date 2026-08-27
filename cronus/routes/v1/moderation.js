@@ -546,7 +546,7 @@ router.get("/", auth, async (req, res) => {
 
         const offset = (page - 1) * limit;
         let query = `
-            SELECT id, slug, title, summary, project_type, status, created_at, icon_url, tags
+            SELECT id, slug, title, summary, project_type, status, visibility, created_at, icon_url, tags
             FROM projects
             WHERE status IN ('queued', 'pending')
         `;
@@ -611,8 +611,8 @@ router.post("/:id/moderate", auth, async (req, res) => {
     }
 
     try {
-		const [[projectStatusBeforeUpdate]] = await db.query("SELECT status FROM projects WHERE id = ? LIMIT 1", [id]);
-		const shouldSendPublishedModNotification = status === "approved" && sendDiscordNotification === true && projectStatusBeforeUpdate?.status !== "approved";
+		const [[projectStatusBeforeUpdate]] = await db.query("SELECT status, visibility FROM projects WHERE id = ? LIMIT 1", [id]);
+		const shouldSendPublishedModNotification = status === "approved" && sendDiscordNotification === true && projectStatusBeforeUpdate?.status !== "approved" && projectStatusBeforeUpdate?.visibility !== "unlisted";
 
         await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
 

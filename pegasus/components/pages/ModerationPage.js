@@ -135,6 +135,15 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
 		setRejectionReason("");
 	};
 
+	const handleApprovalClick = (project) => {
+		if(project.visibility === "unlisted") {
+			handleApprove(project.id, false);
+			return;
+		}
+
+		setApprovalProject(project);
+	};
+
     useEffect(() => {
         const timer = setTimeout(() => {
             if(search !== searchInput) {
@@ -249,7 +258,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                                         </div>
                                         
                                         <div className="new-project-stats">
-                                            <button className="button button--size-m button--type-primary" type="button" onClick={() => setApprovalProject(project)} disabled={isSubmittingModeration}>
+                                            <button className="button button--size-m button--type-primary" type="button" onClick={() => handleApprovalClick(project)} disabled={isSubmittingModeration}>
                                                 {t("actions.approve")}
                                             </button>
 

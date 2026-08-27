@@ -1304,7 +1304,7 @@ router.get("/", async (req, res) => {
             LEFT JOIN project_versions pv ON p.id = pv.project_id AND pv.moderation_status = 'approved'
         `;
 
-        let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0";
+        let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public'";
         const params = [];
         const countParams = [];
 
