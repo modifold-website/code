@@ -124,6 +124,7 @@ const fetchProjects = async ({ projectType, where = "", params = [], orderBy = "
 		${getProjectSelect()}
 		WHERE p.status = 'approved'
 		AND p.is_archived = 0
+		AND p.visibility = 'public'
 		AND p.project_type = ?
 		${where}
 		ORDER BY ${orderBy}
@@ -154,6 +155,7 @@ const fetchRecommendedProjects = async (projectType) => {
 		INNER JOIN recommended r ON p.slug COLLATE utf8mb4_unicode_ci = r.slug COLLATE utf8mb4_unicode_ci
 		WHERE p.status = 'approved'
 		AND p.is_archived = 0
+		AND p.visibility = 'public'
 		AND p.project_type = ?
 		ORDER BY ${orderClause}
 		LIMIT 8
@@ -201,7 +203,7 @@ const getWeeklyDownloadCounts = async ({ projectType, limit = 40 }) => {
 
 		const slugs = downloadRows.map((row) => row.slug);
 		const [approvedRows] = await db.query(
-			"SELECT p.slug FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.project_type = ? AND p.slug IN (?)",
+			"SELECT p.slug FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public' AND p.project_type = ? AND p.slug IN (?)",
 			[projectType, slugs]
 		);
 		const approvedSlugs = new Set(approvedRows.map((row) => row.slug));
@@ -223,6 +225,7 @@ const fetchProjectsBySlugs = async ({ projectType, rankedDownloads, where = "", 
 		${getProjectSelect()}
 		WHERE p.status = 'approved'
 		AND p.is_archived = 0
+		AND p.visibility = 'public'
 		AND p.project_type = ?
 		AND p.slug IN (?)
 		${where}
@@ -291,7 +294,7 @@ const fetchDiscoverTags = async (projectType) => {
 	}
 
 	const [rows] = await db.query(
-		"SELECT p.tags FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.project_type = ? AND p.tags IS NOT NULL AND p.tags != ''",
+		"SELECT p.tags FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public' AND p.project_type = ? AND p.tags IS NOT NULL AND p.tags != ''",
 		[projectType]
 	);
 	const countsByTag = new Map(discoverTags.map((tag) => [tag, 0]));
@@ -309,7 +312,7 @@ const fetchDiscoverTags = async (projectType) => {
 
 const fetchPopularTags = async (projectType, limit = 6) => {
 	const [rows] = await db.query(
-		"SELECT p.tags FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.project_type = ? AND p.tags IS NOT NULL AND p.tags != ''",
+		"SELECT p.tags FROM projects p WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public' AND p.project_type = ? AND p.tags IS NOT NULL AND p.tags != ''",
 		[projectType]
 	);
 	const countsByTag = new Map();
@@ -423,7 +426,7 @@ const combinePopularCategories = (modCategories = [], worldCategories = [], limi
 
 router.get("/", async (req, res) => {
 	try {
-		const cacheKey = getDiscoverCacheKey({ types: ["mod", "world"], version: 2 });
+		const cacheKey = getDiscoverCacheKey({ types: ["mod", "world"], version: 3 });
 		const cachedResponse = await getCacheJson(cacheKey);
 
 		if(cachedResponse) {
@@ -463,7 +466,7 @@ router.get("/:type", async (req, res) => {
 			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-		const cacheKey = getDiscoverCacheKey({ type: projectType, version: 5 });
+		const cacheKey = getDiscoverCacheKey({ type: projectType, version: 6 });
 		const cachedResponse = await getCacheJson(cacheKey);
 
 		if(cachedResponse) {
