@@ -58,6 +58,27 @@ const startServer = () => {
 	app.use(express.json({ limit: bodyLimit }));
 	app.use(express.urlencoded({ limit: bodyLimit, extended: true }));
 
+	app.use((req, res, next) => {
+		const startedAt = Date.now();
+
+		res.once("finish", () => {
+			if(res.statusCode < 400) {
+				return;
+			}
+
+			console.error("[http-error]", JSON.stringify({
+				method: req.method,
+				path: String(req.originalUrl || "").split("?")[0],
+				status: res.statusCode,
+				duration_ms: Date.now() - startedAt,
+				user_id: req.user?.id || null,
+				user_agent: req.headers["user-agent"] || null,
+			}));
+		});
+
+		next();
+	});
+
 	const tokenCache = new Map();
 	const tokenCacheSizeLimit = Number(process.env.TOKEN_CACHE_MAX_SIZE) || 2000;
 	const tokenCacheTtlMs = Number(process.env.TOKEN_CACHE_TTL_MS) || 2 * 60 * 1000;
@@ -78,6 +99,11 @@ const startServer = () => {
 		const authHeader = req.headers.authorization;
 		if(authHeader && authHeader.startsWith("Bearer ")) {
 			const token = authHeader.split(" ")[1];
+
+			if(token.startsWith("mf_")) {
+				return next();
+			}
+
 			const now = Date.now();
 			const cached = tokenCache.get(token);
 

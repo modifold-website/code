@@ -626,10 +626,94 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-    storage,
-    limits: { fileSize: 100 * 1024 * 1024 },
-    fileFilter,
+	storage,
+	limits: { fileSize: 100 * 1024 * 1024 },
+	fileFilter,
 });
+
+const summarizeVersionLogValue = (value) => {
+	if(Array.isArray(value)) {
+		return value.slice(0, 20).map((item) => String(item || "").slice(0, 200));
+	}
+
+	if(typeof value === "string") {
+		return value.slice(0, 500);
+	}
+
+	return value == null ? null : String(value).slice(0, 500);
+};
+
+const summarizeVersionResponse = (value) => {
+	if(!value || typeof value !== "object") {
+		return null;
+	}
+
+	const response = {};
+	for(const key of ["success", "message", "error", "versionId", "moderation_status"]) {
+		if(value[key] !== undefined) {
+			response[key] = summarizeVersionLogValue(value[key]);
+		}
+	}
+
+	return Object.keys(response).length ? response : null;
+};
+
+const logVersionRequest = (req, res, next) => {
+	const startedAt = Date.now();
+	let responseBody = null;
+	const originalJson = res.json.bind(res);
+
+	res.json = (body) => {
+		responseBody = summarizeVersionResponse(body);
+		return originalJson(body);
+	};
+
+	res.once("finish", () => {
+		const status = res.statusCode;
+		const logMethod = status >= 400 ? console.error : console.log;
+
+		logMethod("[version-request]", JSON.stringify({
+			method: req.method,
+			path: String(req.originalUrl || "").split("?")[0],
+			project_identifier: req.projectIdentifier?.requested || req.params?.slug || null,
+			status,
+			duration_ms: Date.now() - startedAt,
+			user_id: req.user?.id || null,
+			via_api_token: req.user?.viaApiToken === true,
+			version_number: summarizeVersionLogValue(req.body?.version_number),
+			game_versions: summarizeVersionLogValue(req.body?.game_versions),
+			loaders: summarizeVersionLogValue(req.body?.loaders),
+			has_file: Boolean(req.file),
+			file_size: req.file?.size || null,
+			response: responseBody,
+		}));
+	});
+
+	next();
+};
+
+const uploadVersionFile = (req, res, next) => {
+	upload.single("file")(req, res, (error) => {
+		if(!error) {
+			return next();
+		}
+
+		const isFileTooLarge = error?.code === "LIMIT_FILE_SIZE";
+		const status = isFileTooLarge ? 413 : 400;
+		const message = isFileTooLarge ? "File is too large" : error.message || "Invalid file upload";
+
+		console.error("[version-upload-middleware-error]", JSON.stringify({
+			method: req.method,
+			path: String(req.originalUrl || "").split("?")[0],
+			project_identifier: req.projectIdentifier?.requested || req.params?.slug || null,
+			status,
+			code: error.code || null,
+			message,
+		}));
+
+		return res.status(status).json({ message });
+	});
+};
 
 const convertImageToWebp = async (file) => {
     if(!file) {
@@ -1941,7 +2025,7 @@ router.put('/:slug/icon', auth, upload.single('icon'), async (req, res) => {
     }
 });
 
-router.post("/:slug/versions", auth, upload.single("file"), async (req, res) => {
+router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async (req, res) => {
     const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
 
     try {
@@ -3044,7 +3128,7 @@ router.post('/:slug/submit', auth, async (req, res) => {
     }
 });
 
-router.put('/:slug/versions/:versionId', auth, upload.single('file'), async (req, res) => {
+router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionFile, async (req, res) => {
     const { slug, versionId } = req.params;
     const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
     const file = req.file;
