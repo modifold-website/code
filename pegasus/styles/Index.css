@@ -4466,10 +4466,12 @@ input[type="file"]::-webkit-file-upload-button:hover {
 	display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+	gap: 4px;
+	min-width: 0;
 }
 .browse-dependency-filter__selected-copy strong {
 	display: block;
+	max-width: 100%;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
