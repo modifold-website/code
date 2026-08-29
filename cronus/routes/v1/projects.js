@@ -1101,52 +1101,74 @@ const replaceVersionDependencies = async ({ connection, sourceVersionId, depende
     }
 };
 
+const formatVersionDependency = (dependency) => ({
+	project_id: dependency.project_id,
+	version_id: dependency.version_id,
+	dependency_type: dependency.dependency_type,
+	project_slug: dependency.project_slug,
+	project_title: dependency.project_title,
+	project_icon_url: dependency.project_icon_url,
+	project_type: dependency.project_type,
+	version_number: dependency.version_number,
+	file_url: dependency.file_url,
+	file_size: dependency.file_size,
+	download_url: dependency.file_url || null,
+	primary_file: dependency.file_url ? { url: dependency.file_url, size: dependency.file_size, primary: true } : null,
+	files: dependency.file_url ? [{ url: dependency.file_url, size: dependency.file_size, primary: true }] : [],
+});
+
+const getVersionDependenciesByVersionIds = async (connection, versionIds) => {
+	const normalizedVersionIds = [...new Set((versionIds || []).map((versionId) => String(versionId || "").trim()).filter(Boolean))];
+	const dependenciesByVersionId = new Map();
+
+	if(!normalizedVersionIds.length) {
+		return dependenciesByVersionId;
+	}
+
+	try {
+		const [rows] = await connection.query(`
+			SELECT
+				d.version_id AS source_version_id,
+				d.project_id,
+				d.dependency_version_id AS version_id,
+				d.dependency_type,
+				p.slug AS project_slug,
+				p.title AS project_title,
+				p.icon_url AS project_icon_url,
+				p.project_type AS project_type,
+				pv.version_number,
+				pv.file_url,
+				pv.file_size
+			FROM dependencies d
+			LEFT JOIN projects p ON p.id = d.project_id
+			LEFT JOIN project_versions pv ON pv.id = d.dependency_version_id
+			WHERE d.version_id IN (?)
+			ORDER BY d.version_id ASC, d.project_id ASC, d.dependency_version_id ASC
+		`, [normalizedVersionIds]);
+
+		for(const dependency of rows) {
+			const sourceVersionId = String(dependency.source_version_id || "").trim();
+			if(!dependenciesByVersionId.has(sourceVersionId)) {
+				dependenciesByVersionId.set(sourceVersionId, []);
+			}
+
+			dependenciesByVersionId.get(sourceVersionId).push(formatVersionDependency(dependency));
+		}
+	} catch (error) {
+		const message = String(error?.sqlMessage || error?.message || "").toLowerCase();
+		if(error?.code === "ER_NO_SUCH_TABLE" && message.includes("dependencies")) {
+			return dependenciesByVersionId;
+		}
+
+		throw error;
+	}
+
+	return dependenciesByVersionId;
+};
+
 const getVersionDependencies = async (connection, versionId) => {
-    let dependencyRows = [];
-    try {
-        const [rows] = await connection.query(`
-            SELECT
-                d.project_id,
-                d.dependency_version_id AS version_id,
-                d.dependency_type,
-                p.slug AS project_slug,
-                p.title AS project_title,
-                p.icon_url AS project_icon_url,
-                p.project_type AS project_type,
-                pv.version_number,
-                pv.file_url,
-                pv.file_size
-            FROM dependencies d
-            LEFT JOIN projects p ON p.id = d.project_id
-            LEFT JOIN project_versions pv ON pv.id = d.dependency_version_id
-            WHERE d.version_id = ?
-            ORDER BY d.project_id ASC, d.dependency_version_id ASC
-        `, [versionId]);
-        dependencyRows = rows;
-    } catch (error) {
-        const message = String(error?.sqlMessage || error?.message || "").toLowerCase();
-        if(error?.code === "ER_NO_SUCH_TABLE" && message.includes("dependencies")) {
-            return [];
-        }
-
-        throw error;
-    }
-
-    return dependencyRows.map((dependency) => ({
-        project_id: dependency.project_id,
-        version_id: dependency.version_id,
-        dependency_type: dependency.dependency_type,
-        project_slug: dependency.project_slug,
-        project_title: dependency.project_title,
-        project_icon_url: dependency.project_icon_url,
-        project_type: dependency.project_type,
-        version_number: dependency.version_number,
-        file_url: dependency.file_url,
-        file_size: dependency.file_size,
-        download_url: dependency.file_url || null,
-        primary_file: dependency.file_url ? { url: dependency.file_url, size: dependency.file_size, primary: true } : null,
-        files: dependency.file_url ? [{ url: dependency.file_url, size: dependency.file_size, primary: true }] : [],
-    }));
+	const dependenciesByVersionId = await getVersionDependenciesByVersionIds(connection, [versionId]);
+	return dependenciesByVersionId.get(String(versionId || "").trim()) || [];
 };
 
 const getIssueAccess = async (projectId, userId) => {
@@ -2541,7 +2563,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         const { slug } = req.params;
         const userId = req.user?.id;
         const cacheVersion = await getProjectCacheVersion(slug);
-        const cacheKey = `modifold_project_details_publicsafe_v2_${slug}_${userId || "anon"}_${cacheVersion}`;
+		const cacheKey = `modifold_project_details_publicsafe_v3_${slug}_${userId || "anon"}_${cacheVersion}`;
         const shouldUseProjectCache = !userId;
 
         if(shouldUseProjectCache) {
@@ -2572,10 +2594,11 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         const versionVisibility = await buildVisibleVersionWhereClause(projectData, userId);
 		const disclosureStatePromise = getProjectDisclosureState(db, projectData.id);
 
-        const [versions] = await db.query(
-            `SELECT v.* FROM project_versions v WHERE v.project_id = ? AND ${versionVisibility.sql} ORDER BY v.created_at DESC`,
-            [projectData.id, ...versionVisibility.params]
-        );
+		const [versions] = await db.query(
+			`SELECT v.* FROM project_versions v WHERE v.project_id = ? AND ${versionVisibility.sql} ORDER BY v.created_at DESC`,
+			[projectData.id, ...versionVisibility.params]
+		);
+		const versionDependenciesPromise = getVersionDependenciesByVersionIds(db, versions.map((version) => version.id));
 
         const [gallery] = await db.query(
             'SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC',
@@ -2608,8 +2631,9 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 throw error;
             }
         }
-        const organizationOwner = await getOrganizationOwnerForProject(projectData.id);
+		const organizationOwner = await getOrganizationOwnerForProject(projectData.id);
 		const disclosureState = await disclosureStatePromise;
+		const versionDependencies = await versionDependenciesPromise;
 
         const formattedVersions = versions.map((version) => {
             let gameVersions, loaders;
@@ -2626,9 +2650,10 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             return sanitizeVersionForPublicResponse({
                 ...version,
                 game_versions: gameVersions,
-                loaders: loaders,
+				loaders: loaders,
 				...getVersionFileFields(version),
-            }, { includeModeration: canViewModerationFields });
+				dependencies: versionDependencies.get(String(version.id || "").trim()) || [],
+			}, { includeModeration: canViewModerationFields });
         });
 
         const shouldShowPlayersLast14Days = Number(projectData.show_players_last_14d) === 1;
