@@ -7,8 +7,29 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { useLocale, useTranslations } from "next-intl";
 import MermaidDiagram from "@/utils/MermaidDiagram";
-import { getSafeMarkdownHref, getSafeMarkdownImageSrc } from "@/utils/projectDescriptionContent";
+import MarkdownCodeBlock from "@/components/markdown/MarkdownCodeBlock";
+import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
 import { getProjectBasePath } from "@/utils/projectRoutes";
+
+const isMermaidCodeBlock = (children) => {
+	const child = Array.isArray(children) ? children[0] : children;
+	return React.isValidElement(child) && typeof child.props?.className === "string" && child.props.className.includes("language-mermaid");
+};
+
+const wikiMarkdownComponents = {
+	...projectDescriptionMarkdownComponents,
+	pre: ({ children }) => isMermaidCodeBlock(children) ? <>{children}</> : <MarkdownCodeBlock>{children}</MarkdownCodeBlock>,
+	code: ({ inline, className, children, ...props }) => {
+		const language = className?.match(/language-(\S+)/)?.[1];
+		const content = String(children ?? "").replace(/\n$/, "");
+
+		if(!inline && language === "mermaid") {
+			return <MermaidDiagram code={content} />;
+		}
+
+		return <code className={className} {...props}>{children}</code>;
+	},
+};
 
 const renderPages = (pages, basePath, projectSlug, activeSlug, level = 0) => {
     if(!Array.isArray(pages) || pages.length === 0) {
@@ -88,51 +109,7 @@ export default function WikiPage({ project, authToken, wikiData, wikiError }) {
                                     <ReactMarkdown
                                         remarkPlugins={[remarkGfm]}
                                         rehypePlugins={[rehypeRaw]}
-                                        components={{
-                                            pre: ({ children }) => {
-                                                const child = Array.isArray(children) ? children[0] : children;
-                                                if(React.isValidElement(child) && typeof child.props?.className === "string" && child.props.className.includes("language-mermaid")) {
-                                                    return <>{child}</>;
-                                                }
-
-                                                return <pre>{children}</pre>;
-                                            },
-                                            code: ({ inline, className, children, ...props }) => {
-                                                const language = className?.match(/language-(\S+)/)?.[1];
-                                                const content = String(children ?? "").replace(/\n$/, "");
-
-                                                if(!inline && language === "mermaid") {
-                                                    return <MermaidDiagram code={content} />;
-                                                }
-
-                                                return (
-                                                    <code className={className} {...props}>
-                                                        {children}
-                                                    </code>
-                                                );
-                                            },
-                                            a: ({ href, children }) => {
-                                                const safeHref = getSafeMarkdownHref(href);
-                                                if(!safeHref) {
-                                                    return <>{children}</>;
-                                                }
-
-                                                const isExternal = /^https?:\/\//i.test(safeHref);
-                                                return (
-                                                    <a href={safeHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined}>
-                                                        {children}
-                                                    </a>
-                                                );
-                                            },
-                                            img: ({ src, alt, title }) => {
-                                                const safeSrc = getSafeMarkdownImageSrc(src);
-                                                if(!safeSrc) {
-                                                    return null;
-                                                }
-
-                                                return <img src={safeSrc} alt={alt || ""} title={title} loading="lazy" />;
-                                            },
-                                        }}
+                                        components={wikiMarkdownComponents}
                                     >
                                         {wikiData?.page?.content || ""}
                                     </ReactMarkdown>

@@ -122,6 +122,70 @@ const getDependencyKey = (dependency) => {
     return `${projectId}::${versionId || "__project_only__"}`;
 };
 
+function VersionDependencySection({ title, dependencies, t, onDependencyDownload }) {
+	if(dependencies.length === 0) {
+		return null;
+	}
+
+	return (
+		<section className="version-page__required-content">
+			<h2>{title}</h2>
+
+			<div className="version-page__required-grid">
+				{dependencies.map((item) => (
+					<div key={item.id} className="version-page__required-card">
+						{item.href ? (
+							<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
+								<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
+
+								<div className="version-page__required-copy">
+									<strong>{item.title}</strong>
+									<span>{t("versions.downloadModal.anyVersion")}</span>
+								</div>
+							</Link>
+						) : (
+							<div className="version-page__required-link">
+								<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
+
+								<div className="version-page__required-copy">
+									<strong>{item.title}</strong>
+									<span>{t("versions.downloadModal.anyVersion")}</span>
+								</div>
+							</div>
+						)}
+
+						<div className="version-page__required-actions">
+							{item.href && (
+								<Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
+									<Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
+										<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+											<path d="M15 3h6v6"/>
+											<path d="M10 14 21 3"/>
+											<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+										</svg>
+									</Link>
+								</Tooltip>
+							)}
+
+							{item.downloadHref && (
+								<Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
+									<a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" onClick={() => onDependencyDownload(item)} aria-label={t("versions.downloadModal.downloadDependency")}>
+										<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+											<path d="M12 15V3"/>
+											<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+											<path d="m7 10 5 5 5-5"/>
+										</svg>
+									</a>
+								</Tooltip>
+							)}
+						</div>
+					</div>
+				))}
+			</div>
+		</section>
+	);
+}
+
 export default function VersionPage({ project, version, authToken, gameVersions = DEFAULT_GAME_VERSIONS, canEditVersion = false }) {
     const t = useTranslations("ProjectPage");
     const tSettings = useTranslations("SettingsProjectPage");
@@ -288,6 +352,8 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     };
     const requiredContent = dependencies.filter((dependency) => dependency.dependency_type === "required").map(buildDependencyContent);
     const optionalContent = dependencies.filter((dependency) => dependency.dependency_type === "optional").map(buildDependencyContent);
+	const embeddedContent = dependencies.filter((dependency) => dependency.dependency_type === "embedded").map(buildDependencyContent);
+	const incompatibleContent = dependencies.filter((dependency) => dependency.dependency_type === "incompatible").map(buildDependencyContent);
     const handleDependencyDownloadClick = (item) => {
         trackVersionDownload({
             project: {
@@ -703,63 +769,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                             </div>
                         </div>
 
-                        {requiredContent.length > 0 && (
-                            <section className="version-page__required-content">
-                                <h2>{t("versions.requiredContent")}</h2>
-
-								<div className="version-page__required-grid">
-									{requiredContent.map((item) => (
-										<div key={item.id} className="version-page__required-card">
-											{item.href ? (
-												<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
-													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
-
-													<div className="version-page__required-copy">
-														<strong>{item.title}</strong>
-														<span>{t("versions.downloadModal.anyVersion")}</span>
-													</div>
-												</Link>
-											) : (
-												<div className="version-page__required-link">
-													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
-
-													<div className="version-page__required-copy">
-														<strong>{item.title}</strong>
-														<span>{t("versions.downloadModal.anyVersion")}</span>
-													</div>
-												</div>
-											)}
-
-											<div className="version-page__required-actions">
-                                                {item.href && (
-                                                    <Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
-                                                        <Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                                                <path d="M15 3h6v6"/>
-                                                                <path d="M10 14 21 3"/>
-                                                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                                            </svg>
-                                                        </Link>
-                                                    </Tooltip>
-                                                )}
-
-                                                {item.downloadHref && (
-                                                    <Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" onClick={() => handleDependencyDownloadClick(item)} aria-label={t("versions.downloadModal.downloadDependency")}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                                                <path d="M12 15V3"/>
-                                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                                <path d="m7 10 5 5 5-5"/>
-                                                            </svg>
-                                                        </a>
-                                                    </Tooltip>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+						<VersionDependencySection title={t("versions.requiredContent")} dependencies={requiredContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
 
                         <section className="version-page__compatibility">
                             <h2>{t("versions.compatibility")}</h2>
@@ -820,63 +830,9 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                             </div>
                         </section>
 
-                        {optionalContent.length > 0 && (
-                            <section className="version-page__required-content">
-                                <h2>{t("versions.optionalDependencies")}</h2>
-
-								<div className="version-page__required-grid">
-									{optionalContent.map((item) => (
-										<div key={item.id} className="version-page__required-card">
-											{item.href ? (
-												<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
-													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
-
-													<div className="version-page__required-copy">
-														<strong>{item.title}</strong>
-														<span>{t("versions.downloadModal.anyVersion")}</span>
-													</div>
-												</Link>
-											) : (
-												<div className="version-page__required-link">
-													<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
-
-													<div className="version-page__required-copy">
-														<strong>{item.title}</strong>
-														<span>{t("versions.downloadModal.anyVersion")}</span>
-													</div>
-												</div>
-											)}
-
-											<div className="version-page__required-actions">
-                                                {item.href && (
-                                                    <Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
-                                                        <Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                                                <path d="M15 3h6v6"/>
-                                                                <path d="M10 14 21 3"/>
-                                                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                                                            </svg>
-                                                        </Link>
-                                                    </Tooltip>
-                                                )}
-
-                                                {item.downloadHref && (
-                                                    <Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-                                                        <a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" onClick={() => handleDependencyDownloadClick(item)} aria-label={t("versions.downloadModal.downloadDependency")}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                                                <path d="M12 15V3"/>
-                                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                                <path d="m7 10 5 5 5-5"/>
-                                                            </svg>
-                                                        </a>
-                                                    </Tooltip>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+						<VersionDependencySection title={t("versions.optionalDependencies")} dependencies={optionalContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
+						<VersionDependencySection title={t("versions.dependencies.types.embedded")} dependencies={embeddedContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
+						<VersionDependencySection title={t("versions.dependencies.types.incompatible")} dependencies={incompatibleContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
                     </div>
                 </div>
 

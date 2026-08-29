@@ -4,41 +4,25 @@ import VersionPage from "@/components/pages/VersionPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
 import { fetchGameVersionItems } from "@/utils/gameVersions";
 import { getProjectBySlug, getProjectMembersBySlug } from "@/utils/projects/server";
+import { getProjectMetadata } from "@/utils/projects/metadata";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 export async function generateMetadata({ params }) {
     const { slug, version_number } = await params;
-    const resolvedLocale = await getLocale();
-    const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
-
-    const res = await fetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    if(!res.ok) {
-        return { title: t("metadata.version.notFound") };
-    }
-
-    const version = await res.json();
-    const projectRes = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    const project = projectRes.ok ? await projectRes.json() : {};
+    const [project, versionRes] = await Promise.all([
+        getProjectBySlug(slug),
+        fetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
+            headers: { Accept: "application/json" },
+        }),
+    ]);
     const basePath = getProjectBasePath(project.project_type);
-    const projectTitle = project.title || t("metadata.version.unknownProject");
+    const version = versionRes.ok ? await versionRes.json() : null;
+    const versionNumber = typeof version?.version_number === "string" ? version.version_number.trim() : "";
 
-    return {
-        title: t("metadata.version.title", { version: version.version_number, project: projectTitle }),
-        description: version.changelog || t("metadata.version.description", { version: version.version_number, project: projectTitle }),
-        openGraph: {
-            title: t("metadata.version.title", { version: version.version_number, project: projectTitle }),
-            description: version.changelog || t("metadata.version.description", { version: version.version_number, project: projectTitle }),
-            images: [project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"],
-            url: `https://modifold.com${basePath}/${slug}/version/${version_number}`,
-        },
-    };
+    return getProjectMetadata(project, `${basePath}/${project.slug}/version/${version_number}`, {
+        title: versionNumber ? `${versionNumber} — ${project.title} — Modifold` : undefined,
+    });
 }
 
 export default async function Page({ params }) {

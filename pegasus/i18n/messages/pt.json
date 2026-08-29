@@ -1007,6 +1007,19 @@
     "clearFilters": "Limpar filtros",
     "clearAllFilters": "Limpar todos os filtros",
     "clearSearch": "Limpar pesquisa",
+	"dependencies": {
+		"title": "Depende de",
+		"placeholder": "Pesquisar um projeto...",
+		"searching": "Pesquisando projetos...",
+		"empty": "Nenhum projeto encontrado",
+		"error": "Não foi possível carregar os projetos",
+		"clear": "Limpar filtro de dependência",
+		"types": {
+			"required": "Obrigatória",
+			"optional": "Opcional",
+			"embedded": "Incorporada"
+		}
+	},
     "placeholders": {
       "search": "Pesquisar",
       "versionSearch": "Pesquisar..."

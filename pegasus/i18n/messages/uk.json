@@ -1008,6 +1008,19 @@
     "clearFilters": "Очистити фільтри",
     "clearAllFilters": "Очистити всі фільтри",
     "clearSearch": "Очистити пошук",
+	"dependencies": {
+		"title": "Залежить від",
+		"placeholder": "Пошук проєкту...",
+		"searching": "Пошук проєктів...",
+		"empty": "Проєкти не знайдено",
+		"error": "Не вдалося завантажити проєкти",
+		"clear": "Очистити фільтр залежностей",
+		"types": {
+			"required": "Обов’язкова",
+			"optional": "Необов’язкова",
+			"embedded": "Вбудована"
+		}
+	},
     "placeholders": {
       "search": "Пошук проєктів...",
       "versionSearch": "Пошук..."

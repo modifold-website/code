@@ -2,48 +2,15 @@
 import ProjectPage from "@/components/pages/ProjectPage";
 import { getLocale } from "next-intl/server";
 import Script from "next/script";
-import { getApplicationCategory, getProjectBySlug, getProjectMembersBySlug, getProjectTypeTitle, recordProjectView } from "@/utils/projects/server";
+import { getApplicationCategory, getProjectBySlug, getProjectMembersBySlug, recordProjectView } from "@/utils/projects/server";
+import { getProjectMetadata } from "@/utils/projects/metadata";
 import { getProjectBasePath } from "@/utils/projectRoutes";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
     const project = await getProjectBySlug(slug);
-    const basePath = getProjectBasePath(project.project_type);
-    const projectTypeTitle = getProjectTypeTitle(project.project_type);
-    const summary = project.summary || "";
-    const description = summary.length > 160 ? `${summary.substring(0, 157)}...` : summary;
-    const iconImage = project.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
 
-    return {
-        title: `${project.title} — ${projectTypeTitle} — Modifold`,
-        description,
-        keywords: `${project.title}, Hytale, mods, shaders, resource packs, modpacks, worlds, maps, download Hytale maps, Modifold`,
-        author: project.owner.username,
-        robots: "index, follow",
-        alternates: {
-            canonical: `https://modifold.com${basePath}/${project.slug}`,
-            "x-default": `https://modifold.com${basePath}/${project.slug}`,
-        },
-        openGraph: {
-            title: `${project.title} — ${projectTypeTitle} — Modifold`,
-            description,
-            images: [
-                {
-                    url: iconImage,
-                    alt: `${project.title} ${projectTypeTitle}`,
-                },
-            ],
-            url: `https://modifold.com${basePath}/${project.slug}`,
-            type: "website",
-            locale: "en_US",
-        },
-        twitter: {
-            card: "summary",
-            title: `${project.title} — ${projectTypeTitle} — Modifold`,
-            description,
-            images: [iconImage],
-        },
-    };
+    return getProjectMetadata(project);
 }
 
 export default async function Page({ params }) {

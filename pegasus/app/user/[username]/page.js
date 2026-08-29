@@ -4,6 +4,12 @@ import ProfilePage from "@/components/pages/ProfilePage";
 
 const apiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
+const getProfileDescription = (description, fallback) => {
+    const value = typeof description === "string" ? description.trim() : "";
+
+    return value.length > 160 ? `${value.substring(0, 157)}...` : (value || fallback);
+};
+
 export async function generateMetadata({ params }) {
     const { username } = await params;
     const resolvedLocale = await getLocale();
@@ -26,9 +32,46 @@ export async function generateMetadata({ params }) {
     });
 
     const banData = banRes.ok ? await banRes.json() : { isBanned: false };
+    const title = banData.isBanned ? tProfile("metadata.frozen") : tProfile("metadata.title", { username: user.username });
+
+    if(banData.isBanned) {
+        return {
+            title,
+            robots: "noindex, nofollow",
+        };
+    }
+
+    const description = getProfileDescription(user.description, tProfile("defaultDescription"));
+    const avatar = user.avatar || "https://media.modifold.com/static/no-project-icon.svg";
+    const profileUrl = `https://modifold.com/user/${encodeURIComponent(user.slug || username)}`;
 
     return {
-        title: banData.isBanned ? tProfile("metadata.frozen") : tProfile("metadata.title", { username: user.username }),
+        title,
+        description,
+        robots: "index, follow",
+        alternates: {
+            canonical: profileUrl,
+            "x-default": profileUrl,
+        },
+        openGraph: {
+            title,
+            description,
+            images: [
+                {
+                    url: avatar,
+                    alt: tProfile("userAvatarAlt", { username: user.username }),
+                },
+            ],
+            url: profileUrl,
+            type: "website",
+            locale: "en_US",
+        },
+        twitter: {
+            card: "summary",
+            title,
+            description,
+            images: [avatar],
+        },
     };
 }
 

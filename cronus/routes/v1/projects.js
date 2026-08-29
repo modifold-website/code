@@ -1364,10 +1364,58 @@ const requireProjectPermission = async (res, { project, userId, permission }) =>
     return access;
 };
 
+router.get("/dependency-options", async (req, res) => {
+	try {
+		const search = String(req.query.search || "").trim().slice(0, 120);
+		const projectId = String(req.query.id || "").trim().slice(0, 120);
+		const requestedLimit = Number.parseInt(req.query.limit, 10);
+		const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 12) : 8;
+
+		if(!search && !projectId) {
+			return res.json({ projects: [] });
+		}
+
+		const whereClause = ["p.status = 'approved'", "p.is_archived = 0", "p.visibility = 'public'"];
+		const params = [];
+
+		if(projectId) {
+			whereClause.push("p.id = ?");
+			params.push(projectId);
+		} else {
+			whereClause.push("(p.id = ? OR p.slug LIKE ? OR p.title LIKE ?)");
+			params.push(search, `%${search}%`, `%${search}%`);
+		}
+
+		const [projects] = await db.query(
+			`SELECT p.id, p.slug, p.title, p.icon_url, p.project_type
+			FROM projects p
+			WHERE ${whereClause.join(" AND ")}
+			ORDER BY CASE WHEN p.id = ? THEN 0 WHEN p.slug = ? THEN 1 WHEN p.title = ? THEN 2 ELSE 3 END, p.downloads DESC, p.title ASC
+			LIMIT ?`,
+			[...params, search || projectId, search || projectId, search || projectId, limit]
+		);
+
+		res.json({
+			projects: projects.map((project) => ({
+				id: project.id,
+				slug: project.slug,
+				title: project.title,
+				icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+				project_type: project.project_type,
+			})),
+		});
+	} catch(error) {
+		console.error("Error fetching dependency project options:", error);
+		res.status(500).json({ message: "Error fetching dependency project options" });
+	}
+});
+
 router.get("/", async (req, res) => {
     try {
-        const { type, sort = "downloads", search = "", tags, game_versions, loaders, page = 1, limit = 20 } = req.query;
+        const { type, sort = "downloads", search = "", tags, game_versions, loaders, dependency_project, dependency_type, page = 1, limit = 20 } = req.query;
         const normalizedType = type ? normalizeProjectType(type) : null;
+		const normalizedDependencyProject = String(dependency_project || "").trim();
+		const normalizedDependencyType = String(dependency_type || "required").trim().toLowerCase();
 
         if(type && !normalizedType) {
             return res.status(400).json({ message: "Invalid project type" });
@@ -1380,6 +1428,10 @@ router.get("/", async (req, res) => {
         if(isNaN(limit) || limit < 1) {
             return res.status(400).json({ message: "Invalid limit" });
         }
+
+		if(dependency_type && !["required", "optional", "embedded"].includes(normalizedDependencyType)) {
+			return res.status(400).json({ message: "Invalid dependency type" });
+		}
 
         const offset = (page - 1) * limit;
 
@@ -1458,6 +1510,29 @@ router.get("/", async (req, res) => {
             });
             whereClause += ")";
         }
+
+		if(normalizedDependencyProject) {
+			const dependencyWhereClause = [
+				"source_version.project_id = p.id",
+				"source_version.moderation_status = 'approved'",
+				"d.project_id = ?",
+			];
+			const dependencyParams = [normalizedDependencyProject];
+
+			if(dependency_type) {
+				dependencyWhereClause.push("d.dependency_type = ?");
+				dependencyParams.push(normalizedDependencyType);
+			}
+
+			whereClause += ` AND EXISTS (
+				SELECT 1
+				FROM dependencies d
+				INNER JOIN project_versions source_version ON source_version.id = d.version_id
+				WHERE ${dependencyWhereClause.join(" AND ")}
+			)`;
+			params.push(...dependencyParams);
+			countParams.push(...dependencyParams);
+		}
 
         query += whereClause;
         countQuery += whereClause;

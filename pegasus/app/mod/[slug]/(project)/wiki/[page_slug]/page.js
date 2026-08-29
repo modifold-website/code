@@ -1,44 +1,18 @@
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import WikiPage from "@/components/pages/WikiPage";
+import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getProjectBySlug } from "@/utils/projects/server";
+import { getProjectMetadata } from "@/utils/projects/metadata";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-const formatWikiTitleFromSlug = (slug) => slug.split("-").filter(Boolean).map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
-
 export async function generateMetadata({ params }) {
     const { slug, page_slug } = await params;
-    const resolvedLocale = await getLocale();
-    const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
+    const project = await getProjectBySlug(slug);
+    const basePath = getProjectBasePath(project.project_type);
 
-    const projectRes = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    });
-
-    if(!projectRes.ok) {
-        return { title: t("metadata.notFound") };
-    }
-
-    const project = await projectRes.json();
-    let wikiPageTitle = formatWikiTitleFromSlug(page_slug);
-
-    try {
-        const wikiRes = await fetch(`${serverApiBase}/projects/${slug}/wiki/${encodeURIComponent(page_slug)}`, {
-            headers: { Accept: "application/json" },
-            cache: "no-store",
-        });
-
-        if(wikiRes.ok) {
-            const wikiData = await wikiRes.json();
-            wikiPageTitle = wikiData?.selected_page?.title || wikiPageTitle;
-        }
-    } catch {}
-
-    return {
-        title: `${wikiPageTitle} — ${project.title} Wiki — Modifold`,
-        description: project.summary,
-    };
+    return getProjectMetadata(project, `${basePath}/${project.slug}/wiki/${page_slug}`);
 }
 
 export default async function Page({ params }) {

@@ -1007,6 +1007,19 @@
     "clearFilters": "Clear Filters",
     "clearAllFilters": "Clear all filters",
     "clearSearch": "Clear search",
+	"dependencies": {
+		"title": "Depends on",
+		"placeholder": "Search for a project...",
+		"searching": "Searching projects...",
+		"empty": "No projects found",
+		"error": "Unable to load projects",
+		"clear": "Clear dependency filter",
+		"types": {
+			"required": "Required",
+			"optional": "Optional",
+			"embedded": "Embedded"
+		}
+	},
     "placeholders": {
       "search": "Search projects...",
       "versionSearch": "Search..."
