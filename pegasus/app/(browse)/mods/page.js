@@ -39,6 +39,9 @@ function parseBrowseSearchParams(searchParams) {
     const gameVersions = getValues("v");
     const useDefaultGameVersions = gameVersions.length === 0 && getValues("versions")[0] !== "all";
     const search = getValues("q")[0] || "";
+	const dependencyProjectId = getValues("dependency")[0] || "";
+	const dependencyTypeCandidate = getValues("dependency_type")[0] || "";
+	const dependencyType = ["required", "optional", "embedded"].includes(dependencyTypeCandidate) ? dependencyTypeCandidate : "required";
     const sortCandidate = getValues("sort")[0] || "";
     const sort = ["downloads", "recent", "updated"].includes(sortCandidate) ? sortCandidate : "downloads";
     const parsedPage = Number.parseInt(getValues("page")[0] || "", 10);
@@ -47,6 +50,8 @@ function parseBrowseSearchParams(searchParams) {
     return {
         sort,
         search,
+		dependencyProjectId,
+		dependencyType,
         tags,
         gameVersions,
         useDefaultGameVersions,
@@ -74,6 +79,10 @@ export default async function ModsPage({ searchParams }) {
     if(sortedGameVersions.length > 0) {
         apiParams.game_versions = sortedGameVersions.join(",");
     }
+	if(initialState.dependencyProjectId) {
+		apiParams.dependency_project = initialState.dependencyProjectId;
+		apiParams.dependency_type = initialState.dependencyType;
+	}
     const initialApiKey = JSON.stringify(apiParams);
     let initialData = null;
     let initialTags = [];
@@ -90,6 +99,10 @@ export default async function ModsPage({ searchParams }) {
         if(apiParams.game_versions) {
             requestParams.set("game_versions", apiParams.game_versions);
         }
+		if(apiParams.dependency_project) {
+			requestParams.set("dependency_project", apiParams.dependency_project);
+			requestParams.set("dependency_type", apiParams.dependency_type);
+		}
 
         const response = await fetch(`${apiBase}/projects?${requestParams.toString()}`, {
             next: { revalidate: 60 },

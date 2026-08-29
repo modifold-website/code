@@ -4451,6 +4451,104 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .browse-version-checkbox {
     margin-top: 12px;
 }
+.browse-dependency-filter {
+	position: relative;
+}
+.browse-dependency-filter__title {
+	font-size: 18px !important;
+	margin-bottom: 10px !important;
+    font-weight: 600 !important;
+}
+.browse-dependency-filter__field {
+	position: relative;
+}
+.browse-dependency-filter__projects-popover,
+.browse-dependency-filter__type-popover {
+	--position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	width: 100%;
+	z-index: 4;
+}
+.browse-dependency-filter .context-list-option {
+	width: 100%;
+	border: 0;
+	font: inherit;
+}
+.browse-dependency-filter__selected {
+	display: grid;
+	grid-template-columns: 40px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	padding: 10px;
+	border-radius: 12px;
+	background: var(--theme-color-background);
+}
+.browse-dependency-filter__project-icon {
+	width: 40px;
+	height: 40px;
+	border-radius: 8px;
+	object-fit: cover;
+}
+.browse-dependency-filter__selected-copy {
+	display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+.browse-dependency-filter__selected-copy strong {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 16px;
+	line-height: 1;
+}
+.browse-dependency-filter__type {
+	position: relative;
+    line-height: 1;
+}
+.browse-dependency-filter__type-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--theme-color-text-secondary);
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+}
+.browse-dependency-filter__type-button svg {
+	fill: none;
+}
+.browse-dependency-filter__type-popover {
+	min-width: 168px;
+}
+.browse-dependency-filter__clear {
+	display: inline-grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--theme-color-text-secondary);
+	cursor: pointer;
+	transition: background-color .12s ease, transform .1s ease;
+}
+.browse-dependency-filter__clear:hover,
+.browse-dependency-filter__clear:focus-visible {
+	background: var(--theme-color-background-active);
+}
+.browse-dependency-filter__clear:active {
+	transform: scale(.94);
+}
+@media (prefers-reduced-motion: reduce) {
+	.browse-dependency-filter__clear {
+		transition: background-color .12s ease;
+	}
+}
 .browse-page {
     display: grid;
     grid-template-columns: 1fr 3fr;

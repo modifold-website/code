@@ -1007,6 +1007,19 @@
     "clearFilters": "Сбросить фильтры",
     "clearAllFilters": "Сбросить все фильтры",
     "clearSearch": "Очистить поиск",
+	"dependencies": {
+		"title": "Зависит от",
+		"placeholder": "Поиск проекта...",
+		"searching": "Поиск проектов...",
+		"empty": "Проекты не найдены",
+		"error": "Не удалось загрузить проекты",
+		"clear": "Очистить фильтр зависимостей",
+		"types": {
+			"required": "Обязательная",
+			"optional": "Необязательная",
+			"embedded": "Встроенная"
+		}
+	},
     "placeholders": {
       "search": "Поиск проектов...",
       "versionSearch": "Поиск..."

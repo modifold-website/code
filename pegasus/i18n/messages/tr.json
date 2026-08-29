@@ -1007,6 +1007,19 @@
     "clearFilters": "Filtreleri temizle",
     "clearAllFilters": "Tüm filtreleri temizle",
     "clearSearch": "Aramayı temizle",
+	"dependencies": {
+		"title": "Bağımlı olduğu proje",
+		"placeholder": "Proje ara...",
+		"searching": "Projeler aranıyor...",
+		"empty": "Proje bulunamadı",
+		"error": "Projeler yüklenemedi",
+		"clear": "Bağımlılık filtresini temizle",
+		"types": {
+			"required": "Gerekli",
+			"optional": "İsteğe bağlı",
+			"embedded": "Gömülü"
+		}
+	},
     "placeholders": {
       "search": "Projeleri ara...",
       "versionSearch": "Ara..."

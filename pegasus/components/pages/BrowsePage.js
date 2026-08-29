@@ -29,11 +29,13 @@ function parseQueryString(queryString) {
         useDefaultGameVersions: gameVersions.length === 0 && params.get("versions") !== "all",
         sort: ["downloads", "recent", "updated"].includes(rawSort) ? rawSort : "downloads",
         search: params.get("q") || "",
+		dependencyProjectId: params.get("dependency") || "",
+		dependencyType: ["required", "optional", "embedded"].includes(params.get("dependency_type")) ? params.get("dependency_type") : "required",
         page: Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1,
     };
 }
 
-function buildQueryString({ sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, currentPage }) {
+function buildQueryString({ sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType, currentPage }) {
     const params = new URLSearchParams();
 
     if(search) {
@@ -54,6 +56,11 @@ function buildQueryString({ sort, search, selectedTags, selectedGameVersions, us
         params.set("versions", "all");
     }
 
+	if(dependencyProjectId) {
+		params.set("dependency", dependencyProjectId);
+		params.set("dependency_type", dependencyType);
+	}
+
     return params.toString();
 }
 
@@ -66,6 +73,8 @@ function normalizeInitialState(initialState) {
         useDefaultGameVersions: gameVersions.length === 0 && initialState?.useDefaultGameVersions !== false,
         sort: ["downloads", "recent", "updated"].includes(initialState?.sort) ? initialState.sort : "downloads",
         search: typeof initialState?.search === "string" ? initialState.search : "",
+		dependencyProjectId: typeof initialState?.dependencyProjectId === "string" ? initialState.dependencyProjectId : "",
+		dependencyType: ["required", "optional", "embedded"].includes(initialState?.dependencyType) ? initialState.dependencyType : "required",
         page: Number.isFinite(initialState?.page) && initialState.page > 0 ? initialState.page : 1,
     };
 }
@@ -101,6 +110,8 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const [selectedTags, setSelectedTags] = useState(normalizedInitialState.tags);
     const [selectedGameVersions, setSelectedGameVersions] = useState(normalizedInitialState.gameVersions);
     const [useDefaultGameVersions, setUseDefaultGameVersions] = useState(normalizedInitialState.useDefaultGameVersions);
+	const [dependencyProjectId, setDependencyProjectId] = useState(normalizedInitialState.dependencyProjectId);
+	const [dependencyType, setDependencyType] = useState(normalizedInitialState.dependencyType);
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
 
@@ -128,6 +139,8 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setSort(parsed.sort);
         setSearch(parsed.search);
         setSearchInput(parsed.search);
+		setDependencyProjectId(parsed.dependencyProjectId);
+		setDependencyType(parsed.dependencyType);
         setCurrentPage(parsed.page);
     }, [urlQueryString]);
 
@@ -149,8 +162,10 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         selectedTags,
         selectedGameVersions,
         useDefaultGameVersions,
+		dependencyProjectId,
+		dependencyType,
         currentPage,
-    }), [sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, currentPage]);
+    }), [sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType, currentPage]);
 
     useEffect(() => {
         if(nextQueryString === urlQueryString) {
@@ -175,8 +190,13 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 			nextApiParams.game_versions = [...effectiveGameVersions].sort().join(",");
 		}
 
+		if(dependencyProjectId) {
+			nextApiParams.dependency_project = dependencyProjectId;
+			nextApiParams.dependency_type = dependencyType;
+		}
+
 		return nextApiParams;
-	}, [projectType, sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, gameVersions, currentPage]);
+	}, [projectType, sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, gameVersions, dependencyProjectId, dependencyType, currentPage]);
 
     const apiKey = useMemo(() => JSON.stringify(apiParams), [apiParams]);
     const projectsQuery = useQuery({
@@ -249,6 +269,8 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setUseDefaultGameVersions(false);
         setSearch("");
         setSearchInput("");
+		setDependencyProjectId("");
+		setDependencyType("required");
         setSort("downloads");
         setCurrentPage(1);
         scrollToResults();
@@ -272,6 +294,26 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setCurrentPage(1);
         scrollToResults();
     };
+
+	const handleSelectDependencyProject = (projectId) => {
+		setDependencyProjectId(projectId);
+		setDependencyType("required");
+		setCurrentPage(1);
+		scrollToResults();
+	};
+
+	const handleSelectDependencyType = (nextDependencyType) => {
+		setDependencyType(nextDependencyType);
+		setCurrentPage(1);
+		scrollToResults();
+	};
+
+	const handleClearDependency = () => {
+		setDependencyProjectId("");
+		setDependencyType("required");
+		setCurrentPage(1);
+		scrollToResults();
+	};
 
     const handlePageChange = (nextPage, shouldScrollToResults = false) => {
         const normalizedPage = Math.min(totalPages, Math.max(1, nextPage));
@@ -334,7 +376,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
     return (
         <div className="browse-page">
-            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
+            <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} selectedDependencyProjectId={dependencyProjectId} dependencyType={dependencyType} onSelectDependencyProject={handleSelectDependencyProject} onSelectDependencyType={handleSelectDependencyType} onClearDependency={handleClearDependency} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
                 <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ style: { marginTop: 0, marginLeft: "auto" } })} />
