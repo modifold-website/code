@@ -140,7 +140,7 @@ function DependencyFilter({ t, selectedProjectId, dependencyType, onSelectProjec
 				<div className="field field--default browse-dependency-filter__field" ref={projectFieldRef}>
 					<label className="field__wrapper">
 						<div className="field__wrapper-body">
-							<svg className="icon field__icon field__icon--left" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+							<svg className="icon field__icon field__icon--left" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 								<circle cx="11" cy="11" r="8"/>
 								<path d="m21 21-4.3-4.3"/>
 							</svg>
