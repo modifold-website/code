@@ -1,28 +1,18 @@
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import WikiPage from "@/components/pages/WikiPage";
+import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getProjectBySlug } from "@/utils/projects/server";
+import { getProjectMetadata } from "@/utils/projects/metadata";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
-    const resolvedLocale = await getLocale();
-    const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
+    const project = await getProjectBySlug(slug);
+    const basePath = getProjectBasePath(project.project_type);
 
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    });
-
-    if(!res.ok) {
-        return { title: t("metadata.notFound") };
-    }
-
-    const project = await res.json();
-    return {
-        title: `${project.title} Wiki — Modifold`,
-        description: project.summary,
-    };
+    return getProjectMetadata(project, `${basePath}/${project.slug}/wiki`, { titleSuffix: "Wiki" });
 }
 
 export default async function Page({ params }) {
