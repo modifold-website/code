@@ -4338,35 +4338,6 @@ input[type="file"]::-webkit-file-upload-button:hover {
     fill: none;
     flex-shrink: 0;
 }
-.browse-version-search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    min-height: 42px;
-    border-radius: 12px;
-    background: var(--theme-color-background);
-    color: var(--theme-color-text-secondary);
-    font-size: 16px;
-    padding: 0 12px;
-    margin-bottom: 10px;
-}
-.browse-version-search svg {
-    flex-shrink: 0;
-    fill: none;
-}
-.browse-version-search input {
-    border: 0;
-    outline: 0;
-    background: transparent;
-    color: var(--theme-color-text-primary);
-    width: 100%;
-    min-width: 0;
-    font: inherit;
-}
-.browse-version-search input::placeholder {
-    color: var(--theme-color-text-secondary);
-}
 .browse-version-list {
     --_fade-height: 3rem;
     --_top-fade-height: 0px;

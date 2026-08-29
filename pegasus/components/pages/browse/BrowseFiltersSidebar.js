@@ -238,14 +238,18 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
         <div className="content content--padding" style={{ padding: "14px 20px 20px 20px" }}>
             <h2 style={{ fontSize: "18px", marginBottom: "10px", fontWeight: "600" }}>{t("gameVersions")}</h2>
 
-            <label className="browse-version-search">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.3-4.3"/>
-                </svg>
+			<div className="field field--default browse-dependency-filter__field">
+				<label className="field__wrapper">
+					<div className="field__wrapper-body">
+						<svg className="icon field__icon field__icon--left" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+							<circle cx="11" cy="11" r="8"/>
+							<path d="m21 21-4.3-4.3"/>
+						</svg>
 
-                <input type="search" value={versionSearch} onChange={(event) => setVersionSearch(event.target.value)} placeholder={t("placeholders.versionSearch")} aria-label={t("gameVersions")} />
-            </label>
+						<input type="text" className="text-input" value={versionSearch} onChange={(event) => setVersionSearch(event.target.value)} placeholder={t("placeholders.versionSearch")} aria-label={t("gameVersions")} autoComplete="off" />
+					</div>
+				</label>
+			</div>
 
             <ul ref={versionListRef} className="category-list browse-version-list" role="list" onScroll={updateVersionListFade}>
 				{filteredGameVersionGroups.map((group) => {
