@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import ImageLightbox, { useImageLightbox } from "../ui/ImageLightbox";
@@ -7,6 +8,7 @@ import { getYouTubeEmbedUrl, getYouTubeThumbnailUrl, isGalleryVideo, normalizeGa
 
 const SLIDE_DURATION_MS = 440;
 const AUTO_PLAY_MS = 6500;
+const PrefabPreviewCanvas = dynamic(() => import("./PrefabPreviewCanvas"), { ssr: false });
 
 const getSlidePosition = (index, activeIndex, transitionState, length) => {
 	if(length < 2) {
@@ -40,17 +42,28 @@ const getTransitionClassName = (position, direction) => {
 	return "";
 };
 
-export default function ProjectInlineGallerySlider({ media = [], projectTitle = "" }) {
+export default function ProjectInlineGallerySlider({ media = [], projectTitle = "", prefabPreview = null }) {
 	const t = useTranslations("ProjectPage");
 	const preparedMedia = useMemo(() => {
-		return normalizeGalleryMedia(media).map((item) => isGalleryVideo(item) ? {
+		const galleryMedia = normalizeGalleryMedia(media).map((item) => isGalleryVideo(item) ? {
 			...item,
 			type: "youtube",
 			videoId: item.youtube_video_id,
 			title: item.title || t("gallery.video"),
 			thumbnailUrl: getYouTubeThumbnailUrl(item.youtube_video_id),
 		} : { ...item, type: "image" });
-	}, [media, t]);
+
+		if(!prefabPreview?.url) {
+			return galleryMedia;
+		}
+
+		return [{
+			id: "prefab-preview",
+			type: "prefab",
+			url: prefabPreview.url,
+			title: prefabPreview.file_name || t("prefabPreview.label"),
+		}, ...galleryMedia];
+	}, [media, prefabPreview, t]);
 	const visibleThumbsCount = 5;
 	const [activeIndex, setActiveIndex] = useState(0);
 	const [transitionState, setTransitionState] = useState(null);
@@ -60,9 +73,6 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 		setActiveIndex(0);
 	}, [preparedMedia.length]);
 
-	if(preparedMedia.length === 0) {
-		return null;
-	}
 	const hasMultipleImages = preparedMedia.length > 1;
 	const isAnimating = transitionState !== null;
 
@@ -73,7 +83,7 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 
 		const currentMedia = preparedMedia[activeIndex];
 		const nextMedia = preparedMedia[nextIndex];
-		if(currentMedia?.type === "youtube" || nextMedia?.type === "youtube") {
+		if([currentMedia?.type, nextMedia?.type].some((type) => type === "youtube" || type === "prefab")) {
 			setActiveIndex(nextIndex);
 			setTransitionState(null);
 			return;
@@ -103,7 +113,7 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 	const goNext = () => startTransition((activeIndex + 1) % preparedMedia.length, "right");
 
 	useEffect(() => {
-		if(preparedMedia.length < 2 || isAnimating || preparedMedia[activeIndex]?.type === "youtube") {
+		if(preparedMedia.length < 2 || isAnimating || ["youtube", "prefab"].includes(preparedMedia[activeIndex]?.type)) {
 			return;
 		}
 
@@ -140,6 +150,10 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 	const getImageAlt = (media, index) => media.title || `${projectTitle} image ${index + 1}`;
 	const getThumbAlt = (media, index) => media.title || `${projectTitle} thumbnail ${index + 1}`;
 	const renderMedia = (media, index, isActive) => {
+		if(media?.type === "prefab") {
+			return <PrefabPreviewCanvas prefabUrl={media.url} active={isActive} />;
+		}
+
 		if(media?.type === "youtube") {
 			if(!isActive) {
 				return (
@@ -180,9 +194,9 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 		const positionClassName = `project-inline-gallery__pane--${position}`;
 		const transitionClassName = getTransitionClassName(position, transitionState?.direction);
 		const isActive = index === activeIndex;
-		const paneClassName = `project-inline-gallery__pane ${media.type === "youtube" ? "" : "project-inline-gallery__pane--button"} ${positionClassName} ${transitionClassName}`;
+		const paneClassName = `project-inline-gallery__pane ${["youtube", "prefab"].includes(media.type) ? "" : "project-inline-gallery__pane--button"} ${media.type === "prefab" ? "project-inline-gallery__pane--prefab" : ""} ${positionClassName} ${transitionClassName}`;
 
-		if(media.type === "youtube") {
+		if(media.type === "youtube" || media.type === "prefab") {
 			return (
 				<div key={media.id || media.videoId || index} className={paneClassName} aria-hidden={position === "hidden" ? "true" : undefined}>
 					{renderMedia(media, index, isActive)}
@@ -206,8 +220,16 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 	};
 	
 	const renderThumb = (media, index, keyPrefix = "") => (
-		<button key={`${keyPrefix}${media.id || media.url}-${index}`} type="button" className={`project-inline-gallery__thumb ${index === activeThumbIndex ? "is-active" : ""}`} onClick={() => openAt(index)} aria-label={media.type === "youtube" ? t("gallery.openVideo", { title: media.title || t("gallery.video") }) : `Open image ${index + 1}`} disabled={isAnimating}>
-			<img src={media.type === "youtube" ? media.thumbnailUrl : media.url} alt={getThumbAlt(media, index)} loading="lazy" />
+		<button key={`${keyPrefix}${media.id || media.url}-${index}`} type="button" className={`project-inline-gallery__thumb ${media.type === "prefab" ? "project-inline-gallery__thumb--prefab" : ""} ${index === activeThumbIndex ? "is-active" : ""}`} onClick={() => openAt(index)} aria-label={media.type === "youtube" ? t("gallery.openVideo", { title: media.title || t("gallery.video") }) : media.type === "prefab" ? t("prefabPreview.open") : t("gallery.viewImage", { title: media.title || t("gallery.image") })} disabled={isAnimating}>
+			{media.type === "prefab" ? (
+				<span className="project-inline-gallery__prefab-thumb-icon" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: "none" }}>
+						<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+						<path d="m3.3 7 8.7 5 8.7-5"/>
+						<path d="M12 22V12"/>
+					</svg>
+				</span>
+			) : <img src={media.type === "youtube" ? media.thumbnailUrl : media.url} alt={getThumbAlt(media, index)} loading="lazy" />}
 
 			{media.type === "youtube" && (
 				<span className="project-inline-gallery__thumb-play" aria-hidden="true">
@@ -219,6 +241,10 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 			)}
 		</button>
 	);
+
+	if(preparedMedia.length === 0) {
+		return null;
+	}
 
 	return (
 		<div className="project-inline-gallery">

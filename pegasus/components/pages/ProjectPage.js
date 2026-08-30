@@ -38,7 +38,7 @@ const hasProjectEditPermission = (permissions = {}) => Boolean(
 	permissions.can_delete_project
 );
 
-export default function ProjectPage({ project, authToken, showInlineGallery = false }) {
+export default function ProjectPage({ project, authToken, showInlineGallery = false, prefabPreview = null }) {
     const { user } = useAuth();
     const t = useTranslations("ProjectPage");
     const safeDescription = prepareProjectDescriptionMarkdown(project.description);
@@ -57,7 +57,7 @@ export default function ProjectPage({ project, authToken, showInlineGallery = fa
                     ) : null}
 
                     {showInlineGallery ? (
-                        <ProjectInlineGallerySlider media={project?.gallery || []} projectTitle={project?.title || ""} />
+                        <ProjectInlineGallerySlider media={project?.gallery || []} projectTitle={project?.title || ""} prefabPreview={prefabPreview} />
                     ) : null}
 
                     <div className="content content--padding markdown-body">

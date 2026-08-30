@@ -550,6 +550,18 @@
     "ownerAvatarAlt": "Avatar del usuario {username}",
     "editSettings": "Editar ajustes",
     "emptyDescription": "Añade una descripción en los ajustes del proyecto para que los jugadores entiendan qué hace este proyecto.",
+    "prefabPreview": {
+      "label": "Vista previa 3D",
+      "open": "Abrir vista previa 3D",
+      "loading": "Preparando la vista previa 3D…",
+      "progress": "Renderizando {current} de {total} bloques…",
+      "error": "No se pudo cargar esta vista previa 3D",
+      "dragHint": "Arrastra para girar",
+      "zoomHint": "Rueda para acercar",
+      "panHint": "Clic derecho para desplazar",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa"
+    },
     "status": {
       "draft": "Borrador",
       "moderation": "En revisión"

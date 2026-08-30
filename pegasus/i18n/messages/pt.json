@@ -550,6 +550,18 @@
     "ownerAvatarAlt": "Avatar do usuário {username}",
     "editSettings": "Editar configurações",
     "emptyDescription": "Adicione uma descrição nas configurações do projeto para que os jogadores entendam o que este projeto faz.",
+    "prefabPreview": {
+      "label": "Prévia 3D",
+      "open": "Abrir prévia 3D",
+      "loading": "Preparando a prévia 3D…",
+      "progress": "Renderizando {current} de {total} blocos…",
+      "error": "Não foi possível carregar esta prévia 3D",
+      "dragHint": "Arraste para girar",
+      "zoomHint": "Role para ampliar",
+      "panHint": "Botão direito para mover",
+      "fullscreen": "Tela cheia",
+      "exitFullscreen": "Sair da tela cheia"
+    },
     "status": {
       "draft": "Rascunho",
       "moderation": "Em revisão"

@@ -550,6 +550,18 @@
     "ownerAvatarAlt": "User avatar {username}",
     "editSettings": "Edit Settings",
     "emptyDescription": "Add a description in project settings so players understand what this project does.",
+    "prefabPreview": {
+      "label": "3D preview",
+      "open": "Open 3D preview",
+      "loading": "Preparing 3D preview…",
+      "progress": "Rendering {current} of {total} blocks…",
+      "error": "Couldn’t load this 3D preview",
+      "dragHint": "Drag to rotate",
+      "zoomHint": "Scroll to zoom",
+      "panHint": "Right-click to pan",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen"
+    },
     "status": {
       "draft": "Draft",
       "moderation": "Under review"

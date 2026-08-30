@@ -17,6 +17,7 @@ const projectRoutes = require("./routes/v1/projects");
 const versionRoutesV2 = require("./routes/v2/versions");
 const discoverRoutesV2 = require("./routes/v2/discover");
 const imageRoutesV2 = require("./routes/v2/images");
+const prefabRoutesV2 = require("./routes/v2/prefabs");
 const moderationTags = require("./routes/v1/moderation");
 const usersModerationRouter = require("./routes/v1/users_moderation");
 const ApiTokensRouter = require("./routes/v1/api-tokens");
@@ -176,6 +177,13 @@ const startServer = () => {
 	app.use("/v2/version", projectsLimiterMiddleware, versionRoutesV2);
 	app.use("/v2/discover", projectsLimiterMiddleware, discoverRoutesV2);
 	app.use("/v2/image", projectsLimiterMiddleware, imageRoutesV2);
+	app.use("/v2/prefabs", (req, res, next) => {
+		if(req.path.startsWith("/assets/")) {
+			return next();
+		}
+
+		return projectsLimiterMiddleware(req, res, next);
+	}, prefabRoutesV2);
 	mountV1Route("/auth", authRoutes);
 	mountV1Route("/users", usersRoutes);
 	mountV1Route("/subscriptions", subscriptionRoutes);
