@@ -91,6 +91,8 @@ const PROJECT_TYPE_ALIASES = {
     modpacks: "modpack",
     world: "world",
     worlds: "world",
+	prefab: "prefab",
+	prefabs: "prefab",
 };
 
 const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;

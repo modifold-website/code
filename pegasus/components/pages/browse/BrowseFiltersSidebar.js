@@ -6,6 +6,7 @@ import Checkbox from "@/components/ui/Checkbox";
 import CategoryIcon from "@/utils/CategoryIcon";
 import { getBrowseGameVersionGroups, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 import { apiClient } from "@/utils/api/client";
+import { isBuildContentProjectType } from "@/utils/projectRoutes";
 
 const normalizeTags = (tags) => tags.map((tag) => (typeof tag === "string" ? { name: tag } : tag)).filter((tag) => tag && typeof tag.name === "string");
 const DEPENDENCY_PROJECT_SEARCH_DEBOUNCE_MS = 350;
@@ -187,7 +188,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
     const [showAllVersions, setShowAllVersions] = useState(false);
     const versionListRef = useRef(null);
     const hasSelectedFilters = selectedTags.length > 0 || selectedGameVersions.length > 0 || Boolean(selectedDependencyProjectId);
-    const isWorldProjectType = projectType === "world";
+	const isBuildContentProject = isBuildContentProjectType(projectType);
 	const selectedGameVersionSet = useMemo(() => new Set(selectedGameVersions), [selectedGameVersions]);
 	const groupedVersionSet = useMemo(() => new Set(gameVersionGroups.flatMap((group) => group.versions)), [gameVersionGroups]);
 	const filteredGameVersionGroups = useMemo(() => {
@@ -345,9 +346,9 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
 
     return (
         <div className="sidebar--browse">
-            {isWorldProjectType ? categoriesSection : gameVersionsSection}
+			{isBuildContentProject ? categoriesSection : gameVersionsSection}
             
-            {isWorldProjectType ? gameVersionsSection : categoriesSection}
+			{isBuildContentProject ? gameVersionsSection : categoriesSection}
 
 			{projectType === "mod" && (
 				<DependencyFilter t={t} selectedProjectId={selectedDependencyProjectId} dependencyType={dependencyType} onSelectProject={onSelectDependencyProject} onSelectDependencyType={onSelectDependencyType} onClear={onClearDependency} />

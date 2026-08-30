@@ -16,6 +16,10 @@ function getActiveSection(pathname) {
 		return "worlds";
 	}
 
+	if(pathname.startsWith("/prefabs")) {
+		return "prefabs";
+	}
+
 	return "mods";
 }
 
@@ -64,6 +68,10 @@ export default function BrowseTabs() {
 
 			<Link href="/mods" className={`tabs__tab ${activeSection === "mods" ? "tabs__tab--active" : ""}`}>
 				{t("mods")}
+			</Link>
+
+			<Link href="/prefabs" className={`tabs__tab ${activeSection === "prefabs" ? "tabs__tab--active" : ""}`}>
+				{t("prefabs")}
 			</Link>
 
 			<Link href="/worlds" className={`tabs__tab ${activeSection === "worlds" ? "tabs__tab--active" : ""}`}>

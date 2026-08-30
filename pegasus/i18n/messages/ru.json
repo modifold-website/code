@@ -3,7 +3,8 @@
     "discover": "Обзор контента — Modifold",
     "mods": "Моды — Modifold",
     "modpacks": "Модпаки — Modifold",
-    "worlds": "Миры — Modifold"
+    "worlds": "Миры — Modifold",
+    "prefabs": "Префабы — Modifold"
   },
   "Common": {
     "downloadsTooltip": "{count, plural, one {# скачивание} few {# скачивания} many {# скачиваний} other {# скачивания}}"
@@ -14,6 +15,7 @@
     "mods": "Моды",
     "modpacks": "Модпаки",
     "worlds": "Миры",
+    "prefabs": "Префабы",
     "modJams": "Мод-джемы",
     "login": "Войти",
     "logout": "Выйти",
@@ -521,7 +523,8 @@
     "projectTypes": {
       "mod": "Мод",
       "modpack": "Модпак",
-      "world": "Мир"
+      "world": "Мир",
+      "prefab": "Префаб"
     },
     "createProject": "Создать проект",
     "creating": "Создание...",
@@ -1041,7 +1044,8 @@
     "browseAll": "Все проекты",
     "mods": "Моды",
     "modpacks": "Модпаки",
-    "worlds": "Миры"
+    "worlds": "Миры",
+    "prefabs": "Префабы"
   },
   "DiscoverPage": {
     "featured": "Рекомендуемое",
@@ -1066,6 +1070,19 @@
     "next": "Вперёд"
   },
   "CategoryLabels": {
+	"buildings": "Здания",
+	"towns_villages": "Города и деревни",
+	"castles_forts": "Замки и крепости",
+	"dungeons": "Подземелья",
+	"ruins": "Руины",
+	"rooms_interiors": "Комнаты и интерьеры",
+	"roads_bridges": "Дороги и мосты",
+	"landscapes": "Ландшафты",
+	"plants_trees": "Растения и деревья",
+	"caves_rocks": "Пещеры и скалы",
+	"mechanisms": "Механизмы",
+	"npcs_encounters": "NPC и события",
+	"building_kits": "Наборы для строительства",
     "adventure": "Приключения",
     "challenging": "Испытания",
     "combat": "Бои",
@@ -2194,7 +2211,8 @@
         "all": "Все проекты",
         "mod": "Моды",
         "modpack": "Модпаки",
-        "world": "Миры"
+        "world": "Миры",
+        "prefab": "Префабы"
       },
       "sort": {
         "oldest": "Сначала старые",

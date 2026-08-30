@@ -13,6 +13,8 @@ const PROJECT_TYPE_ALIASES = {
 	modpacks: "modpack",
 	world: "world",
 	worlds: "world",
+	prefab: "prefab",
+	prefabs: "prefab",
 };
 
 const DISCOVER_CACHE_TTL_SECONDS = 60 * 5;
@@ -22,6 +24,7 @@ const DISCOVER_CATEGORY_TAGS = {
 	mod: ["Decoration", "Adventure", "Game Mechanics", "Minigame"],
 	modpack: ["Adventure", "Multiplayer", "Magic", "Optimization"],
 	world: ["Adventure", "Survival", "Parkour", "Puzzle"],
+	prefab: ["Decoration", "Landscapes", "Buildings", "Dungeons"],
 };
 
 const normalizeProjectType = (projectType) => PROJECT_TYPE_ALIASES[String(projectType || "").toLowerCase()] || null;
@@ -375,13 +378,14 @@ const buildDiscoverData = async (projectType, { includeCategorySections = true }
 	};
 };
 
-const combineProjects = (firstProjects = [], secondProjects = [], limit = 10) => {
+const combineProjects = (projectGroups = [], limit = 10) => {
 	const projects = [];
 	const seenProjects = new Set();
-	const maxLength = Math.max(firstProjects.length, secondProjects.length);
+	const maxLength = Math.max(0, ...projectGroups.map((projectGroup) => projectGroup.length));
 
 	for(let index = 0; index < maxLength && projects.length < limit; index += 1) {
-		for(const project of [firstProjects[index], secondProjects[index]]) {
+		for(const projectGroup of projectGroups) {
+			const project = projectGroup[index];
 			if(!project) {
 				continue;
 			}
@@ -402,10 +406,10 @@ const combineProjects = (firstProjects = [], secondProjects = [], limit = 10) =>
 	return projects;
 };
 
-const combinePopularCategories = (modCategories = [], worldCategories = [], limit = 6) => {
+const combinePopularCategories = (categoryGroups = [], limit = 6) => {
 	const categoriesByName = new Map();
 
-	for(const [categories, projectType] of [[modCategories, "mod"], [worldCategories, "world"]]) {
+	for(const [categories, projectType] of categoryGroups) {
 		for(const category of categories) {
 			const currentCategory = categoriesByName.get(category.name);
 			if(currentCategory && Number(currentCategory.count || 0) >= Number(category.count || 0)) {
@@ -426,7 +430,7 @@ const combinePopularCategories = (modCategories = [], worldCategories = [], limi
 
 router.get("/", async (req, res) => {
 	try {
-		const cacheKey = getDiscoverCacheKey({ types: ["mod", "world"], version: 3 });
+		const cacheKey = getDiscoverCacheKey({ types: ["mod", "world", "prefab"], version: 4 });
 		const cachedResponse = await getCacheJson(cacheKey);
 
 		if(cachedResponse) {
@@ -434,18 +438,23 @@ router.get("/", async (req, res) => {
 			return res.json(cachedResponse);
 		}
 
-		const [mods, worlds] = await Promise.all([
+		const [mods, worlds, prefabs] = await Promise.all([
 			buildDiscoverData("mod", { includeCategorySections: false }),
 			buildDiscoverData("world", { includeCategorySections: false }),
+			buildDiscoverData("prefab", { includeCategorySections: false }),
 		]);
 		const responseData = {
-			types: ["mod", "world"],
-			featured: combineProjects(mods.featured, worlds.featured, 5),
-			weeklyPopular: combineProjects(mods.weeklyPopular, worlds.weeklyPopular),
-			weeklyNewPopular: combineProjects(mods.weeklyNewPopular, worlds.weeklyNewPopular),
-			recentlyUpdated: combineProjects(mods.recentlyUpdated, worlds.recentlyUpdated),
-			popularCategories: combinePopularCategories(mods.popularCategories, worlds.popularCategories),
-			latest: combineProjects(mods.latest, worlds.latest, 6),
+			types: ["mod", "world", "prefab"],
+			featured: combineProjects([mods.featured, worlds.featured, prefabs.featured], 5),
+			weeklyPopular: combineProjects([mods.weeklyPopular, worlds.weeklyPopular, prefabs.weeklyPopular]),
+			weeklyNewPopular: combineProjects([mods.weeklyNewPopular, worlds.weeklyNewPopular, prefabs.weeklyNewPopular]),
+			recentlyUpdated: combineProjects([mods.recentlyUpdated, worlds.recentlyUpdated, prefabs.recentlyUpdated]),
+			popularCategories: combinePopularCategories([
+				[mods.popularCategories, "mod"],
+				[worlds.popularCategories, "world"],
+				[prefabs.popularCategories, "prefab"],
+			]),
+			latest: combineProjects([mods.latest, worlds.latest, prefabs.latest], 6),
 			generatedAt: new Date().toISOString(),
 		};
 

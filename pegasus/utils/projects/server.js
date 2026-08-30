@@ -19,12 +19,14 @@ export const getProjectTypeTitle = (projectType) => ({
     mod: "Hytale Mod",
     modpack: "Hytale Modpack",
     world: "Hytale World",
+	prefab: "Hytale Prefab",
 })[projectType] || "Hytale Project";
 
 export const getApplicationCategory = (projectType) => ({
     mod: "Game Mod",
     modpack: "Modpack",
     world: "Game Map",
+	prefab: "Game Asset",
 })[projectType] || String(projectType || "project").replace("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 export const getProjectBySlug = cache(async (slug, authToken = "") => {

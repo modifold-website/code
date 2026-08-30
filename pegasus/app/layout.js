@@ -29,7 +29,7 @@ export async function generateMetadata() {
     return {
         title: messages.HomePage.title,
         description: messages.HomePage.description,
-        keywords: "Hytale mods, shaders, resource packs, modpacks, maps, download Hytale maps, Modifold, download mods Hytale",
+		keywords: "Hytale mods, shaders, resource packs, modpacks, worlds, prefabs, maps, download Hytale prefabs, Modifold, download mods Hytale",
         robots: "index, follow",
         openGraph: {
             title: messages.HomePage.title,

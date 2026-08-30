@@ -3,7 +3,8 @@
     "discover": "Descobrir conteúdo — Modifold",
     "mods": "Mods — Modifold",
     "modpacks": "Modpacks — Modifold",
-    "worlds": "Mundos — Modifold"
+    "worlds": "Mundos — Modifold",
+    "prefabs": "Prefabs — Modifold"
   },
   "Common": {
     "downloadsTooltip": "{count, plural, one {# download} other {# downloads}}"
@@ -14,6 +15,7 @@
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Mundos",
+    "prefabs": "Prefabs",
     "modJams": "Mod jams",
     "login": "Entrar",
     "logout": "Sair",
@@ -521,7 +523,8 @@
     "projectTypes": {
       "mod": "Mod",
       "modpack": "Modpack",
-      "world": "Mundo"
+      "world": "Mundo",
+      "prefab": "Prefab"
     },
     "createProject": "Criar projeto",
     "creating": "Criando...",
@@ -1041,7 +1044,8 @@
     "browseAll": "Ver tudo",
     "mods": "Mods",
     "modpacks": "Pacotes de mods",
-    "worlds": "Mundos"
+    "worlds": "Mundos",
+    "prefabs": "Prefabs"
   },
   "DiscoverPage": {
     "featured": "Destaques",
@@ -1066,6 +1070,19 @@
     "next": "Próximo"
   },
   "CategoryLabels": {
+	"buildings": "Edifícios",
+	"towns_villages": "Cidades e vilas",
+	"castles_forts": "Castelos e fortes",
+	"dungeons": "Masmorras",
+	"ruins": "Ruínas",
+	"rooms_interiors": "Cômodos e interiores",
+	"roads_bridges": "Estradas e pontes",
+	"landscapes": "Paisagens",
+	"plants_trees": "Plantas e árvores",
+	"caves_rocks": "Cavernas e rochas",
+	"mechanisms": "Mecanismos",
+	"npcs_encounters": "NPCs e encontros",
+	"building_kits": "Kits de construção",
     "adventure": "Aventura",
     "challenging": "Desafiadores",
     "combat": "Combate",
@@ -2099,7 +2116,8 @@
         "all": "Todos os projetos",
         "mod": "Mods",
         "modpack": "Modpacks",
-        "world": "Mundos"
+        "world": "Mundos",
+        "prefab": "Prefabs"
       },
       "sort": {
         "oldest": "Mais antigos",

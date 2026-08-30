@@ -196,7 +196,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                         {isTypePopoverOpen && (
                             <div className="popover">
                                 <div className="context-list" data-scrollable style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                    {["all", "mod", "modpack", "world"].map((type) => (
+                                    {["all", "mod", "modpack", "world", "prefab"].map((type) => (
                                         <div key={type} className={`context-list-option ${projectType === type ? "context-list-option--selected" : ""}`} onClick={() => handleTypeSelect(type)}>
                                             <div className="context-list-option__label">{t(`filters.types.${type}`)}</div>
                                         </div>

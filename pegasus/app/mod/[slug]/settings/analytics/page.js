@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectAnalyticsSettingsPage from "@/components/project/settings/ProjectAnalyticsSettingsPage";
-import { getProjectBasePath, isWorldProjectType } from "@/utils/projectRoutes";
+import { getProjectBasePath, isBuildContentProjectType } from "@/utils/projectRoutes";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -101,11 +101,11 @@ export default async function Page({ params, searchParams }) {
 
     const project = await projectResponse.json();
     const analytics = await analyticsResponse.json();
-    const isWorldProject = isWorldProjectType(project.project_type);
+	const isBuildContentProject = isBuildContentProjectType(project.project_type);
     let onlineSeries = [];
     let onlineSummary = null;
 
-    if(!isWorldProject) {
+	if(!isBuildContentProject) {
         const [onlineNowResponse, onlineSeriesResponse] = await Promise.all([
             fetchOnlineNow(slug),
             fetchOnlineSeries(slug, ONLINE_RANGE_DAYS[timeRange] || 7),

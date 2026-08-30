@@ -4,7 +4,7 @@ import UserName from "../ui/UserName";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
 import DownloadCount from "../ui/DownloadCount";
-import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
+import { getProjectPath, isBuildContentProjectType } from "@/utils/projectRoutes";
 const MAX_RGB_INT = 16777215;
 
 const clampByte = (value) => Math.max(0, Math.min(255, Math.round(value)));
@@ -29,8 +29,8 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
     const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
     const relativeNow = relativeTimeBase ? new Date(relativeTimeBase) : new Date();
     const playersLast14Days = Math.max(0, Number(project?.players_last_14d) || 0);
-    const isWorldProject = isWorldProjectType(project?.project_type || project?.projectType || project?.type);
-    const showPlayersLast14Days = !isWorldProject && (project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1");
+	const isBuildContentProject = isBuildContentProjectType(project?.project_type || project?.projectType || project?.type);
+	const showPlayersLast14Days = !isBuildContentProject && (project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1");
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);

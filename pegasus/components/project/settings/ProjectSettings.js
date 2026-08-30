@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { validateSlug } from "@/utils/slug";
-import { getProjectPathByType, isWorldProjectType } from "@/utils/projectRoutes";
+import { getProjectPathByType, isBuildContentProjectType } from "@/utils/projectRoutes";
 
 const getInitialFormData = (project) => ({
     title: project?.title || "",
@@ -43,7 +43,7 @@ export default function ProjectSettings({ project }) {
 	const projectType = project?.project_type || project?.projectType || project?.type;
 	const canEditDetails = Boolean(project?.permissions?.can_edit_details);
 	const canDeleteProject = Boolean(project?.permissions?.can_delete_project);
-    const showPlayersCountSetting = !isWorldProjectType(projectType);
+	const showPlayersCountSetting = !isBuildContentProjectType(projectType);
     const issuesButtonRef = useRef(null);
     const issuesMenuRef = useRef(null);
     const visibilityButtonRef = useRef(null);
