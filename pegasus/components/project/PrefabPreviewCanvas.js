@@ -9,6 +9,35 @@ import { buildOptimizedPrefabMesh } from "@/utils/prefabViewer/OptimizedPrefabMe
 
 const prefabRequestCache = new Map();
 
+// soft grid with faded edges
+const createFadedGrid = (size, divisions) => {
+	const grid = new THREE.GridHelper(size, divisions, 0x4f4946, 0x68615d);
+	grid.material.transparent = true;
+	grid.material.opacity = 0.48;
+	grid.material.depthWrite = false;
+	grid.material.onBeforeCompile = (shader) => {
+		shader.uniforms.gridHalfSize = { value: size / 2 };
+		shader.vertexShader = `
+			varying vec2 gridPosition;
+			${shader.vertexShader}
+		`.replace(
+			"#include <begin_vertex>",
+			"#include <begin_vertex>\n\tgridPosition = position.xz;",
+		);
+		shader.fragmentShader = `
+			uniform float gridHalfSize;
+			varying vec2 gridPosition;
+			${shader.fragmentShader}
+		`.replace(
+			"#include <opaque_fragment>",
+			"float gridDistance = max(abs(gridPosition.x), abs(gridPosition.y));\n\tdiffuseColor.a *= 1.0 - smoothstep(gridHalfSize * 0.62, gridHalfSize, gridDistance);\n\t#include <opaque_fragment>",
+		);
+	};
+	grid.material.customProgramCacheKey = () => "faded-prefab-grid-v2";
+
+	return grid;
+};
+
 const fetchPrefab = (url) => {
 	if(prefabRequestCache.has(url)) {
 		return prefabRequestCache.get(url);
@@ -172,12 +201,9 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 				grid.geometry.dispose();
 				grid.material.dispose();
 			}
-			const gridSize = Math.max(8, Math.ceil(Math.max(size.x, size.z, 1) * 1.35 / 4) * 4);
-			grid = new THREE.GridHelper(gridSize, Math.min(64, gridSize), 0x76655c, 0x514844);
+			const gridSize = Math.max(16, Math.ceil(Math.max(size.x, size.z, 1) * 2.6 / 4) * 4);
+			grid = createFadedGrid(gridSize, Math.min(128, Math.max(16, Math.round(gridSize / 2))));
 			grid.position.set(center.x, bounds.min.y - 0.02, center.z);
-			grid.material.transparent = true;
-			grid.material.opacity = 0.32;
-			grid.material.depthWrite = false;
 			scene.add(grid);
 			scheduleRender();
 		};
