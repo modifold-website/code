@@ -3,7 +3,8 @@
     "discover": "Огляд контенту — Modifold",
     "mods": "Моди — Modifold",
     "modpacks": "Модпаки — Modifold",
-    "worlds": "Світи — Modifold"
+    "worlds": "Світи — Modifold",
+    "prefabs": "Префаби — Modifold"
   },
   "Common": {
     "downloadsTooltip": "{count, plural, one {# завантаження} few {# завантаження} many {# завантажень} other {# завантаження}}"
@@ -14,6 +15,7 @@
     "mods": "Моди",
     "modpacks": "Модпаки",
     "worlds": "Світи",
+    "prefabs": "Префаби",
     "modJams": "Мод-джеми",
     "login": "Увійти",
     "logout": "Вийти",
@@ -522,7 +524,8 @@
     "projectTypes": {
       "mod": "Мод",
       "modpack": "Модпак",
-      "world": "Світ"
+      "world": "Світ",
+      "prefab": "Префаб"
     },
     "createProject": "Створити проєкт",
     "creating": "Створення...",
@@ -548,6 +551,18 @@
     "ownerAvatarAlt": "Аватар користувача {username}",
     "editSettings": "Редагувати налаштування",
     "emptyDescription": "Додайте опис у налаштуваннях проєкту, щоб гравці зрозуміли, що робить цей проєкт.",
+    "prefabPreview": {
+      "label": "3D-перегляд",
+      "open": "Відкрити 3D-перегляд",
+      "loading": "Готуємо 3D-перегляд…",
+      "progress": "Відтворюємо {current} з {total} блоків…",
+      "error": "Не вдалося завантажити 3D-перегляд",
+      "dragHint": "Тягніть для обертання",
+      "zoomHint": "Колесо — масштаб",
+      "panHint": "Права кнопка — панорама",
+      "fullscreen": "На весь екран",
+      "exitFullscreen": "Вийти з повноекранного режиму"
+    },
     "status": {
       "draft": "Чернетка",
       "moderation": "На перевірці"
@@ -1042,7 +1057,8 @@
     "browseAll": "Усі проєкти",
     "mods": "Моди",
     "modpacks": "Модпаки",
-    "worlds": "Світи"
+    "worlds": "Світи",
+    "prefabs": "Префаби"
   },
   "DiscoverPage": {
     "featured": "Рекомендоване",
@@ -1067,6 +1083,19 @@
     "next": "Наступний"
   },
   "CategoryLabels": {
+	"buildings": "Будівлі",
+	"towns_villages": "Міста й села",
+	"castles_forts": "Замки й фортеці",
+	"dungeons": "Підземелля",
+	"ruins": "Руїни",
+	"rooms_interiors": "Кімнати й інтер’єри",
+	"roads_bridges": "Дороги й мости",
+	"landscapes": "Ландшафти",
+	"plants_trees": "Рослини й дерева",
+	"caves_rocks": "Печери та скелі",
+	"mechanisms": "Механізми",
+	"npcs_encounters": "NPC та події",
+	"building_kits": "Набори для будівництва",
     "adventure": "Пригоди",
     "challenging": "Складні",
     "combat": "Бої",
@@ -2100,7 +2129,8 @@
         "all": "Усі проєкти",
         "mod": "Моди",
         "modpack": "Модпаки",
-        "world": "Світи"
+        "world": "Світи",
+        "prefab": "Префаби"
       },
       "sort": {
         "oldest": "Найстаріші",

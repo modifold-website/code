@@ -3,7 +3,8 @@
     "discover": "İçeriği keşfet - Modifold",
     "mods": "Modlar - Modifold",
     "modpacks": "Modpackler - Modifold",
-    "worlds": "Dünyalar - Modifold"
+    "worlds": "Dünyalar - Modifold",
+    "prefabs": "Prefablar - Modifold"
   },
   "Common": {
     "downloadsTooltip": "{count, plural, one {# indirme} other {# indirme}}"
@@ -14,6 +15,7 @@
     "mods": "Modlar",
     "modpacks": "Modpackler",
     "worlds": "Dünyalar",
+    "prefabs": "Prefablar",
     "modJams": "Mod jamleri",
     "login": "Giriş yap",
     "logout": "Çıkış yap",
@@ -521,7 +523,8 @@
     "projectTypes": {
       "mod": "Mod",
       "modpack": "Modpack",
-      "world": "Dünya"
+      "world": "Dünya",
+      "prefab": "Prefab"
     },
     "createProject": "Proje oluştur",
     "creating": "Oluşturuluyor...",
@@ -547,6 +550,18 @@
     "ownerAvatarAlt": "{username} kullanıcı avatarı",
     "editSettings": "Ayarları düzenle",
     "emptyDescription": "Oyuncuların bu projenin ne yaptığını anlaması için proje ayarlarına bir açıklama ekleyin.",
+    "prefabPreview": {
+      "label": "3B önizleme",
+      "open": "3B önizlemeyi aç",
+      "loading": "3B önizleme hazırlanıyor…",
+      "progress": "{current} / {total} blok oluşturuluyor…",
+      "error": "Bu 3B önizleme yüklenemedi",
+      "dragHint": "Döndürmek için sürükleyin",
+      "zoomHint": "Yakınlaştırmak için kaydırın",
+      "panHint": "Kaydırmak için sağ tıklayın",
+      "fullscreen": "Tam ekran",
+      "exitFullscreen": "Tam ekrandan çık"
+    },
     "status": {
       "draft": "Taslak",
       "moderation": "İncelemede"
@@ -1041,7 +1056,8 @@
     "browseAll": "Tümüne göz at",
     "mods": "Modlar",
     "modpacks": "Mod paketleri",
-    "worlds": "Dünyalar"
+    "worlds": "Dünyalar",
+    "prefabs": "Prefablar"
   },
   "DiscoverPage": {
     "featured": "Öne çıkanlar",
@@ -1066,6 +1082,19 @@
     "next": "Sonraki"
   },
   "CategoryLabels": {
+	"buildings": "Binalar",
+	"towns_villages": "Kasabalar ve köyler",
+	"castles_forts": "Kaleler ve hisarlar",
+	"dungeons": "Zindanlar",
+	"ruins": "Harabeler",
+	"rooms_interiors": "Odalar ve iç mekânlar",
+	"roads_bridges": "Yollar ve köprüler",
+	"landscapes": "Manzaralar",
+	"plants_trees": "Bitkiler ve ağaçlar",
+	"caves_rocks": "Mağaralar ve kayalar",
+	"mechanisms": "Mekanizmalar",
+	"npcs_encounters": "NPC'ler ve karşılaşmalar",
+	"building_kits": "Yapı kitleri",
     "adventure": "Macera",
     "challenging": "Zorlu",
     "combat": "Savaş",
@@ -2099,7 +2128,8 @@
         "all": "Tüm projeler",
         "mod": "Modlar",
         "modpack": "Modpackler",
-        "world": "Dünyalar"
+        "world": "Dünyalar",
+        "prefab": "Prefablar"
       },
       "sort": {
         "oldest": "En eski",

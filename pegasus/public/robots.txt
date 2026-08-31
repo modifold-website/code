@@ -3,6 +3,8 @@ Disallow: /mod/*/settings
 Disallow: /mod/*/settings/
 Disallow: /modpack/*/settings
 Disallow: /modpack/*/settings/
+Disallow: /prefab/*/settings
+Disallow: /prefab/*/settings/
 Disallow: /moderation
 Disallow: /moderation/*
 Allow: /

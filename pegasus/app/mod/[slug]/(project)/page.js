@@ -5,6 +5,7 @@ import Script from "next/script";
 import { getApplicationCategory, getProjectBySlug, getProjectMembersBySlug, recordProjectView } from "@/utils/projects/server";
 import { getProjectMetadata } from "@/utils/projects/metadata";
 import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getPrefabPreviewBySlug } from "@/utils/prefabs/server";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
@@ -30,7 +31,10 @@ export default async function Page({ params }) {
 
     recordProjectView(slug, clientIp);
 
-    const members = await getProjectMembersBySlug(slug, authToken || "");
+    const [members, prefabPreview] = await Promise.all([
+        getProjectMembersBySlug(slug, authToken || ""),
+        project.project_type === "prefab" ? getPrefabPreviewBySlug(slug) : null,
+    ]);
 
     return (
         <>
@@ -56,7 +60,7 @@ export default async function Page({ params }) {
 
             <link rel="alternate" hrefLang="x-default" href={`https://modifold.com${basePath}/${project.slug}`} />
 
-            <ProjectPage project={{ ...project, members }} authToken={authToken} showInlineGallery={true} />
+            <ProjectPage project={{ ...project, members }} authToken={authToken} showInlineGallery={true} prefabPreview={prefabPreview} />
         </>
     );
 }

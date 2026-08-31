@@ -3,7 +3,8 @@
     "discover": "Descubrir contenido — Modifold",
     "mods": "Mods — Modifold",
     "modpacks": "Modpacks — Modifold",
-    "worlds": "Mundos — Modifold"
+    "worlds": "Mundos — Modifold",
+    "prefabs": "Prefabs — Modifold"
   },
   "Common": {
     "downloadsTooltip": "{count, plural, one {# descarga} other {# descargas}}"
@@ -14,6 +15,7 @@
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Mundos",
+    "prefabs": "Prefabs",
     "modJams": "Mod jams",
     "login": "Iniciar sesión",
     "logout": "Cerrar sesión",
@@ -521,7 +523,8 @@
     "projectTypes": {
       "mod": "Mod",
       "modpack": "Modpack",
-      "world": "Mundo"
+      "world": "Mundo",
+      "prefab": "Prefab"
     },
     "createProject": "Crear proyecto",
     "creating": "Creando...",
@@ -547,6 +550,18 @@
     "ownerAvatarAlt": "Avatar del usuario {username}",
     "editSettings": "Editar ajustes",
     "emptyDescription": "Añade una descripción en los ajustes del proyecto para que los jugadores entiendan qué hace este proyecto.",
+    "prefabPreview": {
+      "label": "Vista previa 3D",
+      "open": "Abrir vista previa 3D",
+      "loading": "Preparando la vista previa 3D…",
+      "progress": "Renderizando {current} de {total} bloques…",
+      "error": "No se pudo cargar esta vista previa 3D",
+      "dragHint": "Arrastra para girar",
+      "zoomHint": "Rueda para acercar",
+      "panHint": "Clic derecho para desplazar",
+      "fullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa"
+    },
     "status": {
       "draft": "Borrador",
       "moderation": "En revisión"
@@ -1041,7 +1056,8 @@
     "browseAll": "Ver todo",
     "mods": "Mods",
     "modpacks": "Paquetes de mods",
-    "worlds": "Mundos"
+    "worlds": "Mundos",
+    "prefabs": "Prefabs"
   },
   "DiscoverPage": {
     "featured": "Destacados",
@@ -1066,6 +1082,19 @@
     "next": "Siguiente"
   },
   "CategoryLabels": {
+	"buildings": "Edificios",
+	"towns_villages": "Ciudades y pueblos",
+	"castles_forts": "Castillos y fuertes",
+	"dungeons": "Mazmorras",
+	"ruins": "Ruinas",
+	"rooms_interiors": "Habitaciones e interiores",
+	"roads_bridges": "Caminos y puentes",
+	"landscapes": "Paisajes",
+	"plants_trees": "Plantas y árboles",
+	"caves_rocks": "Cuevas y rocas",
+	"mechanisms": "Mecanismos",
+	"npcs_encounters": "PNJ y encuentros",
+	"building_kits": "Kits de construcción",
     "adventure": "Aventura",
     "challenging": "Desafiantes",
     "combat": "Combate",
@@ -2099,7 +2128,8 @@
         "all": "Todos los proyectos",
         "mod": "Mods",
         "modpack": "Modpacks",
-        "world": "Mundos"
+        "world": "Mundos",
+        "prefab": "Prefabs"
       },
       "sort": {
         "oldest": "Más antiguos",

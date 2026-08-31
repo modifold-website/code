@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import NumberFlow from "@number-flow/react";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
-import { getProjectPath, isWorldProjectType } from "@/utils/projectRoutes";
+import { getProjectPath, isBuildContentProjectType } from "@/utils/projectRoutes";
 import AnalyticsOnlineInfoModal from "@/modal/AnalyticsOnlineInfoModal";
 import DownloadCount from "@/components/ui/DownloadCount";
 
@@ -320,7 +320,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 	const downloads = Array.isArray(analytics?.downloads) ? analytics.downloads : [];
 	const views = Array.isArray(analytics?.views) ? analytics.views : [];
 	const countries = Array.isArray(analytics?.countries) ? analytics.countries : [];
-	const isWorldProject = isWorldProjectType(project?.project_type || project?.projectType || project?.type);
+	const isBuildContentProject = isBuildContentProjectType(project?.project_type || project?.projectType || project?.type);
 	const hasOnline = onlineSeries.length > 0;
 	const totals = analytics?.totals || {};
 	const activeServersNow = Number(onlineSummary?.activeServersNow) || 0;
@@ -402,7 +402,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				</div>
 			</div>
 		
-			<div className={`project-analytics__stats ${isWorldProject ? "project-analytics__stats--two" : ""}`}>
+			<div className={`project-analytics__stats ${isBuildContentProject ? "project-analytics__stats--two" : ""}`}>
 				<div className="content content--padding project-analytics-stat">
 					<p className="project-analytics-stat__label">
 						{t("analytics.stats.downloads")}
@@ -417,7 +417,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 					<strong><DownloadCount className="project-analytics-stat__number" value={totals.downloads} /></strong>
 				</div>
 
-				{isWorldProject ? (
+				{isBuildContentProject ? (
 					<div className="content content--padding project-analytics-stat">
 						<p className="project-analytics-stat__label">
 							{t("analytics.stats.views")}
@@ -475,7 +475,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				)}
 			</div>
 
-			{!isWorldProject && hasOnline ? (
+			{!isBuildContentProject && hasOnline ? (
 				<OnlineChart
 					title={t("analytics.online.title")}
 					data={onlineSeries}
@@ -484,7 +484,7 @@ export default function ProjectAnalyticsSettingsPage({ project, analytics, selec
 				/>
 			) : null}
 
-			{!isWorldProject ? (
+			{!isBuildContentProject ? (
 				<AnalyticsOnlineInfoModal
 					isOpen={isOnlineInfoModalOpen}
 					onRequestClose={() => setIsOnlineInfoModalOpen(false)}

@@ -3,7 +3,8 @@
     "discover": "Discover content — Modifold",
     "mods": "Mods — Modifold",
     "modpacks": "Modpacks — Modifold",
-    "worlds": "Worlds — Modifold"
+    "worlds": "Worlds — Modifold",
+    "prefabs": "Prefabs — Modifold"
   },
   "Common": {
     "downloadsTooltip": "{count, plural, one {# download} other {# downloads}}"
@@ -14,6 +15,7 @@
     "mods": "Mods",
     "modpacks": "Modpacks",
     "worlds": "Worlds",
+    "prefabs": "Prefabs",
     "modJams": "Mod jams",
     "login": "Sign in",
     "logout": "Log out",
@@ -521,7 +523,8 @@
     "projectTypes": {
       "mod": "Mod",
       "modpack": "Modpack",
-      "world": "World"
+      "world": "World",
+      "prefab": "Prefab"
     },
     "createProject": "Create Project",
     "creating": "Creating...",
@@ -547,6 +550,18 @@
     "ownerAvatarAlt": "User avatar {username}",
     "editSettings": "Edit Settings",
     "emptyDescription": "Add a description in project settings so players understand what this project does.",
+    "prefabPreview": {
+      "label": "3D preview",
+      "open": "Open 3D preview",
+      "loading": "Preparing 3D preview…",
+      "progress": "Rendering {current} of {total} blocks…",
+      "error": "Couldn’t load this 3D preview",
+      "dragHint": "Drag to rotate",
+      "zoomHint": "Scroll to zoom",
+      "panHint": "Right-click to pan",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen"
+    },
     "status": {
       "draft": "Draft",
       "moderation": "Under review"
@@ -1041,7 +1056,8 @@
     "browseAll": "Browse All",
     "mods": "Mods",
     "modpacks": "Modpacks",
-    "worlds": "Worlds"
+    "worlds": "Worlds",
+    "prefabs": "Prefabs"
   },
   "DiscoverPage": {
     "featured": "Featured",
@@ -1066,6 +1082,19 @@
     "next": "Next"
   },
   "CategoryLabels": {
+	"buildings": "Buildings",
+	"towns_villages": "Towns & Villages",
+	"castles_forts": "Castles & Forts",
+	"dungeons": "Dungeons",
+	"ruins": "Ruins",
+	"rooms_interiors": "Rooms & Interiors",
+	"roads_bridges": "Roads & Bridges",
+	"landscapes": "Landscapes",
+	"plants_trees": "Plants & Trees",
+	"caves_rocks": "Caves & Rocks",
+	"mechanisms": "Mechanisms",
+	"npcs_encounters": "NPCs & Encounters",
+	"building_kits": "Building Kits",
     "adventure": "Adventure",
     "challenging": "Challenging",
     "combat": "Combat",
@@ -2194,7 +2223,8 @@
         "all": "All projects",
         "mod": "Mods",
         "modpack": "Modpacks",
-        "world": "Worlds"
+        "world": "Worlds",
+        "prefab": "Prefabs"
       },
       "sort": {
         "oldest": "Oldest",

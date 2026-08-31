@@ -1,0 +1,498 @@
+import * as THREE from "three";
+import { assetUrl, getBlockDef, getModelDef, resolveCubeFaces } from "./BlockCatalog.js";
+import { loadBlockyModel } from "./BlockyModelLoader.js";
+
+export const PREFAB_VIEWER_TRANSFORM_REV = "xform-42";
+
+const cubeTexCache = new Map();
+const cubeMatCache = new Map();
+const sharedCubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+const textureLoader = new THREE.TextureLoader();
+
+function resolveModelTexturePath(value) {
+	if(!value) {
+		return null;
+	}
+
+	if(typeof value === "string") {
+		return value;
+	}
+
+	if(Array.isArray(value)) {
+		for(const entry of value) {
+			const tex = entry?.Texture || entry?.texture;
+			if(typeof tex === "string" && tex) {
+				return tex;
+			}
+		}
+	}
+
+	if(typeof value === "object" && typeof value.Texture === "string") {
+		return value.Texture;
+	}
+
+	return null;
+}
+
+export function parseEntityEuler(rot) {
+	let pitch = Number(rot?.Pitch ?? rot?.pitch ?? 0);
+	let yaw = Number(rot?.Yaw ?? rot?.yaw ?? 0);
+	let roll = Number(rot?.Roll ?? rot?.roll ?? 0);
+	if(!Number.isFinite(pitch)) {
+		pitch = 0;
+	}
+
+	if(!Number.isFinite(yaw)) {
+		yaw = 0;
+	}
+
+	if(!Number.isFinite(roll)) {
+		roll = 0;
+	}
+
+	const vals = [pitch, yaw, roll];
+	const maxAbs = Math.max(...vals.map((v) => Math.abs(v)));
+	const looksLikeDegrees = maxAbs > Math.PI + 0.01 && vals.every((v) => Math.abs(v - Math.round(v)) < 1e-3);
+	if(looksLikeDegrees) {
+		const toRad = Math.PI / 180;
+		pitch *= toRad;
+		yaw *= toRad;
+		roll *= toRad;
+	}
+
+	return { pitch, yaw, roll };
+}
+
+export function entityRotationToQuaternion(rot) {
+	const { pitch, yaw, roll } = parseEntityEuler(rot);
+	return new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, yaw, roll, "YXZ"));
+}
+
+export const BLOCK_ENTITY_PIVOT = 0.5;
+
+export function isBlockEntity(comps) {
+	return Boolean(comps?.BlockEntity || comps?.blockEntity);
+}
+
+export function resolveEntityRotationSource(comps) {
+	const head = comps?.HeadRotation?.Rotation || comps?.headRotation?.Rotation || comps?.headRotation?.rotation;
+	if(isBlockEntity(comps) && head) {
+		return head;
+	}
+
+	const transform = comps?.Transform || comps?.transform || {};
+	return transform.Rotation || transform.rotation || {};
+}
+
+export function rotationTupleToQuaternion(index) {
+	const i = Number(index) || 0;
+	const yaw = (i % 4) * (Math.PI / 2);
+	const pitch = (Math.floor(i / 4) % 4) * (Math.PI / 2);
+	const roll = (Math.floor(i / 16) % 4) * (Math.PI / 2);
+	return new THREE.Quaternion().setFromEuler(new THREE.Euler(pitch, yaw, roll, "YXZ"));
+}
+
+export function rotationTupleToEuler(index) {
+	const i = Number(index) || 0;
+	const yaw = (i % 4) * (Math.PI / 2);
+	const pitch = (Math.floor(i / 4) % 4) * (Math.PI / 2);
+	const roll = (Math.floor(i / 16) % 4) * (Math.PI / 2);
+	return new THREE.Euler(pitch, yaw, roll, "YXZ");
+}
+
+export function entityWorldScale(comps, _modelPath = null) {
+	const hasBlockStyle = isBlockEntity(comps);
+	let entityScale = Number(comps?.EntityScale?.Scale ?? comps?.entityScale?.Scale);
+	if(!Number.isFinite(entityScale) || entityScale <= 0) {
+		entityScale = hasBlockStyle ? 2 : 1;
+	}
+
+	return hasBlockStyle ? entityScale / 2 : entityScale;
+}
+
+export { isCharacterDensityModel } from "./BlockyModelLoader.js";
+
+export function entityPositionToVector(pos) {
+	return new THREE.Vector3(
+		Number(pos?.X ?? pos?.x ?? 0) || 0,
+		Number(pos?.Y ?? pos?.y ?? 0) || 0,
+		Number(pos?.Z ?? pos?.z ?? 0) || 0
+	);
+}
+
+function loadCubeTexture(path) {
+	if(!path) {
+		return Promise.resolve(null);
+	}
+
+	const url = assetUrl(path);
+	const hit = cubeTexCache.get(url);
+	if(hit) {
+		return Promise.resolve(hit);
+	}
+
+	return new Promise((resolve) => {
+		textureLoader.load(
+			url,
+			(tex) => {
+				tex.colorSpace = THREE.SRGBColorSpace;
+				tex.magFilter = THREE.NearestFilter;
+				tex.minFilter = THREE.NearestFilter;
+				tex.generateMipmaps = false;
+				cubeTexCache.set(url, tex);
+				resolve(tex);
+			},
+			undefined,
+			() => resolve(null)
+		);
+	});
+}
+
+async function cubeMaterial(path, tintHex = null) {
+	const key = `${path || ""}|${tintHex || ""}`;
+	const hit = cubeMatCache.get(key);
+	if(hit) {
+		return hit;
+	}
+
+	const map = await loadCubeTexture(path);
+	const mat = new THREE.MeshLambertMaterial({
+		map: map || undefined,
+		color: tintHex ? new THREE.Color(tintHex) : 0xffffff,
+		transparent: Boolean(map),
+		alphaTest: 0.05,
+	});
+
+	if(!map) {
+		mat.color = new THREE.Color(tintHex || "#888888");
+	}
+
+	cubeMatCache.set(key, mat);
+	return mat;
+}
+
+function makePlaceholderBlockCube() {
+	const mat = new THREE.MeshLambertMaterial({ color: 0x8a7a6a });
+	return new THREE.Mesh(sharedCubeGeometry, mat);
+}
+
+function isTrapdoorBlockName(blockName) {
+	return /Trapdoor/i.test(String(blockName || ""));
+}
+
+function isOpenTrapdoorState(blockName) {
+	const n = String(blockName || "");
+	return /_State_Definitions_Open/i.test(n) || /_State_Open/i.test(n);
+}
+
+function applyTrapdoorPose(root, open) {
+	const openQ = new THREE.Quaternion(0.707107, 0, 0, 0.707107);
+	const closedQ = new THREE.Quaternion(0, 0, 0, 1);
+	const q = open ? openQ : closedQ;
+	root.traverse((obj) => {
+		if(obj?.name === "Door") {
+			obj.quaternion.copy(q);
+		}
+	});
+}
+
+function placeBlockHolder(root, b, child) {
+	const holder = new THREE.Group();
+	holder.position.set(Number(b.x) + 0.5, Number(b.y) + 0.5, Number(b.z) + 0.5);
+	if(b.rotation) {
+		holder.quaternion.copy(rotationTupleToQuaternion(b.rotation));
+	}
+
+	holder.add(child);
+	root.add(holder);
+}
+
+async function buildCubeMesh(def) {
+	const faces = resolveCubeFaces(def);
+	const tintUp = def?.tintUp || null;
+	const materials = await Promise.all([
+		cubeMaterial(faces.east, null), 
+		cubeMaterial(faces.west, null), 
+		cubeMaterial(faces.up, tintUp), 
+		cubeMaterial(faces.down, null), 
+		cubeMaterial(faces.south, null), 
+		cubeMaterial(faces.north, null), 
+	]);
+	return new THREE.Mesh(sharedCubeGeometry, materials);
+}
+
+async function buildFluidMesh(def, level) {
+	const maxLevel = Math.max(1, Number(def?.maxFluidLevel) || 8);
+	const height = Math.max(0.05, Math.min(1, (Number(level) || 1) / maxLevel));
+	const faces = resolveCubeFaces(def);
+	const texPath = faces.up || faces.north || faces.east || null;
+	const map = await loadCubeTexture(texPath);
+	const mat = new THREE.MeshLambertMaterial({
+		map: map || undefined,
+		color: map ? 0xffffff : 0x3a7bd5,
+		transparent: true,
+		opacity: 0.55,
+		depthWrite: false,
+	});
+	const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, height, 1), mat);
+	mesh.position.y = (height - 1) / 2;
+	return mesh;
+}
+
+export async function buildPrefabMesh(prefab, options = {}) {
+	const root = new THREE.Group();
+	root.name = "prefab";
+
+	const blocks = Array.isArray(prefab?.blocks) ? prefab.blocks : [];
+	const fluids = Array.isArray(prefab?.fluids) ? prefab.fluids : [];
+	const entities = Array.isArray(prefab?.entities) ? prefab.entities : [];
+
+	const work = [];
+	for(const b of blocks) {
+		if(b.filler != null && Number(b.filler) !== 0) {
+			continue;
+		}
+
+		const blockName = String(b?.name || "").replace(/^\*/, "");
+		if(!blockName || blockName === "Empty") {
+			continue;
+		}
+
+		work.push({ kind: "block", data: b });
+	}
+
+	for(const f of fluids) {
+		const name = String(f?.name || "");
+		if(!name || name === "Empty") {
+			continue;
+		}
+
+		if(!getBlockDef(name)) {
+			continue;
+		}
+
+		work.push({ kind: "fluid", data: f });
+	}
+
+	for(const e of entities) {
+		work.push({ kind: "entity", data: e });
+	}
+
+	const total = work.length || 1;
+	let done = 0;
+
+	const undrawn = new Map();
+	const noteUndrawn = (reason) => undrawn.set(reason, (undrawn.get(reason) || 0) + 1);
+
+	const localModelCache = new Map();
+
+	async function getModel(modelPath, texturePath, tintHex = null) {
+		const tex = resolveModelTexturePath(texturePath) || (typeof texturePath === "string" ? texturePath : null);
+		const key = `${modelPath}|${tex || ""}|${tintHex || ""}`;
+		if(localModelCache.has(key)) {
+			const base = localModelCache.get(key);
+			return base ? base.clone(true) : null;
+		}
+
+		const loaded = await loadBlockyModel(modelPath, tex, tintHex);
+		localModelCache.set(key, loaded);
+		return loaded ? loaded.clone(true) : null;
+	}
+
+	async function getModelForDef(def, texture, tintHex = null) {
+		const paths = [def?.customModel].filter(Boolean);
+		for(const path of paths) {
+			const model = await getModel(path, texture, tintHex);
+			if(model) {
+				return { model, path };
+			}
+		}
+
+		return null;
+	}
+
+	for(const item of work) {
+		try {
+			if(item.kind === "block") {
+				const b = item.data;
+				const def = getBlockDef(b.name);
+				if(def) {
+					let placed = false;
+					if(def.customModel) {
+						let tint = def.tint || def.tintUp || null;
+						const tex = resolveModelTexturePath(def.customModelTexture) || "";
+						const modelPath = String(def.customModel || "");
+						if(!tint && (/_GS\.png$/i.test(tex) || /Plant_Grass|Grassplant|Foliage\/Grass|Foliage\/Plants\/Cross/i.test(`${tex} ${modelPath} ${b.name || ""}`))) {
+							tint = "#67b62d";
+						}
+
+						const model = (await getModelForDef(def, def.customModelTexture || null, tint))?.model;
+						if(model) {
+							if(isTrapdoorBlockName(b.name)) {
+								applyTrapdoorPose(model, isOpenTrapdoorState(b.name));
+							}
+
+							model.position.y = -0.5;
+							placeBlockHolder(root, b, model);
+							placed = true;
+						}
+					}
+
+					if(!placed && def.itemModel) {
+						const model = await getModel(def.itemModel, def.itemTexture || null);
+						if(model) {
+							if(isTrapdoorBlockName(b.name)) {
+								applyTrapdoorPose(model, isOpenTrapdoorState(b.name));
+							}
+
+							model.position.y = -0.5;
+							placeBlockHolder(root, b, model);
+							placed = true;
+						}
+					}
+
+					if(!placed && def.textures) {
+						const cube = await buildCubeMesh(def);
+						placeBlockHolder(root, b, cube);
+						placed = true;
+					}
+
+					if(!placed) {
+						noteUndrawn(`${b.name}: models failed to load, grey cube`);
+						placeBlockHolder(root, b, makePlaceholderBlockCube());
+					}
+				} else {
+					noteUndrawn(`${b.name}: no catalog entry, grey cube`);
+					placeBlockHolder(root, b, makePlaceholderBlockCube());
+				}
+			} else if(item.kind === "fluid") {
+				const f = item.data;
+				const def = getBlockDef(f.name);
+				if(def) {
+					const mesh = await buildFluidMesh(def, f.level);
+					const holder = new THREE.Group();
+					holder.position.set(Number(f.x) + 0.5, Number(f.y) + 0.5, Number(f.z) + 0.5);
+					holder.add(mesh);
+					root.add(holder);
+				}
+			} else if(item.kind === "entity") {
+				const comps = item.data?.Components || item.data?.components || {};
+				const transform = comps.Transform || comps.transform || {};
+				const pos = transform.Position || transform.position || {};
+				const rot = resolveEntityRotationSource(comps);
+				const isBlockStyle = isBlockEntity(comps);
+
+				const holder = new THREE.Group();
+				holder.position.copy(entityPositionToVector(pos));
+				holder.quaternion.copy(entityRotationToQuaternion(rot));
+
+				let placed = false;
+				let modelPath = null;
+				let customModelScale = 1;
+
+				const addEntityModel = (model) => {
+					model.rotateY(Math.PI);
+					holder.add(model);
+				};
+
+				const modelId = comps.Model?.Model?.Id || comps.Model?.Id;
+				if(modelId) {
+					const mdef = getModelDef(modelId);
+					if(mdef?.model) {
+						const model = await getModel(mdef.model, mdef.texture);
+						if(model) {
+							modelPath = mdef.model;
+							const hasEntityScale = Boolean(comps.EntityScale || comps.entityScale);
+							if(!hasEntityScale) {
+								const modelCompScale = Number(comps.Model?.Model?.Scale ?? comps.Model?.Scale);
+								if(Number.isFinite(modelCompScale) && modelCompScale > 0) {
+									customModelScale = modelCompScale;
+								}
+							}
+
+							addEntityModel(model);
+							placed = true;
+						}
+					}
+				}
+
+				const itemId = comps.Item?.Item?.Id || comps.Item?.Id;
+				if(!placed && itemId) {
+					const idef = getBlockDef(itemId);
+					if(idef?.itemModel) {
+						const model = await getModel(idef.itemModel, idef.itemTexture || null);
+						if(model) {
+							modelPath = idef.itemModel;
+							addEntityModel(model);
+							placed = true;
+						}
+					} else if(idef?.customModel) {
+						const resolved = await getModelForDef(idef, idef.customModelTexture || null);
+						if(resolved) {
+							modelPath = resolved.path;
+							addEntityModel(resolved.model);
+							placed = true;
+						}
+					} else if(idef?.textures) {
+						const cube = await buildCubeMesh(idef);
+						cube.position.y += 0.5;
+						addEntityModel(cube);
+						placed = true;
+					}
+				}
+
+				const worldScale = entityWorldScale(comps, modelPath) * customModelScale;
+				holder.scale.setScalar(worldScale);
+				if(isBlockStyle) {
+					for(const child of holder.children) {
+						child.position.y -= BLOCK_ENTITY_PIVOT / worldScale;
+					}
+
+					holder.position.y += BLOCK_ENTITY_PIVOT;
+				}
+
+				if(placed) {
+					root.add(holder);
+				} else {
+					noteUndrawn(`${modelId || itemId || "unknown entity"}: not in catalog, skipped`);
+				}
+			}
+		} catch (err) {
+			console.warn("Prefab cell render failed", item, err);
+		}
+
+		done += 1;
+		if(options.onProgress && (done % 25 === 0 || done === total)) {
+			options.onProgress(done, total);
+		}
+
+		if(done % 100 === 0) {
+			await new Promise((r) => setTimeout(r, 0));
+		}
+	}
+
+	if(undrawn.size) {
+		console.warn(
+			"Prefab cells the catalog could not draw:",
+			[...undrawn].map(([reason, count]) => `${reason} (x${count})`)
+		);
+	}
+
+	let bounds;
+	try {
+		bounds = new THREE.Box3().setFromObject(root);
+	} catch (err) {
+		console.warn("Prefab bounds failed", err);
+		bounds = new THREE.Box3();
+	}
+
+	if(!bounds || bounds.isEmpty() || !Number.isFinite(bounds.min.x) || !Number.isFinite(bounds.max.x)) {
+		bounds = new THREE.Box3(new THREE.Vector3(-1, 0, -1), new THREE.Vector3(1, 2, 1));
+	}
+
+	return { root, bounds };
+}
+
+export function disposeObject3D(object) {
+	object.traverse(() => {});
+}

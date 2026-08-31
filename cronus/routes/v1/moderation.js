@@ -7,6 +7,14 @@ const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotificatio
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { bumpProjectCacheVersion } = require("../../utils/projectCache");
 const router = express.Router();
+const PROJECT_TYPE_PATH_SEGMENTS = {
+	mod: "mod",
+	modpack: "modpack",
+	world: "world",
+	prefab: "prefab",
+};
+
+const getProjectPathSegment = (projectType) => PROJECT_TYPE_PATH_SEGMENTS[projectType] || PROJECT_TYPE_PATH_SEGMENTS.mod;
 
 const isModeratorRole = (role) => role === "admin" || role === "moderator";
 const toSafeNumber = (value) => {
@@ -524,6 +532,8 @@ router.get("/", auth, async (req, res) => {
             modpack: "modpack",
             worlds: "world",
             world: "world",
+			prefabs: "prefab",
+			prefab: "prefab",
         };
 
         const normalizedType = type ? typeMap[type.toLowerCase()] : undefined;
@@ -624,7 +634,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
         if(status === "approved") {
             try {
                 const [projectRows] = await db.query(
-                    `SELECT p.id, p.user_id, p.slug, p.title, p.summary, p.icon_url, u.username
+					`SELECT p.id, p.user_id, p.slug, p.title, p.summary, p.icon_url, p.project_type, u.username
                     FROM projects p
                     LEFT JOIN users u ON p.user_id = u.id
                     WHERE p.id = ?
@@ -655,7 +665,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 								title: project.title,
 								description: project.summary,
 								iconLink: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
-								modLink: `https://modifold.com/mod/${project.slug}`,
+								modLink: `https://modifold.com/${getProjectPathSegment(project.project_type)}/${project.slug}`,
 								developerName: project.username || "Unknown",
 							}),
 						});

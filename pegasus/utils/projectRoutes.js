@@ -3,9 +3,12 @@ const PROJECT_TYPE_PATHS = {
     modpack: "/modpack",
     world: "/world",
     worlds: "/world",
+	prefab: "/prefab",
+	prefabs: "/prefab",
 };
+const BUILD_CONTENT_PROJECT_TYPES = new Set(["world", "prefab"]);
 
-export const isWorldProjectType = (projectType) => projectType === "world";
+export const isBuildContentProjectType = (projectType) => BUILD_CONTENT_PROJECT_TYPES.has(projectType);
 
 export const getProjectBasePath = (projectType) => PROJECT_TYPE_PATHS[projectType] || PROJECT_TYPE_PATHS.mod;
 

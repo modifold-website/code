@@ -19,7 +19,7 @@ export const getProjectMetadata = (project, path = "", { title: titleOverride, t
 	return {
 		title,
 		description,
-		keywords: `${project.title}, Hytale, mods, shaders, resource packs, modpacks, worlds, maps, download Hytale maps, Modifold`,
+		keywords: `${project.title}, Hytale, mods, shaders, resource packs, modpacks, worlds, prefabs, maps, download Hytale prefabs, Modifold`,
 		author: project.owner?.username,
 		robots: "index, follow",
 		alternates: {
