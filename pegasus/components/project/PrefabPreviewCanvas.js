@@ -103,6 +103,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 	const [status, setStatus] = useState("loading");
 	const [progress, setProgress] = useState(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
+	const [hasInteracted, setHasInteracted] = useState(false);
 	const apiBase = String(process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
 
 	useEffect(() => {
@@ -218,6 +219,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 
 		const handleControlsStart = () => {
 			userInteracted = true;
+			setHasInteracted(true);
 			cameraTransition = null;
 			stopAutoRotate();
 		};
@@ -390,6 +392,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 		const load = async () => {
 			try {
 				setStatus("loading");
+				setHasInteracted(false);
 				const [prefab] = await Promise.all([
 					fetchPrefab(`${apiBase}${prefabUrl}`),
 					loadCatalogs("https://media.modifold.com/hytale-assets"),
@@ -519,7 +522,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			</button>
 
 			{status === "ready" ? (
-				<div className="prefab-preview__hints">
+				<div className={`prefab-preview__hints ${hasInteracted ? "is-hidden" : ""}`} aria-hidden={hasInteracted}>
 					<div className="prefab-preview__hint">{t("prefabPreview.dragHint")}</div>
 					
 					<div className="prefab-preview__hint">{t("prefabPreview.zoomHint")}</div>

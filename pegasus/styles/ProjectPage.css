@@ -702,6 +702,14 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	transition: opacity 160ms cubic-bezier(.23, 1, .32, 1), transform 160ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear;
+}
+.prefab-preview__hints.is-hidden {
+	opacity: 0;
+	transform: translateY(4px);
+	visibility: hidden;
+	pointer-events: none;
+	transition-delay: 0s, 0s, 160ms;
 }
 .prefab-preview__hint {
 	padding: 8px 14px;
@@ -730,6 +738,15 @@
 	.prefab-preview__label {
 		top: 10px;
 		left: 10px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.prefab-preview__hints {
+		transition: opacity 120ms ease-out, visibility 0s linear;
+	}
+	.prefab-preview__hints.is-hidden {
+		transform: none;
+		transition-delay: 0s, 120ms;
 	}
 }
 .all-versions {
