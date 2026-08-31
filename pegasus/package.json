@@ -5,8 +5,8 @@
   "packageManager": "bun@1.4.0",
   "type": "module",
   "scripts": {
-    "dev": "next dev -p ${PORT:-3122} --turbopack",
-    "build": "next build --turbopack",
+		"dev": "next dev -p ${PORT:-3122}",
+		"build": "next build",
     "start": "next start -p ${PORT:-3000}",
     "startDev": "next start -p 3122",
     "lint": "next lint"
