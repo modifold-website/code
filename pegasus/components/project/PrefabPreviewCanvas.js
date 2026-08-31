@@ -109,6 +109,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 				});
 			}
 		};
+		
 		const enqueueTextureLoad = (task) => new Promise((resolve) => {
 			textureQueue.push(async () => {
 				if(disposed) {
@@ -122,13 +123,23 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			runTextureQueue();
 		});
 
+		const scheduleRender = () => {
+			if(disposed || frameId) {
+				return;
+			}
+
+			frameId = window.requestAnimationFrame(render);
+		};
+
 		const resize = () => {
 			const width = Math.max(1, container.clientWidth);
 			const height = Math.max(1, container.clientHeight);
 			camera.aspect = width / height;
 			camera.updateProjectionMatrix();
 			renderer.setSize(width, height, false);
+			scheduleRender();
 		};
+
 		const framePreview = (bounds) => {
 			const center = bounds.getCenter(new THREE.Vector3());
 			const size = bounds.getSize(new THREE.Vector3());
@@ -168,22 +179,27 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			grid.material.opacity = 0.32;
 			grid.material.depthWrite = false;
 			scene.add(grid);
+			scheduleRender();
 		};
+
 		const stopAutoRotate = () => {
 			controls.autoRotate = false;
 			window.clearTimeout(autoRotateTimer);
+			scheduleRender();
 		};
+
 		const handleControlsStart = () => {
 			userInteracted = true;
 			cameraTransition = null;
 			stopAutoRotate();
 		};
-		const render = (timestamp) => {
+
+		function render(timestamp) {
+			frameId = 0;
 			if(disposed) {
 				return;
 			}
 
-			frameId = window.requestAnimationFrame(render);
 			if(cameraTransition) {
 				const progress = Math.min(1, (timestamp - cameraTransition.startedAt) / cameraTransition.duration);
 				const easedProgress = 1 - Math.pow(1 - progress, 3);
@@ -197,7 +213,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 				}
 			}
 
-			controls.update();
+			const controlsChanged = controls.update();
 			const nextNear = Math.max(0.025, controls.getDistance() / 1_000);
 			if(Math.abs(camera.near - nextNear) > 0.005) {
 				camera.near = nextNear;
@@ -205,7 +221,11 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			}
 
 			renderer.render(scene, camera);
-		};
+			if(cameraTransition || controls.autoRotate || controlsChanged) {
+				scheduleRender();
+			}
+		}
+
 		const loadTexture = (assetPath) => {
 			const url = assetUrl(assetPath);
 			if(textureCache.has(url)) {
@@ -225,6 +245,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			textureCache.set(url, texturePromise);
 			return texturePromise;
 		};
+
 		const getMaterials = (definition) => {
 			const resolvedFaces = resolveCubeFaces(definition);
 			const faces = [resolvedFaces.east, resolvedFaces.west, resolvedFaces.up, resolvedFaces.down, resolvedFaces.south, resolvedFaces.north];
@@ -249,6 +270,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 						material.map = map;
 						material.color.set(tint || 0xffffff);
 						material.needsUpdate = true;
+						scheduleRender();
 					});
 				}
 
@@ -318,6 +340,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			if(prefersReducedMotion) {
 				camera.position.copy(end);
 				controls.update();
+				scheduleRender();
 				return;
 			}
 
@@ -327,13 +350,14 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 				startedAt: performance.now(),
 				duration: 480,
 			};
+			scheduleRender();
 		};
-		controls.autoRotate = !prefersReducedMotion;
+		controls.autoRotate = false;
 		controls.autoRotateSpeed = 0.45;
 		controls.addEventListener("start", handleControlsStart);
+		controls.addEventListener("change", scheduleRender);
 		window.addEventListener("resize", resize);
 		resize();
-		render();
 
 		const load = async () => {
 			try {
@@ -357,6 +381,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 					getMaterials,
 					onProgress: (current, total) => {
 						renderer.shadowMap.needsUpdate = true;
+						scheduleRender();
 						const now = performance.now();
 						if(!disposed && (current === total || now - lastProgressUpdate >= 100)) {
 							lastProgressUpdate = now;
@@ -368,6 +393,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 							previewRoot = root;
 							scene.add(root);
 							renderer.shadowMap.needsUpdate = true;
+							scheduleRender();
 						}
 					},
 					isCancelled: () => disposed,
@@ -397,6 +423,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			window.cancelAnimationFrame(frameId);
 			window.removeEventListener("resize", resize);
 			controls.removeEventListener("start", handleControlsStart);
+			controls.removeEventListener("change", scheduleRender);
 			controls.dispose();
 			if(previewRoot) {
 				scene.remove(previewRoot);

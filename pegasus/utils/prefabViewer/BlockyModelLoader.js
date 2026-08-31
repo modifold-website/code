@@ -35,6 +35,7 @@ export function modelRootScale(modelPath) {
 
 const textureCache = new Map();
 const textureRequestCache = new Map();
+const modelDocumentCache = new Map();
 const modelCache = new Map();
 
 function texturePixelSize(tex) {
@@ -169,6 +170,31 @@ async function loadTexture(url) {
 	} finally {
 		textureRequestCache.delete(url);
 	}
+}
+
+async function loadModelDocument(modelPath) {
+	const modelUrl = assetUrl(modelPath);
+	if(modelDocumentCache.has(modelUrl)) {
+		return modelDocumentCache.get(modelUrl);
+	}
+
+	const request = (async () => {
+		try {
+			const response = await fetch(modelUrl);
+			if(!response.ok) {
+				console.warn(`Blocky model ${response.status}`, modelUrl);
+				return null;
+			}
+
+			return response.json();
+		} catch(error) {
+			console.warn("Blocky model unreadable", modelUrl, error);
+			return null;
+		}
+	})();
+
+	modelDocumentCache.set(modelUrl, request);
+	return request;
 }
 
 function vec3(obj, dx = 0, dy = 0, dz = 0) {
@@ -525,18 +551,8 @@ export async function loadBlockyModel(modelPath, texturePath = null, tintHex = n
 	}
 
 	const promise = (async () => {
-		const modelUrl = assetUrl(modelPath);
-		let json;
-		try {
-			const res = await fetch(modelUrl);
-			if(!res.ok) {
-				console.warn(`Blocky model ${res.status}`, modelUrl);
-				return null;
-			}
-
-			json = await res.json();
-		} catch (err) {
-			console.warn("Blocky model unreadable", modelUrl, err);
+		const json = await loadModelDocument(modelPath);
+		if(!json) {
 			return null;
 		}
 
@@ -640,5 +656,6 @@ export function clearModelCaches() {
 
 	textureCache.clear();
 	textureRequestCache.clear();
+	modelDocumentCache.clear();
 	modelCache.clear();
 }
