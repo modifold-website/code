@@ -11,12 +11,13 @@ const prefabRequestCache = new Map();
 
 // soft grid with faded edges
 const createFadedGrid = (size, divisions) => {
-	const grid = new THREE.GridHelper(size, divisions, 0x4f4946, 0x68615d);
+	const grid = new THREE.GridHelper(size, divisions, 0x7b8289, 0x9ca2a8);
 	grid.material.transparent = true;
-	grid.material.opacity = 0.48;
+	grid.material.opacity = 1;
 	grid.material.depthWrite = false;
 	grid.material.onBeforeCompile = (shader) => {
 		shader.uniforms.gridHalfSize = { value: size / 2 };
+		shader.uniforms.gridOpacity = { value: 0.3 };
 		shader.vertexShader = `
 			varying vec2 gridPosition;
 			${shader.vertexShader}
@@ -26,11 +27,12 @@ const createFadedGrid = (size, divisions) => {
 		);
 		shader.fragmentShader = `
 			uniform float gridHalfSize;
+			uniform float gridOpacity;
 			varying vec2 gridPosition;
 			${shader.fragmentShader}
 		`.replace(
 			"#include <opaque_fragment>",
-			"float gridDistance = max(abs(gridPosition.x), abs(gridPosition.y));\n\tdiffuseColor.a *= 1.0 - smoothstep(gridHalfSize * 0.62, gridHalfSize, gridDistance);\n\t#include <opaque_fragment>",
+			"float gridDistance = max(abs(gridPosition.x), abs(gridPosition.y));\n\tdiffuseColor.a *= gridOpacity * (1.0 - smoothstep(gridHalfSize * 0.62, gridHalfSize, gridDistance));\n\t#include <opaque_fragment>",
 		);
 	};
 	grid.material.customProgramCacheKey = () => "faded-prefab-grid-v2";
