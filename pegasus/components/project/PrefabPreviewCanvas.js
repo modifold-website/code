@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { assetUrl, loadCatalogs, resolveCubeFaces } from "@/utils/prefabViewer/BlockCatalog";
+import { assetUrl, loadCatalogs, resolveCubeFaces, resolveFaceTint } from "@/utils/prefabViewer/BlockCatalog";
 import { buildOptimizedPrefabMesh } from "@/utils/prefabViewer/OptimizedPrefabMeshBuilder";
 
 const prefabRequestCache = new Map();
@@ -128,7 +128,9 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 		let sunTarget = null;
 		const textureLoader = new THREE.TextureLoader();
 		const textureCache = new Map();
+		const compositeTextureCache = new Map();
 		const materialCache = new Map();
+		const transitionMaterialCache = new Map();
 		const textureQueue = [];
 		let activeTextureLoads = 0;
 		const runTextureQueue = () => {
@@ -276,29 +278,82 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			return texturePromise;
 		};
 
+		const loadMaskedTexture = (basePath, maskPath, tint) => {
+			const key = `${basePath}|${maskPath}|${tint}`;
+			if(compositeTextureCache.has(key)) {
+				return compositeTextureCache.get(key);
+			}
+
+			const texturePromise = Promise.all([loadTexture(basePath), loadTexture(maskPath)]).then(([baseTexture, maskTexture]) => {
+				const baseImage = baseTexture?.image;
+				const maskImage = maskTexture?.image;
+				const width = Number(baseImage?.naturalWidth || baseImage?.width || 0);
+				const height = Number(baseImage?.naturalHeight || baseImage?.height || 0);
+				if(!baseImage || !maskImage || !width || !height) {
+					return null;
+				}
+
+				const canvas = document.createElement("canvas");
+				canvas.width = width;
+				canvas.height = height;
+				const context = canvas.getContext("2d");
+				const maskCanvas = document.createElement("canvas");
+				maskCanvas.width = width;
+				maskCanvas.height = height;
+				const maskContext = maskCanvas.getContext("2d");
+				if(!context || !maskContext) {
+					return null;
+				}
+
+				context.drawImage(baseImage, 0, 0, width, height);
+				maskContext.drawImage(maskImage, 0, 0, width, height);
+				maskContext.globalCompositeOperation = "multiply";
+				maskContext.fillStyle = tint;
+				maskContext.fillRect(0, 0, width, height);
+				maskContext.globalCompositeOperation = "destination-in";
+				maskContext.drawImage(maskImage, 0, 0, width, height);
+				context.drawImage(maskCanvas, 0, 0);
+
+				const texture = new THREE.CanvasTexture(canvas);
+				texture.colorSpace = THREE.SRGBColorSpace;
+				texture.magFilter = THREE.NearestFilter;
+				texture.minFilter = THREE.NearestFilter;
+				texture.generateMipmaps = false;
+				return texture;
+			});
+
+			compositeTextureCache.set(key, texturePromise);
+			return texturePromise;
+		};
+
 		const getMaterials = (definition) => {
 			const resolvedFaces = resolveCubeFaces(definition);
 			const faces = [resolvedFaces.east, resolvedFaces.west, resolvedFaces.up, resolvedFaces.down, resolvedFaces.south, resolvedFaces.north];
-			const key = `${faces.join("|")}|${definition?.tintUp || ""}`;
+			const faceNames = ["east", "west", "up", "down", "south", "north"];
+			const tints = faceNames.map((face) => resolveFaceTint(definition, face));
+			const sideMaskTint = resolveFaceTint(definition, "up");
+			const key = `${faces.join("|")}|${tints.join("|")}|${definition?.textureSideMask || ""}|${sideMaskTint}`;
 			if(materialCache.has(key)) {
 				return materialCache.get(key);
 			}
 
 			const materials = faces.map((face, index) => {
-				const tint = index === 2 && definition?.tintUp ? definition.tintUp : null;
+				const tint = tints[index];
+				const useSideMask = Boolean(face && definition?.textureSideMask && index !== 2 && index !== 3);
 				const material = new THREE.MeshLambertMaterial({
-					color: tint || 0x8b7864,
+					color: face ? (useSideMask ? 0xffffff : tint) : 0x8b7864,
 					alphaTest: 0.05,
 				});
 
 				if(face) {
-					void loadTexture(face).then((map) => {
+					const texturePromise = useSideMask ? loadMaskedTexture(face, definition.textureSideMask, sideMaskTint) : loadTexture(face);
+					void texturePromise.then((map) => {
 						if(disposed || !map) {
 							return;
 						}
 
 						material.map = map;
-						material.color.set(tint || 0xffffff);
+						material.color.set(useSideMask ? 0xffffff : tint);
 						material.needsUpdate = true;
 						scheduleRender();
 					});
@@ -311,11 +366,42 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			return materials;
 		};
 
+		const getTransitionMaterial = (definition) => {
+			const tint = resolveFaceTint(definition, "up");
+			const key = `${definition.transitionTexture}|${tint}`;
+			if(transitionMaterialCache.has(key)) {
+				return transitionMaterialCache.get(key);
+			}
+
+			const material = new THREE.MeshLambertMaterial({
+				color: tint,
+				transparent: true,
+				alphaTest: 0.05,
+				depthWrite: false,
+				polygonOffset: true,
+				polygonOffsetFactor: -2,
+				polygonOffsetUnits: -2,
+				side: THREE.DoubleSide,
+			});
+
+			void loadTexture(definition.transitionTexture).then((map) => {
+				if(disposed || !map) {
+					return;
+				}
+
+				material.map = map;
+				material.needsUpdate = true;
+				scheduleRender();
+			});
+
+			transitionMaterialCache.set(key, material);
+			return material;
+		};
+
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 		renderer.outputColorSpace = THREE.SRGBColorSpace;
-		renderer.toneMapping = THREE.NeutralToneMapping;
-		// slightly brighter without washing out colors
-		renderer.toneMappingExposure = 1.2;
+		renderer.toneMapping = THREE.NoToneMapping;
+		renderer.toneMappingExposure = 1;
 		// soft shadows updated only when the scene is ready
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -323,12 +409,12 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 		renderer.domElement.className = "prefab-preview__canvas";
 		container.appendChild(renderer.domElement);
 		renderer.setClearColor(0x000000, 0);
-		// base light keeps dark sides visible
-		scene.add(new THREE.AmbientLight(0xfff8ef, 0.3));
-		scene.add(new THREE.HemisphereLight(0xfff2df, 0x6b625f, 0.85));
+		// neutral light keeps the original texture colors
+		scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+		scene.add(new THREE.HemisphereLight(0xffffff, 0x777777, 0.45));
 		// sun is the main light and shadow source
 		sunTarget = new THREE.Object3D();
-		sunLight = new THREE.DirectionalLight(0xffe3bd, 1);
+		sunLight = new THREE.DirectionalLight(0xffffff, 0.9);
 		sunLight.position.set(90, 160, 70);
 		sunLight.target = sunTarget;
 		sunLight.castShadow = true;
@@ -338,13 +424,13 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 		sunLight.shadow.radius = 2;
 		scene.add(sunLight, sunTarget);
 		// softly lights the opposite side
-		const fillLight = new THREE.DirectionalLight(0xa9c2ff, 0.32);
+		const fillLight = new THREE.DirectionalLight(0xffffff, 0.18);
 		fillLight.position.set(-90, 60, -80);
 		scene.add(fillLight);
 		// soft light from the camera side
 		const cameraLightTarget = new THREE.Object3D();
 		cameraLightTarget.position.set(0, 0, -1);
-		const cameraLight = new THREE.DirectionalLight(0xffe8ca, 0.76);
+		const cameraLight = new THREE.DirectionalLight(0xffffff, 0.25);
 		cameraLight.position.set(2.5, 4, 3);
 		cameraLight.target = cameraLightTarget;
 		camera.add(cameraLight, cameraLightTarget);
@@ -410,6 +496,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 
 				const prepared = await buildOptimizedPrefabMesh(prefab, {
 					getMaterials,
+					getTransitionMaterial,
 					onProgress: (current, total) => {
 						renderer.shadowMap.needsUpdate = true;
 						scheduleRender();
@@ -474,6 +561,10 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			}
 
 			materialCache.forEach((materials) => materials.forEach((material) => material.dispose()));
+			transitionMaterialCache.forEach((material) => material.dispose());
+			compositeTextureCache.forEach((texturePromise) => {
+				void texturePromise.then((texture) => texture?.dispose());
+			});
 			textureCache.forEach((texturePromise) => {
 				void texturePromise.then((texture) => texture?.dispose());
 			});

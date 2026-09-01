@@ -1,4 +1,5 @@
 const DEFAULT_ASSET_BASE = "/hytale-assets";
+const DEFAULT_BIOME_TINT = "#5b9e28";
 
 const CACHE_BUST = new URL(import.meta.url).search;
 
@@ -192,4 +193,39 @@ export function resolveCubeFaces(def) {
 	const east = t.East || t.Right || sides || all;
 	const west = t.West || t.Left || sides || all;
 	return { up, down, north, south, east, west };
+}
+
+const FACE_SUFFIXES = {
+	up: "Up",
+	down: "Down",
+	north: "North",
+	south: "South",
+	east: "East",
+	west: "West",
+};
+
+const parseColor = (value, fallback = "#ffffff") => {
+	const color = Number.parseInt(String(value || fallback).replace(/^#/, ""), 16);
+	return Number.isFinite(color) ? color : 0xffffff;
+};
+
+const mixColor = (from, to, amount) => {
+	const source = parseColor(from);
+	const target = parseColor(to);
+	const mix = Math.max(0, Math.min(1, Number(amount) || 0));
+	const red = Math.round(((source >> 16) & 255) * (1 - mix) + ((target >> 16) & 255) * mix);
+	const green = Math.round(((source >> 8) & 255) * (1 - mix) + ((target >> 8) & 255) * mix);
+	const blue = Math.round((source & 255) * (1 - mix) + (target & 255) * mix);
+	return `#${((red << 16) | (green << 8) | blue).toString(16).padStart(6, "0")}`;
+};
+
+export function resolveFaceTint(definition, face) {
+	const suffix = FACE_SUFFIXES[face] || "";
+	const tint = definition?.[`tint${suffix}`] || definition?.tint || "#ffffff";
+	const biomeTint = definition?.[`biomeTint${suffix}`] ?? definition?.biomeTint ?? 0;
+	return mixColor(tint, DEFAULT_BIOME_TINT, Number(biomeTint) / 100);
+}
+
+export function resolveModelTint(definition) {
+	return mixColor(definition?.tint || "#ffffff", DEFAULT_BIOME_TINT, Number(definition?.biomeTint || 0) / 100);
 }

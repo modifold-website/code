@@ -622,16 +622,11 @@ export async function loadBlockyModel(modelPath, texturePath = null, tintHex = n
 			texture.wrapT = THREE.RepeatWrapping;
 		}
 
-		let resolvedTint = tintHex;
-		if (!resolvedTint && (/_GS\.png$/i.test(String(texPath || "")) || /Grassplant|\/Grass\/|Foliage\/Plants\/Cross/i.test(String(texPath || modelPath || "")))) {
-			resolvedTint = "#67b62d";
-		}
-
 		const root = new THREE.Group();
 		root.name = modelPath;
 		root.userData.hytaleCachedModel = true;
 		for(const node of nodes) {
-			accumulateNode(node, root, texture, texW, texH, resolvedTint);
+			accumulateNode(node, root, texture, texW, texH, tintHex);
 		}
 
 		root.scale.setScalar(modelRootScale(modelPath));
