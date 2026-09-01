@@ -601,14 +601,13 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			return undefined;
 		}
 
-		const ancestors = [];
-		let ancestor = containerRef.current.parentElement;
-		while(ancestor && ancestor !== document.body) {
-			ancestor.classList.add("prefab-preview-fullscreen-ancestor");
-			ancestors.push(ancestor);
-			ancestor = ancestor.parentElement;
-		}
-
+		const container = containerRef.current;
+		const placeholder = document.createComment("prefab-preview");
+		const scrollX = window.scrollX;
+		const scrollY = window.scrollY;
+		container.parentNode?.insertBefore(placeholder, container);
+		document.body.appendChild(container);
+		document.body.style.setProperty("--prefab-preview-scroll-offset", `${-scrollY}px`);
 		document.documentElement.classList.add("prefab-preview-fullscreen-open");
 		document.body.classList.add("prefab-preview-fullscreen-open");
 		const handleKeyDown = (event) => {
@@ -622,12 +621,16 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 
 		return () => {
 			window.removeEventListener("keydown", handleKeyDown);
-			for(const element of ancestors) {
-				element.classList.remove("prefab-preview-fullscreen-ancestor");
+			if(placeholder.parentNode) {
+				placeholder.parentNode.replaceChild(container, placeholder);
+			} else {
+				container.remove();
 			}
 
 			document.documentElement.classList.remove("prefab-preview-fullscreen-open");
 			document.body.classList.remove("prefab-preview-fullscreen-open");
+			document.body.style.removeProperty("--prefab-preview-scroll-offset");
+			window.scrollTo(scrollX, scrollY);
 		};
 	}, [isFallbackFullscreen]);
 
