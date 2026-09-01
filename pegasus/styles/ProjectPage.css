@@ -695,11 +695,14 @@
 	width: 18px;
 	height: 18px;
 }
-.prefab-preview__fullscreen:hover {
-	background: var(--theme-color-button-minimal-hover);
+@media (hover: hover) {
+    .prefab-preview__fullscreen:hover {
+        box-shadow: var(--theme-color-button-secondary-shadow-hover);
+    }
 }
 .prefab-preview__fullscreen:active {
 	transform: scale(.96);
+	box-shadow: var(--theme-color-button-secondary-shadow-active);
 }
 .prefab-preview__hints {
 	position: absolute;
