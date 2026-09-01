@@ -1184,6 +1184,10 @@
           "title": "Modifold Ekibi",
           "description": "Modifold moderatörleri ve yöneticileri için."
         },
+        "hypixel_staff": {
+          "title": "Hypixel Studios Ekibi",
+          "description": "Resmi Hypixel Studios çalışanları için."
+        },
         "first_project": {
           "title": "İlk proje",
           "description": "İlk yayınlanan proje için."

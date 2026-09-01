@@ -275,6 +275,10 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
             availableCodes.add("staff");
         }
 
+        if(achievementCodes.has("hypixel_staff")) {
+            availableCodes.add("hypixel_staff");
+        }
+
         if(achievementCodes.has("hytalemodjam_2026")) {
             availableCodes.add("hytalemodjam_2026");
         }

@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Tooltip from "@/components/ui/Tooltip";
+import { getProfileBadge } from "@/utils/profileBadges";
 
 // WIP
 const ACHIEVEMENT_LINKS = {
@@ -85,7 +86,7 @@ export default function ProfileAchievements({ achievements = [], isBanned = fals
             <div className="subsite-achievements__grid">
                 {visibleAchievements.map((achievement) => {
                     const title = getAchievementTitle(achievement);
-                    const iconUrl = achievement.icon_url || "/badges/creator.webp";
+                    const iconUrl = achievement.icon_url || getProfileBadge(achievement.code)?.icon || "/badges/creator.webp";
                     const achievementUrl = ACHIEVEMENT_LINKS[achievement.code] || null;
                     const achievementIcon = (
                         <img src={iconUrl} alt={title} width="56" height="56" />
