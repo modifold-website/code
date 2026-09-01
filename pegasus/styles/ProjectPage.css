@@ -367,6 +367,11 @@
 .project-inline-gallery__stage.is-static:active {
 	cursor: pointer;
 }
+.project-inline-gallery__stage.is-prefab-active,
+.project-inline-gallery__stage.is-prefab-active .project-inline-gallery__pane--prefab,
+.project-inline-gallery__stage.is-prefab-active .prefab-preview {
+	background: transparent;
+}
 .project-inline-gallery__main-image {
 	width: 100%;
 	height: 100%;
@@ -690,11 +695,14 @@
 	width: 18px;
 	height: 18px;
 }
-.prefab-preview__fullscreen:hover {
-	background: var(--theme-color-button-minimal-hover);
+@media (hover: hover) {
+    .prefab-preview__fullscreen:hover {
+        box-shadow: var(--theme-color-button-secondary-shadow-hover);
+    }
 }
 .prefab-preview__fullscreen:active {
 	transform: scale(.96);
+	box-shadow: var(--theme-color-button-secondary-shadow-active);
 }
 .prefab-preview__hints {
 	position: absolute;
@@ -730,18 +738,21 @@
 	width: 100vw;
 	height: 100vh;
 }
-html.prefab-preview-fullscreen-open,
-body.prefab-preview-fullscreen-open {
+html.prefab-preview-fullscreen-open {
 	overflow: hidden !important;
 	overscroll-behavior: none;
 }
-.prefab-preview-fullscreen-ancestor {
-	overflow: visible !important;
-	transform: none !important;
-	filter: none !important;
-	perspective: none !important;
-	contain: none !important;
-	z-index: 2147483646 !important;
+body.prefab-preview-fullscreen-open {
+	position: fixed;
+	top: var(--prefab-preview-scroll-offset, 0);
+	left: 0;
+	right: 0;
+	width: 100%;
+	overflow: hidden !important;
+	overscroll-behavior: none;
+}
+body.prefab-preview-fullscreen-open .header-mobile {
+	visibility: hidden;
 }
 .prefab-preview.is-fallback-fullscreen {
 	position: fixed;

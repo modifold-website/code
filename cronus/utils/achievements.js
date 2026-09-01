@@ -3,6 +3,7 @@ const ACHIEVEMENT_CODES = {
 	DOWNLOADS_100: "downloads_100",
 	DOWNLOADS_500: "downloads_500",
 	DOWNLOADS_10000: "downloads_10000",
+	HYPIXEL_STAFF: "hypixel_staff",
 	HYTALE_MODDING: "hytalemodding",
 	HYTALE_LINKED: "hytale_linked",
 };

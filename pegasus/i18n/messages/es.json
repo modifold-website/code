@@ -1184,6 +1184,10 @@
           "title": "Equipo de Modifold",
           "description": "Para moderadores y administradores de Modifold."
         },
+        "hypixel_staff": {
+          "title": "Personal de Hypixel Studios",
+          "description": "Para empleados oficiales de Hypixel Studios."
+        },
         "first_project": {
           "title": "Primer proyecto",
           "description": "Por publicar un primer proyecto."

@@ -8,6 +8,10 @@ export const PROFILE_BADGES = [
 		icon: "/badges/staff_badge.png",
 	},
 	{
+		code: "hypixel_staff",
+		icon: "/badges/hypixel_staff_badge.png",
+	},
+	{
 		code: "hytalemodjam_2026",
 		icon: "/badges/hytalemodjam_2026_badge.png",
 	},

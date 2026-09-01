@@ -380,6 +380,55 @@ function makeFaceMaterial(texture, shape, tintHex = null) {
 	return mat;
 }
 
+function swapAttributeVertices(attribute, firstIndex, secondIndex) {
+	const { array, itemSize } = attribute;
+	const firstOffset = firstIndex * itemSize;
+	const secondOffset = secondIndex * itemSize;
+	for(let component = 0; component < itemSize; component += 1) {
+		const value = array[firstOffset + component];
+		array[firstOffset + component] = array[secondOffset + component];
+		array[secondOffset + component] = value;
+	}
+
+	attribute.needsUpdate = true;
+}
+
+function reverseTriangleWinding(geometry) {
+	const index = geometry.getIndex();
+	if(index) {
+		for(let triangle = 0; triangle < index.count; triangle += 3) {
+			const second = index.getX(triangle + 1);
+			index.setX(triangle + 1, index.getX(triangle + 2));
+			index.setX(triangle + 2, second);
+		}
+
+		index.needsUpdate = true;
+		return;
+	}
+
+	for(let triangle = 0; triangle < geometry.getAttribute("position").count; triangle += 3) {
+		for(const attribute of Object.values(geometry.attributes)) {
+			swapAttributeVertices(attribute, triangle + 1, triangle + 2);
+		}
+	}
+}
+
+function applyStretchMirror(geometry, stretchX, stretchY, stretchZ) {
+	const scaleX = stretchX < 0 ? -1 : 1;
+	const scaleY = stretchY < 0 ? -1 : 1;
+	const scaleZ = stretchZ < 0 ? -1 : 1;
+	if(scaleX === 1 && scaleY === 1 && scaleZ === 1) {
+		return;
+	}
+
+	geometry.scale(scaleX, scaleY, scaleZ);
+	if(scaleX * scaleY * scaleZ < 0) {
+		reverseTriangleWinding(geometry);
+	}
+	
+	geometry.computeVertexNormals();
+}
+
 function buildBoxMesh(shape, texture, denomW, denomH, tintHex = null) {
 	const size = vec3(shape.settings?.size, 1, 1, 1);
 	const stretch = vec3(shape.stretch, 1, 1, 1);
@@ -435,20 +484,9 @@ function buildBoxMesh(shape, texture, denomW, denomH, tintHex = null) {
 	}
 
 	uvAttr.needsUpdate = true;
+	applyStretchMirror(geom, stretch.x, stretch.y, stretch.z);
 
 	const mesh = new THREE.Mesh(geom, materials);
-	if(stretch.x < 0) {
-		mesh.scale.x *= -1;
-	}
-
-	if(stretch.y < 0) {
-		mesh.scale.y *= -1;
-	}
-
-	if(stretch.z < 0) {
-		mesh.scale.z *= -1;
-	}
-
 	return mesh;
 }
 
@@ -481,6 +519,7 @@ function buildQuadMesh(shape, texture, denomW, denomH, tintHex = null) {
 	uvAttr.setXY(2, uvs[2][0], uvs[2][1]);
 	uvAttr.setXY(3, uvs[3][0], uvs[3][1]);
 	uvAttr.needsUpdate = true;
+	applyStretchMirror(geom, stretch.x, stretch.y, 1);
 
 	const mat = makeFaceMaterial(texture, { ...shape, doubleSided: true }, tintHex);
 	const mesh = new THREE.Mesh(geom, mat);
@@ -494,14 +533,6 @@ function buildQuadMesh(shape, texture, denomW, denomH, tintHex = null) {
 		mesh.rotation.x = Math.PI / 2;
 	} else if(normal === "-Z") {
 		mesh.rotation.y = Math.PI;
-	}
-
-	if(stretch.x < 0) {
-		mesh.scale.x *= -1;
-	}
-
-	if(stretch.y < 0) {
-		mesh.scale.y *= -1;
 	}
 
 	return mesh;
