@@ -319,13 +319,7 @@ export async function buildPrefabMesh(prefab, options = {}) {
 				if(def) {
 					let placed = false;
 					if(def.customModel) {
-						let tint = def.tint || def.tintUp || null;
-						const tex = resolveModelTexturePath(def.customModelTexture) || "";
-						const modelPath = String(def.customModel || "");
-						if(!tint && (/_GS\.png$/i.test(tex) || /Plant_Grass|Grassplant|Foliage\/Grass|Foliage\/Plants\/Cross/i.test(`${tex} ${modelPath} ${b.name || ""}`))) {
-							tint = "#67b62d";
-						}
-
+						const tint = def.tint || def.tintUp || null;
 						const model = (await getModelForDef(def, def.customModelTexture || null, tint))?.model;
 						if(model) {
 							if(isTrapdoorBlockName(b.name)) {

@@ -284,9 +284,10 @@ a {
     text-decoration: none;
 }
 button {
-    padding: 0;
-    background: none;
-    border: none;
+	padding: 0;
+	background: none;
+	border: none;
+	color: inherit;
 }
 svg {
     display: block;
