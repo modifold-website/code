@@ -367,6 +367,11 @@
 .project-inline-gallery__stage.is-static:active {
 	cursor: pointer;
 }
+.project-inline-gallery__stage.is-prefab-active,
+.project-inline-gallery__stage.is-prefab-active .project-inline-gallery__pane--prefab,
+.project-inline-gallery__stage.is-prefab-active .prefab-preview {
+	background: transparent;
+}
 .project-inline-gallery__main-image {
 	width: 100%;
 	height: 100%;

@@ -75,6 +75,7 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 
 	const hasMultipleImages = preparedMedia.length > 1;
 	const isAnimating = transitionState !== null;
+	const isPrefabActive = preparedMedia[activeIndex]?.type === "prefab";
 
 	const startTransition = (nextIndex, direction) => {
 		if(isAnimating || !preparedMedia.length || nextIndex === activeIndex) {
@@ -248,7 +249,7 @@ export default function ProjectInlineGallerySlider({ media = [], projectTitle = 
 
 	return (
 		<div className="project-inline-gallery">
-			<div className={`project-inline-gallery__stage ${!hasMultipleImages ? "is-static" : ""}`} onDragStart={(event) => event.preventDefault()}>
+			<div className={`project-inline-gallery__stage ${!hasMultipleImages ? "is-static" : ""} ${isPrefabActive ? "is-prefab-active" : ""}`} onDragStart={(event) => event.preventDefault()}>
 				{preparedMedia.map((item, index) => renderPane(item, index))}
 			</div>
 
