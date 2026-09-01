@@ -9,6 +9,8 @@ import { buildOptimizedPrefabMesh } from "@/utils/prefabViewer/OptimizedPrefabMe
 
 const prefabRequestCache = new Map();
 
+const getFullscreenElement = () => document.fullscreenElement || document.webkitFullscreenElement || document.webkitCurrentFullScreenElement;
+
 // soft grid with faded edges
 const createFadedGrid = (size, divisions) => {
 	const grid = new THREE.GridHelper(size, divisions, 0x7b8289, 0x9ca2a8);
@@ -103,7 +105,9 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 	const [status, setStatus] = useState("loading");
 	const [progress, setProgress] = useState(null);
 	const [isFullscreen, setIsFullscreen] = useState(false);
+	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
 	const [hasInteracted, setHasInteracted] = useState(false);
+	const fallbackFullscreenRef = useRef(false);
 	const apiBase = String(process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
 
 	useEffect(() => {
@@ -472,6 +476,8 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 		controls.autoRotateSpeed = 0.45;
 		controls.addEventListener("start", handleControlsStart);
 		controls.addEventListener("change", scheduleRender);
+		const resizeObserver = new ResizeObserver(resize);
+		resizeObserver.observe(container);
 		window.addEventListener("resize", resize);
 		resize();
 
@@ -533,6 +539,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 				}
 			}
 		};
+		
 		void load();
 
 		return () => {
@@ -540,6 +547,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			window.clearTimeout(autoRotateTimer);
 			window.cancelAnimationFrame(frameId);
 			window.removeEventListener("resize", resize);
+			resizeObserver.disconnect();
 			controls.removeEventListener("start", handleControlsStart);
 			controls.removeEventListener("change", scheduleRender);
 			controls.dispose();
@@ -575,29 +583,108 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 	}, [active, apiBase, prefabUrl]);
 
 	useEffect(() => {
-		const syncFullscreenState = () => setIsFullscreen(document.fullscreenElement === containerRef.current);
+		const syncFullscreenState = () => {
+			const fullscreenElement = getFullscreenElement();
+			setIsFullscreen(fullscreenElement === containerRef.current || fallbackFullscreenRef.current);
+		};
+
 		document.addEventListener("fullscreenchange", syncFullscreenState);
-		return () => document.removeEventListener("fullscreenchange", syncFullscreenState);
+		document.addEventListener("webkitfullscreenchange", syncFullscreenState);
+		return () => {
+			document.removeEventListener("fullscreenchange", syncFullscreenState);
+			document.removeEventListener("webkitfullscreenchange", syncFullscreenState);
+		};
 	}, []);
 
-	const toggleFullscreen = () => {
+	useEffect(() => {
+		if(!isFallbackFullscreen || !containerRef.current) {
+			return undefined;
+		}
+
+		const ancestors = [];
+		let ancestor = containerRef.current.parentElement;
+		while(ancestor && ancestor !== document.body) {
+			ancestor.classList.add("prefab-preview-fullscreen-ancestor");
+			ancestors.push(ancestor);
+			ancestor = ancestor.parentElement;
+		}
+
+		document.documentElement.classList.add("prefab-preview-fullscreen-open");
+		document.body.classList.add("prefab-preview-fullscreen-open");
+		const handleKeyDown = (event) => {
+			if(event.key === "Escape") {
+				fallbackFullscreenRef.current = false;
+				setIsFallbackFullscreen(false);
+				setIsFullscreen(false);
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			for(const element of ancestors) {
+				element.classList.remove("prefab-preview-fullscreen-ancestor");
+			}
+
+			document.documentElement.classList.remove("prefab-preview-fullscreen-open");
+			document.body.classList.remove("prefab-preview-fullscreen-open");
+		};
+	}, [isFallbackFullscreen]);
+
+	const closeFallbackFullscreen = () => {
+		fallbackFullscreenRef.current = false;
+		setIsFallbackFullscreen(false);
+		setIsFullscreen(false);
+	};
+
+	const openFallbackFullscreen = () => {
+		fallbackFullscreenRef.current = true;
+		setIsFallbackFullscreen(true);
+		setIsFullscreen(true);
+	};
+
+	const toggleFullscreen = async () => {
 		const container = containerRef.current;
 		if(!container) {
 			return;
 		}
 
-		if(document.fullscreenElement === container) {
-			void document.exitFullscreen();
+		if(fallbackFullscreenRef.current) {
+			closeFallbackFullscreen();
+			return;
+		}
+
+		const fullscreenElement = getFullscreenElement();
+		if(fullscreenElement === container) {
+			const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen || document.webkitCancelFullScreen;
+			if(exitFullscreen) {
+				try {
+					await exitFullscreen.call(document);
+				} catch {}
+			}
+
 			setIsFullscreen(false);
 			return;
 		}
 
-		void container.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+		const requestFullscreen = container.requestFullscreen || container.webkitRequestFullscreen || container.webkitRequestFullScreen;
+		if(requestFullscreen) {
+			try {
+				await requestFullscreen.call(container);
+				const activeElement = getFullscreenElement();
+				if(activeElement === container) {
+					setIsFullscreen(true);
+					return;
+				}
+			} catch {}
+		}
+
+		openFallbackFullscreen();
 	};
 	const progressLabel = progress ? t("prefabPreview.progress", { current: progress.current.toLocaleString(), total: progress.total.toLocaleString() }) : t("prefabPreview.loading");
 
 	return (
-		<div className={`prefab-preview ${status === "ready" ? "is-ready" : ""}`} ref={containerRef}>
+		<div className={`prefab-preview ${status === "ready" ? "is-ready" : ""} ${isFallbackFullscreen ? "is-fallback-fullscreen" : ""}`} ref={containerRef}>
 			{status !== "ready" ? (
 				<div className="prefab-preview__status" role={status === "error" ? "alert" : "status"}>
 					{status === "error" ? t("prefabPreview.error") : progressLabel}
