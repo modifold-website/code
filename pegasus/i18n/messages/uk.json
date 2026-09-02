@@ -2335,6 +2335,7 @@
       "projectVersionReleaseMiddle": "випустив(ла) версію <versionLink>{version}</versionLink> для",
       "projectVersionApprovedMiddle": "Ваша версія <versionLink>{version}</versionLink> пройшла модерацію і тепер доступна для",
       "projectVersionRejectedMiddle": "Ваша версія <versionLink>{version}</versionLink> не пройшла модерацію для",
+      "rejectionReason": "Причина відхилення: {reason}",
       "projectApprovedMiddle": "Ваш проєкт пройшов модерацію і тепер доступний:",
       "projectRejectedMiddle": "Ваш проєкт не пройшов модерацію:",
       "projectFallback": "ваш проєкт",

@@ -111,6 +111,7 @@
 }
 .notification-item__body {
     flex: 1;
+	min-width: 0;
 }
 .notification-item__text {
     font-size: 15px;
@@ -121,6 +122,14 @@
     line-height: 16px;
     color: var(--theme-color-text-secondary);
     margin-top: 2px;
+}
+.notification-item__reason {
+	color: var(--theme-color-text-secondary);
+	font-size: 16px;
+	line-height: 18px;
+	margin-top: 4px;
+	overflow-wrap: anywhere;
+	white-space: pre-wrap;
 }
 .notification-item__etc {
     align-self: flex-start;

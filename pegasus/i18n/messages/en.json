@@ -2431,6 +2431,7 @@
       "projectVersionReleaseMiddle": "released version <versionLink>{version}</versionLink> for",
       "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
       "projectVersionRejectedMiddle": "Your version <versionLink>{version}</versionLink> did not pass moderation for",
+      "rejectionReason": "Rejection reason: {reason}",
       "projectFallback": "your project",
       "versionFallback": "new",
       "unknown": "New notification",

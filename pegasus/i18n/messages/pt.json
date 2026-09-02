@@ -2334,6 +2334,7 @@
       "projectVersionReleaseMiddle": "lançou a versão <versionLink>{version}</versionLink> para",
       "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
       "projectVersionRejectedMiddle": "Sua versão <versionLink>{version}</versionLink> não passou pela moderação para",
+      "rejectionReason": "Motivo da rejeição: {reason}",
       "projectApprovedMiddle": "Seu projeto passou pela moderação e agora está disponível:",
       "projectRejectedMiddle": "Seu projeto não passou pela moderação:",
       "projectFallback": "seu projeto",

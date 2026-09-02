@@ -305,6 +305,7 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
     const thumbnailProject = notification.eventType === "project_like" ? notification.project : notification.eventType === "project_version_release" ? notification.projectVersion?.project : null;
     const notificationProject = getNotificationProject(notification);
     const shouldShowProjectAvatar = PROJECT_IMAGE_EVENT_TYPES.has(notification.eventType) && notificationProject?.iconUrl;
+	const moderationReason = String(notification.moderationReason || "").trim();
     const isSingleFollowNotification = Boolean(notification.eventType === "follow" && Number(notification.totalCount || notification.actors?.length || 0) === 1 && notification.actors?.[0]?.slug);
     const NotificationItemWrapper = isSingleFollowNotification ? Link : "div";
     const notificationWrapperProps = isSingleFollowNotification ? {
@@ -340,6 +341,12 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
                 <div className="notification-item__text">
                     <NotificationText notification={notification} t={t} disableActorLink={isSingleFollowNotification} />
                 </div>
+
+				{moderationReason ? (
+					<div className="notification-item__reason">
+						{t("messages.rejectionReason", { reason: moderationReason })}
+					</div>
+				) : null}
                 
                 <div className="notification-item__date">
                     {timeFormatter.format(new Date((notification.latestAt || 0) * 1000))}
