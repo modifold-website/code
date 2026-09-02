@@ -373,11 +373,11 @@ router.get("/me/likes", auth, async (req, res) => {
 				u.avatar,
 				u.isVerified,
 				u.active_profile_badge AS activeProfileBadge,
-				o.id AS organization_id,
-				o.slug AS organization_slug,
-				o.name AS organization_name,
-				o.icon_url AS organization_icon_url,
-				o.summary AS organization_summary
+				ANY_VALUE(o.id) AS organization_id,
+				ANY_VALUE(o.slug) AS organization_slug,
+				ANY_VALUE(o.name) AS organization_name,
+				ANY_VALUE(o.icon_url) AS organization_icon_url,
+				ANY_VALUE(o.summary) AS organization_summary
 			FROM project_likes pl
 			INNER JOIN projects p ON p.id = pl.project_id
 			LEFT JOIN users u ON p.user_id = u.id
