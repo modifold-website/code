@@ -340,6 +340,11 @@ async function verifyPassword(password, hash) {
 
 function redirectToFrontendAuth(res, params) {
     const hash = new URLSearchParams(params).toString();
+	res.set({
+		"Cache-Control": "no-store, private",
+		Pragma: "no-cache",
+		"Referrer-Policy": "no-referrer",
+	});
     return res.redirect(`${getFrontendBase()}/auth/callback#${hash}`);
 }
 

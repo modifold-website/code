@@ -7,6 +7,16 @@ import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 const AuthContext = createContext();
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const removeAuthToken = () => {
+	Cookies.remove("authToken", { path: "/" });
+
+	if(window.location.hostname === "modifold.com" || window.location.hostname.endsWith(".modifold.com")) {
+		Cookies.remove("authToken", { path: "/", domain: ".modifold.com" });
+	}
+
+	localStorage.removeItem("authToken");
+};
+
 export function AuthProvider({ children, isLoggedIn, userData }) {
     const [isLoggedInState, setIsLoggedIn] = useState(isLoggedIn);
     const [user, setUser] = useState(userData);
@@ -42,10 +52,11 @@ export function AuthProvider({ children, isLoggedIn, userData }) {
     }, []);
 
     const completeLogin = useCallback(async (token) => {
-        Cookies.set("authToken", token, { expires: 30, path: "/", sameSite: "lax" });
-        localStorage.setItem("authToken", token);
-
         const freshUser = await fetchCurrentUser(token);
+
+		removeAuthToken();
+		Cookies.set("authToken", token, { expires: 30, path: "/", sameSite: "lax", secure: window.location.protocol === "https:" });
+		localStorage.setItem("authToken", token);
         setIsLoggedIn(true);
         setUser(freshUser);
 
@@ -96,8 +107,7 @@ export function AuthProvider({ children, isLoggedIn, userData }) {
     };
 
     const logout = () => {
-        Cookies.remove("authToken");
-        localStorage.removeItem("authToken");
+		removeAuthToken();
         setIsLoggedIn(false);
         setUser(null);
         window.location.reload();

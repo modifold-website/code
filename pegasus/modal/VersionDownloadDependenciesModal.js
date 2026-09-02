@@ -8,7 +8,7 @@ import showOverTheTopDownloadAnimation from "@/components/ui/showOverTheTopDownl
 import { getVersionDownloadUrl } from "@/utils/projects/downloads";
 import { trackVersionDownload } from "@/utils/projects/downloadTracking";
 
-Modal.setAppElement("body");
+Modal.setAppElement("#app");
 
 function getDependencyProjectPath(dependency) {
 	if(!dependency?.project_slug) {

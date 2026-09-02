@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("body");
+    Modal.setAppElement("#app");
 }
 
 export default function TwoFactorSetupModal({ isOpen, authToken, onRequestClose, onEnabled }) {

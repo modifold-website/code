@@ -2431,6 +2431,7 @@
       "projectVersionReleaseMiddle": "выпустил версию <versionLink>{version}</versionLink> для",
       "projectVersionApprovedMiddle": "Ваша версия <versionLink>{version}</versionLink> прошла модерацию и теперь доступна для",
       "projectVersionRejectedMiddle": "Ваша версия <versionLink>{version}</versionLink> не прошла модерацию для",
+      "rejectionReason": "Причина отклонения: {reason}",
       "projectFallback": "вашему проекту",
       "versionFallback": "новую",
       "unknown": "Новое уведомление",

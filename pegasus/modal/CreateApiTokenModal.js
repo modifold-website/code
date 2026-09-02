@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Modal from "react-modal";
 import { useTranslations } from "next-intl";
 
-Modal.setAppElement("body");
+Modal.setAppElement("#app");
 
 export default function CreateApiTokenModal({ isOpen, onRequestClose, form, onInputChange, onSelectDuration, onSubmit, isCreatingToken }) {
     const t = useTranslations("SettingsAPIPage");

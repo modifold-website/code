@@ -23,7 +23,7 @@ const createFollowListState = () => ({
 
 const getCacheKey = (username, type) => `${username}:${type || "subscribers"}`;
 
-Modal.setAppElement("body");
+Modal.setAppElement("#app");
 
 export default function ProfileSubscriptionsModal({ isOpen, onRequestClose, username, type }) {
     const t = useTranslations("ProfilePage");

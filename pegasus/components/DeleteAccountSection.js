@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./providers/AuthProvider";
 import { useTranslations } from "next-intl";
 
-Modal.setAppElement("body");
+Modal.setAppElement("#app");
 
 export default function DeleteAccountSection() {
     const t = useTranslations("DeleteAccountSection");

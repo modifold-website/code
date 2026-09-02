@@ -265,29 +265,6 @@
 	display: grid;
 	gap: 12px;
 }
-.organizations-dashboard__empty {
-	display: grid;
-	justify-items: center;
-	gap: 12px;
-	min-height: 220px;
-	text-align: center;
-	align-content: center;
-}
-.organizations-dashboard__empty p {
-	margin-top: 0;
-	margin-bottom: 0;
-	color: var(--theme-color-text-secondary);
-	font-size: 15px;
-}
-.organizations-dashboard__empty-icon {
-	display: grid;
-	width: 52px;
-	height: 52px;
-	border-radius: 16px;
-	background: var(--theme-color-background);
-	color: var(--theme-color-text-secondary);
-	place-items: center;
-}
 .organization-dashboard-card__content {
 	align-items: center;
 }

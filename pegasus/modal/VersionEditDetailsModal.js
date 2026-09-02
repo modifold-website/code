@@ -9,7 +9,7 @@ import { getSafeMarkdownHref, getSafeMarkdownImageSrc } from "@/utils/projectDes
 import VersionDependenciesEditor from "./VersionDependenciesEditor";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("body");
+    Modal.setAppElement("#app");
 }
 
 export default function VersionEditDetailsModal({ isOpen, onRequestClose, editLoading, onSubmit, t, tProject, editFormData, handleEditInputChange, handleSelectEditReleaseChannel, releaseChannels, dependencyTypes, editDependencyDraft, handleEditDependencyDraftChange, handleAddEditDependency, handleRemoveEditDependency }) {

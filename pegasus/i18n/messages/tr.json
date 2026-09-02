@@ -2334,6 +2334,7 @@
       "projectVersionReleaseMiddle": "<versionLink>{version}</versionLink> sürümünü şu proje için yayınladı",
       "projectVersionApprovedMiddle": "Your version <versionLink>{version}</versionLink> passed moderation and is now available for",
       "projectVersionRejectedMiddle": "<versionLink>{version}</versionLink> sürümünüz şu proje için moderasyondan geçmedi",
+      "rejectionReason": "Reddedilme nedeni: {reason}",
       "projectApprovedMiddle": "Projeniz moderasyondan geçti ve artık kullanılabilir:",
       "projectRejectedMiddle": "Projeniz moderasyondan geçmedi:",
       "projectFallback": "projenizi",

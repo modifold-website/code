@@ -215,44 +215,11 @@ const getRequestIpAddress = (req) => {
 };
 
 const getRequestCountryCode = (req) => {
-    const geoHeaders = [
-        req.headers["cf-ipcountry"],
-        req.headers["cloudfront-viewer-country"],
-        req.headers["x-vercel-ip-country"],
-        req.headers["x-country-code"],
-        req.headers["x-geo-country"],
-    ];
+	const headerValue = req.headers["cf-ipcountry"];
+	const countryCode = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+	const normalizedCountryCode = typeof countryCode === "string" ? countryCode.trim().toLowerCase() : "";
 
-    for(const headerValue of geoHeaders) {
-        const countryCode = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-        if(typeof countryCode !== "string") {
-            continue;
-        }
-
-        const normalizedCountryCode = countryCode.trim().toLowerCase();
-        if(/^[a-z]{2}$/.test(normalizedCountryCode)) {
-            return normalizedCountryCode;
-        }
-    }
-
-    const acceptLanguage = req.headers["accept-language"];
-    if(typeof acceptLanguage !== "string" || !acceptLanguage.trim()) {
-        return null;
-    }
-
-    const primaryTag = acceptLanguage.split(",")[0]?.split(";")[0]?.trim();
-    if(!primaryTag) {
-        return null;
-    }
-
-    const normalizedPrimaryTag = primaryTag.replace(/_/g, "-").toLowerCase();
-    const region = normalizedPrimaryTag.split("-")[1]?.trim();
-    if(/^[a-z]{2}$/.test(region || "")) {
-        return region;
-    }
-
-    const language = normalizedPrimaryTag.split("-")[0]?.trim();
-    return /^[a-z]{2}$/.test(language || "") ? language : null;
+	return /^[a-z]{2}$/.test(normalizedCountryCode) ? normalizedCountryCode : null;
 };
 
 const assertClickHouseConfigured = () => {

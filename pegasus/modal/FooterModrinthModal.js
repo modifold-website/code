@@ -5,7 +5,7 @@ import Modal from "react-modal";
 import { useTranslations } from "next-intl";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("body");
+    Modal.setAppElement("#app");
 }
 
 export default function FooterModrinthModal() {

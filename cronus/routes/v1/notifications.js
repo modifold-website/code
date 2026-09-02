@@ -130,9 +130,22 @@ router.get("/", auth, async (req, res) => {
         let projectMap = new Map();
         if(projectIds.length > 0) {
             const [projectRows] = await db.query(
-                `SELECT id, slug, title, icon_url, project_type
-                FROM projects
-                WHERE id IN (?)`,
+				`SELECT
+				p.id,
+				p.slug,
+				p.title,
+				p.icon_url,
+				p.project_type,
+				(
+					SELECT pml.reason
+					FROM project_moderation_logs pml
+					WHERE BINARY pml.project_id = BINARY p.id
+					AND pml.action = 'rejected'
+					ORDER BY pml.created_at DESC, pml.id DESC
+					LIMIT 1
+				) AS moderation_reason
+				FROM projects p
+				WHERE p.id IN (?)`,
                 [projectIds]
             );
 
@@ -142,6 +155,7 @@ router.get("/", auth, async (req, res) => {
                 title: project.title,
                 iconUrl: project.icon_url,
                 project_type: project.project_type,
+				moderationReason: project.moderation_reason,
             }]));
         }
 
@@ -169,6 +183,7 @@ router.get("/", auth, async (req, res) => {
                 pv.id,
                 pv.version_number,
                 pv.created_at,
+				pv.moderation_reason,
                 p.id AS project_id,
                 p.slug AS project_slug,
                 p.title AS project_title,
@@ -191,6 +206,7 @@ router.get("/", auth, async (req, res) => {
                 id: version.id,
                 versionNumber: version.version_number,
                 createdAt: Number(version.created_at || 0),
+				moderationReason: version.moderation_reason,
                 project: {
                     id: version.project_id,
                     slug: version.project_slug,
@@ -262,6 +278,10 @@ router.get("/", auth, async (req, res) => {
                 createdAt: projectVersion.createdAt,
                 project: projectVersion.project,
             } : null;
+			const project = row.object_type === "project" ? (projectMap.get(String(row.object_id)) || null) : null;
+			const moderationReason = row.event_type === "project_rejected"
+				? project?.moderationReason
+				: row.event_type === "project_version_rejected" ? projectVersion?.moderationReason : null;
 
             let inviteId = null;
             if(row.object_type === "organization" && row.event_type === "organization_invite") {
@@ -300,8 +320,9 @@ router.get("/", auth, async (req, res) => {
                 inviteId,
                 totalCount: Number(row.total_count),
                 latestAt: Number(row.latest_at),
+				moderationReason: moderationReason || null,
                 actors: normalizedActors,
-                project: row.object_type === "project" ? (projectMap.get(String(row.object_id)) || null) : null,
+				project,
                 projectVersion: responseProjectVersion,
                 organization: row.object_type === "organization" ? (organizationMap.get(String(row.object_id)) || null) : null,
             };
