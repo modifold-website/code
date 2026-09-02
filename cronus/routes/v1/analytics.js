@@ -472,7 +472,7 @@ router.get("/user", auth, async (req, res) => {
 			slug: project.slug,
 			title: project.title,
 			color: project.color,
-			icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+			icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 			project_type: project.project_type,
 		});
 

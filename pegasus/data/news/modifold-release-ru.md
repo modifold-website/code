@@ -4,7 +4,7 @@ description: "Modifold выходит из беты в полноценный р
 author: ["modifold"]
 date: 2026-02-07
 slug: /blog/modifold-release
-image: https://media.modifold.com/news/og_banner.png
+image: https://cdn.modifold.com/news/og_banner.png
 featured: false
 locale: ru
 ---

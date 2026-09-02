@@ -35,7 +35,7 @@ function ProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" })
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
 	const projectImage = getProjectImage(project);
 	const projectIcon = getProjectIcon(project);
-	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
+	const ownerAvatar = project.owner?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg";
 
 	const formatRelativeDate = (dateString) => {
 		const date = new Date(dateString);

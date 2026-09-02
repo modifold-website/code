@@ -140,7 +140,7 @@ export const getSafeMarkdownImageSrc = (src) => {
             "bstats.org",
             "hstats.dev",
             "api.hstats.dev",
-			"media.modifold.com",
+			"cdn.modifold.com",
             "staging-api.modifold.com",
             "api.modifold.com",
         ]);

@@ -105,7 +105,7 @@ export default function SettingsVerificationPage({ initialUser = null, initialVe
 							<div className="author__avatar">
 								<div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "30px", height: "30px", maxWidth: "none" }}>
 									<picture>
-										<img alt={t("promoCard.avatarAlt")} src={effectiveUser?.avatar || "https://media.modifold.com/static/no-project-icon.svg"} />
+										<img alt={t("promoCard.avatarAlt")} src={effectiveUser?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} />
 									</picture>
 								</div>
 							</div>

@@ -54,9 +54,9 @@ export default function ModJamGeneralSettings({ authToken, jam }) {
 	const [savedForm, setSavedForm] = useState(getInitialForm(jam));
 	const [avatar, setAvatar] = useState(null);
 	const [cover, setCover] = useState(null);
-	const [avatarPreview, setAvatarPreview] = useState(jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg");
+	const [avatarPreview, setAvatarPreview] = useState(jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg");
 	const [coverPreview, setCoverPreview] = useState(jam.cover_url || "");
-	const [savedAvatarPreview, setSavedAvatarPreview] = useState(jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg");
+	const [savedAvatarPreview, setSavedAvatarPreview] = useState(jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg");
 	const [savedCoverPreview, setSavedCoverPreview] = useState(jam.cover_url || "");
 	const isDirty = JSON.stringify(form) !== JSON.stringify(savedForm) || Boolean(avatar) || Boolean(cover);
 

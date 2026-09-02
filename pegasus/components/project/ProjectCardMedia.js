@@ -128,7 +128,7 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
 
             <div className="media-project-body">
                 <div className="media-project-header">
-                    <img className="media-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} />
+                    <img className="media-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
 
                     <div className="media-project-header-text">
                         <div className="media-project-title-row">

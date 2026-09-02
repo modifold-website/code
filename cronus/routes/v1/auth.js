@@ -291,7 +291,7 @@ function buildEmailVerificationHtml(code) {
                     <tr>
                         <td style="padding:30px 32px 18px;text-align:center;background:#f5f5f5;">
                             <img
-                                src="https://media.modifold.com/static/email-logo.png"
+                                src="https://cdn.modifold.com/static/email-logo.png"
                                 width="48"
                                 height="48"
                                 alt="Modifold"

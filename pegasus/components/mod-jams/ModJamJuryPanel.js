@@ -14,7 +14,7 @@ function JuryUserCard({ user, roleLabel, tooltip, children }) {
 		<div className="author author-card" style={{ "--1ebedaf6": "40px" }}>
 			<Link className="author__avatar button--active-transform" href={`/user/${user.slug}`}>
 				<div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none" }}>
-					<img className="magnify" alt={user.username} src={user.avatar || "https://media.modifold.com/static/no-project-icon.svg"} />
+					<img className="magnify" alt={user.username} src={user.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} />
 				</div>
 			</Link>
 

@@ -4,7 +4,7 @@ description: "We updated creator profiles, added achievements, name badges, prof
 author: ["bogdan"]
 date: 2026-07-08
 slug: /blog/july-update
-image: https://media.modifold.com/news/full_hytale_link_banner.png
+image: https://cdn.modifold.com/news/full_hytale_link_banner.png
 featured: false
 locale: en
 ---
@@ -17,7 +17,7 @@ We have said this before: in modding, the individual project matters, but the pe
 
 Author pages are now much closer to a proper public showcase for modders.
 
-![](https://media.modifold.com/news/120shots_so.png)
+![](https://cdn.modifold.com/news/120shots_so.png)
 
 Profiles now make these things more visible:
 
@@ -37,7 +37,7 @@ We moved avatar uploading from settings directly to the profile page. If it is y
 
 We also added profile cover uploads. It is a simple feature for now, but it already helps authors make their pages feel more personal and recognizable.
 
-![](https://media.modifold.com/news/615shots_so.png)
+![](https://cdn.modifold.com/news/615shots_so.png)
 
 ## Achievements
 
@@ -53,7 +53,7 @@ Right now, achievements can be given for different things:
 - linking a Hytale game profile;
 - other manual or unique events.
 
-![](https://media.modifold.com/news/309shots_so.png)
+![](https://cdn.modifold.com/news/309shots_so.png)
 
 This is only the beginning. We want achievements to become a way to show the story of an author: event participation, important milestones, community contributions, and rare moments that are nice to keep on a profile.
 
@@ -67,7 +67,7 @@ Earned achievements can now be used as a badge next to your name.
 
 If you have several achievements, you can choose which one appears next to your username. For example, you can show the Creator Badge, the ModJam participant badge, or the linked Hytale account badge.
 
-![](https://media.modifold.com/news/926shots_so.png)
+![](https://cdn.modifold.com/news/926shots_so.png)
 
 It is a small feature, but it makes profiles feel more alive. Each author can gradually build a visual status that is tied to real actions on the site.
 
@@ -87,7 +87,7 @@ For us, this is an important step. A linked game profile helps players better un
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/hytale_linked.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/hytale_linked.mp4" type="video/mp4">
     </video>
 </div>
 

@@ -15,7 +15,7 @@ export default function OrganizationSettingsSidebar({ organization }) {
         <div className="sidebar">
             <div className="sidebar__main">
                 <Link href={`/organization/${organization.slug}`} className="sidebar-item" data-ripple>
-                    <img src={organization.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt={t("settings.iconAlt", { name: organization.name })} className="icon" width="28" height="28" style={{ borderRadius: "8px" }} />
+                    <img src={organization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={t("settings.iconAlt", { name: organization.name })} className="icon" width="28" height="28" style={{ borderRadius: "8px" }} />
                     
                     <span>{organization.name}</span>
                 </Link>

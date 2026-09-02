@@ -291,7 +291,7 @@ export default function VersionDependenciesEditor({ dependencies = [], dependenc
 										<div key={project.id} className={`context-list-option ${draft.project_id === project.id ? "context-list-option--selected" : ""}`} style={{ "--press-duration": "140ms" }} onClick={() => handleSelectProject(project)}>
 											<div className="context-list-option__label" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 												<img
-													src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"}
+													src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"}
 													alt=""
 													width="24"
 													height="24"
@@ -428,7 +428,7 @@ export default function VersionDependenciesEditor({ dependencies = [], dependenc
 						<div key={`${dependency.project_id || "none"}:${dependency.version_id || "none"}:${dependency.dependency_type}:${index}`} style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "center", background: "var(--theme-color-background)", borderRadius: "12px", padding: "12px 14px" }}>
 							<div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: "0" }}>
 								<img
-									src={dependency.project_icon_url || "https://media.modifold.com/static/no-project-icon.svg"}
+									src={dependency.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"}
 									alt=""
 									width="28"
 									height="28"

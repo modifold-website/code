@@ -4,7 +4,7 @@ description: "A new Discover page, current game versions in the catalog, project
 author: ["modifold"]
 date: 2026-08-22
 slug: /blog/august-update
-image: https://media.modifold.com/news/august-update.png
+image: https://cdn.modifold.com/news/august-update.png
 featured: true
 locale: en
 ---
@@ -19,7 +19,7 @@ There is a lot to cover, so as always, we put everything important into one post
 
 Modifold now has a new [Discover](/discover) page. It brings mods and worlds together in one place where you can quickly see what is happening across the site.
 
-![](https://media.modifold.com/news/530shots_so.png)
+![](https://cdn.modifold.com/news/530shots_so.png)
 
 Recommended projects appear at the top. Below them, we added several separate collections:
 
@@ -40,7 +40,7 @@ Popular projects could previously include ones that no longer supported the late
 
 The catalog now shows only projects that support the latest game update by default. If a project has not been updated yet, it will temporarily stay out of the main results. Ask its author to update the mod for the latest game version!
 
-![](https://media.modifold.com/news/264shots_so.png)
+![](https://cdn.modifold.com/news/264shots_so.png)
 
 Versions from the same update are also grouped together. For example, **Update 5** includes the entire `0.5.x` line, from `0.5.0` through `0.5.9`. Creators still need to select the exact versions supported by each release, but players no longer have to choose every small patch one by one.
 
@@ -54,7 +54,7 @@ Every project now has a **Team** page in its settings. The owner can search for 
 
 <div class="video-wrapper mb-8">
 	<video autoplay="" loop="" muted="" playsinline="">
-		<source src="https://media.modifold.com/news/export-1787427263018.mp4" type="video/mp4">
+		<source src="https://cdn.modifold.com/news/export-1787427263018.mp4" type="video/mp4">
 	</video>
 </div>
 
@@ -78,7 +78,7 @@ A project owner can now transfer full ownership to an accepted team member.
 
 Before the transfer, Modifold shows who will become the new owner and what will change after confirmation. You then need to enter the new owner's slug manually. If two-factor authentication is enabled on your account, Modifold will also ask for a six-digit code for extra protection.
 
-![](https://media.modifold.com/news/353shots_so.png)
+![](https://cdn.modifold.com/news/353shots_so.png)
 
 After the transfer, the new owner receives full control of the project. The previous owner remains a team member. The transfer cannot be undone by the previous owner. Only the new owner can transfer the project back.
 
@@ -96,7 +96,7 @@ The organization owner can choose which projects each member can work on.
 
 <div class="video-wrapper mb-8">
 	<video autoplay="" loop="" muted="" playsinline="">
-		<source src="https://media.modifold.com/news/export-1787427715100.mp4" type="video/mp4">
+		<source src="https://cdn.modifold.com/news/export-1787427715100.mp4" type="video/mp4">
 	</video>
 </div>
 
@@ -132,7 +132,7 @@ Organization projects available to a member now also appear in the project list 
 
 An organization can now be transferred to another accepted member too.
 
-![](https://media.modifold.com/news/106shots_so.png)
+![](https://cdn.modifold.com/news/106shots_so.png)
 
 The check works the same way as project transfers. Modifold first shows the consequences, then asks for the new owner's slug and a 2FA code if it is enabled. The new owner receives full control, while the previous owner remains a member of the organization.
 
@@ -142,7 +142,7 @@ This is useful when the person leading a team changes or when the organization w
 
 Project settings now have a separate [Details](/mod/prettier-than-before/settings/details) page. The license setting moved there, along with new information that players should know before downloading a project.
 
-![](https://media.modifold.com/news/495shots_so.png)
+![](https://cdn.modifold.com/news/495shots_so.png)
 
 Creators can specify:
 
@@ -162,7 +162,7 @@ Projects can now be archived from the Details page.
 
 An archived project disappears from catalogs, but stays on the author's profile and remains available through a direct link. Its page shows a notice that the project will no longer receive updates.
 
-![](https://media.modifold.com/news/113shots_so.png)
+![](https://cdn.modifold.com/news/113shots_so.png)
 
 The author can leave a custom message. For example, they can explain the reason, link to a continuation, or allow other people to fork the project. This keeps old work available without making players think it is still supported.
 
@@ -170,7 +170,7 @@ The author can leave a custom message. For example, they can explain the reason,
 
 You can now upload several images to a project gallery at once.
 
-![](https://media.modifold.com/news/71shots_so.png)
+![](https://cdn.modifold.com/news/71shots_so.png)
 
 Files can be selected through the file picker or dragged into the upload window. Before uploading, you will see the full list, where you can remove an unwanted image and fill in the title, description, and other details for each file.
 
@@ -180,7 +180,7 @@ Previously, the entire process had to be repeated for every screenshot.
 
 If a settings page has unsaved changes and you try to leave, Modifold now warns you first.
 
-![](https://media.modifold.com/news/826shots_so.png)
+![](https://cdn.modifold.com/news/826shots_so.png)
 
 You can stay on the page and save your work or confirm that you want to leave. This works when moving to another settings section and when closing or reloading the page.
 

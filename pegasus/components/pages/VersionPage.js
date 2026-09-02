@@ -333,7 +333,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
         return {
             id: `${dependency.project_id || dependency.project_slug || "dependency"}:${dependency.version_id || index}`,
             title: dependency.project_title || dependency.project_slug || dependency.project_id || t("versions.dependencies.unknownDependency"),
-            icon: dependency.project_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+            icon: dependency.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
             href: dependencyHref,
             downloadHref: getVersionDownloadUrl(dependency) || (dependencyProjectPath ? `${dependencyProjectPath}/versions` : null),
             projectSlug: dependency.project_slug,

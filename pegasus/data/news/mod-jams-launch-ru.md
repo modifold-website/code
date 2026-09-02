@@ -4,7 +4,7 @@ description: "Мы запускаем мод-джемы на Modifold: собы�
 author: ["bogdan"]
 date: 2026-05-15
 slug: /blog/mod-jams-launch
-image: https://media.modifold.com/news/modjams_update.png
+image: https://cdn.modifold.com/news/modjams_update.png
 featured: false
 locale: ru
 ---
@@ -25,7 +25,7 @@ locale: ru
 
 Это может быть дружеский челлендж на выходные, тематический конкурс на месяц или большое событие с несколькими номинациями. Главное, чтобы был повод сделать что-то новое и показать это людям, которым правда интересно.
 
-![](https://media.modifold.com/news/435shots_so.png)
+![](https://cdn.modifold.com/news/435shots_so.png)
 
 ## Что уже можно делать
 
@@ -45,7 +45,7 @@ locale: ru
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/modjam_preview.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/modjam_preview.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -67,7 +67,7 @@ locale: ru
 
 Организатор может спокойно собрать страницу, проверить оформление и правила, а потом отправить джем на проверку.
 
-![](https://media.modifold.com/news/672shots_so.png)
+![](https://cdn.modifold.com/news/672shots_so.png)
 
 ## Бета-тестирование
 

@@ -4,7 +4,7 @@ description: "Організації в Modifold: спільна робота н
 author: ["modifold"]
 date: 2026-02-28
 slug: /blog/organizations-on-modifold
-image: https://media.modifold.com/news/organizations banner.png
+image: https://cdn.modifold.com/news/organizations banner.png
 featured: false
 locale: uk
 ---
@@ -41,7 +41,7 @@ locale: uk
 
 Після створення організація стає головним центром керування командою.
 
-![](https://media.modifold.com/news/organization_settings.png)
+![](https://cdn.modifold.com/news/organization_settings.png)
 
 ## Запрошення й учасники
 
@@ -62,7 +62,7 @@ locale: uk
 
 Це допомагає команді чітко визначити, хто налаштовує організацію, хто підтримує проєкти та хто публікує оновлення.
 
-![](https://media.modifold.com/news/organization_settings_members.png)
+![](https://cdn.modifold.com/news/organization_settings_members.png)
 
 ## Володіння проєктами й видимість
 

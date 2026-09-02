@@ -50,8 +50,8 @@ export default function OrganizationPage({ organization, members = [], projects 
                             <div className="subsite-header__padding">
                                 <div className="subsite-header__header">
                                     <div className="subsite-avatar subsite-header__avatar" style={{ borderRadius: "12px" }}>
-                                        <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--cropped andropov-image andropov-image--zoom subsite-avatar__image" style={{ aspectRatio: "1.5 / 1", maxWidth: "none", borderRadius: "12px" }} aria-label={t("page.openAvatar")} {...getLightboxTriggerProps({ url: organization.icon_url || "https://media.modifold.com/static/no-project-icon.svg", title: organization.name })}>
-                                            <img className="magnify" src={organization.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt={organization.name} />
+                                        <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--cropped andropov-image andropov-image--zoom subsite-avatar__image" style={{ aspectRatio: "1.5 / 1", maxWidth: "none", borderRadius: "12px" }} aria-label={t("page.openAvatar")} {...getLightboxTriggerProps({ url: organization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg", title: organization.name })}>
+                                            <img className="magnify" src={organization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={organization.name} />
                                         </div>
                                     </div>
 
@@ -142,7 +142,7 @@ export default function OrganizationPage({ organization, members = [], projects 
                                         <div key={member.user_id} className="author author-card" style={{ "--1ebedaf6": "40px" }}>
                                             <Link href={`/user/${member.slug}`} className="author__avatar button--active-transform">
                                                 <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none" }}>
-                                                    <img src={member.avatar || "https://media.modifold.com/static/no-project-icon.svg"} className="magnify" alt={member.username} />
+                                                    <img src={member.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} className="magnify" alt={member.username} />
                                                 </div>
                                             </Link>
 
@@ -280,7 +280,7 @@ export default function OrganizationPage({ organization, members = [], projects 
                                             owner: {
                                                 username: organization.name,
                                                 slug: organization.slug,
-                                                avatar: organization.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                                                avatar: organization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                                                 type: "organization",
                                                 profile_url: `/organization/${organization.slug}`,
                                             },

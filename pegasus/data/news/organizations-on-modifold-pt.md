@@ -4,7 +4,7 @@ description: "Organizações no Modifold: propriedade compartilhada, papéis da 
 author: ["modifold"]
 date: 2026-02-28
 slug: /blog/organizations-on-modifold
-image: https://media.modifold.com/news/organizations banner.png
+image: https://cdn.modifold.com/news/organizations banner.png
 featured: false
 locale: pt
 ---
@@ -41,7 +41,7 @@ Ao criar uma organização, você pode definir:
 
 Depois da criação, as configurações da organização viram o centro de controle da equipe.
 
-![](https://media.modifold.com/news/organization_settings.png)
+![](https://cdn.modifold.com/news/organization_settings.png)
 
 ## Convites e membros
 
@@ -62,7 +62,7 @@ Cada membro pode ter permissões por papel para:
 
 Assim, a equipe controla com precisão quem gerencia configurações, mantém projetos e publica atualizações.
 
-![](https://media.modifold.com/news/organization_settings_members.png)
+![](https://cdn.modifold.com/news/organization_settings_members.png)
 
 ## Propriedade de projetos e visibilidade
 

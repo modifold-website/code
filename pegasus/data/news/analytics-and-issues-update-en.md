@@ -4,7 +4,7 @@ description: "Modifold now includes player and server charts, plus Issues so you
 author: ["bogdan"]
 date: 2026-04-16
 slug: /blog/analytics-and-issues-update
-image: https://media.modifold.com/news/analytics_2.png
+image: https://cdn.modifold.com/news/analytics_2.png
 featured: false
 locale: en
 ---
@@ -25,7 +25,7 @@ The source code is open on GitHub: [modifold-website/analytics](https://github.c
 
 After integration, you get expanded analytics on the Analytics page. You will see current online players (how many users are playing with your mod right now), a daily player chart, and an active servers chart.
 
-![](https://media.modifold.com/news/606shots_so.png)
+![](https://cdn.modifold.com/news/606shots_so.png)
 
 ### How to add it to your mod
 
@@ -74,7 +74,7 @@ Projects on Modifold now have a dedicated **Issues** section.
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/export-1776350808960.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/export-1776350808960.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -86,13 +86,13 @@ There, users can:
 
 Any user can comment on open Issues. The project author or organization members can manage these Issues by editing, pinning, and closing them when needed.
 
-![](https://media.modifold.com/news/277shots_so.png)
+![](https://cdn.modifold.com/news/277shots_so.png)
 
 ### Project Issues settings
 
 Project settings now include a separate **Issues** section.
 
-![](https://media.modifold.com/news/168shots_so.png)
+![](https://cdn.modifold.com/news/168shots_so.png)
 
 There you can:
 

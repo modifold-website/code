@@ -4,7 +4,7 @@ description: "Modifold'da organizasyonlar: paylaşılan sahiplik, ekip rolleri v
 author: ["modifold"]
 date: 2026-02-28
 slug: /blog/organizations-on-modifold
-image: https://media.modifold.com/news/organizations banner.png
+image: https://cdn.modifold.com/news/organizations banner.png
 featured: false
 locale: tr
 ---
@@ -41,7 +41,7 @@ Bir organizasyon oluştururken şunları belirleyebilirsiniz:
 
 Oluşturduktan sonra organizasyon ayarları ekip yönetiminin kontrol merkezi olur.
 
-![](https://media.modifold.com/news/organization_settings.png)
+![](https://cdn.modifold.com/news/organization_settings.png)
 
 ## Davetler ve üyelik
 
@@ -62,7 +62,7 @@ Her üye için şu alanlarda role dayalı yetki tanımlanabilir:
 
 Böylece ekip, ayarları kimin yöneteceğini, projeleri kimin sürdüreceğini ve güncellemeleri kimin yayınlayacağını net biçimde kontrol eder.
 
-![](https://media.modifold.com/news/organization_settings_members.png)
+![](https://cdn.modifold.com/news/organization_settings_members.png)
 
 ## Proje sahipliği ve görünürlük
 

@@ -99,7 +99,7 @@ function DependencyFilter({ t, selectedProjectId, dependencyType, onSelectProjec
 
 			{selectedProjectId ? (
 				<div className="browse-dependency-filter__selected">
-					<img src={resolvedSelectedProject?.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" width="40" height="40" className="browse-dependency-filter__project-icon" />
+					<img src={resolvedSelectedProject?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" width="40" height="40" className="browse-dependency-filter__project-icon" />
 
 					<div className="browse-dependency-filter__selected-copy">
 						<strong title={resolvedSelectedProject?.title || selectedProjectId}>{resolvedSelectedProject?.title || selectedProjectId}</strong>
@@ -165,7 +165,7 @@ function DependencyFilter({ t, selectedProjectId, dependencyType, onSelectProjec
 								) : projectOptions.map((project) => (
 									<button key={project.id} type="button" className="context-list-option context-list-option--with-art" onClick={() => handleSelectProject(project)}>
 										<span className="context-list-option__art">
-											<img src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+											<img src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 										</span>
 										
 										<span className="context-list-option__label">{project.title}</span>

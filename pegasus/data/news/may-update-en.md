@@ -4,7 +4,7 @@ description: "Creator Badge, liked projects page, new version notifications, upd
 author: ["bogdan"]
 date: 2026-05-10
 slug: /blog/may-update
-image: https://media.modifold.com/news/may_update_2026.png
+image: https://cdn.modifold.com/news/may_update_2026.png
 featured: false
 locale: en
 ---
@@ -39,7 +39,7 @@ To activate **Creator Badge**, you need to:
 
 When both requirements are met, the badge can be enabled without an application or waiting. It appears next to the creator’s name, helps players recognize active creators faster, and makes their contribution to the community more visible.
 
-![](https://media.modifold.com/news/creator_badge.png)
+![](https://cdn.modifold.com/news/creator_badge.png)
 
 ## Liked Projects
 
@@ -49,7 +49,7 @@ Now projects you liked can be found in one place. This is useful if you are buil
 
 The page link was added to the profile menu and mobile navigation.
 
-![](https://media.modifold.com/news/may_update_2026_2.png)
+![](https://cdn.modifold.com/news/may_update_2026_2.png)
 
 ## New Version Notifications
 
@@ -57,7 +57,7 @@ Following a creator is now more useful. When a creator releases a new project ve
 
 This is another step in the same direction: a user follows not only one mod, but also a person or team they trust.
 
-![](https://media.modifold.com/news/may_update_2026.png)
+![](https://cdn.modifold.com/news/may_update_2026.png)
 
 ## Mods Catalog
 
@@ -75,7 +75,7 @@ It opens in the context of the page, switches images smoothly, works better on p
 
 For now, this gallery is available as an experimental feature in [/settings/flags](https://modifold.com/settings/flags). We will keep improving it and gradually enable it more widely.
 
-![](https://media.modifold.com/news/may_update_2026_3.png)
+![](https://cdn.modifold.com/news/may_update_2026_3.png)
 
 ## Versions and Dependencies
 
@@ -83,7 +83,7 @@ When creating or editing a version, you can now specify dependencies on other pr
 
 This is useful for mods that need another mod or library. In the editor, you can find a project, select it from the list, and link it to the current version.
 
-![](https://media.modifold.com/news/may_update_2026_4.png)
+![](https://cdn.modifold.com/news/may_update_2026_4.png)
 
 Thanks to [AzureDoom](https://modifold.com/user/azuredoom) for suggesting this idea.
 

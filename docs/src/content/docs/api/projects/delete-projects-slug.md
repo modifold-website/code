@@ -9,7 +9,7 @@ order: 16
 **Summary:** Delete a project
 
 Permanently deletes the project, all its versions, categories, gallery images, 
-and associated files from the storage (MEDIA_ROOT/projects/{projectId}).
+and associated files from Cloudflare R2 (projects/{projectId}).
 
 Only the project owner can perform this action. 
 Files are deleted recursively; if deletion fails (e.g. permissions), 

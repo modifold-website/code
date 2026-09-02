@@ -4,7 +4,7 @@ description: "Мы обновили правила Modifold для контен�
 author: ["bogdan"]
 date: 2026-08-13
 slug: /blog/ai-rules
-image: https://media.modifold.com/news/new_ai_content_rules.png
+image: https://cdn.modifold.com/news/new_ai_content_rules.png
 featured: false
 locale: ru
 ---
@@ -50,7 +50,7 @@ locale: ru
 
 Это удобнее, чем удалять старую работу или оставлять игроков гадать, жив проект или уже нет.
 
-![](https://media.modifold.com/news/958shots_so.png)
+![](https://cdn.modifold.com/news/958shots_so.png)
 
 ## Зачем всё это
 

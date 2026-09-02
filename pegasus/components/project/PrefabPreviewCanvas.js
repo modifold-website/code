@@ -487,7 +487,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 				setHasInteracted(false);
 				const [prefab] = await Promise.all([
 					fetchPrefab(`${apiBase}${prefabUrl}`),
-					loadCatalogs("https://media.modifold.com/hytale-assets"),
+					loadCatalogs("https://cdn.modifold.com/hytale-assets"),
 				]);
 
 				if(disposed) {

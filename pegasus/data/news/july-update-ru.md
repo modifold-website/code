@@ -4,7 +4,7 @@ description: "Мы обновили профили авторов, добави�
 author: ["bogdan"]
 date: 2026-07-08
 slug: /blog/july-update
-image: https://media.modifold.com/news/full_hytale_link_banner.png
+image: https://cdn.modifold.com/news/full_hytale_link_banner.png
 featured: false
 locale: ru
 ---
@@ -17,7 +17,7 @@ locale: ru
 
 Страница автора стала ближе к полноценной публичной витрине моддера.
 
-![](https://media.modifold.com/news/120shots_so.png)
+![](https://cdn.modifold.com/news/120shots_so.png)
 
 Теперь в профиле заметнее отображаются:
 
@@ -37,7 +37,7 @@ locale: ru
 
 Также появилась загрузка обложки профиля. Пока это простая функция, но она уже помогает авторам сделать страницу более личной и узнаваемой.
 
-![](https://media.modifold.com/news/615shots_so.png)
+![](https://cdn.modifold.com/news/615shots_so.png)
 
 ## Ачивки
 
@@ -53,7 +53,7 @@ locale: ru
 - привязку игрового профиля Hytale;
 - другие ручные или уникальные события.
 
-![](https://media.modifold.com/news/309shots_so.png)
+![](https://cdn.modifold.com/news/309shots_so.png)
 
 Это только начало. Мы хотим, чтобы ачивки стали способом показывать историю автора: участие в событиях, важные достижения, вклад в сообщество и редкие моменты, которые приятно сохранить в профиле.
 
@@ -67,7 +67,7 @@ locale: ru
 
 Если у вас есть несколько ачивок, вы можете выбрать, какая будет отображаться у имени. Например, можно поставить бейдж автора (Creator Badge), участника ModJam или привязанного аккаунта Hytale.
 
-![](https://media.modifold.com/news/926shots_so.png)
+![](https://cdn.modifold.com/news/926shots_so.png)
 
 Это небольшая функция, но она делает профиль живее. У каждого автора постепенно появляется свой визуальный статус, который связан с реальными действиями на сайте.
 
@@ -87,7 +87,7 @@ locale: ru
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/hytale_linked.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/hytale_linked.mp4" type="video/mp4">
     </video>
 </div>
 

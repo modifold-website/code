@@ -14,7 +14,7 @@ export const getProjectMetadata = (project, path = "", { title: titleOverride, t
 	const url = `https://modifold.com${projectPath}`;
 	const description = getDescription(project.summary);
 	const title = titleOverride || `${project.title}${titleSuffix ? ` ${titleSuffix}` : ""} — ${projectTypeTitle} — Modifold`;
-	const iconImage = project.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
+	const iconImage = project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg";
 
 	return {
 		title,

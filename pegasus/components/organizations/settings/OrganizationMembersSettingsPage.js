@@ -467,7 +467,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                     <div className="project-collaborators-settings__selected-users" aria-label={t("settings.inviteSelectedLabel")}>
                                         {selectedUsers.map((user) => (
                                             <button key={user.id} type="button" className="browse-selected-filter-chip project-collaborators-settings__selected-chip" onClick={() => removeSelectedUser(user.id)} aria-label={t("settings.inviteRemoveSelection", { username: user.username })}>
-                                                <img src={user.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+                                                <img src={user.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 
                                                 <span>{user.username}</span>
 
@@ -500,7 +500,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
                                                     ) : searchResults.map((user, index) => (
                                                         <button key={user.id} id={`${listboxId}-${user.id}`} type="button" role="option" aria-selected={index === highlightedIndex} className={`context-list-option context-list-option--with-art project-collaborators-settings__search-option ${index === highlightedIndex ? "context-list-option--focused" : ""}`} onMouseEnter={() => setHighlightedIndex(index)} onClick={() => selectUser(user)}>
                                                             <span className="context-list-option__art">
-                                                                <img src={user.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+                                                                <img src={user.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
                                                             </span>
 
                                                             <span className="project-collaborators-settings__search-copy">
@@ -601,7 +601,7 @@ export default function OrganizationMembersSettingsPage({ authToken, organizatio
 									defaultProjectPermissions={default_project_permissions}
 									projectOverridePermissionKeys={available_project_override_permissions}
                                     organizationPermissionKeys={ORGANIZATION_PERMISSION_KEYS}
-                                    defaultIconUrl={"https://media.modifold.com/static/no-project-icon.svg"}
+                                    defaultIconUrl={"https://cdn.modifold.com/static/no-project-icon.svg"}
                                     isOwner={isOwnerMember}
                                 />
                             );

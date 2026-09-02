@@ -134,7 +134,7 @@ export default function ModJamSubmitProjectModal({ isOpen, jam, authToken, submi
 							
 							{currentUserSubmission.project?.title && (
 								<Link className="mod-jam-submitted-project" href={getProjectPath({ ...currentUserSubmission.project, project_type: "mod" })}>
-									<img src={currentUserSubmission.project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" width="32" height="32" loading="lazy" />
+									<img src={currentUserSubmission.project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" width="32" height="32" loading="lazy" />
 									
 									<strong>{currentUserSubmission.project.title}</strong>
 								</Link>
@@ -181,7 +181,7 @@ export default function ModJamSubmitProjectModal({ isOpen, jam, authToken, submi
 													<div key={project.id} className={`context-list-option ${String(projectId) === String(project.id) ? "context-list-option--selected" : ""}`} style={{ "--press-duration": "140ms" }} onClick={() => handleSelectProject(project)}>
 														<div className="context-list-option__label" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 															<img
-																src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"}
+																src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"}
 																alt=""
 																width="24"
 																height="24"

@@ -20,7 +20,7 @@ export default function OrganizationMemberProjectAccess({ draft, projects, direc
 					{visibleProjects.length > 0 ? (
 						<div className="organization-project-access-summary__avatars" aria-hidden="true">
 							{visibleProjects.map((project) => (
-								<img key={project.id} src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" title={project.title} />
+								<img key={project.id} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" title={project.title} />
 							))}
 
 							{hiddenProjectsCount > 0 ? (

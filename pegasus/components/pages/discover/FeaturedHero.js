@@ -91,7 +91,7 @@ function FeaturedPane({ project, t }) {
 		return null;
 	}
 
-	const ownerAvatar = project.owner?.avatar || "https://media.modifold.com/static/no-project-icon.svg";
+	const ownerAvatar = project.owner?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg";
 
 	return (
 		<>

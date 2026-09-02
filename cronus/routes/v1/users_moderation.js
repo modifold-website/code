@@ -8,11 +8,27 @@ const fs = require("fs").promises;
 const path = require("path");
 const { sanitizePlainText } = require("../../utils/sanitize");
 const { validateSlug } = require("../../utils/slug");
+const { buildSafeObjectFilename, deleteObject, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+
+const deleteUserAvatarUrl = async (url, userId) => {
+	const objectKey = getPublicObjectKeyFromUrl(url);
+	if(objectKey && (!objectKey.includes("/") || objectKey.startsWith(`users/${userId}/avatar/`))) {
+		await deleteObject(objectKey);
+	}
+};
 
 const storage = multer.diskStorage({
-    destination: process.env.MEDIA_ROOT,
+	destination: async (req, file, cb) => {
+		try {
+			const destination = getUploadTempRoot();
+			await fs.mkdir(destination, { recursive: true });
+			cb(null, destination);
+		} catch(error) {
+			cb(error);
+		}
+    },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        cb(null, buildSafeObjectFilename(file.originalname));
     },
 });
 
@@ -121,6 +137,12 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
     let avatarFile = req.file;
 
     try {
+		const [targetUserRows] = await db.query("SELECT avatar FROM users WHERE id = ? LIMIT 1", [id]);
+		const targetUser = targetUserRows[0];
+		if(!targetUser) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
         if(avatarFile) {
             avatarFile = await convertImageToWebp(avatarFile);
         }
@@ -156,7 +178,9 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
         }
 
         if(avatarFile) {
-            updates.avatar = `https://media.modifold.com/${avatarFile.filename}`;
+            const objectKey = `users/${id}/avatar/${avatarFile.filename}`;
+            await uploadFile({ key: objectKey, filePath: avatarFile.path, contentType: avatarFile.mimetype });
+            updates.avatar = getPublicUrl(objectKey);
         }
 
         if(isRole && ["admin", "moderator", "user"].includes(isRole)) {
@@ -168,6 +192,12 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
         }
 
         await db.query("UPDATE users SET ? WHERE id = ?", [updates, id]);
+
+		if(updates.avatar && targetUser.avatar !== updates.avatar) {
+			await deleteUserAvatarUrl(targetUser.avatar, id).catch((error) => {
+				console.warn(`Failed to delete replaced user avatar: ${error.message}`);
+			});
+		}
 
         const [updatedUser] = await db.query(
             "SELECT id, username, slug, avatar, email, description, created_at, isRole FROM users WHERE id = ?",

@@ -33,7 +33,7 @@ function PreviewNotificationItem({ item, t }) {
 			<div className="notification-item__image">
 				<div className="notification-avatars-stack">
 					<Link className="notification-avatars-stack__item" href="/user/siren">
-						<img alt="Siren" className="notification-avatars-stack__avatar" loading="lazy" src="https://media.modifold.com/1772557202640-siren-logo.webp" />
+						<img alt="Siren" className="notification-avatars-stack__avatar" loading="lazy" src="https://cdn.modifold.com/1772557202640-siren-logo.webp" />
 					</Link>
 
 					<svg className="notification-item__icon notification-item__icon--blue" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -64,7 +64,7 @@ function PreviewNotificationItem({ item, t }) {
 
 			<div className="notification-item__etc">
 				<Link href="/mod/mermaids">
-					<img alt="Mermaids" className="notification-project-thumb" loading="lazy" src="https://media.modifold.com/projects/FlmWzw/mermaids-logo-2.0.0_small_f0581b02.webp" />
+					<img alt="Mermaids" className="notification-project-thumb" loading="lazy" src="https://cdn.modifold.com/projects/FlmWzw/mermaids-logo-2.0.0_small_f0581b02.webp" />
 				</Link>
 			</div>
 		</div>

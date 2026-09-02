@@ -4,7 +4,7 @@ description: "Значок автора, страница понравивших
 author: ["bogdan"]
 date: 2026-05-10
 slug: /blog/may-update
-image: https://media.modifold.com/news/may_update_2026.png
+image: https://cdn.modifold.com/news/may_update_2026.png
 featured: false
 locale: ru
 ---
@@ -39,7 +39,7 @@ locale: ru
 
 Когда оба условия выполнены, значок можно включить без заявки и ожидания. Он отображается рядом с именем автора, помогает игрокам быстрее узнавать активных создателей и делает вклад в сообщество заметнее.
 
-![](https://media.modifold.com/news/creator_badge.png)
+![](https://cdn.modifold.com/news/creator_badge.png)
 
 ## Понравившиеся проекты
 
@@ -49,7 +49,7 @@ locale: ru
 
 Ссылка на страницу появилась в меню профиля и в мобильной навигации.
 
-![](https://media.modifold.com/news/may_update_2026_2.png)
+![](https://cdn.modifold.com/news/may_update_2026_2.png)
 
 ## Уведомления о новых версиях
 
@@ -57,7 +57,7 @@ locale: ru
 
 Это еще один шаг в ту же сторону: пользователь подписывается не только на один мод, а на человека или команду, которым доверяет.
 
-![](https://media.modifold.com/news/may_update_2026.png)
+![](https://cdn.modifold.com/news/may_update_2026.png)
 
 ## Каталог модов
 
@@ -75,7 +75,7 @@ locale: ru
 
 Пока эта галерея доступна как экспериментальная функция в [/settings/flags](https://modifold.com/settings/flags). Мы будем дорабатывать ее дальше и постепенно включать шире.
 
-![](https://media.modifold.com/news/may_update_2026_3.png)
+![](https://cdn.modifold.com/news/may_update_2026_3.png)
 
 ## Версии и зависимости
 
@@ -83,7 +83,7 @@ locale: ru
 
 Это полезно для модов, которым нужен другой мод или библиотека. В редакторе можно найти проект, выбрать его из списка и связать с текущей версией.
 
-![](https://media.modifold.com/news/may_update_2026_4.png)
+![](https://cdn.modifold.com/news/may_update_2026_4.png)
 
 Спасибо [AzureDoom](https://modifold.com/user/azuredoom) за предложенную идею.
 

@@ -8,6 +8,7 @@ const { db } = require("./config/db");
 const { clickhouse } = require("./config/clickhouse");
 const { cacheClient } = require("./config/cache");
 const { createRateLimiter } = require("./middleware/rateLimit");
+const { validateStorageConfiguration } = require("./utils/fileHosting");
 const authRoutes = require("./routes/v1/auth");
 const usersRoutes = require("./routes/v1/users");
 const subscriptionRoutes = require("./routes/v1/subscriptions");
@@ -33,6 +34,7 @@ const recommendedRoutes = require("./routes/v1/recommended");
 const modJamsRoutes = require("./routes/v1/mod-jams");
 
 const startServer = () => {
+	validateStorageConfiguration();
 	const app = express();
 
 	app.disable("x-powered-by");

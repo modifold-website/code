@@ -12,11 +12,27 @@ const path = require("path");
 const { sanitizePlainText, sanitizeSocialLinks } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 const { getUnlockedProfileBadges, getVisibleProfileBadge, normalizeProfileBadgeCode } = require("../../utils/profileBadges");
+const { buildSafeObjectFilename, deleteObject, deletePrefix, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+
+const deleteUserMediaUrl = async (url, userId) => {
+	const objectKey = getPublicObjectKeyFromUrl(url);
+	if(objectKey && (!objectKey.includes("/") || objectKey.startsWith(`users/${userId}/`))) {
+		await deleteObject(objectKey);
+	}
+};
 
 const storage = multer.diskStorage({
-    destination: process.env.MEDIA_ROOT,
+	destination: async (req, file, cb) => {
+		try {
+			const destination = getUploadTempRoot();
+			await fs.mkdir(destination, { recursive: true });
+			cb(null, destination);
+		} catch(error) {
+			cb(error);
+		}
+    },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        cb(null, buildSafeObjectFilename(file.originalname));
     },
 });
 
@@ -147,7 +163,7 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
             coverFile = await convertImageToWebp(coverFile);
         }
 
-        const [currentUserRows] = await db.query("SELECT slug FROM users WHERE id = ? LIMIT 1", [req.user.id]);
+        const [currentUserRows] = await db.query("SELECT slug, avatar, cover FROM users WHERE id = ? LIMIT 1", [req.user.id]);
         const currentUser = currentUserRows[0];
 
         if(!currentUser) {
@@ -161,11 +177,15 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
         }
 
         if(avatarFile) {
-            updates.avatar = `https://media.modifold.com/${avatarFile.filename}`;
+            const objectKey = `users/${req.user.id}/avatar/${avatarFile.filename}`;
+            await uploadFile({ key: objectKey, filePath: avatarFile.path, contentType: avatarFile.mimetype });
+            updates.avatar = getPublicUrl(objectKey);
         }
 
         if(coverFile) {
-            updates.cover = `https://media.modifold.com/${coverFile.filename}`;
+            const objectKey = `users/${req.user.id}/cover/${coverFile.filename}`;
+            await uploadFile({ key: objectKey, filePath: coverFile.path, contentType: coverFile.mimetype });
+            updates.cover = getPublicUrl(objectKey);
         }
 
         if(description !== undefined) {
@@ -201,6 +221,17 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
         }
 
         await db.query("UPDATE users SET ? WHERE id = ?", [updates, req.user.id]);
+
+		if(updates.avatar && currentUser.avatar !== updates.avatar) {
+			await deleteUserMediaUrl(currentUser.avatar, req.user.id).catch((error) => {
+				console.warn(`Failed to delete replaced user avatar: ${error.message}`);
+			});
+		}
+		if(updates.cover && currentUser.cover !== updates.cover) {
+			await deleteUserMediaUrl(currentUser.cover, req.user.id).catch((error) => {
+				console.warn(`Failed to delete replaced user cover: ${error.message}`);
+			});
+		}
 
         const [updatedUser] = await db.query("SELECT id, username, slug, avatar, cover, description, created_at, isVerified, isRole, active_profile_badge, hytale_profile_uuid, hytale_profile_username, hytale_linked_at, social_links FROM users WHERE id = ?", [req.user.id]);
 
@@ -381,7 +412,7 @@ router.get("/me/likes", auth, async (req, res) => {
 				slug: project.slug,
 				title: project.title,
 				summary: project.summary || "",
-				icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+				icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 				downloads: Number(project.downloads || 0),
 				project_type: project.project_type,
 				tags: project.tags ? project.tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
@@ -394,7 +425,7 @@ router.get("/me/likes", auth, async (req, res) => {
 					id: project.organization_id,
 					username: project.organization_name,
 					slug: project.organization_slug,
-					avatar: project.organization_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+					avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 					summary: project.organization_summary || "",
 					isVerified: 0,
 					type: "organization",
@@ -563,7 +594,7 @@ router.get("/:username/projects", async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                 downloads: project.downloads,
                 created_at: project.created_at,
                 updated_at: project.updated_at,
@@ -574,7 +605,7 @@ router.get("/:username/projects", async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     isVerified: 0,
                     type: "organization",
@@ -697,7 +728,7 @@ router.get("/:username/organizations", async (req, res) => {
                 slug: row.slug,
                 name: row.name,
                 summary: row.summary || "",
-                icon_url: row.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                 members_count: Number(row.members_count || 0),
             })),
         });
@@ -795,6 +826,7 @@ router.get("/:username", async (req, res) => {
 router.delete("/me", auth, async (req, res) => {
     try {
         const userId = req.user.id;
+		const [userMediaRows] = await db.query("SELECT avatar, cover FROM users WHERE id = ? LIMIT 1", [userId]);
 
         const [projects] = await db.query(`SELECT id, slug FROM projects WHERE user_id = ?`, [userId]);
 
@@ -803,12 +835,10 @@ router.delete("/me", auth, async (req, res) => {
 
         if(projectIds.length > 0) {
             for(const projectId of projectIds) {
-                const projectDir = path.join(process.env.MEDIA_ROOT, "projects", projectId);
                 try {
-                    await fs.rm(projectDir, { recursive: true, force: true });
-                    console.log(`Удалена папка проекта ${projectId}`);
+                    await deletePrefix(`projects/${projectId}`);
                 } catch (err) {
-                    console.warn(`Не удалось удалить папку проекта ${projectId}:`, err);
+                    console.warn(`Не удалось удалить файлы проекта ${projectId}:`, err);
                 }
             }
 
@@ -827,6 +857,15 @@ router.delete("/me", auth, async (req, res) => {
 
             await db.query("DELETE FROM projects WHERE id IN (?)", [projectIds]);
         }
+
+        await deletePrefix(`users/${userId}`).catch((error) => {
+			console.warn(`Не удалось удалить медиа пользователя ${userId}:`, error);
+		});
+		for(const mediaUrl of [userMediaRows[0]?.avatar, userMediaRows[0]?.cover].filter(Boolean)) {
+			await deleteUserMediaUrl(mediaUrl, userId).catch((error) => {
+				console.warn(`Не удалось удалить старый медиафайл пользователя ${userId}:`, error);
+			});
+		}
 
         await db.query("DELETE FROM users WHERE id = ?", [userId]);
 
