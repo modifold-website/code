@@ -105,14 +105,24 @@ const extractIpAddress = (value) => {
 };
 
 const getRequestIpAddress = (req) => {
-	const candidates = [
-		req.headers["x-real-ip"],
-		req.headers["x-forwarded-for"],
-		req.headers["cf-connecting-ip"],
-		req.headers["true-client-ip"],
-		req.ip,
-		req.socket?.remoteAddress,
-	];
+	const useCloudflareIp = String(process.env.CLOUDFLARE_INTEGRATION || "").toLowerCase() === "true";
+	const candidates = useCloudflareIp
+		? [
+			req.headers["cf-connecting-ip"],
+			req.headers["x-real-ip"],
+			req.headers["x-forwarded-for"],
+			req.headers["true-client-ip"],
+			req.ip,
+			req.socket?.remoteAddress,
+		]
+		: [
+			req.headers["x-real-ip"],
+			req.headers["x-forwarded-for"],
+			req.headers["cf-connecting-ip"],
+			req.headers["true-client-ip"],
+			req.ip,
+			req.socket?.remoteAddress,
+		];
 
 	for(const candidate of candidates) {
 		const ipAddress = extractIpAddress(candidate);
