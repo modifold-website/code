@@ -166,6 +166,22 @@ const startServer = () => {
 		res.status(200).json({ status: "OK", uptime: process.uptime() });
 	});
 
+	app.get("/debug/ip", (req, res) => {
+		const safeHeaders = { ...req.headers };
+		for(const headerName of ["authorization", "cookie", "set-cookie"]) {
+			delete safeHeaders[headerName];
+		}
+
+		return res.json({
+			reqIp: req.ip,
+			remoteAddress: req.socket.remoteAddress,
+			cfConnectingIp: req.headers["cf-connecting-ip"] || null,
+			xForwardedFor: req.headers["x-forwarded-for"] || null,
+			xRealIp: req.headers["x-real-ip"] || null,
+			headers: safeHeaders,
+		});
+	});
+
 	app.use("/internal/downloads", internalDownloadsRoutes);
 
 	const mountV1Route = (routePath, ...handlers) => {
