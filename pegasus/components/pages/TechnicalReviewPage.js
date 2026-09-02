@@ -181,7 +181,7 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 	const sortPopoverRef = useRef(null);
 
 	useEffect(() => {
-		Modal.setAppElement("body");
+		Modal.setAppElement("#app");
 	}, []);
 
 	useEffect(() => {

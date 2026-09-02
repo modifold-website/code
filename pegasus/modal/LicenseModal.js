@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 
-Modal.setAppElement("body");
+Modal.setAppElement("#app");
 
 export default function LicenseModal({ isOpen, licenseId, onRequestClose }) {
     const t = useTranslations("LicenseModal");

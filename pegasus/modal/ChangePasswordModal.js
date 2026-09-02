@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("body");
+    Modal.setAppElement("#app");
 }
 
 function PasswordInput({ autoComplete, name, placeholder, value, onChange, showPassword, onToggle, labelShow, labelHide }) {

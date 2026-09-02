@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getProjectPathByType } from "@/utils/projectRoutes";
 
-Modal.setAppElement("body");
+Modal.setAppElement("#app");
 
 export default function ProjectCreationModal({ isOpen, authToken, onRequestClose }) {
     const t = useTranslations("ProjectCreationModal");

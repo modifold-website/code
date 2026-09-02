@@ -5,7 +5,7 @@ import Modal from "react-modal";
 import { getYouTubeEmbedUrl, getYouTubeVideoId } from "@/utils/gallery/media";
 
 if(typeof window !== "undefined") {
-	Modal.setAppElement("body");
+	Modal.setAppElement("#app");
 }
 
 export default function GalleryMediaModal({ isOpen, onRequestClose, mediaType, onMediaTypeChange, uploadLoading, uploadStep, uploadSteps, uploadItems, uploadIndex, isUploadDragActive, uploadFileRef, openUploadFilePicker, handleUploadDragOver, handleUploadDragLeave, handleUploadDrop, handleUploadFileChange, formatFileSize, removeUploadItem, goToUploadFilesStep, goToUploadMetadataStep, goToUploadItem, handleSubmit, handleUploadInputChange, toggleUploadFeatured, videoLoading, videoForm, setVideoForm, onVideoSubmit, t, tProject }) {

@@ -28,7 +28,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
     const sortPopoverRef = useRef(null);
 
 	useEffect(() => {
-		Modal.setAppElement("body");
+		Modal.setAppElement("#app");
 	}, []);
 
     useEffect(() => {
