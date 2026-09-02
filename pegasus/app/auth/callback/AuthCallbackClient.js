@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { commitPendingSignInProvider } from "@/utils/authSignInProvider";
 
@@ -29,7 +28,6 @@ function getSafeNextPath(nextPath) {
 
 export default function AuthCallbackClient() {
     const { completeLogin } = useAuth();
-    const router = useRouter();
     const hasProcessedRef = useRef(false);
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -71,11 +69,11 @@ export default function AuthCallbackClient() {
 
         completeLogin(token).then(() => {
             commitPendingSignInProvider();
-            router.replace(nextPath);
+			window.location.replace(nextPath);
         }).catch((loginError) => {
             setErrorMessage(loginError?.message || "Authentication failed.");
         });
-    }, [completeLogin, router]);
+    }, [completeLogin]);
 
     return (
         <div style={{ minHeight: "60vh", display: "grid", placeItems: "center", padding: "32px 16px" }}>
