@@ -26,7 +26,7 @@ export default function UserSettingsSidebar({ user, labels, profileIconAlt, mode
             <div className="sidebar__main">
                 {!showPublicSettings && (
                     <Link href={`/user/${user?.slug || ""}`} scroll={false} className="sidebar-item sidebar-item--profile" data-ripple>
-                        <img src={user?.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt={profileIconAlt} className="icon" width="28" height="28" style={{ borderRadius: "100px" }} />
+                        <img src={user?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={profileIconAlt} className="icon" width="28" height="28" style={{ borderRadius: "100px" }} />
 
                         <UserName user={user} />
                     </Link>

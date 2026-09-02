@@ -4,7 +4,7 @@ description: "Организации в Modifold: общая работа над
 author: ["modifold"]
 date: 2026-02-28
 slug: /blog/organizations-on-modifold
-image: https://media.modifold.com/news/organizations banner.png
+image: https://cdn.modifold.com/news/organizations banner.png
 featured: false
 locale: ru
 ---
@@ -41,7 +41,7 @@ locale: ru
 
 После создания организация становится основным местом управления командой.
 
-![](https://media.modifold.com/news/organization_settings.png)
+![](https://cdn.modifold.com/news/organization_settings.png)
 
 ## Приглашения и участники
 
@@ -62,7 +62,7 @@ locale: ru
 
 Это помогает команде точно определить, кто настраивает организацию, кто поддерживает проекты и кто публикует обновления.
 
-![](https://media.modifold.com/news/organization_settings_members.png)
+![](https://cdn.modifold.com/news/organization_settings_members.png)
 
 ## Владение проектами и видимость
 

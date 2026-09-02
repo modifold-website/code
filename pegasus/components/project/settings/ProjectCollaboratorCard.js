@@ -37,7 +37,7 @@ export default function ProjectCollaboratorCard({ collaborator, draft, available
 		<div className="content content--padding organization-member-card">
 			<div className="organization-member-card__header">
 				<div className="organization-member-card__identity">
-					<img src={collaborator.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt="" className="organization-member-card__avatar" />
+					<img src={collaborator.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" className="organization-member-card__avatar" />
 
 					<div className="project-collaborator-card__identity-copy">
 						<div className="organization-member-card__name">

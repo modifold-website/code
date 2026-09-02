@@ -40,12 +40,12 @@ Status: `200`
   "loaders": [
     "vanilla"
   ],
-  "file_url": "https://media.modifold.com/projects/FlmWzw/example.jar",
+  "file_url": "https://cdn.modifold.com/projects/FlmWzw/example.jar",
   "file_size": 1870358,
   "created_at": "2026-06-15T00:00:00.000Z",
   "files": [
     {
-      "url": "https://media.modifold.com/projects/FlmWzw/example.jar",
+      "url": "https://cdn.modifold.com/projects/FlmWzw/example.jar",
       "size": 1870358,
       "primary": true
     }

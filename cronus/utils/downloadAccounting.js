@@ -149,11 +149,7 @@ const getIpPrefix = (ipAddress) => {
 };
 
 const getPublicMediaBases = () => {
-	const configuredBases = [
-		process.env.MEDIA_PUBLIC_BASE,
-	].map((value) => String(value || "").trim()).filter(Boolean);
-
-	return [...new Set([...configuredBases, "https://media.modifold.com"])].map((value) => value.replace(/\/+$/, ""));
+	return ["https://cdn.modifold.com"];
 };
 
 const getOriginalPath = (req) => {
@@ -163,7 +159,7 @@ const getOriginalPath = (req) => {
 	}
 
 	try {
-		const parsedUrl = new URL(originalUri, "https://media.modifold.com");
+		const parsedUrl = new URL(originalUri, "https://cdn.modifold.com");
 		return parsedUrl.pathname || null;
 	} catch {
 		return String(originalUri).split("?")[0] || null;

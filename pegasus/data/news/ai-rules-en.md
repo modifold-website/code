@@ -4,7 +4,7 @@ description: "We updated Modifold's rules for AI-generated content and added a n
 author: ["bogdan"]
 date: 2026-08-13
 slug: /blog/ai-rules
-image: https://media.modifold.com/news/new_ai_content_rules.png
+image: https://cdn.modifold.com/news/new_ai_content_rules.png
 featured: false
 locale: en
 ---
@@ -50,7 +50,7 @@ The author can leave their own message too. For example, they can explain that t
 
 This is better than deleting old work or leaving players to guess whether a project is still alive.
 
-![](https://media.modifold.com/news/958shots_so.png)
+![](https://cdn.modifold.com/news/958shots_so.png)
 
 ## Why are we doing this?
 

@@ -4,7 +4,7 @@ description: "Connect HytaleModding Wiki to your project on Modifold: a dedicate
 author: ["modifold"]
 date: 2026-03-15
 slug: /blog/hytalemodding-wiki-integration
-image: https://media.modifold.com/news/wiki_hytalemodding_update_v3.png
+image: https://cdn.modifold.com/news/wiki_hytalemodding_update_v3.png
 featured: false
 locale: en
 ---
@@ -28,7 +28,7 @@ After saving, Modifold will use that wiki as the content source for the **Wiki**
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/link_wiki_to_modifold.mp4?v=1" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/link_wiki_to_modifold.mp4?v=1" type="video/mp4">
     </video>
 </div>
 

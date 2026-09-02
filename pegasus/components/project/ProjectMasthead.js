@@ -229,7 +229,7 @@ export default function ProjectMasthead({ project, authToken }) {
         <>
             <section className="new-project-card project-page-card" id={project.slug}>
                 <div className={`project-page-card__main ${hasTags ? "project-page-card__main--with-tags" : ""}`}>
-                    <Image src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} className="new-project-icon" alt={cardT("projectIconAlt", { title: project.title })} width={100} height={100} priority />
+                    <Image src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} className="new-project-icon" alt={cardT("projectIconAlt", { title: project.title })} width={100} height={100} priority />
 
                     <div className="new-project-info">
                         <div className="new-project-header project-page-card__header">

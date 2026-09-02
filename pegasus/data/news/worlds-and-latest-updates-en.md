@@ -4,7 +4,7 @@ description: "Worlds are now on Modifold: you can publish horror maps, mini-game
 author: ["bogdan"]
 date: 2026-06-24
 slug: /blog/worlds-and-latest-updates
-image: https://media.modifold.com/news/june_update_part1_cover.png
+image: https://cdn.modifold.com/news/june_update_part1_cover.png
 featured: false
 locale: en
 ---
@@ -19,7 +19,7 @@ You can now create a project with the **World** type and publish your map as a s
 
 Worlds now have their own section and their own categories. They are not just mods. They are maps with mods. They are a separate type of content, so we moved them into their own place, so worlds do not get lost among regular mods.
 
-![](https://media.modifold.com/news/june_preview_5.png)
+![](https://cdn.modifold.com/news/june_preview_5.png)
 
 ## User analytics dashboard
 
@@ -35,7 +35,7 @@ Now you can view stats for all your projects in one place:
 
 Before, you had to jump between projects and piece the picture together manually. Now you can open one page and understand what is actually going on.
 
-![](https://media.modifold.com/news/june_preview_2.png)
+![](https://cdn.modifold.com/news/june_preview_2.png)
 
 ## Profiles became more useful
 
@@ -55,7 +55,7 @@ If a project has a trailer, it appears in the gallery and automatically starts m
 
 This is especially good for worlds, because sometimes it is easier to show the atmosphere of a horror map in one short video than to try explaining it with words.
 
-![](https://media.modifold.com/news/june_preview_1.png)
+![](https://cdn.modifold.com/news/june_preview_1.png)
 
 ## Project versions are easier to understand
 
@@ -69,7 +69,7 @@ Now it is easier to understand:
 - what is required and what is optional;
 - which game versions are supported.
 
-![](https://media.modifold.com/news/june_preview_4.png)
+![](https://cdn.modifold.com/news/june_preview_4.png)
 
 ## Dependencies are easier to download
 
@@ -77,7 +77,7 @@ If a mod version has required dependencies, Modifold now offers to download them
 
 That means fewer chances to download a mod, launch the game, see a crash, open the log, and drop it in Discord asking for help.
 
-![](https://media.modifold.com/news/june_preview_3.png)
+![](https://cdn.modifold.com/news/june_preview_3.png)
 
 ## Real game versions
 

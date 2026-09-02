@@ -111,7 +111,7 @@ export default function OrganizationProjectsSettingsPage({ authToken, organizati
 										<Link className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
 										<div className={`dashboard-project-card__content ${hasTags ? "dashboard-project-card__content--with-tags" : ""}`}>
-											<img className="new-project-icon" src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt={tDashboard("projectIconAlt", { title: project.title })} />
+											<img className="new-project-icon" src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={tDashboard("projectIconAlt", { title: project.title })} />
 
 											<div className="new-project-info">
 												<div className="new-project-header">

@@ -1,11 +1,10 @@
 const crypto = require("crypto");
 const express = require("express");
-const fs = require("fs").promises;
-const path = require("path");
 const sharp = require("sharp");
 
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
+const { getPublicUrl, uploadBuffer } = require("../../utils/fileHosting");
 const { ORG_PROJECT_PERMISSIONS, hasProjectPermission, resolveProjectAccess } = require("../../utils/organizations");
 
 const router = express.Router();
@@ -105,21 +104,13 @@ router.post("/", auth, rawImageBody, async (req, res) => {
 		const optimizedImage = await optimizeImage(req.body, detectedFormat);
 		const hash = crypto.createHash("sha1").update(optimizedImage).digest("hex");
 		const fileName = `${hash}.${requestedFormat.extension}`;
-		const relativeDirectory = path.join("projects", String(project.id), "cached_images");
-		const targetDirectory = path.join(process.env.MEDIA_ROOT, relativeDirectory);
-		const targetPath = path.join(targetDirectory, fileName);
-
-		await fs.mkdir(targetDirectory, { recursive: true });
-		try {
-			await fs.writeFile(targetPath, optimizedImage, { flag: "wx" });
-		} catch(error) {
-			if(error.code !== "EEXIST") {
-				throw error;
-			}
-		}
-
-		const mediaBase = String(process.env.MEDIA_PUBLIC_BASE || "https://media.modifold.com").replace(/\/+$/, "");
-		const url = `${mediaBase}/projects/${encodeURIComponent(project.id)}/cached_images/${fileName}`;
+		const objectKey = `projects/${project.id}/cached_images/${fileName}`;
+		await uploadBuffer({
+			key: objectKey,
+			body: optimizedImage,
+			contentType: requestedFormat.mimeType,
+		});
+		const url = getPublicUrl(objectKey);
 
 		return res.status(200).json({
 			id: hash,

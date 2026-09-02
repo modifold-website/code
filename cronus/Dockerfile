@@ -9,7 +9,7 @@ RUN bun install --frozen-lockfile --production
 
 COPY . .
 
-RUN mkdir -p /app/media /app/tmp/downloads /app/tmp/queue
+RUN mkdir -p /app/tmp/downloads /app/tmp/queue /app/tmp/uploads /app/tmp/storage-cache
 
 EXPOSE 4000
 

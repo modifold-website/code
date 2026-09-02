@@ -103,7 +103,7 @@ export default function OrganizationProjectPermissionsModal({ isOpen, draft, pro
 	const renderProjectPermissions = () => (
 		<>
 			<div className="organization-project-permissions-modal__project">
-				<img src={editingProject?.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+				<img src={editingProject?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 
 				<div>
 					<strong>{editingProject?.title}</strong>
@@ -157,7 +157,7 @@ export default function OrganizationProjectPermissionsModal({ isOpen, draft, pro
 											) : null}
 										</span>
 
-										<img src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+										<img src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 
 										<span className="organization-project-access__project-copy">
 											<strong>{project.title}</strong>

@@ -4,7 +4,7 @@ description: "We removed the old verification flow and launched Creator Badge â€
 author: ["bogdan"]
 date: 2026-05-08
 slug: /blog/creator-badge-launch
-image: https://media.modifold.com/news/creator_badge.png?v=1
+image: https://cdn.modifold.com/news/creator_badge.png?v=1
 featured: false
 locale: en
 ---
@@ -42,7 +42,7 @@ To activate Creator Badge, you need to:
 
 When both requirements are met, you can activate the badge with a button in settings.
 
-![](https://media.modifold.com/news/creator_badge_2.png)
+![](https://cdn.modifold.com/news/creator_badge_2.png)
 
 ## Why this approach
 

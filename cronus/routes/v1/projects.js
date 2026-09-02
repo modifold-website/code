@@ -22,6 +22,7 @@ const { awardFirstApprovedProjectAchievement } = require("../../utils/achievemen
 const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
+const { deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const router = express.Router();
 
 const DISCLOSURE_TEXT_LIMIT = 2000;
@@ -557,27 +558,8 @@ router.use("/:slug*", (req, res, next) => {
 
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
-        let destination;
-
         try {
-            if(req.params.slug) {
-                const [project] = await db.query("SELECT id FROM projects WHERE slug = ?", [req.params.slug]);
-                if(!project.length) {
-                    return cb(new Error("Project not found"));
-                }
-
-                destination = path.join(process.env.MEDIA_ROOT, "projects", project[0].id);
-            } else if(req.params.id) {
-                const [project] = await db.query("SELECT id FROM projects WHERE id = ?", [req.params.id]);
-                if(!project.length) {
-                    return cb(new Error("Project not found"));
-                }
-
-                destination = path.join(process.env.MEDIA_ROOT, "projects", project[0].id);
-            } else {
-                destination = path.join(process.env.MEDIA_ROOT, "temp");
-            }
-
+            const destination = getUploadTempRoot();
             await fs.mkdir(destination, { recursive: true });
             cb(null, destination);
         } catch (error) {
@@ -599,8 +581,9 @@ const buildSafeUploadFilename = (originalname) => {
 	const parsed = path.parse(path.basename(String(originalname || "")));
 	const safeBaseName = sanitizeUploadFilenameStem(parsed.name);
 	const safeExtension = sanitizeUploadFilenameStem(parsed.ext.replace(/^\./, "")).toLowerCase();
+	const uniqueSuffix = crypto.randomBytes(6).toString("hex");
 
-	return safeExtension ? `${safeBaseName}.${safeExtension}` : safeBaseName;
+	return safeExtension ? `${safeBaseName}_${uniqueSuffix}.${safeExtension}` : `${safeBaseName}_${uniqueSuffix}`;
 };
 
 const fileFilter = (req, file, cb) => {
@@ -760,6 +743,21 @@ const convertImageToWebp = async (file) => {
     };
 };
 
+const storeProjectFile = async ({ projectId, file, directory = "" }) => {
+	const objectKey = ["projects", String(projectId), directory, file.filename].filter(Boolean).join("/");
+	await uploadFile({
+		key: objectKey,
+		filePath: file.path,
+		contentType: file.mimetype,
+	});
+
+	return {
+		...file,
+		objectKey,
+		url: getPublicUrl(objectKey),
+	};
+};
+
 const rgbToInt = (r, g, b) => ((r & 255) << 16) + ((g & 255) << 8) + (b & 255);
 
 const extractDominantColorInt = async (filePath) => {
@@ -786,12 +784,12 @@ const getUserRole = async (userId) => {
 };
 
 const getProjectBySlug = async (slug) => {
-    const [rows] = await db.query("SELECT id, user_id, slug, status FROM projects WHERE slug = ? LIMIT 1", [slug]);
+    const [rows] = await db.query("SELECT id, user_id, slug, status, icon_url FROM projects WHERE slug = ? LIMIT 1", [slug]);
     return rows[0] || null;
 };
 
 const getProjectById = async (projectId) => {
-    const [rows] = await db.query("SELECT id, user_id, slug, status FROM projects WHERE id = ? LIMIT 1", [projectId]);
+    const [rows] = await db.query("SELECT id, user_id, slug, status, icon_url FROM projects WHERE id = ? LIMIT 1", [projectId]);
     return rows[0] || null;
 };
 
@@ -1402,7 +1400,7 @@ router.get("/dependency-options", async (req, res) => {
 				id: project.id,
 				slug: project.slug,
 				title: project.title,
-				icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+				icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 				project_type: project.project_type,
 			})),
 		});
@@ -1567,7 +1565,7 @@ router.get("/", async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                 color: project.color,
                 downloads: project.downloads,
                 show_players_last_14d: Number(project.show_players_last_14d) === 1,
@@ -1586,7 +1584,7 @@ router.get("/", async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     isVerified: 0,
                     type: "organization",
@@ -1736,7 +1734,7 @@ router.get('/user/projects', auth, async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                 downloads: project.downloads,
                 created_at: project.created_at,
                 updated_at: project.updated_at,
@@ -1747,7 +1745,7 @@ router.get('/user/projects', auth, async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     type: "organization",
                     profile_url: profileUrl,
@@ -1842,24 +1840,18 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
         }
 
         const projectId = generateId();
-        let iconUrl = "https://media.modifold.com/static/no-project-icon.svg";
+        let iconUrl = getPublicUrl("static/no-project-icon.svg");
         let projectColor = null;
 
         if(req.file) {
             const iconFile = await convertImageToWebp(req.file);
-            const tempFilePath = path.join(process.env.MEDIA_ROOT, "temp", iconFile.filename);
-            const projectDir = path.join(process.env.MEDIA_ROOT, "projects", projectId);
-            const finalFilePath = path.join(projectDir, iconFile.filename);
-            iconUrl = `https://media.modifold.com/projects/${projectId}/${iconFile.filename}`;
-
             try {
-                await fs.mkdir(projectDir, { recursive: true });
-                await fs.rename(tempFilePath, finalFilePath);
-                projectColor = await extractDominantColorInt(finalFilePath);
-                console.log(`Moved icon from ${tempFilePath} to ${finalFilePath}`);
+                projectColor = await extractDominantColorInt(iconFile.path);
+                const storedIcon = await storeProjectFile({ projectId, file: iconFile });
+                iconUrl = storedIcon.url;
             } catch (fileError) {
-                console.error(`Failed to move icon to ${finalFilePath}:`, fileError);
-                return res.status(500).json({ message: "Error moving icon file", error: fileError.message });
+                console.error("Failed to store project icon:", fileError);
+                return res.status(500).json({ message: "Error storing icon file", error: fileError.message });
             }
         }
 
@@ -2113,10 +2105,14 @@ router.put('/:slug/icon', auth, upload.single('icon'), async (req, res) => {
         }
 
         const iconFile = await convertImageToWebp(req.file);
-        const iconUrl = `https://media.modifold.com/projects/${project.id}/${iconFile.filename}`;
         const projectColor = await extractDominantColorInt(iconFile.path);
+        const storedIcon = await storeProjectFile({ projectId: project.id, file: iconFile });
+        const iconUrl = storedIcon.url;
         
         await db.query('UPDATE projects SET icon_url = ?, color = ? WHERE id = ?', [iconUrl, projectColor, project.id]);
+		await deletePublicUrlWithinPrefix(project.icon_url, `projects/${project.id}`).catch((error) => {
+			console.warn(`Failed to delete replaced project icon: ${error.message}`);
+		});
         res.json({ success: true, icon_url: iconUrl, color: projectColor });
     } catch (error) {
         console.error('Error uploading icon:', error);
@@ -2158,7 +2154,12 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
         }
 
         const versionId = generateId();
-        const fileUrl = `https://media.modifold.com/projects/${project.id}/${req.file.filename}`;
+        const storedVersionFile = await storeProjectFile({
+			projectId: project.id,
+			file: req.file,
+			directory: `versions/${versionId}`,
+		});
+        const fileUrl = storedVersionFile.url;
         const moderationStatus = shouldHoldVersionForProjectModeration(project) ? "draft" : "pending";
         const connection = await db.getConnection();
 
@@ -2234,7 +2235,8 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
         }
 
         const galleryFile = await convertImageToWebp(req.file);
-        const url = `https://media.modifold.com/projects/${project.id}/${galleryFile.filename}`;
+        const storedGalleryFile = await storeProjectFile({ projectId: project.id, file: galleryFile });
+        const url = storedGalleryFile.url;
         const rawUrl = url;
 		const connection = await db.getConnection();
 
@@ -2493,7 +2495,7 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
             return;
         }
 
-        const [gallery] = await db.query("SELECT id FROM project_gallery WHERE id = ? AND project_id = ? AND media_type = 'image'", [req.params.galleryId, project.id]);
+        const [gallery] = await db.query("SELECT id, url, raw_url FROM project_gallery WHERE id = ? AND project_id = ? AND media_type = 'image'", [req.params.galleryId, project.id]);
         if(!gallery.length) {
             return res.status(404).json({ message: 'Gallery image not found' });
         }
@@ -2517,7 +2519,8 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
 
         if(req.file) {
             const galleryFile = await convertImageToWebp(req.file);
-            updates.url = `https://media.modifold.com/projects/${project.id}/${galleryFile.filename}`;
+            const storedGalleryFile = await storeProjectFile({ projectId: project.id, file: galleryFile });
+            updates.url = storedGalleryFile.url;
             updates.raw_url = updates.url;
         }
 
@@ -2526,6 +2529,15 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
         }
 
         await db.query('UPDATE project_gallery SET ? WHERE id = ?', [updates, req.params.galleryId]);
+
+		if(updates.url) {
+			const replacedUrls = [...new Set([gallery[0].url, gallery[0].raw_url].filter(Boolean))];
+			for(const replacedUrl of replacedUrls) {
+				await deletePublicUrlWithinPrefix(replacedUrl, `projects/${project.id}`).catch((error) => {
+					console.warn(`Failed to delete replaced gallery image: ${error.message}`);
+				});
+			}
+		}
 
         await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
@@ -2563,16 +2575,12 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
             return res.status(404).json({ message: "Gallery item not found" });
         }
 
-        const fileUrls = gallery[0].media_type === "image" ? [gallery[0].url, gallery[0].raw_url].filter(Boolean) : [];
+        const fileUrls = gallery[0].media_type === "image" ? [...new Set([gallery[0].url, gallery[0].raw_url].filter(Boolean))] : [];
         for(const fileUrl of fileUrls) {
-            const filePath = path.join(process.env.MEDIA_ROOT, fileUrl.replace(/^https:\/\/media\.modifold\.com\//, ""));
             try {
-                await fs.unlink(filePath);
-                console.log(`Deleted gallery image: ${filePath}`);
+                await deletePublicUrl(fileUrl);
             } catch (fileError) {
-                if(fileError.code !== "ENOENT") {
-                    console.warn(`Failed to delete gallery image ${filePath}: ${fileError.message}`);
-                }
+                console.warn(`Failed to delete gallery image ${fileUrl}: ${fileError.message}`);
             }
         }
 
@@ -2758,7 +2766,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             discord_url: projectData.discord_url,
             hytale_wiki_slug: projectData.hytale_wiki_slug || null,
             hytale_wiki_url: projectData.hytale_wiki_slug ? `https://wiki.hytalemodding.dev/mod/${projectData.hytale_wiki_slug}` : null,
-            icon_url: projectData.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+            icon_url: projectData.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
             downloads: projectData.downloads,
             show_players_last_14d: shouldShowPlayersLast14Days,
             players_last_14d: playersLast14DaysBySlug.get(projectData.slug) || 0,
@@ -2776,7 +2784,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 id: organizationOwner.id,
                 username: organizationOwner.name,
                 slug: organizationOwner.slug,
-                avatar: organizationOwner.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                avatar: organizationOwner.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                 summary: organizationOwner.summary || "",
                 isVerified: 0,
                 type: "organization",
@@ -2810,7 +2818,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 slug: organizationOwner.slug,
                 name: organizationOwner.name,
                 summary: organizationOwner.summary || "",
-                icon_url: organizationOwner.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: organizationOwner.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
             } : null,
 			disclosures: disclosureState.disclosures,
 			archive: disclosureState.archive,
@@ -2840,7 +2848,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 slug: jam.slug,
                 title: jam.title,
                 summary: jam.summary,
-                avatar_url: jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg",
+                avatar_url: jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
                 cover_url: jam.cover_url || null,
                 starts_at: jam.starts_at ? new Date(jam.starts_at).toISOString() : null,
                 submissions_start_at: (jam.submissions_start_at || jam.starts_at) ? new Date(jam.submissions_start_at || jam.starts_at).toISOString() : null,
@@ -2899,21 +2907,15 @@ router.delete("/:slug", auth, async (req, res) => {
         }
 
         const projectId = project.id;
-        const cdnBasePath = process.env.MEDIA_ROOT;
-        const projectDir = path.join(cdnBasePath, "projects", projectId);
-
         try {
-            await fs.rm(projectDir, { recursive: true, force: true });
-            console.log(`Deleted project directory: ${projectDir}`);
+            await deletePrefix(`projects/${projectId}`);
         } catch (fileError) {
-            if(fileError.code !== "ENOENT") {
-                console.warn(`Failed to delete project directory ${projectDir}: ${fileError.message}`);
-                return res.status(500).json({
-                    message: "Project deleted, but some files could not be removed",
-                    error: fileError.message,
-                    success: true,
-                });
-            }
+            console.warn(`Failed to delete project files for ${projectId}: ${fileError.message}`);
+            return res.status(500).json({
+                message: "Project deleted, but some files could not be removed",
+                error: fileError.message,
+                success: true,
+            });
         }
 
         await db.query("DELETE FROM project_versions WHERE project_id = ?", [projectId]);
@@ -2991,12 +2993,13 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
             }
         }
 
-        let iconUrl = projectMeta.icon_url || "https://media.modifold.com/static/no-project-icon.svg";
+        let iconUrl = projectMeta.icon_url || getPublicUrl("static/no-project-icon.svg");
         let projectColor = projectMeta.color;
         if(req.file) {
             const iconFile = await convertImageToWebp(req.file);
-            iconUrl = `https://media.modifold.com/projects/${id}/${iconFile.filename}`;
             projectColor = await extractDominantColorInt(iconFile.path);
+            const storedIcon = await storeProjectFile({ projectId: id, file: iconFile });
+            iconUrl = storedIcon.url;
         }
 
         let normalizedIssuesEnabled = null;
@@ -3035,6 +3038,12 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
                 id,
             ]
         );
+
+		if(req.file && projectMeta.icon_url !== iconUrl) {
+			await deletePublicUrlWithinPrefix(projectMeta.icon_url, `projects/${id}`).catch((error) => {
+				console.warn(`Failed to delete replaced project icon: ${error.message}`);
+			});
+		}
 
         const nextSlug = slug ? validateSlug(slug, { allowLegacy: slug === projectMeta.slug }).normalized : projectMeta.slug;
 
@@ -3251,18 +3260,23 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             return;
         }
 
-        const [version] = await db.query('SELECT id, moderation_status FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
+        const [version] = await db.query('SELECT id, moderation_status, file_url FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: 'Version not found' });
         }
-
-        const fileUrl = file ? `https://media.modifold.com/projects/${project.id}/${file.filename}` : null;
-        const fileSize = file ? file.size : null;
 
         const normalizedGameVersions = normalizeVersionArray(game_versions);
         if(!(await validateGameVersions(normalizedGameVersions))) {
             return res.status(400).json({ message: "Invalid game versions" });
         }
+
+        const storedVersionFile = file ? await storeProjectFile({
+			projectId: project.id,
+			file,
+			directory: `versions/${versionId}`,
+		}) : null;
+        const fileUrl = storedVersionFile?.url || null;
+        const fileSize = file ? file.size : null;
 
         const nextModerationStatus = fileUrl
             ? shouldHoldVersionForProjectModeration(project) && version[0].moderation_status === "draft" ? "draft" : "pending"
@@ -3336,6 +3350,12 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             connection.release();
         }
 
+		if(fileUrl && version[0].file_url !== fileUrl) {
+			await deletePublicUrlWithinPrefix(version[0].file_url, `projects/${project.id}`).catch((error) => {
+				console.warn(`Failed to delete replaced version file: ${error.message}`);
+			});
+		}
+
         if(fileUrl && nextModerationStatus === "pending") {
             queueArgusScan({
                 versionId,
@@ -3383,14 +3403,10 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
 
         const fileUrl = version[0].file_url;
         if(fileUrl) {
-            const filePath = path.join(process.env.MEDIA_ROOT, fileUrl.replace(/^https:\/\/media\.modifold\.com\//, ""));
             try {
-                await fs.unlink(filePath);
-                console.log(`Deleted file: ${filePath}`);
+                await deletePublicUrl(fileUrl);
             } catch (fileError) {
-                if(fileError.code !== "ENOENT") {
-                    console.warn(`Failed to delete file ${filePath}: ${fileError.message}`);
-                }
+                console.warn(`Failed to delete version file ${fileUrl}: ${fileError.message}`);
             }
         }
 
@@ -3497,14 +3513,14 @@ const getProjectOrganizationSettings = async ({ projectId, userId }) => {
 		slug: row.slug,
 		name: row.name,
 		summary: row.summary || "",
-		icon_url: row.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+		icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 	}));
 	const currentOrganization = organizationRows[0] ? {
 		id: organizationRows[0].id,
 		slug: organizationRows[0].slug,
 		name: organizationRows[0].name,
 		summary: organizationRows[0].summary || "",
-		icon_url: organizationRows[0].icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+		icon_url: organizationRows[0].icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 	} : null;
 
 	if(currentOrganization && !organizationOptions.some((item) => item.slug === currentOrganization.slug)) {
@@ -6053,7 +6069,7 @@ router.get("/:slug/organization-options", auth, async (req, res) => {
             slug: row.slug,
             name: row.name,
             summary: row.summary || "",
-            icon_url: row.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+            icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
         }));
 
         return res.json({ organizations });
@@ -6218,7 +6234,7 @@ router.put("/:slug/organization", auth, async (req, res) => {
                 slug: targetOrganization.slug,
                 name: targetOrganization.name,
                 summary: targetOrganization.summary || "",
-                icon_url: targetOrganization.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: targetOrganization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
             },
         });
     } catch (error) {

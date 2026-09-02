@@ -53,7 +53,7 @@ export default function ModJamsDashboardPage({ authToken, initialJams = [] }) {
 								<div key={jam.id} className="new-project-card mod-jams-dashboard-card">
 									<Link className="new-project-card__overlay" href={`/jams/${jam.slug}`} aria-label={jam.title} />
 
-									<img className="new-project-icon" src={jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg"} alt={jam.title} />
+									<img className="new-project-icon" src={jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={jam.title} />
 
 									<div className="new-project-info">
 										<div className="new-project-header" style={{ display: "flex", alignItems: "center", gap: "8px" }}>

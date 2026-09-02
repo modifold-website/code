@@ -323,11 +323,11 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
                     ) : notification.actors?.slice(0, 3).map((actor) => (
                         actor.slug && !isSingleFollowNotification ? (
                             <Link key={actor.id} href={`/user/${actor.slug}`} className="notification-avatars-stack__item">
-                                <img src={actor.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />
+                                <img src={actor.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />
                             </Link>
                         ) : (
                             <span key={actor.id} className="notification-avatars-stack__item">
-                                <img src={actor.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />
+                                <img src={actor.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />
                             </span>
                         )
                     ))}

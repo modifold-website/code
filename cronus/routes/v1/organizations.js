@@ -4,10 +4,9 @@ const jwt = require("jsonwebtoken");
 const slugify = require("slugify");
 const multer = require("multer");
 const sharp = require("sharp");
-const fs = require("fs").promises;
-const path = require("path");
 const auth = require("../../middleware/auth");
 const { db } = require("../../config/db");
+const { deletePrefix, deletePublicUrlWithinPrefix, getPublicUrl, uploadBuffer } = require("../../utils/fileHosting");
 const { sanitizePlainText, sanitizeExternalUrl } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require("../../utils/organizations");
@@ -46,7 +45,7 @@ const buildOrganizationSummary = (org) => ({
     slug: org.slug,
     name: org.name,
     summary: org.summary || "",
-    icon_url: org.icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+    icon_url: org.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
     discord_url: org.discord_url || null,
     website_url: org.website_url || null,
     twitter_url: org.twitter_url || null,
@@ -225,7 +224,7 @@ router.post("/", auth, async (req, res) => {
                 slugValidation.normalized,
                 rawName,
                 rawSummary,
-                iconUrl || "https://media.modifold.com/static/no-project-icon.svg",
+                iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg",
                 req.user.id,
                 now,
                 now,
@@ -262,7 +261,7 @@ router.post("/", auth, async (req, res) => {
                 slug: slugValidation.normalized,
                 name: rawName,
                 summary: rawSummary,
-                icon_url: iconUrl || "https://media.modifold.com/static/no-project-icon.svg",
+                icon_url: iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg",
             },
         });
     } catch (error) {
@@ -609,7 +608,7 @@ router.put("/:slug/settings", auth, async (req, res) => {
         }
 
         if(req.body?.icon_url !== undefined) {
-            updates.icon_url = sanitizePlainText(req.body.icon_url || "") || "https://media.modifold.com/static/no-project-icon.svg";
+            updates.icon_url = sanitizePlainText(req.body.icon_url || "") || "https://cdn.modifold.com/static/no-project-icon.svg";
         }
 
         if(req.body?.slug !== undefined) {
@@ -757,20 +756,22 @@ router.put("/:slug/icon", auth, upload.single("icon"), async (req, res) => {
         }
 
         const mime = String(req.file.mimetype || "").toLowerCase();
-        const dirPath = path.join(process.env.MEDIA_ROOT, "organizations", organization.id);
-        await fs.mkdir(dirPath, { recursive: true });
-
         let fileName;
+        let outputBuffer;
+        let outputMime;
         if(mime === "image/gif") {
             fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.gif`;
-            await fs.writeFile(path.join(dirPath, fileName), req.file.buffer);
+            outputBuffer = req.file.buffer;
+            outputMime = "image/gif";
         } else {
             fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`;
-            const outputBuffer = await sharp(req.file.buffer).rotate().webp({ quality: 82, effort: 4 }).toBuffer();
-            await fs.writeFile(path.join(dirPath, fileName), outputBuffer);
+            outputBuffer = await sharp(req.file.buffer).rotate().webp({ quality: 82, effort: 4 }).toBuffer();
+            outputMime = "image/webp";
         }
 
-        const iconUrl = `https://media.modifold.com/organizations/${organization.id}/${fileName}`;
+        const objectKey = `organizations/${organization.id}/${fileName}`;
+        await uploadBuffer({ key: objectKey, body: outputBuffer, contentType: outputMime });
+        const iconUrl = getPublicUrl(objectKey);
         await db.query(
             "UPDATE organizations SET icon_url = ?, updated_at = ? WHERE id = ?",
             [iconUrl, Math.floor(Date.now() / 1000), organization.id]
@@ -784,6 +785,10 @@ router.put("/:slug/icon", auth, upload.single("icon"), async (req, res) => {
             targetId: organization.id,
             metadata: { icon_url: iconUrl },
         });
+
+		await deletePublicUrlWithinPrefix(organization.icon_url, `organizations/${organization.id}`).catch((error) => {
+			console.warn(`Failed to delete replaced organization icon: ${error.message}`);
+		});
 
         return res.json({ success: true, icon_url: iconUrl });
     } catch (error) {
@@ -1552,6 +1557,7 @@ router.delete("/:slug", auth, async (req, res) => {
             targetId: organization.id,
         });
 
+        await deletePrefix(`organizations/${organization.id}`);
         await db.query("DELETE FROM organizations WHERE id = ?", [organization.id]);
 
         return res.json({ success: true });

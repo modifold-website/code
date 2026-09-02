@@ -114,7 +114,7 @@ export default function DashboardClient({ initialProjects, initialTotalPages, in
                                         <Link className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
                                         <div className={`dashboard-project-card__content ${hasTags ? "dashboard-project-card__content--with-tags" : ""}`}>
-                                            <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} />
+                                            <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
 
                                             <div className="new-project-info">
                                                 <div className="new-project-header">

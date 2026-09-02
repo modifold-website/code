@@ -246,7 +246,7 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                                 <div className="new-project-card moderation-project-card" id={project.slug}>
                                     <div style={{ display: "flex", gap: "12px", borderBottom: hasTags ? "1px solid var(--theme-color-border)" : "none", paddingBottom: hasTags ? "12px" : "16px", paddingTop: "16px", paddingRight: "16px", paddingLeft: "16px" }}>
                                         <Link href={getProjectPath(project)} style={{ height: "96px" }}>
-                                            <img className="new-project-icon" alt={project.title} src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} />
+                                            <img className="new-project-icon" alt={project.title} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
                                         </Link>
 
                                         <div className="new-project-info">

@@ -17,7 +17,7 @@ Under AGPL-3.0 all changes and derivative works also have to stay open, which he
 # Contribution Ideas
 
 - UI/UX improvements: make the site even more responsive, prettier or accessible
-- Performance: optimize requests, preview loading or media handling[](https://media.modifold.com)
+- Performance: optimize requests, preview loading or media handling[](https://cdn.modifold.com)
 - Bug fixes: search issues, pagination, popups, file uploads etc.
 - New features: tags/categories system, markdown comments, update notifications
 - Localization: add support for other languages

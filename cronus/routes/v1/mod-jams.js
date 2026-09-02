@@ -10,6 +10,7 @@ const auth = require("../../middleware/auth");
 const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require("../../utils/sanitize");
 const { getSlugValidationMessage, validateSlug } = require("../../utils/slug");
 const { bumpProjectCacheVersionById } = require("../../utils/projectCache");
+const { deletePublicUrlWithinPrefix, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 
 const router = express.Router();
 
@@ -53,7 +54,7 @@ const buildSafeUploadFilename = (originalname) => {
 const storage = multer.diskStorage({
 	destination: async (req, file, cb) => {
 		try {
-			const destination = path.join(process.env.MEDIA_ROOT, "temp");
+			const destination = getUploadTempRoot();
 			await fs.mkdir(destination, { recursive: true });
 			cb(null, destination);
 		} catch (error) {
@@ -132,15 +133,13 @@ const moveJamImage = async ({ file, jamId, kind }) => {
 	}
 
 	const image = await convertImageToWebp(file);
-	const jamDir = path.join(process.env.MEDIA_ROOT, "mod-jams", jamId);
-	const finalFilePath = path.join(jamDir, image.filename);
-
-	await fs.mkdir(jamDir, { recursive: true });
-	await fs.rename(image.path, finalFilePath);
+	const color = kind === "avatar" ? await extractDominantColorInt(image.path) : null;
+	const objectKey = `mod-jams/${jamId}/${kind}/${image.filename}`;
+	await uploadFile({ key: objectKey, filePath: image.path, contentType: image.mimetype });
 
 	return {
-		url: `https://media.modifold.com/mod-jams/${jamId}/${image.filename}`,
-		filePath: finalFilePath,
+		url: getPublicUrl(objectKey),
+		color,
 	};
 };
 
@@ -313,7 +312,7 @@ const formatJam = (jam) => {
 		summary: jam.summary,
 		description: jam.description || "",
 		rules: jam.rules || "",
-		avatar_url: jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg",
+		avatar_url: jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 		cover_url: jam.cover_url || null,
 		color: jam.color === null || jam.color === undefined ? null : Number(jam.color),
 		external_links: links,
@@ -530,7 +529,7 @@ const getSubmissions = async ({ jamId, userId, resultsOnly = false }) => {
 			slug: row.project_slug,
 			title: row.project_title,
 			summary: row.project_summary,
-			icon_url: row.project_icon_url || "https://media.modifold.com/static/no-project-icon.svg",
+			icon_url: row.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 			downloads: Number(row.project_downloads) || 0,
 			followers: Number(row.project_followers) || Number(row.votes_count) || 0,
 			updated_at: formatDateForResponse(row.project_updated_at),
@@ -629,7 +628,7 @@ const buildJamPayload = async ({ body, files, existingJam = null, jamId }) => {
 	if(files?.avatar?.[0]) {
 		const avatarImage = await moveJamImage({ file: files.avatar[0], jamId, kind: "avatar" });
 		updates.avatar_url = avatarImage.url;
-		updates.color = await extractDominantColorInt(avatarImage.filePath);
+		updates.color = avatarImage.color;
 	}
 
 	if(files?.cover?.[0]) {
@@ -850,7 +849,7 @@ router.post("/", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { name: "
 			summary: payload.summary,
 			description: payload.description || "",
 			rules: payload.rules || "",
-			avatar_url: payload.avatar_url || "https://media.modifold.com/static/no-project-icon.svg",
+			avatar_url: payload.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
 			cover_url: payload.cover_url || null,
 			color: payload.color === undefined ? null : payload.color,
 			external_links: payload.external_links || "{}",
@@ -1098,6 +1097,16 @@ router.put("/:slug", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { nam
 		}
 
 		await db.query("UPDATE mod_jams SET ? WHERE id = ?", [payload, jam.id]);
+		if(payload.avatar_url && payload.avatar_url !== jam.avatar_url) {
+			await deletePublicUrlWithinPrefix(jam.avatar_url, `mod-jams/${jam.id}`).catch((error) => {
+				console.warn(`Failed to delete replaced mod jam avatar: ${error.message}`);
+			});
+		}
+		if(payload.cover_url && payload.cover_url !== jam.cover_url) {
+			await deletePublicUrlWithinPrefix(jam.cover_url, `mod-jams/${jam.id}`).catch((error) => {
+				console.warn(`Failed to delete replaced mod jam cover: ${error.message}`);
+			});
+		}
 		await db.query(
 			"INSERT INTO mod_jam_moderation_logs (jam_id, action, moderator_id, reason) VALUES (?, 'edited', NULL, NULL)",
 			[jam.id]

@@ -4,7 +4,7 @@ description: "We are launching mod jams on Modifold: community events where crea
 author: ["bogdan"]
 date: 2026-05-15
 slug: /blog/mod-jams-launch
-image: https://media.modifold.com/news/modjams_update.png
+image: https://cdn.modifold.com/news/modjams_update.png
 featured: false
 locale: en
 ---
@@ -25,7 +25,7 @@ The host comes up with the idea, sets up the page, defines the rules and deadlin
 
 It can be a friendly weekend challenge, a month-long themed contest, or a bigger event with multiple nominations. The point is simple: a reason to make something new and show it to people who actually care.
 
-![](https://media.modifold.com/news/435shots_so.png)
+![](https://cdn.modifold.com/news/435shots_so.png)
 
 ## What You Can Do Now
 
@@ -45,7 +45,7 @@ If a jam has nominations, voting gets more interesting: you can recognize differ
 
 <div class="video-wrapper mb-8">
 	<video autoplay="" loop="" muted="" playsinline="">
-		<source src="https://media.modifold.com/news/modjam_preview.mp4" type="video/mp4">
+		<source src="https://cdn.modifold.com/news/modjam_preview.mp4" type="video/mp4">
 	</video>
 </div>
 
@@ -67,7 +67,7 @@ This is not about bureaucracy. We want participants to immediately understand th
 
 The host can calmly put the page together, check the visuals and rules, and then send the jam for review.
 
-![](https://media.modifold.com/news/672shots_so.png)
+![](https://cdn.modifold.com/news/672shots_so.png)
 
 ## Beta Testing
 

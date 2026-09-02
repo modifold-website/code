@@ -58,7 +58,7 @@ Status: `200`
       "project_id": "abc123",
       "project_slug": "mermaids",
       "project_title": "Mermaids",
-      "project_icon_url": "https://media.modifold.com/projects/abc123/icon.webp",
+      "project_icon_url": "https://cdn.modifold.com/projects/abc123/icon.webp",
       "project_type": "mod",
       "version_id": "oCK3bg",
       "version_number": "1.0.0",

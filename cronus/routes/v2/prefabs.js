@@ -7,6 +7,7 @@ const path = require("path");
 const axios = require("axios");
 
 const { db } = require("../../config/db");
+const { getLocalReadableObjectPath, getPublicBase, getPublicObjectKeyFromUrl } = require("../../utils/fileHosting");
 
 const router = express.Router();
 const execFileAsync = promisify(execFile);
@@ -16,7 +17,7 @@ const ALLOWED_ASSET_EXTENSIONS = new Set([".blockymodel", ".json", ".jpg", ".jpe
 const PREFAB_VALIDATION_CACHE_LIMIT = 100;
 const prefabValidationCache = new Map();
 
-const getArchivePath = (projectId, fileUrl) => {
+const getArchivePath = async (projectId, fileUrl) => {
 	let fileName = "";
 
 	try {
@@ -29,7 +30,8 @@ const getArchivePath = (projectId, fileUrl) => {
 		return null;
 	}
 
-	return path.join(process.env.MEDIA_ROOT || "", "projects", String(projectId), fileName);
+	const objectKey = getPublicObjectKeyFromUrl(fileUrl) || `projects/${projectId}/${fileName}`;
+	return getLocalReadableObjectPath(objectKey);
 };
 
 const getSinglePrefabEntry = async (archivePath) => {
@@ -139,12 +141,12 @@ const getLatestPrefab = async (slug) => {
 	}
 
 	const prefab = rows[0];
-	const archivePath = getArchivePath(prefab.project_id, prefab.file_url);
-	if(!archivePath) {
-		return null;
-	}
-
 	try {
+		const archivePath = await getArchivePath(prefab.project_id, prefab.file_url);
+		if(!archivePath) {
+			return null;
+		}
+
 		const archiveStat = await fs.stat(archivePath);
 		const entry = await getSinglePrefabEntry(archivePath);
 		if(!entry || !await validatePrefabEntry(archivePath, archiveStat, entry)) {
@@ -182,7 +184,7 @@ router.get("/assets/*", async (req, res) => {
 	}
 
 	try {
-		const remote = await axios.get(`https://media.modifold.com/hytale-assets/${encodeURI(assetPath)}`, {
+		const remote = await axios.get(`${getPublicBase()}/hytale-assets/${encodeURI(assetPath)}`, {
 			responseType: "stream",
 			timeout: 30_000,
 			maxRedirects: 2,

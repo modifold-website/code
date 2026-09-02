@@ -4,7 +4,7 @@ description: "Мы убрали старую верификацию и запу�
 author: ["bogdan"]
 date: 2026-05-08
 slug: /blog/creator-badge-launch
-image: https://media.modifold.com/news/creator_badge.png?v=1
+image: https://cdn.modifold.com/news/creator_badge.png?v=1
 featured: false
 locale: ru
 ---
@@ -42,7 +42,7 @@ locale: ru
 
 Когда оба условия выполнены, вы можете активировать значок кнопкой в настройках.
 
-![](https://media.modifold.com/news/creator_badge_2.png)
+![](https://cdn.modifold.com/news/creator_badge_2.png)
 
 ## Почему так
 

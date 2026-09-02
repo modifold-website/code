@@ -21,10 +21,10 @@ export default function OrganizationOverviewSettingsPage({ authToken, organizati
     const [savedName, setSavedName] = useState(organization?.name || "");
     const [savedSlug, setSavedSlug] = useState(organization?.slug || "");
     const [savedSummary, setSavedSummary] = useState(organization?.summary || "");
-    const [iconUrl, setIconUrl] = useState(organization?.icon_url || "https://media.modifold.com/static/no-project-icon.svg");
-    const [savedIconUrl, setSavedIconUrl] = useState(organization?.icon_url || "https://media.modifold.com/static/no-project-icon.svg");
+    const [iconUrl, setIconUrl] = useState(organization?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg");
+    const [savedIconUrl, setSavedIconUrl] = useState(organization?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg");
     const [iconFile, setIconFile] = useState(null);
-    const [previewIcon, setPreviewIcon] = useState(organization?.icon_url || "https://media.modifold.com/static/no-project-icon.svg");
+    const [previewIcon, setPreviewIcon] = useState(organization?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg");
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletingOrganization, setIsDeletingOrganization] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -33,7 +33,7 @@ export default function OrganizationOverviewSettingsPage({ authToken, organizati
     const canEditDetails = Boolean(my_permissions?.is_owner || my_permissions?.organization_permissions?.includes("organization_edit_details"));
     const canDeleteOrganization = Boolean(my_permissions?.is_owner || my_permissions?.organization_permissions?.includes("organization_delete"));
     const isDirty = name !== savedName || slug !== savedSlug || summary !== savedSummary || Boolean(iconFile);
-    const currentOrganization = { ...organization, slug: savedSlug || organization?.slug, name, icon_url: iconUrl || "https://media.modifold.com/static/no-project-icon.svg" };
+    const currentOrganization = { ...organization, slug: savedSlug || organization?.slug, name, icon_url: iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg" };
 
     const handleSave = async () => {
         if(isSaving) {
@@ -234,7 +234,7 @@ export default function OrganizationOverviewSettingsPage({ authToken, organizati
                             setSlug(savedSlug);
                             setSummary(savedSummary);
                             setIconFile(null);
-                            setPreviewIcon(savedIconUrl || iconUrl || "https://media.modifold.com/static/no-project-icon.svg");
+                            setPreviewIcon(savedIconUrl || iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg");
                             if(iconInputRef.current) {
                                 iconInputRef.current.value = "";
                             }

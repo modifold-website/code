@@ -16,7 +16,7 @@ export default function ModJamSettingsSidebar({ jam }) {
 		<div className="sidebar">
 			<div className="sidebar__main">
 				<Link href={basePath} scroll={false} className="sidebar-item sidebar-item--profile" data-ripple>
-					<img src={jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" className="icon" width="28" height="28" style={{ borderRadius: "8px" }} />
+					<img src={jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" className="icon" width="28" height="28" style={{ borderRadius: "8px" }} />
 					
 					<span className="sidebar-item__label">{jam.title}</span>
 				</Link>

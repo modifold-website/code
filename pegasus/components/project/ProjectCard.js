@@ -79,7 +79,7 @@ export default function ProjectCard({ project, maxTags = 5, actions = null, rela
             <Link className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
             <div style={{ display: "flex", gap: "12px", borderBottom: hasTags ? "1px solid var(--theme-color-border)" : "none", paddingBottom: hasTags ? "12px" : "16px", paddingTop: "16px", paddingRight: "16px", paddingLeft: "16px" }}>
-                <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://media.modifold.com/static/no-project-icon.svg"} />
+                <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
 
                 <div className="new-project-info">
                     <div className="new-project-header">

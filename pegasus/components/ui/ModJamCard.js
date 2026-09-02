@@ -32,7 +32,7 @@ export default function ModJamCard({ jam }) {
 
 			<div className="media-project-body">
 				<div className="media-project-header" style={{ marginBottom: "24px" }}>
-					<img className="media-project-icon" src={jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+					<img className="media-project-icon" src={jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 					
 					<div className="media-project-header-text">
 						<div className="media-project-title-row">

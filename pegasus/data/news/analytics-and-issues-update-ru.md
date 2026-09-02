@@ -4,7 +4,7 @@ description: "В Modifold появились графики игроков и с
 author: ["bogdan"]
 date: 2026-04-16
 slug: /blog/analytics-and-issues-update
-image: https://media.modifold.com/news/analytics_2.png
+image: https://cdn.modifold.com/news/analytics_2.png
 featured: false
 locale: ru
 ---
@@ -25,7 +25,7 @@ locale: ru
 
 После интеграции, вы получите расширенную аналитику проекта на странице Analytics. Там, будет отображаться текущий онлайн (сколько игроков сейчас играют с вашим модом), график игроков по дням и график активных серверов.
 
-![](https://media.modifold.com/news/606shots_so.png)
+![](https://cdn.modifold.com/news/606shots_so.png)
 
 ### Как добавить в ваш мод
 
@@ -74,7 +74,7 @@ new ModifoldAnalytics("your-project-slug", "1.0.0");
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/export-1776350808960.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/export-1776350808960.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -86,13 +86,13 @@ new ModifoldAnalytics("your-project-slug", "1.0.0");
 
 Комментировать открытые Issues могут любые пользователи. Автор проекта или участники организации могут управлять такими Issues: редактировать их, закреплять и закрывать при необходимости.
 
-![](https://media.modifold.com/news/277shots_so.png)
+![](https://cdn.modifold.com/news/277shots_so.png)
 
 ### Настройки Issues в проекте
 
 В настройках проекта появился отдельный раздел **Issues**.
 
-![](https://media.modifold.com/news/168shots_so.png)
+![](https://cdn.modifold.com/news/168shots_so.png)
 
 Там можно:
 

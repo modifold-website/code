@@ -4,7 +4,7 @@ description: "Сегодняшнее обновление приносит мо�
 author: ["bogdan"]
 date: 2026-04-05
 slug: /blog/april-update
-image: https://media.modifold.com/news/modpack_banner.png?v=2
+image: https://cdn.modifold.com/news/modpack_banner.png?v=2
 featured: false
 locale: ru
 ---
@@ -15,7 +15,7 @@ locale: ru
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/modpacks_browse.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/modpacks_browse.mp4" type="video/mp4">
     </video>
 </div>
 
@@ -45,7 +45,7 @@ locale: ru
 
 <div class="video-wrapper mb-8">
     <video autoplay="" loop="" muted="" playsinline="">
-        <source src="https://media.modifold.com/news/change_language_and_theme.mp4" type="video/mp4">
+        <source src="https://cdn.modifold.com/news/change_language_and_theme.mp4" type="video/mp4">
     </video>
 </div>
 

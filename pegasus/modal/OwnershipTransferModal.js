@@ -8,7 +8,7 @@ import UserName from "@/components/ui/UserName";
 function UserSummary({ user, outcome }) {
 	return (
 		<div className="ownership-transfer-modal__person">
-			<img src={user?.avatar || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+			<img src={user?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 
 			<div>
 				<span className="ownership-transfer-modal__person-name"><UserName user={user || {}} /></span>

@@ -4,7 +4,7 @@ description: "На Modifold появились миры: теперь можно
 author: ["bogdan"]
 date: 2026-06-24
 slug: /blog/worlds-and-latest-updates
-image: https://media.modifold.com/news/june_update_part1_cover.png
+image: https://cdn.modifold.com/news/june_update_part1_cover.png
 featured: false
 locale: ru
 ---
@@ -19,7 +19,7 @@ locale: ru
 
 У миров появился свой раздел и свои категории. Это не просто моды. Это карты с модами. Это отдельный тип контента, поэтому мы вынесли его отдельно, чтобы миры не терялись среди обычных модов.
 
-![](https://media.modifold.com/news/june_preview_5.png)
+![](https://cdn.modifold.com/news/june_preview_5.png)
 
 ## Общая аналитика автора
 
@@ -35,7 +35,7 @@ locale: ru
 
 Раньше нужно было прыгать между проектами и собирать картину вручную. Теперь можно открыть одну страницу и понять, что вообще происходит.
 
-![](https://media.modifold.com/news/june_preview_2.png)
+![](https://cdn.modifold.com/news/june_preview_2.png)
 
 ## Профили стали полезнее
 
@@ -55,7 +55,7 @@ locale: ru
 
 Для миров это особенно хорошо, потому что атмосферу хоррор-карты иногда проще показать одним коротким видео, чем пытаться объяснять словами.
 
-![](https://media.modifold.com/news/june_preview_1.png)
+![](https://cdn.modifold.com/news/june_preview_1.png)
 
 ## Версии проектов стали понятнее
 
@@ -69,7 +69,7 @@ locale: ru
 - что обязательно, а что опционально;
 - какие версии игры поддерживаются.
 
-![](https://media.modifold.com/news/june_preview_4.png)
+![](https://cdn.modifold.com/news/june_preview_4.png)
 
 ## Зависимости скачиваются удобнее
 
@@ -77,7 +77,7 @@ locale: ru
 
 То есть меньше шансов скачать мод, запустить игру, увидеть краш, открыть лог и скинуть его в Discord с просьбой о помощи.
 
-![](https://media.modifold.com/news/june_preview_3.png)
+![](https://cdn.modifold.com/news/june_preview_3.png)
 
 ## Реальные версии игры
 

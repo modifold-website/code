@@ -4,7 +4,7 @@ description: "Organizations on Modifold: shared project ownership, member roles,
 author: ["modifold"]
 date: 2026-02-28
 slug: /blog/organizations-on-modifold
-image: https://media.modifold.com/news/organizations banner.png
+image: https://cdn.modifold.com/news/organizations banner.png
 featured: false
 locale: en
 ---
@@ -41,7 +41,7 @@ When creating an organization, you can set:
 
 After creation, organization settings become your team control center.
 
-![](https://media.modifold.com/news/organization_settings.png)
+![](https://cdn.modifold.com/news/organization_settings.png)
 
 ## Invites and membership
 
@@ -62,7 +62,7 @@ Each member can have role-based permissions for:
 
 This gives teams precise control over who manages settings, maintains projects, and publishes updates.
 
-![](https://media.modifold.com/news/organization_settings_members.png)
+![](https://cdn.modifold.com/news/organization_settings_members.png)
 
 ## Project ownership and visibility
 

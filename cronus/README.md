@@ -5,7 +5,7 @@
 This repository contains the backend of Modifold.  
 It is a Node.js + Express API that powers core platform features: authentication, users, projects, moderation, uploads, API tokens, and other service endpoints used by the frontend.
 
-The backend works with MySQL and uses `MEDIA_ROOT` for uploaded files storage.
+The backend works with MySQL and stores uploaded files in Cloudflare R2 through its S3-compatible API.
 
 # Contributing
 

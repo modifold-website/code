@@ -78,7 +78,7 @@ export default function ModJamMasthead({ jam, permissions = {}, submissionsCount
 
 				<div className="mod-jam-sidebar-card-body">
 					<div className="mod-jam-sidebar-card-header">
-						<img className="mod-jam-sidebar-card-icon" src={jam.avatar_url || "https://media.modifold.com/static/no-project-icon.svg"} alt="" />
+						<img className="mod-jam-sidebar-card-icon" src={jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
 						
 						<div className="mod-jam-sidebar-card-header-text">
 							<div className="mod-jam-sidebar-card-title-row">
