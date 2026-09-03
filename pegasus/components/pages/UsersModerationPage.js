@@ -8,7 +8,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import UserName from "../ui/UserName";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 export default function UsersModerationPage({ authToken, initialUsers, initialTotalPages }) {
     const t = useTranslations("UsersModerationPage");

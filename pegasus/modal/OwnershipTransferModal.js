@@ -22,7 +22,7 @@ function UserSummary({ user, outcome }) {
 
 export default function OwnershipTransferModal({ isOpen, resourceTitle, translationNamespace, owner, newOwner, twoFactorEnabled = false, isLoading = false, errorMessage = "", onClearError, onConfirm, onRequestClose }) {
 	const t = useTranslations(translationNamespace);
-	const appElement = typeof document !== "undefined" ? document.getElementById("app") : undefined;
+	const appElement = typeof document !== "undefined" ? document.body : undefined;
 	const [step, setStep] = useState(1);
 	const [confirmation, setConfirmation] = useState("");
 	const [twoFactorCode, setTwoFactorCode] = useState("");

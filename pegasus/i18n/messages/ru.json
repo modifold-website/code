@@ -1782,6 +1782,11 @@
         "selectedFiles": "Выбранные изображения",
         "removeFile": "Удалить {name}",
         "metadataNavigation": "Выбранные изображения",
+        "uploadProgress": {
+          "title": "Загрузка изображений",
+          "count": "Загружено {uploaded} из {total}",
+          "hint": "Не закрывайте это окно до завершения загрузки."
+        },
         "actions": {
           "continue": "Дальше",
           "back": "Назад",

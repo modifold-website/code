@@ -6,7 +6,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 const COMMENT_MAX_LENGTH = 1000;
 

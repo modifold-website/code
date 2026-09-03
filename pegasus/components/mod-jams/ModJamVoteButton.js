@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 export default function ModJamVoteButton({ authToken, jamSlug, submissionId, nominations = [], userVotes = [], onVoted, disabled = false, selected = false, visibleWhenDisabled = false, buttonType = "minimal" }) {
 	const t = useTranslations("ModJamsPage");

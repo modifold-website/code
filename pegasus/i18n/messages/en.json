@@ -1782,6 +1782,11 @@
         "selectedFiles": "Selected images",
         "removeFile": "Remove {name}",
         "metadataNavigation": "Selected images",
+        "uploadProgress": {
+          "title": "Uploading images",
+          "count": "{uploaded} of {total} uploaded",
+          "hint": "Keep this window open until the upload is complete."
+        },
         "actions": {
           "continue": "Continue",
           "back": "Back",

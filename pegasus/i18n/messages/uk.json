@@ -1692,6 +1692,11 @@
         "selectedFiles": "Вибрані зображення",
         "removeFile": "Видалити {name}",
         "metadataNavigation": "Вибрані зображення",
+        "uploadProgress": {
+          "title": "Завантаження зображень",
+          "count": "Завантажено {uploaded} із {total}",
+          "hint": "Не закривайте це вікно до завершення завантаження."
+        },
         "actions": {
           "continue": "Далі",
           "back": "Назад",

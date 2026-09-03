@@ -10,7 +10,7 @@ import ProjectSidebar from "../project/ProjectSidebar";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { getYouTubeEmbedUrl, isGalleryVideo, normalizeGalleryMedia } from "@/utils/gallery/media";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 export default function GalleryPage({ project, authToken }) {
     const t = useTranslations("ProjectPage");

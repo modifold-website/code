@@ -22,6 +22,12 @@ const EMPTY_VIDEO_FORM = {
 	description: "",
 };
 
+const EMPTY_UPLOAD_PROGRESS = {
+	processed: 0,
+	uploaded: 0,
+	total: 0,
+};
+
 const MAX_GALLERY_IMAGE_SIZE = 100 * 1024 * 1024;
 const GALLERY_IMAGE_EXTENSION_PATTERN = /\.(gif|jpe?g|png|webp)$/i;
 const GALLERY_IMAGE_MIME_TYPES = new Set(["image/gif", "image/jpeg", "image/png", "image/webp"]);
@@ -51,6 +57,7 @@ export default function GallerySettings({ project, authToken }) {
 	const [videoForm, setVideoForm] = useState(EMPTY_VIDEO_FORM);
 
 	const [uploadLoading, setUploadLoading] = useState(false);
+	const [uploadProgress, setUploadProgress] = useState(EMPTY_UPLOAD_PROGRESS);
 	const [uploadStep, setUploadStep] = useState(GALLERY_STEPS.FILES);
 	const [uploadItems, setUploadItems] = useState([]);
 	const [uploadIndex, setUploadIndex] = useState(0);
@@ -152,21 +159,20 @@ export default function GallerySettings({ project, authToken }) {
 		}
 	};
 
-	const moveGalleryItem = (mediaId, nextIndex) => {
+	const swapGalleryItems = (sourceId, targetId) => {
 		if(reorderLoading) {
 			return;
 		}
 
 		const previousMedia = galleryMedia;
-		const currentIndex = previousMedia.findIndex((item) => item.id === mediaId);
-		const boundedNextIndex = Math.max(0, Math.min(nextIndex, previousMedia.length - 1));
-		if(currentIndex < 0 || currentIndex === boundedNextIndex) {
+		const sourceIndex = previousMedia.findIndex((item) => item.id === sourceId);
+		const targetIndex = previousMedia.findIndex((item) => item.id === targetId);
+		if(sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
 			return;
 		}
 
 		const nextMedia = [...previousMedia];
-		const [movedItem] = nextMedia.splice(currentIndex, 1);
-		nextMedia.splice(boundedNextIndex, 0, movedItem);
+		[nextMedia[sourceIndex], nextMedia[targetIndex]] = [nextMedia[targetIndex], nextMedia[sourceIndex]];
 		void saveGalleryOrder(withNormalizedOrdering(nextMedia), previousMedia);
 	};
 
@@ -189,36 +195,22 @@ export default function GallerySettings({ project, authToken }) {
 
 		event.preventDefault();
 		event.dataTransfer.dropEffect = "move";
-		const bounds = event.currentTarget.getBoundingClientRect();
-		const gridBounds = event.currentTarget.parentElement?.getBoundingClientRect();
-		const isMultiColumn = gridBounds && gridBounds.width > bounds.width * 1.5;
-		const position = isMultiColumn
-			? event.clientX < bounds.left + bounds.width / 2 ? "before" : "after"
-			: event.clientY < bounds.top + bounds.height / 2 ? "before" : "after";
-		setDropTarget((currentTarget) => currentTarget?.id === mediaId && currentTarget?.position === position ? currentTarget : { id: mediaId, position });
+		setDropTarget((currentTarget) => currentTarget?.id === mediaId ? currentTarget : { id: mediaId });
 	};
 
 	const handleDrop = (event, targetId) => {
 		event.preventDefault();
-		const sourceId = draggedMediaId || Number(event.dataTransfer.getData("text/plain"));
-		const sourceIndex = galleryMedia.findIndex((item) => item.id === sourceId);
-		const targetIndex = galleryMedia.findIndex((item) => item.id === targetId);
-		const position = dropTarget?.id === targetId ? dropTarget.position : "before";
+		const sourceId = draggedMediaId ?? Number(event.dataTransfer.getData("text/plain"));
 
 		setDraggedMediaId(null);
 		setDropTarget(null);
 
-		if(sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+		if(sourceId === targetId) {
 			setReorderStatus("");
 			return;
 		}
 
-		let insertionIndex = targetIndex + (position === "after" ? 1 : 0);
-		if(sourceIndex < insertionIndex) {
-			insertionIndex -= 1;
-		}
-
-		moveGalleryItem(sourceId, insertionIndex);
+		swapGalleryItems(sourceId, targetId);
 	};
 
 	const handleDragEnd = () => {
@@ -300,6 +292,7 @@ export default function GallerySettings({ project, authToken }) {
 		setMediaType("image");
 		setVideoForm({ ...EMPTY_VIDEO_FORM });
 		setUploadLoading(false);
+		setUploadProgress({ ...EMPTY_UPLOAD_PROGRESS });
 		setUploadStep(GALLERY_STEPS.FILES);
 		setUploadItems([]);
 		setUploadIndex(0);
@@ -442,7 +435,22 @@ export default function GallerySettings({ project, authToken }) {
 			body: formData,
 		});
 
-		return response.ok;
+		if(!response.ok) {
+			return null;
+		}
+
+		const uploadedImage = await response.json();
+		return {
+			id: uploadedImage.id,
+			media_type: "image",
+			url: uploadedImage.url,
+			raw_url: uploadedImage.url,
+			title: item.title || null,
+			description: item.description || null,
+			ordering: uploadedImage.ordering,
+			featured: item.featured ? 1 : 0,
+			created_at: new Date().toISOString(),
+		};
 	};
 
 	const handleSubmit = async (event) => {
@@ -452,20 +460,40 @@ export default function GallerySettings({ project, authToken }) {
 		}
 
 		setUploadLoading(true);
+		setUploadProgress({ processed: 0, uploaded: 0, total: uploadItems.length });
 		const failedItems = [];
+		const uploadedMedia = [];
 
 		for(const item of uploadItems) {
+			let didUpload = false;
 			try {
-				if(!await uploadGalleryItem(item)) {
+				const uploadedImage = await uploadGalleryItem(item);
+				didUpload = Boolean(uploadedImage);
+				if(!didUpload) {
 					failedItems.push(item);
+				} else {
+					uploadedMedia.push(uploadedImage);
 				}
 			} catch {
 				failedItems.push(item);
+			} finally {
+				setUploadProgress((currentProgress) => ({
+					...currentProgress,
+					processed: currentProgress.processed + 1,
+					uploaded: currentProgress.uploaded + (didUpload ? 1 : 0),
+				}));
 			}
 		}
 
 		const failedIds = new Set(failedItems.map((item) => item.id));
 		const uploadedItems = uploadItems.filter((item) => !failedIds.has(item.id));
+		if(uploadedMedia.length > 0) {
+			const hasNewFeaturedImage = uploadedMedia.some((item) => Boolean(item.featured));
+			setGalleryMedia((currentMedia) => normalizeGalleryMedia([
+				...currentMedia.map((item) => hasNewFeaturedImage ? { ...item, featured: 0 } : item),
+				...uploadedMedia,
+			]));
+		}
 
 		if(failedItems.length === 0) {
 			toast.success(t("gallerySettings.successMultiple", { count: uploadItems.length }));
@@ -474,17 +502,11 @@ export default function GallerySettings({ project, authToken }) {
 			releaseUploadItems(uploadedItems);
 			setUploadItems(failedItems);
 			setUploadIndex(0);
+			setUploadProgress({ ...EMPTY_UPLOAD_PROGRESS });
 			setUploadLoading(false);
 			toast.error(t("gallerySettings.errors.uploadMultiple", { count: failedItems.length }));
 		}
 
-		if(uploadedItems.length > 0) {
-			try {
-				await refreshGallery();
-			} catch {
-				toast.error(t("gallerySettings.errors.refresh"));
-			}
-		}
 	};
 
 	const openEditModal = (image) => {
@@ -663,11 +685,11 @@ export default function GallerySettings({ project, authToken }) {
 							{galleryMedia.map((media, index) => {
 								const isVideo = isGalleryVideo(media);
 								const isDragging = draggedMediaId === media.id;
-								const dropPosition = dropTarget?.id === media.id ? dropTarget.position : "";
+								const isDropTarget = dropTarget?.id === media.id;
 								const itemTitle = media.title || t(isVideo ? "gallerySettings.video.untitled" : "gallerySettings.imageUntitled", { position: index + 1 });
 
 								return (
-									<article key={media.id} className={`gallery-settings-card gallery-settings-card--draggable ${isDragging ? "is-dragging" : ""} ${dropPosition ? `is-drop-${dropPosition}` : ""}`} draggable={!reorderLoading} role="listitem" onDragStart={(event) => handleDragStart(event, media.id)} onDragOver={(event) => handleDragOver(event, media.id)} onDrop={(event) => handleDrop(event, media.id)} onDragEnd={handleDragEnd} aria-label={t("gallerySettings.sort.drag", { title: itemTitle })}>
+									<article key={media.id} className={`gallery-settings-card gallery-settings-card--draggable ${isDragging ? "is-dragging" : ""} ${isDropTarget ? "is-drop-target" : ""}`} draggable={!reorderLoading} role="listitem" onDragStart={(event) => handleDragStart(event, media.id)} onDragOver={(event) => handleDragOver(event, media.id)} onDrop={(event) => handleDrop(event, media.id)} onDragEnd={handleDragEnd} aria-label={t("gallerySettings.sort.drag", { title: itemTitle })}>
 										<div className={`gallery-settings-card__preview ${isVideo ? "gallery-settings-card__preview--video" : ""}`}>
 											<img src={isVideo ? getYouTubeThumbnailUrl(media.youtube_video_id) : media.url} alt={itemTitle} className="gallery-settings-card__image" loading={index < 3 ? "eager" : "lazy"} draggable={false} />
 
@@ -720,7 +742,7 @@ export default function GallerySettings({ project, authToken }) {
 				)}
 			</div>
 
-			<GalleryMediaModal isOpen={mediaModalOpen} onRequestClose={closeMediaModal} mediaType={mediaType} onMediaTypeChange={setMediaType} uploadLoading={uploadLoading} uploadStep={uploadStep} uploadSteps={GALLERY_STEPS} uploadItems={uploadItems} uploadIndex={uploadIndex} isUploadDragActive={isUploadDragActive} uploadFileRef={uploadFileRef} openUploadFilePicker={openUploadFilePicker} handleUploadDragOver={handleUploadDragOver} handleUploadDragLeave={handleUploadDragLeave} handleUploadDrop={handleUploadDrop} handleUploadFileChange={handleUploadFileChange} formatFileSize={formatFileSize} removeUploadItem={removeUploadItem} goToUploadFilesStep={() => !uploadLoading && setUploadStep(GALLERY_STEPS.FILES)} goToUploadMetadataStep={() => uploadItems.length > 0 && !uploadLoading && setUploadStep(GALLERY_STEPS.METADATA)} goToUploadItem={(index) => !uploadLoading && setUploadIndex(index)} handleSubmit={handleSubmit} handleUploadInputChange={handleUploadInputChange} toggleUploadFeatured={toggleUploadFeatured} videoLoading={videoLoading} videoForm={videoForm} setVideoForm={setVideoForm} onVideoSubmit={handleVideoSubmit} t={t} tProject={tProject} />
+			<GalleryMediaModal isOpen={mediaModalOpen} onRequestClose={closeMediaModal} mediaType={mediaType} onMediaTypeChange={setMediaType} uploadLoading={uploadLoading} uploadProgress={uploadProgress} uploadStep={uploadStep} uploadSteps={GALLERY_STEPS} uploadItems={uploadItems} uploadIndex={uploadIndex} isUploadDragActive={isUploadDragActive} uploadFileRef={uploadFileRef} openUploadFilePicker={openUploadFilePicker} handleUploadDragOver={handleUploadDragOver} handleUploadDragLeave={handleUploadDragLeave} handleUploadDrop={handleUploadDrop} handleUploadFileChange={handleUploadFileChange} formatFileSize={formatFileSize} removeUploadItem={removeUploadItem} goToUploadFilesStep={() => !uploadLoading && setUploadStep(GALLERY_STEPS.FILES)} goToUploadMetadataStep={() => uploadItems.length > 0 && !uploadLoading && setUploadStep(GALLERY_STEPS.METADATA)} goToUploadItem={(index) => !uploadLoading && setUploadIndex(index)} handleSubmit={handleSubmit} handleUploadInputChange={handleUploadInputChange} toggleUploadFeatured={toggleUploadFeatured} videoLoading={videoLoading} videoForm={videoForm} setVideoForm={setVideoForm} onVideoSubmit={handleVideoSubmit} t={t} tProject={tProject} />
 
 			<GalleryVideoModal isOpen={videoModalOpen} onRequestClose={closeVideoModal} isLoading={videoLoading} videoForm={videoForm} setVideoForm={setVideoForm} onSubmit={handleVideoSubmit} t={t} tProject={tProject} />
 
