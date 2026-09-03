@@ -1539,8 +1539,8 @@
 	gap: 5px;
 }
 .gallery-upload-progress-view__copy strong {
-	font-size: 20px;
-	font-weight: 600;
+	font-size: 18px;
+	font-weight: 500;
 	line-height: 1.25;
 }
 .gallery-upload-progress-view__copy span,
