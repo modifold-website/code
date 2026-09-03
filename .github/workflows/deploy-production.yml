@@ -11,7 +11,33 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      pegasus: ${{ steps.filter.outputs.pegasus }}
+      cronus: ${{ steps.filter.outputs.cronus }}
+      docs: ${{ steps.filter.outputs.docs }}
+      all: ${{ steps.filter.outputs.all }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            pegasus:
+              - 'pegasus/**'
+            cronus:
+              - 'cronus/**'
+            docs:
+              - 'docs/**'
+            all:
+              - 'docker-compose*.yml'
+              - '.env.docker.example'
+              - '.github/workflows/deploy-production.yml'
+
   deploy:
+    needs: changes
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
@@ -24,13 +50,45 @@ jobs:
           script_stop: true
           script: |
             set -euo pipefail
+            PEGASUS_CHANGED="${{ needs.changes.outputs.pegasus }}"
+            CRONUS_CHANGED="${{ needs.changes.outputs.cronus }}"
+            DOCS_CHANGED="${{ needs.changes.outputs.docs }}"
+            ALL_CHANGED="${{ needs.changes.outputs.all }}"
+
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$ALL_CHANGED" = "true" ]; then
+              PEGASUS_CHANGED="true"
+              CRONUS_CHANGED="true"
+              DOCS_CHANGED="true"
+            fi
 
             cd "${{ secrets.PROD_APP_DIR }}"
             git fetch origin main
             git checkout main
             git pull --ff-only origin main
 
-            docker compose --env-file .env.docker pull mysql clickhouse redis
-            docker compose --env-file .env.docker up -d --build --remove-orphans
+            SERVICES=""
+            if [ "$CRONUS_CHANGED" = "true" ]; then SERVICES="$SERVICES cronus"; fi
+            if [ "$PEGASUS_CHANGED" = "true" ]; then SERVICES="$SERVICES pegasus"; fi
+            if [ "$DOCS_CHANGED" = "true" ]; then SERVICES="$SERVICES docs"; fi
+
+            if [ -z "$SERVICES" ]; then
+              echo "No application services changed"
+              exit 0
+            fi
+
+            docker compose --env-file .env.docker build $SERVICES
+
+            if [ "$CRONUS_CHANGED" = "true" ]; then
+              docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 cronus
+            fi
+            if [ "$PEGASUS_CHANGED" = "true" ]; then
+              docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 pegasus
+            fi
+            if [ "$DOCS_CHANGED" = "true" ]; then
+              docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 docs
+            fi
+
             docker compose --env-file .env.docker ps
-            docker compose --env-file .env.docker exec -T cronus bun -e "fetch('http://127.0.0.1:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+            if [ "$CRONUS_CHANGED" = "true" ]; then
+              docker compose --env-file .env.docker exec -T cronus bun -e "fetch('http://127.0.0.1:4000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+            fi

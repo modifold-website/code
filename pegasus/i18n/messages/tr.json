@@ -1499,6 +1499,7 @@
         "fileTooLarge": "Dosya çok büyük. Maksimum boyut 100 MB"
       },
       "success": "Sürüm yüklendi",
+      "successDraft": "Dosya moderasyona gönderildikten sonra kullanılabilir olacak",
       "successModeration": "Sürüm moderasyona gönderildi",
       "title": "Yeni sürüm yükle",
       "dependenciesEditor": {

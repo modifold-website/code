@@ -1499,6 +1499,7 @@
         "fileTooLarge": "O arquivo é muito grande. O tamanho máximo é 100 MB"
       },
       "success": "Versão enviada",
+      "successDraft": "O arquivo ficará disponível depois de ser enviado para moderação",
       "successModeration": "Versão enviada para moderação",
       "title": "Versões",
       "dependenciesEditor": {

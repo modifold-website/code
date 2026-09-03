@@ -1590,6 +1590,7 @@
         "fileTooLarge": "File is too large. Maximum size is 100 MB"
       },
       "success": "Version uploaded",
+      "successDraft": "The file will be available after it is submitted for moderation",
       "successModeration": "Version sent to moderation",
       "title": "Upload New Version",
       "dependenciesEditor": {

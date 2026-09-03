@@ -257,7 +257,8 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
             });
 
             if(response.ok) {
-                toast.success(t("versions.successModeration"));
+                const result = await response.json();
+                toast.success(t(result.moderation_status === "draft" ? "versions.successDraft" : "versions.successModeration"));
                 setShowUpload(false);
                 resetUploadForm();
 
