@@ -76,7 +76,7 @@ const formatProject = (project, weeklyDownloadsBySlug = new Map()) => ({
 	},
 });
 
-const getProjectSelect = (extraSelect = "") => `
+const getProjectSelect = (extraSelect = "", updatedAtExpression = "p.updated_at") => `
 	SELECT
 	p.id,
 	p.slug,
@@ -87,7 +87,7 @@ const getProjectSelect = (extraSelect = "") => `
 	p.downloads,
 	p.followers,
 	p.created_at,
-	p.updated_at,
+	${updatedAtExpression} AS updated_at,
 	p.project_type,
 	p.tags,
 	${extraSelect}
@@ -163,6 +163,29 @@ const fetchRecommendedProjects = async (projectType) => {
 		ORDER BY ${orderClause}
 		LIMIT 8
 	`, [projectType]);
+
+	return projects;
+};
+
+const fetchRecentlyUpdatedProjects = async (projectType, limit = 10) => {
+	const [projects] = await db.query(`
+		${getProjectSelect("", "latest_approved_version.updated_at")}
+		INNER JOIN (
+			SELECT
+				project_id,
+				MAX(COALESCE(moderated_at, created_at)) AS updated_at
+			FROM project_versions
+			WHERE moderation_status = 'approved'
+			GROUP BY project_id
+			HAVING COUNT(*) > 1
+		) latest_approved_version ON latest_approved_version.project_id = p.id
+		WHERE p.status = 'approved'
+		AND p.is_archived = 0
+		AND p.visibility = 'public'
+		AND p.project_type = ?
+		ORDER BY latest_approved_version.updated_at DESC, p.id DESC
+		LIMIT ?
+	`, [projectType, limit]);
 
 	return projects;
 };
@@ -341,7 +364,7 @@ const buildDiscoverData = async (projectType, { includeCategorySections = true }
 		fetchRecommendedProjects(projectType),
 		weeklyDownloadsPromise,
 		fetchProjects({ projectType, orderBy: "p.created_at DESC, p.id DESC", limit: 12 }),
-		fetchProjects({ projectType, orderBy: "p.updated_at DESC, p.id DESC", limit: 10 }),
+		fetchRecentlyUpdatedProjects(projectType),
 		discoverTagsPromise,
 		fetchPopularTags(projectType, 6),
 	]);
