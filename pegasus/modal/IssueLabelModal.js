@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Modal from "react-modal";
 import { useTranslations } from "next-intl";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 const DEFAULT_COLORS = [
     "#c1121f",

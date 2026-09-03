@@ -36,7 +36,7 @@ function PermissionToggle({ active, disabled, label, onClick }) {
 export default function OrganizationProjectPermissionsModal({ isOpen, draft, projects, directProjectAccess = [], defaultPermissions, availablePermissions, canManageProjectAccess, canManageProjectPermissions, isSaving = false, onSave, onRequestClose }) {
 	const t = useTranslations("Organizations");
 	const tProject = useTranslations("ProjectCollaborators");
-	const appElement = typeof document !== "undefined" ? document.getElementById("app") : undefined;
+	const appElement = typeof document !== "undefined" ? document.body : undefined;
 	const draftKey = JSON.stringify(draft);
 	const [page, setPage] = useState("overview");
 	const [editingProjectId, setEditingProjectId] = useState(null);

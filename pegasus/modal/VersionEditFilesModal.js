@@ -5,7 +5,7 @@ import Modal from "react-modal";
 import { toast } from "react-toastify";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("#app");
+    Modal.setAppElement("body");
 }
 
 export default function VersionEditFilesModal({ isOpen, onRequestClose, editLoading, onSubmit, t, tProject, versionFileAccept, maxFileSize, fileTooLargeMessage, currentFileName, formatFileSize }) {

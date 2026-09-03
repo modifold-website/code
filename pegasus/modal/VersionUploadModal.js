@@ -5,7 +5,7 @@ import VersionDependenciesEditor from "./VersionDependenciesEditor";
 import GameVersionPopoverList from "@/components/GameVersionPopoverList";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("#app");
+    Modal.setAppElement("body");
 }
 
 export default function VersionUploadModal({ isOpen, onRequestClose, uploadLoading, uploadStep, uploadSteps, uploadFile, isUploadDragActive, uploadFileRef, versionFileAccept, openUploadFilePicker, handleUploadDragOver, handleUploadDragLeave, handleUploadDrop, handleUploadFileChange, formatFileSize, goToUploadCompatibilityStep, goToUploadFilesStep, goToUploadMetadataStepBack, handleSubmit, formData, handleInputChange, releaseChannels, handleSelectReleaseChannel, gameVersionsRef, toggleGameVersionsPopover, isGameVersionsPopoverOpen, gameVersions, handleToggleGameVersion, gameVersionsLabel, loadersRef, toggleLoadersPopover, isLoadersPopoverOpen, loaders, handleToggleLoader, loadersLabel, dependencyTypes, uploadDependencyDraft, handleUploadDependencyDraftChange, handleAddUploadDependency, handleRemoveUploadDependency, t, tProject }) {

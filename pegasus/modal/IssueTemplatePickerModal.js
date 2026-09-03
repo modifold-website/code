@@ -3,7 +3,7 @@
 import Modal from "react-modal";
 import { useTranslations } from "next-intl";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 export default function IssueTemplatePickerModal({ isOpen, templates = [], onSelect, onRequestClose }) {
     const t = useTranslations("Issues");

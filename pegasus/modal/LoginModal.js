@@ -8,7 +8,7 @@ import { useAuth } from "../components/providers/AuthProvider";
 import { getLastSignInProvider, setLastSignInProvider, setPendingSignInProvider } from "../utils/authSignInProvider";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("#app");
+    Modal.setAppElement("body");
 }
 
 function getReturnPath() {

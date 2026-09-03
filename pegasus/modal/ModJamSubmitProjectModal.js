@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { getProjectPath } from "@/utils/projectRoutes";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 export default function ModJamSubmitProjectModal({ isOpen, jam, authToken, submissions = [], onRequestClose }) {
 	const t = useTranslations("ModJamsPage");

@@ -4,7 +4,7 @@ import Modal from "react-modal";
 import { useTranslations } from "next-intl";
 
 if(typeof window !== "undefined") {
-	Modal.setAppElement("#app");
+	Modal.setAppElement("body");
 }
 
 export default function AnalyticsOnlineInfoModal({ isOpen, onRequestClose }) {

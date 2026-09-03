@@ -3,7 +3,7 @@
 import Modal from "react-modal";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("#app");
+    Modal.setAppElement("body");
 }
 
 export default function GalleryEditModal({ isOpen, onRequestClose, editLoading, editStep, editSteps, editSelectedFile, isEditDragActive, editFileRef, openEditFilePicker, handleEditDragOver, handleEditDragLeave, handleEditDrop, handleEditFileChange, formatFileSize, goToEditFilesStep, goToEditMetadataStep, handleUpdate, handleDelete, editFormData, handleEditInputChange, toggleEditFeatured, t, tProject }) {

@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { useAuth } from "../components/providers/AuthProvider";
 
-Modal.setAppElement("#app");
+Modal.setAppElement("body");
 
 export default function ModJamCreationModal({ isOpen, authToken, onRequestClose, onCreated }) {
 	const t = useTranslations("ModJamsPage");

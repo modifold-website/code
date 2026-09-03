@@ -5,7 +5,7 @@ import Modal from "react-modal";
 import { getProjectDescriptionImageValidationError, uploadProjectDescriptionImage } from "@/utils/projects/images";
 
 if(typeof window !== "undefined") {
-	Modal.setAppElement("#app");
+	Modal.setAppElement("body");
 }
 
 const getValidImageUrl = (value) => {
@@ -22,7 +22,7 @@ const getValidImageUrl = (value) => {
 };
 
 export default function MarkdownImageModal({ isOpen, onRequestClose, onInsert, projectId, authToken, t }) {
-	const appElement = typeof document !== "undefined" ? document.getElementById("app") : undefined;
+	const appElement = typeof document !== "undefined" ? document.body : undefined;
 	const [source, setSource] = useState("upload");
 	const [altText, setAltText] = useState("");
 	const [linkUrl, setLinkUrl] = useState("");

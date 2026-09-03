@@ -4,7 +4,7 @@ import Modal from "react-modal";
 import GameVersionPopoverList from "@/components/GameVersionPopoverList";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("#app");
+    Modal.setAppElement("body");
 }
 
 export default function VersionEditMetadataModal({ isOpen, onRequestClose, editLoading, onSubmit, t, tProject, editFormData, editGameVersionsRef, toggleEditGameVersionsPopover, isEditGameVersionsPopoverOpen, gameVersions, handleEditToggleGameVersion, editGameVersionsLabel, editLoadersRef, toggleEditLoadersPopover, isEditLoadersPopoverOpen, loaders, handleEditToggleLoader, editLoadersLabel }) {
