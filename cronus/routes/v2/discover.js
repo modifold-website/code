@@ -164,11 +164,7 @@ const fetchRecommendedProjects = async (projectType) => {
 		LIMIT 8
 	`, [projectType]);
 
-	if(projects.length > 0) {
-		return projects;
-	}
-
-	return fetchProjects({ projectType, limit: 8 });
+	return projects;
 };
 
 const getWeeklyDownloadCounts = async ({ projectType, limit = 40 }) => {
