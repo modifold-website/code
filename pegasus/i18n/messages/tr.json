@@ -1691,6 +1691,11 @@
         "selectedFiles": "Seçilen görseller",
         "removeFile": "{name} dosyasını kaldır",
         "metadataNavigation": "Seçilen görseller",
+        "uploadProgress": {
+          "title": "Görseller yükleniyor",
+          "count": "{total} görselden {uploaded} tanesi yüklendi",
+          "hint": "Yükleme tamamlanana kadar bu pencereyi açık tutun."
+        },
         "actions": {
           "continue": "Devam",
           "back": "Geri",

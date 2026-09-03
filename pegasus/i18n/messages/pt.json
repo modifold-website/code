@@ -1691,6 +1691,11 @@
         "selectedFiles": "Imagens selecionadas",
         "removeFile": "Remover {name}",
         "metadataNavigation": "Imagens selecionadas",
+        "uploadProgress": {
+          "title": "Enviando imagens",
+          "count": "{uploaded} de {total} enviadas",
+          "hint": "Mantenha esta janela aberta até o envio terminar."
+        },
         "actions": {
           "continue": "Continuar",
           "back": "Voltar",
