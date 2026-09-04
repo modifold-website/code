@@ -235,7 +235,7 @@ const insertProjectEvent = async ({ projectSlug, versionId = null, eventType, ip
         table: "project_events",
         values: [{
             project_slug: projectSlug,
-            version_id: versionId,
+            version_id: versionId === null || versionId === undefined ? null : String(versionId),
             event_type: eventType,
             ip_address: ipAddress,
             country_code: countryCode,
