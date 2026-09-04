@@ -4,13 +4,14 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Modal from "react-modal";
 import { toast } from "react-toastify";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import ProjectTags from "../ui/ProjectTags";
 import { getProjectPath } from "@/utils/projectRoutes";
+import { formatRelativeTime } from "@/utils/date/relativeTime";
 
 export default function ModerationPage({ authToken, initialProjects, initialTotalPages }) {
     const t = useTranslations("ModerationPage");
+	const locale = useLocale();
     const [projects, setProjects] = useState(initialProjects || []);
     const [totalPages, setTotalPages] = useState(initialTotalPages || 1);
     const [search, setSearch] = useState("");
@@ -239,48 +240,54 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
             ) : (
                 <div className="projects-grid">
                     {projects.map((project) => {
-                        const hasTags = project.tags?.length > 0;
+                        const projectPath = getProjectPath(project);
+                        const relativeDate = formatRelativeTime(project.created_at, locale);
 
                         return (
-                            <div key={project.id} className="new-projects-list">
-                                <div className="new-project-card moderation-project-card" id={project.slug}>
-                                    <div style={{ display: "flex", gap: "12px", borderBottom: hasTags ? "1px solid var(--theme-color-border)" : "none", paddingBottom: hasTags ? "12px" : "16px", paddingTop: "16px", paddingRight: "16px", paddingLeft: "16px" }}>
-                                        <Link href={getProjectPath(project)} style={{ height: "96px" }}>
-                                            <img className="new-project-icon" alt={project.title} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
-                                        </Link>
+							<article key={project.id} className="moderation-queue-card" id={project.slug}>
+								<div className="moderation-queue-card__identity">
+									<Link href={projectPath} target="_blank" rel="noreferrer" tabIndex={-1} className="moderation-queue-card__icon-link">
+										<img className="moderation-queue-card__icon" alt="" src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
+									</Link>
 
-                                        <div className="new-project-info">
-                                            <div className="new-project-header">
-                                                <Link href={getProjectPath(project)} className="new-project-title">{project.title}</Link>
-                                            </div>
+									<div className="moderation-queue-card__details">
+										<div className="moderation-queue-card__title-row">
+											<Link href={projectPath} target="_blank" rel="noreferrer" className="moderation-queue-card__title">{project.title}</Link>
 
-                                            <p className="new-project-description">{project.summary}</p>
-                                        </div>
-                                        
-                                        <div className="new-project-stats">
-                                            <button className="button button--size-m button--type-primary" type="button" onClick={() => handleApprovalClick(project)} disabled={isSubmittingModeration}>
-                                                {t("actions.approve")}
-                                            </button>
+											<span className="moderation-card-pill">
+												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                                                    <path d="m3.3 7 8.7 5 8.7-5"/>
+                                                    <path d="M12 22V12"/>
+                                                </svg>
 
-                                            <button className="button button--size-m button--type-minimal" type="button" onClick={() => openRejectModal(project)} disabled={isSubmittingModeration}>
-                                                {t("actions.reject")}
-                                            </button>
-                                        </div>
-                                    </div>
+												<span>{t(`filters.types.${project.project_type}`)}</span>
+											</span>
+										</div>
 
-                                    {project.tags && project.tags.length > 0 && (
-                                        <div className="new-project-tags" style={{ padding: "8px 16px" }}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-tags-icon lucide-tags">
-                                                <path d="M13.172 2a2 2 0 0 1 1.414.586l6.71 6.71a2.4 2.4 0 0 1 0 3.408l-4.592 4.592a2.4 2.4 0 0 1-3.408 0l-6.71-6.71A2 2 0 0 1 6 9.172V3a1 1 0 0 1 1-1z"/>
-                                                <path d="M2 7v6.172a2 2 0 0 0 .586 1.414l6.71 6.71a2.4 2.4 0 0 0 3.191.193"/>
-                                                <circle cx="10.5" cy="6.5" r=".5" fill="currentColor"/>
+										<p className="moderation-queue-card__summary">{project.summary}</p>
+									</div>
+								</div>
+
+								<div className="moderation-queue-card__aside">
+									{relativeDate ? <time className="moderation-queue-card__date" dateTime={project.created_at}>{relativeDate}</time> : null}
+
+									<div className="moderation-queue-card__actions">
+										<button className="moderation-queue-card__action moderation-queue-card__action--approve" type="button" onClick={() => handleApprovalClick(project)} disabled={isSubmittingModeration} aria-label={t("actions.approve")} title={t("actions.approve")}>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M20 6 9 17l-5-5"/>
                                             </svg>
+										</button>
 
-                                            <ProjectTags limit={5} tags={project.tags} />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+										<button className="moderation-queue-card__action moderation-queue-card__action--reject" type="button" onClick={() => openRejectModal(project)} disabled={isSubmittingModeration} aria-label={t("actions.reject")} title={t("actions.reject")}>
+											<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M18 6 6 18"/>
+                                                <path d="m6 6 12 12"/>
+                                            </svg>
+										</button>
+									</div>
+								</div>
+							</article>
                         );
                     })}
                 </div>
