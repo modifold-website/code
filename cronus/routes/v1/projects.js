@@ -3043,13 +3043,14 @@ router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res
 });
 
 router.get("/moderation", auth, async (req, res) => {
-    if(!req.user.isRole === 'admin') {
-        return res.status(403).json({ message: "Unauthorized" });
-    }
+	try {
+		const role = await getUserRole(req.user.id);
+		if(role !== "admin" && role !== "moderator") {
+			return res.status(403).json({ message: "Unauthorized" });
+		}
 
-    try {
-        const [projects] = await db.query("SELECT id, slug, title, summary, project_type, status, tags, icon FROM projects WHERE status IN ('queued', 'pending')");
-        res.json({ projects });
+		const [projects] = await db.query("SELECT id, slug, title, summary, project_type, status, tags, icon FROM projects WHERE status IN ('queued', 'pending')");
+		res.json({ projects });
     } catch (error) {
         console.error("Error fetching projects for moderation:", error);
         res.status(500).json({ message: "Error fetching projects", error: error.message });
@@ -3057,18 +3058,19 @@ router.get("/moderation", auth, async (req, res) => {
 });
 
 router.post("/:id/moderate", auth, async (req, res) => {
-    if(!req.user.isRole === 'admin') {
-        return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    const { id } = req.params;
-    const { status, moderator_message } = req.body;
+	const { id } = req.params;
+	const { status, moderator_message } = req.body;
 
     if(!["approved", "rejected"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
-    }
+	}
 
-    try {
+	try {
+		const role = await getUserRole(req.user.id);
+		if(role !== "admin" && role !== "moderator") {
+			return res.status(403).json({ message: "Unauthorized" });
+		}
+
 		const [projectRowsBeforeUpdate] = await db.query(
 			"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1",
 			[id]

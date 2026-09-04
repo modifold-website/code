@@ -36,7 +36,7 @@ const fanoutVersionReleaseNotifications = async ({ actorUserId, projectId, versi
 			FROM project_likes
 			WHERE project_id = ?
 			AND user_id <> ?
-			ORDER BY id ASC
+			ORDER BY user_id ASC
 			LIMIT ? OFFSET ?`,
 			[projectId, actorUserId, batchSize, offset]
 		);
