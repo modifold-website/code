@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -12,7 +12,7 @@ export default function ProjectTabs({ project }) {
     const tabsRef = useRef(null);
     const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0, opacity: 0 });
     const basePath = getProjectBasePath(project?.project_type);
-    const [issuesCount, setIssuesCount] = useState(null);
+	const issuesCount = Math.max(0, Number(project?.issues_count) || 0);
     const showIssuesTab = project?.issues_enabled;
 
     const isActive = (href) => pathname === href;
@@ -39,38 +39,6 @@ export default function ProjectTabs({ project }) {
         const fixed = next < 10 ? next.toFixed(1) : Math.round(next).toString();
         return `${fixed.replace(/\.0$/, "")}m`;
     };
-
-    useEffect(() => {
-        if(!project?.slug || !showIssuesTab) {
-            setIssuesCount(null);
-            return;
-        }
-
-        const controller = new AbortController();
-        const loadCount = async () => {
-            try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/issues?status=all&limit=1`, {
-                    headers: { Accept: "application/json" },
-                    signal: controller.signal,
-                });
-
-                if(!res.ok) {
-                    setIssuesCount(null);
-                    return;
-                }
-
-                const data = await res.json();
-                setIssuesCount(Number(data.totalCount ?? data.total_count ?? data.count ?? 0));
-            } catch (error) {
-                if(error.name !== "AbortError") {
-                    setIssuesCount(null);
-                }
-            }
-        };
-
-        loadCount();
-        return () => controller.abort();
-    }, [project?.slug, showIssuesTab]);
 
     useLayoutEffect(() => {
         const updateIndicator = () => {
