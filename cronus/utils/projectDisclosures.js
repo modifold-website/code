@@ -69,27 +69,30 @@ const formatProjectArchive = (row) => {
 	};
 };
 
-const getProjectDisclosureState = async (connection, projectId) => {
-	const [[disclosureRows], [archiveRows]] = await Promise.all([
-		connection.query(
-			`SELECT *
-			FROM project_disclosures
-			WHERE project_id = ?
-			LIMIT 1`,
-			[projectId]
-		),
-		connection.query(
+const getProjectDisclosureState = async (connection, projectId, project = null) => {
+	const [disclosureRows] = await connection.query(
+		`SELECT *
+		FROM project_disclosures
+		WHERE project_id = ?
+		LIMIT 1`,
+		[projectId]
+	);
+
+	let archiveRow = project;
+	if(!archiveRow) {
+		const [archiveRows] = await connection.query(
 			`SELECT is_archived, archive_explanation
 			FROM projects
 			WHERE id = ?
 			LIMIT 1`,
 			[projectId]
-		),
-	]);
+		);
+		archiveRow = archiveRows[0] || null;
+	}
 
 	return {
 		disclosures: formatProjectDisclosures(disclosureRows[0]),
-		archive: formatProjectArchive(archiveRows[0]),
+		archive: formatProjectArchive(archiveRow),
 	};
 };
 

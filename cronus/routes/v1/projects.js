@@ -21,6 +21,8 @@ const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { countProjectVersionDownload, prepareProjectVersionDownloadRedirect } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
+const { buildVisibleVersionWhereClause, canAccessPrivateProject, canViewPrivateProjectVersions } = require("../../utils/projectVisibility");
+const { buildProjectOwnerDto, buildVersionsPagination, getProjectVersionPage } = require("../../utils/projectDetails");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const router = express.Router();
@@ -472,19 +474,44 @@ const getProjectPlayersInLastDaysBySlug = async ({ projectSlugs, days }) => {
     return countsBySlug;
 };
 
+const PROJECT_DETAIL_BASE_QUERY = `SELECT p.*,
+    u.username,
+    u.slug AS user_slug,
+    u.avatar,
+    u.isVerified,
+    u.active_profile_badge AS activeProfileBadge,
+    o.id AS organization_id,
+    o.slug AS organization_slug,
+    o.name AS organization_name,
+    o.summary AS organization_summary,
+    o.icon_url AS organization_icon_url
+    FROM projects p
+    LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN organization_projects op
+        ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+    LEFT JOIN organizations o
+        ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
+    WHERE BINARY p.id = BINARY ? OR p.slug = ?
+    ORDER BY (BINARY p.id = BINARY ?) DESC
+    LIMIT 1`;
+
 router.param("slug", async (req, res, next, identifier) => {
 	try {
-		const [projects] = await db.query(
-			`SELECT id, slug
+		const requestPath = String(req.path || "").split("?")[0];
+		const isProjectDetailRequest = ["GET", "HEAD"].includes(String(req.method || "").toUpperCase()) && requestPath === `/${identifier}`;
+		const identifierQuery = `SELECT id, slug
 			FROM projects
 			WHERE BINARY id = BINARY ? OR slug = ?
 			ORDER BY (BINARY id = BINARY ?) DESC
-			LIMIT 1`,
+			LIMIT 1`;
+		const [projects] = await db.query(
+			isProjectDetailRequest ? PROJECT_DETAIL_BASE_QUERY : identifierQuery,
 			[identifier, identifier, identifier]
 		);
 
 		if(projects.length) {
 			req.params.slug = projects[0].slug;
+			req.project = isProjectDetailRequest ? projects[0] : null;
 			req.projectIdentifier = {
 				id: projects[0].id,
 				slug: projects[0].slug,
@@ -797,39 +824,6 @@ const normalizeGalleryOrdering = async (connection, projectId) => {
 			[index, galleryItems[index].id, projectId]
 		);
 	}
-};
-
-const VISIBLE_VERSION_STATUSES = ["approved"];
-const PRIVATE_VERSION_STATUSES = ["draft", "pending", "scanning", "needs_review", "blocked", "error"];
-
-const canViewPrivateProjectVersions = async (project, userId) => {
-	if(!project || !userId) {
-		return false;
-	}
-
-	const role = await getUserRole(userId);
-	if(role === "admin" || role === "moderator") {
-		return true;
-	}
-
-	const access = await resolveProjectAccess(db, project.id, userId);
-	return Boolean(access?.isOwner || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS));
-};
-
-const buildVisibleVersionWhereClause = async (project, userId) => {
-	if(await canViewPrivateProjectVersions(project, userId)) {
-		const statuses = [...VISIBLE_VERSION_STATUSES, ...PRIVATE_VERSION_STATUSES];
-
-		return {
-			sql: `v.moderation_status IN (${statuses.map(() => "?").join(", ")})`,
-			params: statuses,
-		};
-	}
-
-	return {
-		sql: "v.moderation_status = ?",
-		params: VISIBLE_VERSION_STATUSES,
-	};
 };
 
 const sanitizeVersionForPublicResponse = (version, { includeModeration = false } = {}) => {
@@ -1333,17 +1327,117 @@ const getProjectWikiData = async ({ projectSlug, pageSlug }) => {
     };
 };
 
-const getOrganizationOwnerForProject = async (projectId) => {
-    const [rows] = await db.query(
-        `SELECT o.id, o.slug, o.name, o.summary, o.icon_url
-        FROM organization_projects op
-        INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-        WHERE op.project_id = ?
-        LIMIT 1`,
-        [projectId]
-    );
+const getProjectCreatorAggregates = async (project, viewerUserId) => {
+	if(project.organization_id) {
+		const [[aggregates = {}]] = await db.query(
+			`SELECT
+			COUNT(*) AS totalProjects,
+			COALESCE(SUM(p.downloads), 0) AS totalDownloads,
+			(SELECT COUNT(*) FROM project_likes WHERE project_id = ?) AS followersCount,
+			(SELECT 1 FROM project_likes WHERE project_id = ? AND user_id = ? LIMIT 1) AS isLiked,
+			(SELECT COUNT(*) FROM project_issues WHERE project_id = ?) AS issuesCount
+			FROM organization_projects op
+			INNER JOIN projects p
+				ON p.id COLLATE utf8mb4_unicode_ci = op.project_id COLLATE utf8mb4_unicode_ci
+			WHERE op.organization_id = ? AND p.status = 'approved'`,
+			[project.id, project.id, viewerUserId || null, project.id, project.organization_id]
+		);
 
-    return rows[0] || null;
+		return {
+			subscribers: 0,
+			totalProjects: Number(aggregates.totalProjects || 0),
+			totalDownloads: Number(aggregates.totalDownloads || 0),
+			isSubscribed: false,
+			subscriptionId: null,
+			followersCount: Number(aggregates.followersCount || 0),
+			isLiked: Boolean(aggregates.isLiked),
+			issuesCount: Number(aggregates.issuesCount || 0),
+		};
+	}
+
+	const [[aggregates = {}]] = await db.query(
+		`SELECT
+		(SELECT COUNT(*) FROM subs WHERE userid = ?) AS subscribers,
+		(SELECT id FROM subs WHERE userid = ? AND author_id = ? LIMIT 1) AS subscriptionId,
+		(SELECT COUNT(*) FROM project_likes WHERE project_id = ?) AS followersCount,
+		(SELECT 1 FROM project_likes WHERE project_id = ? AND user_id = ? LIMIT 1) AS isLiked,
+		(SELECT COUNT(*) FROM project_issues WHERE project_id = ?) AS issuesCount,
+		COUNT(DISTINCT p.id) AS totalProjects,
+		COALESCE(SUM(p.downloads), 0) AS totalDownloads
+		FROM projects p
+		WHERE p.status = 'approved'
+		AND (
+			p.user_id = ?
+			OR EXISTS (
+				SELECT 1 FROM project_members pm
+				WHERE pm.project_id = p.id
+				AND pm.user_id = ?
+				AND pm.status IN ('accept', 'accepted')
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM organization_projects member_organization_project
+				INNER JOIN organization_members organization_member
+					ON organization_member.organization_id COLLATE utf8mb4_unicode_ci = member_organization_project.organization_id COLLATE utf8mb4_unicode_ci
+				LEFT JOIN organization_member_project_overrides project_override
+					ON project_override.organization_id = organization_member.organization_id
+					AND project_override.user_id = organization_member.user_id
+					AND project_override.project_id COLLATE utf8mb4_unicode_ci = member_organization_project.project_id COLLATE utf8mb4_unicode_ci
+				WHERE member_organization_project.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+				AND organization_member.user_id = ?
+				AND organization_member.status = 'accepted'
+				AND (organization_member.project_access_mode = 'all' OR project_override.id IS NOT NULL)
+			)
+		)`,
+		[
+			project.user_id,
+			project.user_id,
+			viewerUserId || null,
+			project.id,
+			project.id,
+			viewerUserId || null,
+			project.id,
+			project.user_id,
+			project.user_id,
+			project.user_id,
+		]
+	);
+
+	return {
+		subscribers: Number(aggregates.subscribers || 0),
+		totalProjects: Number(aggregates.totalProjects || 0),
+		totalDownloads: Number(aggregates.totalDownloads || 0),
+		isSubscribed: Boolean(aggregates.subscriptionId),
+		subscriptionId: aggregates.subscriptionId || null,
+		followersCount: Number(aggregates.followersCount || 0),
+		isLiked: Boolean(aggregates.isLiked),
+		issuesCount: Number(aggregates.issuesCount || 0),
+	};
+};
+
+const getPrivateVersionKeys = async (projectId, versions, canViewPrivateVersions) => {
+	const versionIds = versions
+		.filter((version) => canViewPrivateVersions && !version.file_url && version.moderation_status !== "approved")
+		.map((version) => version.id)
+		.filter(Boolean);
+	if(versionIds.length === 0) {
+		return new Map();
+	}
+
+	try {
+		const [rows] = await db.query(
+			`SELECT id, quarantine_key
+			FROM project_versions
+			WHERE project_id = ? AND id IN (${versionIds.map(() => "?").join(", ")})`,
+			[projectId, ...versionIds]
+		);
+		return new Map(rows.map((row) => [String(row.id), row.quarantine_key || null]));
+	} catch(error) {
+		if(error?.code !== "ER_BAD_FIELD_ERROR") {
+			throw error;
+		}
+		return new Map();
+	}
 };
 
 const getProjectAccess = async ({ project, userId }) => {
@@ -2659,8 +2753,9 @@ router.get('/:slug', optionalAuth, async (req, res) => {
     try {
         const { slug } = req.params;
         const userId = req.user?.id;
-        const cacheVersion = await getProjectCacheVersion(slug);
-		const cacheKey = `modifold_project_details_publicsafe_v3_${slug}_${userId || "anon"}_${cacheVersion}`;
+		const { limit: versionsLimit, offset: versionsOffset } = getProjectVersionPage(req.query);
+		const cacheVersion = await getProjectCacheVersion(slug);
+		const cacheKey = `modifold_project_details_publicsafe_v4_${slug}_${userId || "anon"}_${versionsLimit}_${versionsOffset}_${cacheVersion}`;
         const shouldUseProjectCache = !userId;
 
         if(shouldUseProjectCache) {
@@ -2670,69 +2765,90 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             }
         }
 
-        const [project] = await db.query(
-            `SELECT p.*, 
-            u.username, u.slug AS user_slug, u.avatar, u.id AS user_id, u.isVerified AS isVerified, u.active_profile_badge AS activeProfileBadge,
-            (SELECT COUNT(*) FROM project_likes pl WHERE pl.project_id = p.id) AS followers_count,
-            (SELECT 1 FROM project_likes pl WHERE pl.project_id = p.id AND pl.user_id = ?) AS is_liked
-            FROM projects p
-            LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.slug = ?`,
-            [userId || null, slug]
-        );
+		const projectData = req.project;
+		if(!projectData) {
+			return res.status(404).json({ message: 'Project not found' });
+		}
 
-        if(!project.length) {
-            return res.status(404).json({ message: 'Project not found' });
-        }
+		const [access, userRole] = await Promise.all([
+			userId ? resolveProjectAccess(db, projectData, userId) : null,
+			getUserRole(userId),
+		]);
+		if(!canAccessPrivateProject({ project: projectData, userId, userRole, access })) {
+			return res.status(404).json({ message: "Project not found" });
+		}
 
-        const projectData = project[0];
-        const access = userId ? await resolveProjectAccess(db, projectData.id, userId) : null;
-        const canViewModerationFields = await canViewPrivateProjectVersions(projectData, userId);
-        const versionVisibility = await buildVisibleVersionWhereClause(projectData, userId);
-		const disclosureStatePromise = getProjectDisclosureState(db, projectData.id);
-
-		const [versions] = await db.query(
-			`SELECT v.* FROM project_versions v WHERE v.project_id = ? AND ${versionVisibility.sql} ORDER BY v.created_at DESC`,
-			[projectData.id, ...versionVisibility.params]
+		const canViewModerationFields = canViewPrivateProjectVersions({
+			userId,
+			userRole,
+			access,
+			hasManageVersionsPermission: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS),
+		});
+		const versionVisibility = buildVisibleVersionWhereClause(canViewModerationFields);
+		const versionsPromise = versionsLimit === 0 ? Promise.resolve([[]]) : db.query(
+			`SELECT
+			v.id,
+			v.project_id,
+			v.downloads,
+			v.version_number,
+			v.changelog,
+			v.release_channel,
+			v.file_url,
+			v.file_size,
+			v.created_at,
+			v.loaders,
+			v.game_versions,
+			v.moderation_status,
+			v.moderation_reason
+			FROM project_versions v
+			WHERE v.project_id = ? AND ${versionVisibility.sql}
+			ORDER BY v.created_at DESC
+			LIMIT ? OFFSET ?`,
+			[projectData.id, ...versionVisibility.params, versionsLimit + 1, versionsOffset]
 		);
-		const versionDependenciesPromise = getVersionDependenciesByVersionIds(db, versions.map((version) => version.id));
+		const modJamParticipationsPromise = db.query(
+			`SELECT mj.id, mj.slug, mj.title, mj.summary, mj.avatar_url, mj.cover_url, mj.starts_at, mj.submissions_start_at, mj.submissions_end_at, mj.voting_starts_at, mj.voting_end_at,
+			mjs.id AS submission_id, mjs.submitter_user_id,
+			(SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.submission_id = mjs.id) AS votes_count,
+			(SELECT user_vote.submission_id FROM mod_jam_votes user_vote WHERE user_vote.jam_id = mj.id AND user_vote.user_id = ? LIMIT 1) AS user_voted_submission_id
+			FROM mod_jam_submissions mjs
+			LEFT JOIN mod_jams mj ON mj.id = mjs.jam_id
+			WHERE mjs.project_id = ? AND mjs.status = 'submitted' AND mj.status = 'approved'
+			ORDER BY mj.voting_end_at DESC`,
+			[userId || null, projectData.id]
+		).then(([rows]) => rows).catch((error) => {
+			if(error?.code === "ER_NO_SUCH_TABLE") {
+				return [];
+			}
+			throw error;
+		});
+		const [creatorAggregates, versionsResult, galleryResult, membersResult, modJamParticipations, disclosureState] = await Promise.all([
+			getProjectCreatorAggregates(projectData, userId),
+			versionsPromise,
+			db.query('SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC', [projectData.id]),
+			db.query(
+				`SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
+				FROM project_members pm
+				LEFT JOIN users u ON pm.user_id = u.id
+				WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.show_as_author = 1 AND pm.status IN ('accept', 'accepted')`,
+				[projectData.id, projectData.user_id]
+			),
+			modJamParticipationsPromise,
+			getProjectDisclosureState(db, projectData.id, projectData),
+		]);
+		const rawVersions = versionsResult[0] || [];
+		const hasMoreVersions = versionsLimit > 0 && rawVersions.length > versionsLimit;
+		const versions = hasMoreVersions ? rawVersions.slice(0, versionsLimit) : rawVersions;
+		const gallery = galleryResult[0] || [];
+		const members = membersResult[0] || [];
+		const privateVersionKeys = await getPrivateVersionKeys(projectData.id, versions, canViewModerationFields);
+		const versionsWithPrivateKeys = versions.map((version) => ({
+			...version,
+			quarantine_key: privateVersionKeys.get(String(version.id)) || null,
+		}));
+		const versionDependencies = await getVersionDependenciesByVersionIds(db, versions.map((version) => version.id));
 
-        const [gallery] = await db.query(
-            'SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC',
-            [projectData.id]
-        );
-
-        const [members] = await db.query(
-            `SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
-            FROM project_members pm 
-            LEFT JOIN users u ON pm.user_id = u.id 
-			WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.show_as_author = 1 AND pm.status IN ('accept', 'accepted')`,
-			[projectData.id, projectData.user_id]
-        );
-        let modJamParticipations = [];
-        try {
-            const [rows] = await db.query(
-                `SELECT mj.id, mj.slug, mj.title, mj.summary, mj.avatar_url, mj.cover_url, mj.starts_at, mj.submissions_start_at, mj.submissions_end_at, mj.voting_starts_at, mj.voting_end_at,
-                mjs.id AS submission_id, mjs.submitter_user_id,
-                (SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.submission_id = mjs.id) AS votes_count,
-                (SELECT user_vote.submission_id FROM mod_jam_votes user_vote WHERE user_vote.jam_id = mj.id AND user_vote.user_id = ? LIMIT 1) AS user_voted_submission_id
-                FROM mod_jam_submissions mjs
-                LEFT JOIN mod_jams mj ON mj.id = mjs.jam_id
-                WHERE mjs.project_id = ? AND mjs.status = 'submitted' AND mj.status = 'approved'
-                ORDER BY mj.voting_end_at DESC`,
-                [userId || null, projectData.id]
-            );
-            modJamParticipations = rows;
-        } catch (error) {
-            if(error?.code !== "ER_NO_SUCH_TABLE") {
-                throw error;
-            }
-        }
-		const organizationOwner = await getOrganizationOwnerForProject(projectData.id);
-		const disclosureState = await disclosureStatePromise;
-		const versionDependencies = await versionDependenciesPromise;
-
-		const formattedVersions = await Promise.all(versions.map(async (version) => {
+		const formattedVersions = await Promise.all(versionsWithPrivateKeys.map(async (version) => {
 			let gameVersions, loaders;
             
             try {
@@ -2769,7 +2885,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             summary: projectData.summary,
             description: projectData.description,
             visibility: projectData.visibility,
-            issues_enabled: projectData.issues_enabled === 0 ? false : true,
+			issues_enabled: projectData.issues_enabled === 0 ? false : true,
+			issues_count: creatorAggregates.issuesCount,
             created_at: projectData.created_at,
             updated_at: projectData.updated_at,
             status: projectData.status,
@@ -2784,37 +2901,23 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             downloads: projectData.downloads,
             show_players_last_14d: shouldShowPlayersLast14Days,
             players_last_14d: playersLast14DaysBySlug.get(projectData.slug) || 0,
-            followers: projectData.followers || projectData.followers_count || 0,
+			followers: creatorAggregates.followersCount,
             color: projectData.color,
-            game_versions: projectData.game_versions ? projectData.game_versions.split(',') : [],
-            loaders: projectData.loaders ? projectData.loaders.split(',') : [],
-            versions: formattedVersions,
-            gallery,
+			game_versions: projectData.game_versions ? projectData.game_versions.split(',') : [],
+			loaders: projectData.loaders ? projectData.loaders.split(',') : [],
+			versions: formattedVersions,
+			versions_pagination: buildVersionsPagination({
+				limit: versionsLimit,
+				offset: versionsOffset,
+				returned: formattedVersions.length,
+				hasMore: hasMoreVersions,
+			}),
+			gallery,
             tags: projectData.tags,
             user_id: projectData.user_id,
             showProjectBackground: projectData.showProjectBackground,
 			show_owner_as_author: Boolean(projectData.show_owner_as_author),
-            owner: organizationOwner ? {
-                id: organizationOwner.id,
-                username: organizationOwner.name,
-                slug: organizationOwner.slug,
-                avatar: organizationOwner.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
-                summary: organizationOwner.summary || "",
-                isVerified: 0,
-                type: "organization",
-                profile_url: `/organization/${organizationOwner.slug}`,
-            } : {
-				id: projectData.user_id,
-				user_id: projectData.user_id,
-                username: projectData.username,
-                slug: projectData.user_slug,
-                avatar: projectData.avatar,
-                isVerified: projectData.isVerified,
-                activeProfileBadge: projectData.activeProfileBadge,
-				role: normalizeProjectOwnerRole(projectData.owner_role),
-                type: "user",
-                profile_url: `/user/${projectData.user_slug}`,
-            },
+			owner: buildProjectOwnerDto(projectData, creatorAggregates, normalizeProjectOwnerRole),
 			original_author: {
 				id: projectData.user_id,
 				user_id: projectData.user_id,
@@ -2827,13 +2930,13 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 				type: "user",
 				profile_url: `/user/${projectData.user_slug}`,
 			},
-            organization: organizationOwner ? {
-                id: organizationOwner.id,
-                slug: organizationOwner.slug,
-                name: organizationOwner.name,
-                summary: organizationOwner.summary || "",
-                icon_url: organizationOwner.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
-            } : null,
+			organization: projectData.organization_id ? {
+				id: projectData.organization_id,
+				slug: projectData.organization_slug,
+				name: projectData.organization_name,
+				summary: projectData.organization_summary || "",
+				icon_url: projectData.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+			} : null,
 			disclosures: disclosureState.disclosures,
 			archive: disclosureState.archive,
             members: members.map(member => ({
@@ -2872,7 +2975,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 submission_id: jam.submission_id,
                 votes_count: Number(jam.votes_count) || 0,
             })),
-            is_liked: !!projectData.is_liked,
+			is_liked: creatorAggregates.isLiked,
             permissions: {
 				is_owner: Boolean(access?.isOwner),
 				can_manage_collaborators: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES)
@@ -5771,18 +5874,43 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
         }
 
 		const [version] = await db.query(
-			'SELECT id, project_id, version_number, downloads, changelog, release_channel, game_versions, loaders, file_url, quarantine_key, file_size, created_at, moderation_status, moderation_reason FROM project_versions WHERE project_id = ? AND id = ?',
-            [project[0].id, version_number]
-        );
+			'SELECT id, project_id, version_number, downloads, changelog, release_channel, game_versions, loaders, file_url, file_size, created_at, moderation_status, moderation_reason FROM project_versions WHERE project_id = ? AND id = ?',
+			[project[0].id, version_number]
+		);
 
-        const canViewModerationFields = await canViewPrivateProjectVersions(project[0], req.user?.id || null);
+		const versionViewerUserId = req.user?.id || null;
+		const [versionAccess, versionViewerRole] = await Promise.all([
+			versionViewerUserId ? resolveProjectAccess(db, project[0], versionViewerUserId) : null,
+			getUserRole(versionViewerUserId),
+		]);
+		if(!canAccessPrivateProject({
+			project: project[0],
+			userId: versionViewerUserId,
+			userRole: versionViewerRole,
+			access: versionAccess,
+		})) {
+			return res.status(404).json({ message: 'Project not found' });
+		}
+		const canViewModerationFields = canViewPrivateProjectVersions({
+			userId: versionViewerUserId,
+			userRole: versionViewerRole,
+			access: versionAccess,
+			hasManageVersionsPermission: hasProjectPermission(versionAccess, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS),
+		});
 
         if(!version.length || (version[0].moderation_status !== "approved" && !canViewModerationFields)) {
             return res.status(404).json({ message: 'Version not found' });
         }
 
-		const dependencies = await getVersionDependencies(db, version[0].id);
-		const versionWithFileAccess = await getVersionWithPrivateFileAccess(version[0], canViewModerationFields);
+		const [dependencies, privateVersionKeys] = await Promise.all([
+			getVersionDependencies(db, version[0].id),
+			getPrivateVersionKeys(project[0].id, version, canViewModerationFields),
+		]);
+		const selectedVersion = {
+			...version[0],
+			quarantine_key: privateVersionKeys.get(String(version[0].id)) || null,
+		};
+		const versionWithFileAccess = await getVersionWithPrivateFileAccess(selectedVersion, canViewModerationFields);
 		const safeVersion = sanitizeVersionForPublicResponse(versionWithFileAccess, { includeModeration: canViewModerationFields });
 
         res.json({

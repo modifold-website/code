@@ -2,14 +2,14 @@ import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import WikiPage from "@/components/pages/WikiPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-import { getProjectBySlug } from "@/utils/projects/server";
+import { getProjectForRequest } from "@/utils/projects/server";
 import { getProjectMetadata } from "@/utils/projects/metadata";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
-    const project = await getProjectBySlug(slug);
+	const { project } = await getProjectForRequest(slug);
     const basePath = getProjectBasePath(project.project_type);
 
     return getProjectMetadata(project, `${basePath}/${project.slug}/wiki`, { titleSuffix: "Wiki" });
