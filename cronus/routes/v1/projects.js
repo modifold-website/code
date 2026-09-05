@@ -19,7 +19,7 @@ const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersion
 const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
-const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
+const { countProjectVersionDownload, prepareProjectVersionDownloadRedirect } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
@@ -294,7 +294,7 @@ const getProjectEventRows = async ({ projectSlugs, timeRange }) => {
             project_slug,
             toDate(created_at) AS date,
             event_type,
-            count() AS count
+			countIf(event_id IS NULL OR event_type != 'download') + uniqExactIf(event_id, event_id IS NOT NULL AND event_type = 'download') AS count
             FROM project_events
             WHERE project_slug IN (${escapedSlugs})
             AND created_at >= now() - ${intervalClause}
@@ -347,7 +347,7 @@ const getProjectEventSeries = async ({ projectSlug, eventType, days }) => {
         query: `
             SELECT
             toDate(created_at) AS date,
-            count() AS count
+			countIf(event_id IS NULL) + uniqExactIf(event_id, event_id IS NOT NULL) AS count
             FROM project_events
             WHERE project_slug = {project_slug:String}
             AND event_type = {event_type:String}
@@ -379,7 +379,7 @@ const getProjectDownloadCountries = async ({ projectSlug, days }) => {
         query: `
             SELECT
             lower(country_code) AS country_code,
-            count() AS count
+			countIf(event_id IS NULL OR event_type != 'download') + uniqExactIf(event_id, event_id IS NOT NULL AND event_type = 'download') AS count
             FROM project_events
             WHERE project_slug = {project_slug:String}
             AND event_type = 'download'
@@ -3091,6 +3091,23 @@ router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res
     }
 });
 
+router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
+	const { slug, versionId } = req.params;
+
+	try {
+		const result = await prepareProjectVersionDownloadRedirect(req, { slug, versionId });
+		if(!result.downloadUrl) {
+			return res.status(result.status).json(result.body);
+		}
+
+		res.set("Cache-Control", "private, no-store");
+		return res.redirect(302, result.downloadUrl);
+	} catch(error) {
+		console.error("Error preparing download redirect:", error);
+		return res.status(500).json({ message: "Error preparing download" });
+	}
+});
+
 router.get("/moderation", auth, async (req, res) => {
 	try {
 		const role = await getUserRole(req.user.id);
@@ -3120,15 +3137,38 @@ router.post("/:id/moderate", auth, async (req, res) => {
 			return res.status(403).json({ message: "Unauthorized" });
 		}
 
-		const [projectRowsBeforeUpdate] = await db.query(
-			"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1",
-			[id]
-		);
-		const projectBeforeUpdate = projectRowsBeforeUpdate[0] || null;
-		const statusChanged = projectBeforeUpdate && projectBeforeUpdate.status !== status;
 		const createdAt = Math.floor(Date.now() / 1000);
+		const connection = await db.getConnection();
+		let projectBeforeUpdate;
+		let statusChanged = false;
+		try {
+			await connection.beginTransaction();
+			const [projectRowsBeforeUpdate] = await connection.query(
+				"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1 FOR UPDATE",
+				[id]
+			);
+			projectBeforeUpdate = projectRowsBeforeUpdate[0] || null;
+			statusChanged = Boolean(projectBeforeUpdate && projectBeforeUpdate.status !== status);
+			await connection.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
 
-        await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
+			if(status === "approved" && projectBeforeUpdate && statusChanged) {
+				await fanoutProjectReleaseNotifications({
+					connection,
+					projectOwnerUserId: projectBeforeUpdate.user_id,
+					actorUserId: projectBeforeUpdate.user_id,
+					projectId: projectBeforeUpdate.id,
+					createdAt,
+				});
+			}
+
+			await connection.commit();
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
         await bumpProjectCacheVersionById(db, id);
 
 		if(projectBeforeUpdate && statusChanged) {
@@ -3142,15 +3182,6 @@ router.post("/:id/moderate", auth, async (req, res) => {
 		}
 
 		if(status === "approved" && projectBeforeUpdate) {
-			if(statusChanged) {
-				await fanoutProjectReleaseNotifications({
-					projectOwnerUserId: projectBeforeUpdate.user_id,
-					actorUserId: projectBeforeUpdate.user_id,
-					projectId: projectBeforeUpdate.id,
-					createdAt,
-				});
-			}
-
 			if(projectBeforeUpdate) {
 				await awardFirstApprovedProjectAchievement(db, {
 					projectId: projectBeforeUpdate.id,

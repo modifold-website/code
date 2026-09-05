@@ -102,16 +102,17 @@ const awardFirstApprovedProjectAchievement = async (db, { projectId, userId, awa
 	});
 };
 
-const awardProjectDownloadAchievements = async (db, { projectId, userId, totalDownloads }) => {
+const awardProjectDownloadAchievements = async (db, { projectId, userId, previousTotalDownloads = 0, totalDownloads }) => {
 	if(!projectId || !userId) {
 		return [];
 	}
 
 	const downloads = Math.max(0, Number(totalDownloads) || 0);
+	const previousDownloads = Math.max(0, Number(previousTotalDownloads) || 0);
 	const awardedCodes = [];
 
 	for(const threshold of DOWNLOAD_ACHIEVEMENT_THRESHOLDS) {
-		if(downloads < threshold.minDownloads) {
+		if(previousDownloads >= threshold.minDownloads || downloads < threshold.minDownloads) {
 			continue;
 		}
 

@@ -3,44 +3,36 @@ const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
 const router = express.Router();
 
-const cleanupStaleProjectVersionReleaseNotifications = async (userId) => {
-    await db.query(
-        `DELETE ne
-        FROM notification_events ne
-        LEFT JOIN project_versions pv ON BINARY pv.id = BINARY ne.object_id
-        WHERE ne.recipient_user_id = ?
-        AND ne.event_type IN ('project_version_release', 'project_version_approved', 'project_version_rejected')
-        AND ne.object_type = 'project_version'
-        AND pv.id IS NULL`,
-        [userId]
-    );
-
-	await db.query(
-		`DELETE ne
-		FROM notification_events ne
-		LEFT JOIN project_members pm
-			ON BINARY pm.project_id = BINARY ne.object_id
-			AND BINARY pm.user_id = BINARY ne.recipient_user_id
-			AND pm.status = 'pending'
-		WHERE ne.recipient_user_id = ?
-		AND ne.event_type = 'project_collaboration_invite'
-		AND ne.object_type = 'project'
-		AND pm.id IS NULL`,
-		[userId]
-	);
-};
+const getVisibleNotificationPredicate = (alias) => `
+	NOT (
+		${alias}.event_type IN ('project_version_release', 'project_version_approved', 'project_version_rejected')
+		AND ${alias}.object_type = 'project_version'
+		AND NOT EXISTS (
+			SELECT 1 FROM project_versions visible_pv
+			WHERE BINARY visible_pv.id = BINARY ${alias}.object_id
+		)
+	)
+	AND NOT (
+		${alias}.event_type = 'project_collaboration_invite'
+		AND ${alias}.object_type = 'project'
+		AND NOT EXISTS (
+			SELECT 1 FROM project_members visible_pm
+			WHERE BINARY visible_pm.project_id = BINARY ${alias}.object_id
+			AND BINARY visible_pm.user_id = BINARY ${alias}.recipient_user_id
+			AND visible_pm.status = 'pending'
+		)
+	)`;
 
 router.get("/unread-count", auth, async (req, res) => {
     const userId = req.user.id;
 
     try {
-        await cleanupStaleProjectVersionReleaseNotifications(userId);
-
         const [[row]] = await db.query(
             `SELECT COUNT(*) AS unreadCount
-            FROM notification_events
-            WHERE recipient_user_id = ?
-            AND read_at IS NULL`,
+            FROM notification_events ne
+            WHERE ne.recipient_user_id = ?
+			AND ne.read_at IS NULL
+			AND ${getVisibleNotificationPredicate("ne")}`,
             [userId]
         );
 
@@ -83,8 +75,6 @@ router.get("/", auth, async (req, res) => {
     const tzOffsetSeconds = clampedTzOffsetMinutes * 60;
 
     try {
-        await cleanupStaleProjectVersionReleaseNotifications(userId);
-
         const [groupRows] = await db.query(
             `SELECT
             event_type,
@@ -96,8 +86,9 @@ router.get("/", auth, async (req, res) => {
             END AS group_bucket,
             MAX(created_at) AS latest_at,
             COUNT(*) AS total_count
-            FROM notification_events
-            WHERE recipient_user_id = ?
+            FROM notification_events ne
+            WHERE ne.recipient_user_id = ?
+			AND ${getVisibleNotificationPredicate("ne")}
             GROUP BY event_type, object_type, object_id,
                 CASE
                     WHEN event_type = 'follow' THEN FLOOR((created_at - ?) / ${daySeconds})
@@ -112,8 +103,9 @@ router.get("/", auth, async (req, res) => {
             `SELECT COUNT(*) AS totalGroups
             FROM (
             SELECT event_type, object_type, object_id
-            FROM notification_events
-            WHERE recipient_user_id = ?
+            FROM notification_events ne
+            WHERE ne.recipient_user_id = ?
+			AND ${getVisibleNotificationPredicate("ne")}
             GROUP BY event_type, object_type, object_id,
                 CASE
                     WHEN event_type = 'follow' THEN FLOOR((created_at - ?) / ${daySeconds})
@@ -226,44 +218,103 @@ router.get("/", auth, async (req, res) => {
             }]));
         }
 
-        const notifications = await Promise.all(groupRows.map(async (row) => {
-            const actorParams = [userId, row.event_type, row.object_type, row.object_id];
-            let actorQuery = `SELECT
-                ne.actor_user_id,
-                ne.created_at,
-                u.username,
-                u.slug,
-                u.avatar,
-                u.isVerified,
-                u.active_profile_badge AS activeProfileBadge
-                FROM notification_events ne
-                INNER JOIN users u ON u.id = ne.actor_user_id
-                WHERE ne.recipient_user_id = ?
-                AND ne.event_type = ?
-                AND ne.object_type = ?
-                AND ne.object_id = ?`;
+		const getGroupKey = (row) => `${row.event_type}:${row.object_type}:${row.object_id}:${Number(row.group_bucket) || 0}`;
+		const actorConditions = [];
+		const actorParams = [userId];
+		for(const row of groupRows) {
+			const condition = ["ne.event_type = ?", "ne.object_type = ?", "ne.object_id = ?"];
+			actorParams.push(row.event_type, row.object_type, row.object_id);
+			const groupBucket = Number(row.group_bucket);
+			if(row.event_type === "follow" && Number.isFinite(groupBucket)) {
+				const bucketStart = groupBucket * daySeconds + tzOffsetSeconds;
+				condition.push("ne.created_at >= ?", "ne.created_at < ?");
+				actorParams.push(bucketStart, bucketStart + daySeconds);
+			}
+            
+			actorConditions.push(`(${condition.join(" AND ")})`);
+		}
 
-            const groupBucketNumber = Number(row.group_bucket);
-            if(row.event_type === "follow" && Number.isFinite(groupBucketNumber)) {
-                const bucketStart = groupBucketNumber * daySeconds + tzOffsetSeconds;
-                const bucketEnd = bucketStart + daySeconds;
-                actorQuery += " AND ne.created_at >= ? AND ne.created_at < ?";
-                actorParams.push(bucketStart, bucketEnd);
-            }
+		const actorsByGroup = new Map();
+		if(actorConditions.length) {
+			const bucketExpression = `CASE WHEN ne.event_type = 'follow' THEN FLOOR((ne.created_at - ${tzOffsetSeconds}) / ${daySeconds}) ELSE 0 END`;
+			const [actorRows] = await db.query(
+				`SELECT * FROM (
+					SELECT
+					ne.event_type, ne.object_type, ne.object_id,
+					${bucketExpression} AS group_bucket,
+					ne.actor_user_id, ne.created_at,
+					u.username, u.slug, u.avatar, u.isVerified,
+					u.active_profile_badge AS activeProfileBadge,
+					ROW_NUMBER() OVER (
+						PARTITION BY ne.event_type, ne.object_type, ne.object_id, ${bucketExpression}
+						ORDER BY ne.created_at DESC, ne.id DESC
+					) AS actor_rank
+					FROM notification_events ne
+					INNER JOIN users u ON u.id = ne.actor_user_id
+					WHERE ne.recipient_user_id = ?
+					AND ${getVisibleNotificationPredicate("ne")}
+					AND (${actorConditions.join(" OR ")})
+				) ranked
+				WHERE actor_rank <= 3
+				ORDER BY created_at DESC`,
+				actorParams
+			);
 
-            actorQuery += " ORDER BY ne.created_at DESC LIMIT 3";
+			for(const actor of actorRows) {
+				const key = getGroupKey(actor);
+				const actors = actorsByGroup.get(key) || [];
+				actors.push({
+					id: actor.actor_user_id,
+					username: actor.username,
+					slug: actor.slug,
+					avatar: actor.avatar,
+					isVerified: Number(actor.isVerified || 0),
+					activeProfileBadge: actor.activeProfileBadge,
+					createdAt: Number(actor.created_at),
+				});
+				actorsByGroup.set(key, actors);
+			}
+		}
 
-            const [actors] = await db.query(actorQuery, actorParams);
+		const organizationInviteMap = new Map();
+		if(organizationIds.length) {
+			const [inviteRows] = await db.query(
+				`SELECT id, organization_id
+				FROM organization_invitations
+				WHERE organization_id IN (?) AND invited_user_id = ? AND status = 'pending'
+				ORDER BY created_at DESC`,
+				[organizationIds, userId]
+			);
+
+			for(const invite of inviteRows) {
+				const key = String(invite.organization_id);
+				if(!organizationInviteMap.has(key)) {
+					organizationInviteMap.set(key, invite.id);
+				}
+			}
+		}
+
+		const projectInviteMap = new Map();
+		if(projectIds.length) {
+			const [inviteRows] = await db.query(
+				`SELECT id, project_id
+				FROM project_members
+				WHERE project_id IN (?) AND user_id = ? AND status = 'pending'
+				ORDER BY created_at DESC`,
+				[projectIds, userId]
+			);
+
+			for(const invite of inviteRows) {
+				const key = String(invite.project_id);
+				if(!projectInviteMap.has(key)) {
+					projectInviteMap.set(key, invite.id);
+				}
+			}
+		}
+
+		const notifications = groupRows.map((row) => {
             const projectVersion = row.object_type === "project_version" ? (projectVersionMap.get(String(row.object_id)) || null) : null;
-            let normalizedActors = actors.map((actor) => ({
-                id: actor.actor_user_id,
-                username: actor.username,
-                slug: actor.slug,
-                avatar: actor.avatar,
-                isVerified: Number(actor.isVerified || 0),
-                activeProfileBadge: actor.activeProfileBadge,
-                createdAt: Number(actor.created_at),
-            }));
+			let normalizedActors = actorsByGroup.get(getGroupKey(row)) || [];
 
             if(row.event_type === "project_version_release" && projectVersion?.ownerActor) {
                 normalizedActors = [{
@@ -283,33 +334,11 @@ router.get("/", auth, async (req, res) => {
 				? project?.moderationReason
 				: row.event_type === "project_version_rejected" ? projectVersion?.moderationReason : null;
 
-            let inviteId = null;
-            if(row.object_type === "organization" && row.event_type === "organization_invite") {
-                const [inviteRows] = await db.query(
-                    `SELECT id
-                    FROM organization_invitations
-                    WHERE organization_id = ?
-                    AND invited_user_id = ?
-                    AND status = 'pending'
-                    ORDER BY created_at DESC
-                    LIMIT 1`,
-                    [row.object_id, userId]
-                );
-                inviteId = inviteRows[0]?.id || null;
-            }
-
-			if(row.object_type === "project" && row.event_type === "project_collaboration_invite") {
-				const [inviteRows] = await db.query(
-					`SELECT id
-					FROM project_members
-					WHERE project_id = ?
-					AND user_id = ?
-					AND status = 'pending'
-					ORDER BY created_at DESC
-					LIMIT 1`,
-					[row.object_id, userId]
-				);
-				inviteId = inviteRows[0]?.id || null;
+			let inviteId = null;
+			if(row.object_type === "organization" && row.event_type === "organization_invite") {
+				inviteId = organizationInviteMap.get(String(row.object_id)) || null;
+			} else if(row.object_type === "project" && row.event_type === "project_collaboration_invite") {
+				inviteId = projectInviteMap.get(String(row.object_id)) || null;
 			}
 
             return {
@@ -326,7 +355,7 @@ router.get("/", auth, async (req, res) => {
                 projectVersion: responseProjectVersion,
                 organization: row.object_type === "organization" ? (organizationMap.get(String(row.object_id)) || null) : null,
             };
-        }));
+		});
 
         return res.json({
             notifications,

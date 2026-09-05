@@ -1,33 +1,14 @@
 const path = require("path");
 
 const { db } = require("../config/db");
-const { clickhouse, hasClickHouseConfig } = require("../config/clickhouse");
-const { cacheClient } = require("../config/cache");
-const { bumpProjectCacheVersion } = require("./projectCache");
-const { awardProjectDownloadAchievements } = require("./achievements");
+const { DOWNLOAD_DEDUPE_LIMIT, DOWNLOAD_DEDUPE_TTL_SECONDS, enqueueDownload } = require("./downloadQueue");
 
 const DOWNLOAD_FILE_EXTENSIONS = new Set([".jar", ".zip", ".rar"]);
-const DOWNLOAD_DEDUPE_TTL_SECONDS = Number(process.env.DOWNLOAD_DEDUPE_TTL_SECONDS) || 6 * 60 * 60;
-const DOWNLOAD_DEDUPE_LIMIT = Number(process.env.DOWNLOAD_DEDUPE_LIMIT) || 1;
 const DEFAULT_DOWNLOAD_PAGE_ORIGINS = [
 	"https://modifold.com",
 	"http://localhost:3000",
 	"http://127.0.0.1:3000",
 ];
-
-const DOWNLOAD_DEDUPE_SCRIPT = `
-local key = KEYS[1]
-local ttl = tonumber(ARGV[1])
-local limit = tonumber(ARGV[2])
-local count = redis.call("INCR", key)
-if count == 1 then
-	redis.call("EXPIRE", key, ttl)
-end
-if count > limit then
-	return {0, count}
-end
-return {1, count}
-`;
 
 const BOT_USER_AGENT_PATTERN = /(bot|crawler|spider|preview|facebookexternalhit|discordbot|telegrambot|slackbot|semrush|ahrefs|mj12|dotbot|blexbot|bytespider|petalbot|curl|wget|python-requests|go-http-client)/i;
 
@@ -162,6 +143,18 @@ const getPublicMediaBases = () => {
 	return ["https://cdn.modifold.com"];
 };
 
+const getSafeDownloadUrl = (fileUrl) => {
+	try {
+		const parsedUrl = new URL(String(fileUrl || ""));
+		if(parsedUrl.protocol !== "https:" || !getPublicMediaBases().includes(parsedUrl.origin)) {
+			return null;
+		}
+		return parsedUrl.toString();
+	} catch {
+		return null;
+	}
+};
+
 const getOriginalPath = (req) => {
 	const originalUri = getHeaderValue(req.headers["x-original-uri"]) || req.originalUrl || req.url;
 	if(!originalUri) {
@@ -202,7 +195,8 @@ const findApprovedVersionByFilePath = async (filePath) => {
 		v.moderation_status,
 		p.id AS project_id,
 		p.slug AS project_slug,
-		p.user_id AS project_user_id
+		p.user_id AS project_user_id,
+		p.downloads AS project_downloads
 		FROM project_versions v
 		INNER JOIN projects p ON p.id = v.project_id
 		WHERE v.file_url IN (?)
@@ -228,7 +222,8 @@ const findApprovedVersionByProjectVersionId = async ({ slug, versionId }) => {
 		v.moderation_status,
 		p.id AS project_id,
 		p.slug AS project_slug,
-		p.user_id AS project_user_id
+		p.user_id AS project_user_id,
+		p.downloads AS project_downloads
 		FROM project_versions v
 		INNER JOIN projects p ON p.id = v.project_id
 		WHERE p.slug = ?
@@ -250,40 +245,6 @@ const hasInternalSecret = (req) => {
 	return Boolean(expectedSecret && providedSecret && providedSecret === expectedSecret);
 };
 
-const insertProjectEvent = async ({ projectSlug, versionId, ipAddress, countryCode }) => {
-	if(!hasClickHouseConfig || !clickhouse) {
-		throw new Error("ClickHouse is not configured");
-	}
-
-	await clickhouse.insert({
-		table: "project_events",
-		values: [{
-			project_slug: projectSlug,
-			version_id: versionId === null || versionId === undefined ? null : String(versionId),
-			event_type: "download",
-			ip_address: ipAddress,
-			country_code: countryCode,
-		}],
-		format: "JSONEachRow",
-	});
-};
-
-const passDownloadDedupe = async ({ ipPrefix, projectId }) => {
-	const key = `download:${ipPrefix}:${projectId}`;
-	const result = await cacheClient.eval(
-		DOWNLOAD_DEDUPE_SCRIPT,
-		[key],
-		[String(DOWNLOAD_DEDUPE_TTL_SECONDS), String(DOWNLOAD_DEDUPE_LIMIT)]
-	);
-
-	return {
-		allowed: Number(result?.[0]) === 1,
-		count: Number(result?.[1]) || 0,
-		limit: DOWNLOAD_DEDUPE_LIMIT,
-		ttlSeconds: DOWNLOAD_DEDUPE_TTL_SECONDS,
-	};
-};
-
 const getBotCheckResult = (req) => {
 	const userAgent = getHeaderValue(req.headers["user-agent"]);
 	if(BOT_USER_AGENT_PATTERN.test(userAgent)) {
@@ -300,59 +261,34 @@ const countApprovedVersionDownload = async ({ req, version }) => {
 		return { status: 200, body: { success: true, counted: false, reason: "no_ip" } };
 	}
 
-	const dedupe = await passDownloadDedupe({
+	const queued = await enqueueDownload({
+		version,
+		ipAddress,
 		ipPrefix,
-		projectId: version.project_id,
+		countryCode: getRequestCountryCode(req),
 	});
 
-	if(!dedupe.allowed) {
+	if(!queued.accepted) {
 		return {
 			status: 200,
 			body: {
 				success: true,
 				counted: false,
 				reason: "deduped",
-				limit: dedupe.limit,
-				ttlSeconds: dedupe.ttlSeconds,
+				limit: DOWNLOAD_DEDUPE_LIMIT,
+				ttlSeconds: DOWNLOAD_DEDUPE_TTL_SECONDS,
 			},
 		};
 	}
-
-	await db.query("UPDATE project_versions SET downloads = downloads + 1 WHERE id = ?", [version.id]);
-	await db.query("UPDATE projects SET downloads = downloads + 1 WHERE id = ?", [version.project_id]);
-	await bumpProjectCacheVersion(version.project_slug);
-
-	const countryCode = getRequestCountryCode(req);
-	try {
-		await insertProjectEvent({
-			projectSlug: version.project_slug,
-			versionId: version.id,
-			ipAddress,
-			countryCode,
-		});
-	} catch(error) {
-		console.warn("Failed to insert download event:", {
-			projectSlug: version.project_slug,
-			versionId: version.id,
-			error: error.message,
-		});
-	}
-
-	const [[{ totalDownloads }]] = await db.query("SELECT downloads AS totalDownloads FROM projects WHERE id = ?", [version.project_id]);
-	await awardProjectDownloadAchievements(db, {
-		projectId: version.project_id,
-		userId: version.project_user_id,
-		totalDownloads,
-	});
 
 	return {
 		status: 200,
 		body: {
 			success: true,
 			counted: true,
-			totalDownloads,
-			limit: dedupe.limit,
-			ttlSeconds: dedupe.ttlSeconds,
+			totalDownloads: Number(version.project_downloads || 0) + 1,
+			limit: DOWNLOAD_DEDUPE_LIMIT,
+			ttlSeconds: DOWNLOAD_DEDUPE_TTL_SECONDS,
 		},
 	};
 };
@@ -407,7 +343,36 @@ const countProjectVersionDownload = async (req, { slug, versionId }) => {
 	return countApprovedVersionDownload({ req, version });
 };
 
+const prepareProjectVersionDownloadRedirect = async (req, { slug, versionId }) => {
+	if(!hasTrustedDownloadPageOrigin(req)) {
+		return { status: 403, body: { success: false, counted: false, reason: "untrusted_origin" } };
+	}
+
+	const version = await findApprovedVersionByProjectVersionId({ slug, versionId });
+	if(!version) {
+		return { status: 404, body: { success: false, counted: false, reason: "version_not_found" } };
+	}
+
+	const downloadUrl = getSafeDownloadUrl(version.file_url);
+	if(!downloadUrl) {
+		return { status: 409, body: { success: false, counted: false, reason: "unsafe_download_url" } };
+	}
+
+	if(req.method === "HEAD") {
+		return { status: 302, downloadUrl, body: { success: true, counted: false, reason: "head" } };
+	}
+
+	const botCheckResult = getBotCheckResult(req);
+	if(botCheckResult) {
+		return { ...botCheckResult, downloadUrl };
+	}
+
+	const result = await countApprovedVersionDownload({ req, version });
+	return { ...result, downloadUrl };
+};
+
 module.exports = {
 	countCdnDownload,
 	countProjectVersionDownload,
+	prepareProjectVersionDownloadRedirect,
 };

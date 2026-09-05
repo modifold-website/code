@@ -98,7 +98,7 @@ const getProjectEventSeriesForSlugs = async ({ projectSlugs, eventType, from, to
 			SELECT
 			${splitByProject ? "project_slug," : ""}
 			toDate(created_at) AS date,
-			count() AS count
+			countIf(event_id IS NULL OR event_type != 'download') + uniqExactIf(event_id, event_id IS NOT NULL AND event_type = 'download') AS count
 			FROM project_events
 			WHERE project_slug IN (${escapedSlugs})
 			AND event_type = {event_type:String}
@@ -160,7 +160,7 @@ const getProjectDownloadCountriesForSlugs = async ({ projectSlugs, from, to }) =
 		query: `
 			SELECT
 			lower(country_code) AS country_code,
-			count() AS count
+			countIf(event_id IS NULL) + uniqExactIf(event_id, event_id IS NOT NULL) AS count
 			FROM project_events
 			WHERE project_slug IN (${escapedSlugs})
 			AND event_type = 'download'

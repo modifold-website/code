@@ -300,17 +300,6 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 	} catch (error) {
 		console.error("Error sending owner version approval notification:", error);
 	}
-
-	try {
-		await fanoutVersionReleaseNotifications({
-			actorUserId: actorId,
-			projectId: version.project_id,
-			versionId: version.id,
-			createdAt,
-		});
-	} catch (error) {
-		console.error("Error sending project version release notifications:", error);
-	}
 };
 
 router.post("/argus/versions/:versionId/report", async (req, res) => {
@@ -545,6 +534,13 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 			if(decision === "approved" && previousModerationStatus !== "approved") {
 				await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [version.project_id]);
+				await fanoutVersionReleaseNotifications({
+					connection,
+					actorUserId: version.project_owner_user_id,
+					projectId: version.project_id,
+					versionId: version.id,
+					createdAt,
+				});
 			}
 
 			await connection.query(

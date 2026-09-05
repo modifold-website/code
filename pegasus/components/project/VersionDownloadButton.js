@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import VersionDownloadDependenciesModal from "@/modal/VersionDownloadDependenciesModal";
 import showOverTheTopDownloadAnimation from "@/components/ui/showOverTheTopDownloadAnimation";
-import { trackVersionDownload } from "@/utils/projects/downloadTracking";
+import { getVersionDownloadEndpoint } from "@/utils/projects/downloadTracking";
 
 const DOWNLOAD_MODAL_DELAY_MS = 2300;
 
@@ -23,6 +23,7 @@ export default function VersionDownloadButton({ project, version, href, classNam
 	const modalTimerRef = useRef(null);
 	const requiredDependencies = useMemo(() => getRequiredDependencies(version), [version]);
 	const hasRequiredDependencies = requiredDependencies.length > 0;
+	const downloadHref = getVersionDownloadEndpoint({ project, version }) || href;
 
 	useEffect(() => {
 		return () => {
@@ -44,12 +45,11 @@ export default function VersionDownloadButton({ project, version, href, classNam
 	};
 
 	const handleClick = (event) => {
-		if(!href) {
+		if(!downloadHref) {
 			event.preventDefault();
 			return;
 		}
 
-		trackVersionDownload({ project, version });
 		showOverTheTopDownloadAnimation();
 		if(hasRequiredDependencies) {
 			openModalAfterDownloadAnimation();
@@ -58,7 +58,7 @@ export default function VersionDownloadButton({ project, version, href, classNam
 
 	return (
 		<>
-			<a className={className} style={style} href={href || undefined} download onClick={handleClick} aria-label={ariaLabel}>
+			<a className={className} style={style} href={downloadHref || undefined} download onClick={handleClick} aria-label={ariaLabel}>
 				{children}
 			</a>
 

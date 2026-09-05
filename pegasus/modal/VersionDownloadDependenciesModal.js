@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { getProjectPath } from "@/utils/projectRoutes";
 import showOverTheTopDownloadAnimation from "@/components/ui/showOverTheTopDownloadAnimation";
 import { getVersionDownloadUrl } from "@/utils/projects/downloads";
-import { trackVersionDownload } from "@/utils/projects/downloadTracking";
+import { getVersionDownloadEndpoint } from "@/utils/projects/downloadTracking";
 
 Modal.setAppElement("body");
 
@@ -31,7 +31,10 @@ function getDependencyVersionPath(dependency) {
 }
 
 function getDependencyDownloadHref(dependency) {
-	return getVersionDownloadUrl(dependency);
+	return getVersionDownloadEndpoint({
+		project: { slug: dependency?.project_slug },
+		version: { id: dependency?.version_id },
+	}) || getVersionDownloadUrl(dependency);
 }
 
 export default function VersionDownloadDependenciesModal({ isOpen, project, version, dependencies = [], onRequestClose }) {
@@ -39,15 +42,7 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 	const tProject = useTranslations("ProjectPage");
 	const projectIconUrl = project?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg";
 
-	const handleDependencyDownloadClick = (dependency) => {
-		trackVersionDownload({
-			project: {
-				slug: dependency?.project_slug,
-			},
-			version: {
-				id: dependency?.version_id,
-			},
-		});
+	const handleDependencyDownloadClick = () => {
 		showOverTheTopDownloadAnimation();
 	};
 

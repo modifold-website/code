@@ -18,11 +18,12 @@ const PROJECT_TYPE_ALIASES = {
 	prefabs: "prefab",
 };
 
-const DISCOVER_CACHE_TTL_SECONDS = Number(process.env.DISCOVER_CACHE_TTL_SECONDS) || 60 * 5;
-const DISCOVER_CACHE_STALE_TTL_SECONDS = Number(process.env.DISCOVER_CACHE_STALE_TTL_SECONDS) || 60 * 30;
-const DISCOVER_CACHE_JITTER_RATIO = Number(process.env.DISCOVER_CACHE_JITTER_RATIO) || 0.15;
-const DISCOVER_CACHE_LOCK_TTL_MS = Number(process.env.DISCOVER_CACHE_LOCK_TTL_MS) || 60000;
-const DISCOVER_CACHE_COLD_WAIT_MS = Number(process.env.DISCOVER_CACHE_COLD_WAIT_MS) || 60000;
+// discover page configuration
+const DISCOVER_CACHE_TTL_SECONDS = 60 * 5;
+const DISCOVER_CACHE_STALE_TTL_SECONDS = 60 * 30;
+const DISCOVER_CACHE_JITTER_RATIO = 0.15;
+const DISCOVER_CACHE_LOCK_TTL_MS = 60 * 1000;
+const DISCOVER_CACHE_COLD_WAIT_MS = 60 * 1000;
 const NEW_PROJECT_WINDOW_DAYS = 7;
 const discoverCache = createSingleFlightCache({ cacheClient });
 
@@ -217,7 +218,7 @@ const getWeeklyDownloadCounts = async ({ limit = 120 } = {}) => {
 			query: `
 				SELECT
 				project_slug,
-				count() AS count
+				countIf(event_id IS NULL) + uniqExactIf(event_id, event_id IS NOT NULL) AS count
 				FROM project_events
 				WHERE event_type = 'download'
 				AND created_at >= now() - toIntervalDay(7)
