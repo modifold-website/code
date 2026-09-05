@@ -6,6 +6,7 @@ const { sanitizePlainText } = require("../../utils/sanitize");
 const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { bumpProjectCacheVersion } = require("../../utils/projectCache");
+const { deleteObject, getPrivateObjectDownloadUrl, normalizeObjectKey, promotePrivateObject } = require("../../utils/fileHosting");
 const router = express.Router();
 const PROJECT_TYPE_PATH_SEGMENTS = {
 	mod: "mod",
@@ -165,6 +166,7 @@ const getVersionForModeration = async (versionId) => {
 		v.changelog,
 		v.release_channel,
 		v.file_url,
+		v.quarantine_key,
 		v.file_size,
 		v.downloads,
 		v.created_at,
@@ -252,6 +254,37 @@ const mapVersionReview = (version) => ({
 	scan_requested_at: version.scan_requested_at,
 	scanned_at: version.scanned_at,
 });
+
+const mapVersionReviewWithFileAccess = async (version) => {
+	const fileUrl = version.file_url || (version.quarantine_key ? await getPrivateObjectDownloadUrl(version.quarantine_key, {
+		expiresInSeconds: 15 * 60,
+	}) : null);
+
+	return mapVersionReview({ ...version, file_url: fileUrl });
+};
+
+const promoteVersionFile = async (version) => {
+	if(!version.quarantine_key) {
+		return null;
+	}
+
+	const quarantineKey = normalizeObjectKey(version.quarantine_key);
+	const expectedPrefix = `quarantine/projects/${version.project_id}/versions/${version.id}/`;
+	if(!quarantineKey.startsWith(expectedPrefix)) {
+		throw new Error("Invalid version quarantine key");
+	}
+
+	const destinationKey = quarantineKey.slice("quarantine/".length);
+	const promoted = await promotePrivateObject({
+		key: quarantineKey,
+		destinationKey,
+	});
+
+	return {
+		...promoted,
+		quarantineKey,
+	};
+};
 
 const notifyVersionApproved = async ({ version, createdAt }) => {
 	const actorId = version.project_owner_user_id;
@@ -387,6 +420,7 @@ router.get("/technical-review", auth, async (req, res) => {
 			v.changelog,
 			v.release_channel,
 			v.file_url,
+			v.quarantine_key,
 			v.file_size,
 			v.downloads,
 			v.created_at,
@@ -424,7 +458,7 @@ router.get("/technical-review", auth, async (req, res) => {
 		const [[{ total }]] = await db.query(countQuery, countParams);
 
 		return res.json({
-			versions: versions.map(mapVersionReview),
+			versions: await Promise.all(versions.map(mapVersionReviewWithFileAccess)),
 			totalPages: Math.max(1, Math.ceil(total / limitNumber)),
 			currentPage: pageNumber,
 			totalVersions: total,
@@ -453,6 +487,8 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 	}
 
 	const createdAt = Math.floor(Date.now() / 1000);
+	let promotion = null;
+	let previousModerationStatus = null;
 
 	try {
 		const version = await getVersionForModeration(versionId);
@@ -463,18 +499,51 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 		const connection = await db.getConnection();
 		try {
 			await connection.beginTransaction();
+			const [lockedVersions] = await connection.query(
+				`SELECT moderation_status, file_url, quarantine_key, scanned_at
+				FROM project_versions
+				WHERE id = ?
+				FOR UPDATE`,
+				[versionId]
+			);
+            
+			const lockedVersion = lockedVersions[0];
+			if(!lockedVersion) {
+				const error = new Error("Version not found");
+				error.statusCode = 404;
+				throw error;
+			}
+
+			previousModerationStatus = lockedVersion.moderation_status;
+
+			if(decision === "approved" && previousModerationStatus !== "approved") {
+				if(!lockedVersion.file_url && !lockedVersion.quarantine_key) {
+					const error = new Error("Version file is unavailable");
+					error.statusCode = 409;
+					throw error;
+				}
+
+				if(previousModerationStatus !== "needs_review" || !lockedVersion.scanned_at) {
+					const error = new Error("Version must complete the Argus scan before approval");
+					error.statusCode = 409;
+					throw error;
+				}
+
+				promotion = await promoteVersionFile({ ...version, ...lockedVersion });
+			}
 
 			await connection.query(
 				`UPDATE project_versions
 				SET moderation_status = ?,
 				moderation_reason = ?,
 				moderated_by = ?,
-				moderated_at = NOW()
+				moderated_at = NOW(),
+				file_url = COALESCE(?, file_url)
 				WHERE id = ?`,
-				[decision, decision === "blocked" ? reason : null, req.user.id, versionId]
+				[decision, decision === "blocked" ? reason : null, req.user.id, promotion?.url || null, versionId]
 			);
 
-			if(decision === "approved" && version.moderation_status !== "approved") {
+			if(decision === "approved" && previousModerationStatus !== "approved") {
 				await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [version.project_id]);
 			}
 
@@ -487,13 +556,32 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 			await connection.commit();
 		} catch(error) {
+			if(promotion) {
+				await deleteObject(promotion.key, "public").catch((cleanupError) => {
+					console.warn(`Failed to roll back uncommitted public version file: ${cleanupError.message}`);
+				});
+				promotion = null;
+			}
+
 			await connection.rollback();
 			throw error;
 		} finally {
 			connection.release();
 		}
 
-		if(decision === "approved" && version.moderation_status !== "approved") {
+		if(promotion) {
+			try {
+				await deleteObject(promotion.quarantineKey, "private");
+				await db.query(
+					"UPDATE project_versions SET quarantine_key = NULL WHERE id = ? AND quarantine_key = ?",
+					[versionId, promotion.quarantineKey]
+				);
+			} catch (cleanupError) {
+				console.warn(`Failed to remove promoted quarantine file: ${cleanupError.message}`);
+			}
+		}
+
+		if(decision === "approved" && previousModerationStatus !== "approved") {
 			await bumpProjectCacheVersion(version.project_slug).catch((error) => {
 				console.warn(`Failed to bump project cache after approving version: ${error.message}`);
 			});
@@ -514,7 +602,7 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 		return res.json({ success: true });
 	} catch (error) {
 		console.error("Error applying technical review decision:", error);
-		return res.status(500).json({ message: "Error applying technical review decision", error: error.message });
+		return res.status(error.statusCode || 500).json({ message: error.message || "Error applying technical review decision" });
 	}
 });
 

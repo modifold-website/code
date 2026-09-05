@@ -22,7 +22,7 @@ const { awardFirstApprovedProjectAchievement } = require("../../utils/achievemen
 const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
-const { deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const router = express.Router();
 
 const DISCLOSURE_TEXT_LIMIT = 2000;
@@ -725,6 +725,21 @@ const storeProjectFile = async ({ projectId, file, directory = "" }) => {
 	};
 };
 
+const storeProjectVersionFile = async ({ projectId, versionId, file }) => {
+	const objectKey = ["quarantine", "projects", String(projectId), "versions", String(versionId), file.filename].join("/");
+	await uploadFile({
+		key: objectKey,
+		filePath: file.path,
+		contentType: file.mimetype,
+		publicity: "private",
+	});
+
+	return {
+		...file,
+		objectKey,
+	};
+};
+
 const rgbToInt = (r, g, b) => ((r & 255) << 16) + ((g & 255) << 8) + (b & 255);
 
 const extractDominantColorInt = async (filePath) => {
@@ -818,7 +833,7 @@ const buildVisibleVersionWhereClause = async (project, userId) => {
 };
 
 const sanitizeVersionForPublicResponse = (version, { includeModeration = false } = {}) => {
-	const { argus_report, moderated_by, moderated_at, scan_requested_at, scanned_at, moderation_status, moderation_reason, ...safeVersion } = version || {};
+	const { argus_report, moderated_by, moderated_at, quarantine_key, scan_requested_at, scanned_at, moderation_status, moderation_reason, ...safeVersion } = version || {};
 
 	if(includeModeration) {
 		return {
@@ -837,14 +852,34 @@ const getVersionFileFields = (version) => ({
 	files: version?.file_url ? [{ url: version.file_url, size: version.file_size, primary: true }] : [],
 });
 
-const queueArgusScan = ({ versionId, project, fileUrl, fileName, fileSize }) => {
-	notifyArgusAboutVersion({
-		versionId,
-		projectId: project.id,
-		projectSlug: project.slug,
-		fileUrl,
-		fileName,
-		fileSize,
+const getVersionWithPrivateFileAccess = async (version, canViewPrivateFile) => {
+	if(!canViewPrivateFile || version?.file_url || !version?.quarantine_key) {
+		return version;
+	}
+
+	return {
+		...version,
+		file_url: await getPrivateObjectDownloadUrl(version.quarantine_key, { expiresInSeconds: 15 * 60 }),
+	};
+};
+
+const queueArgusScan = ({ versionId, project, quarantineKey = null, fileUrl = null, fileName, fileSize }) => {
+	Promise.resolve().then(async () => {
+		const scanFileUrl = quarantineKey ? await getPrivateObjectDownloadUrl(quarantineKey, {
+			expiresInSeconds: Number(process.env.ARGUS_FILE_URL_TTL_SECONDS) || 6 * 60 * 60,
+		}) : fileUrl;
+		if(!scanFileUrl) {
+			throw new Error("Version file is unavailable for Argus scan");
+		}
+
+		return notifyArgusAboutVersion({
+			versionId,
+			projectId: project.id,
+			projectSlug: project.slug,
+			fileUrl: scanFileUrl,
+			fileName,
+			fileSize,
+		});
 	}).then(async (result) => {
 		if(result.queued) {
 			await db.query("UPDATE project_versions SET moderation_status = 'scanning', scan_requested_at = NOW() WHERE id = ? AND moderation_status = 'pending'", [versionId]);
@@ -2088,7 +2123,9 @@ router.put('/:slug/icon', auth, upload.single('icon'), async (req, res) => {
 });
 
 router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async (req, res) => {
-    const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
+	const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
+	let uploadedQuarantineKey = null;
+	let versionPersisted = false;
 
     try {
         const project = await getProjectBySlug(req.params.slug);
@@ -2121,13 +2158,13 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
         }
 
         const versionId = generateId();
-        const storedVersionFile = await storeProjectFile({
+		const storedVersionFile = await storeProjectVersionFile({
 			projectId: project.id,
+			versionId,
 			file: req.file,
-			directory: `versions/${versionId}`,
 		});
-        const fileUrl = storedVersionFile.url;
-        const moderationStatus = shouldHoldVersionForProjectModeration(project) ? "draft" : "pending";
+		uploadedQuarantineKey = storedVersionFile.objectKey;
+		const moderationStatus = shouldHoldVersionForProjectModeration(project) ? "draft" : "pending";
         const connection = await db.getConnection();
 
         try {
@@ -2135,22 +2172,23 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
 
             const resolvedDependencies = await resolveVersionDependencies({ connection, dependenciesRaw: dependencies });
 
-            await connection.query("INSERT INTO project_versions (id, project_id, version_number, changelog, release_channel, file_url, file_size, game_versions, loaders, moderation_status, scan_requested_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-                versionId,
-                project.id,
-                safeVersionNumber,
-                changelog ? sanitizeMarkdownText(changelog) : null,
-                release_channel || "release",
-                fileUrl,
-                req.file.size,
+			await connection.query("INSERT INTO project_versions (id, project_id, version_number, changelog, release_channel, file_url, quarantine_key, file_size, game_versions, loaders, moderation_status, scan_requested_at) VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)", [
+				versionId,
+				project.id,
+				safeVersionNumber,
+				changelog ? sanitizeMarkdownText(changelog) : null,
+				release_channel || "release",
+				uploadedQuarantineKey,
+				req.file.size,
                 JSON.stringify(normalizedGameVersions),
                 loaders,
                 moderationStatus,
                 moderationStatus === "pending" ? new Date() : null,
             ]);
 
-            await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
-            await connection.commit();
+			await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
+			await connection.commit();
+			versionPersisted = true;
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -2159,17 +2197,23 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
         }
 
         if(moderationStatus === "pending") {
-            queueArgusScan({
-                versionId,
-                project,
-                fileUrl,
-                fileName: req.file.originalname || req.file.filename,
+			queueArgusScan({
+				versionId,
+				project,
+				quarantineKey: uploadedQuarantineKey,
+				fileName: req.file.originalname || req.file.filename,
                 fileSize: req.file.size,
             });
         }
 
-        res.json({ success: true, versionId, fileUrl, moderation_status: moderationStatus });
-    } catch (error) {
+		res.json({ success: true, versionId, fileUrl: null, moderation_status: moderationStatus });
+	} catch (error) {
+		if(uploadedQuarantineKey && !versionPersisted) {
+			await deleteObject(uploadedQuarantineKey, "private").catch((cleanupError) => {
+				console.warn(`Failed to delete unpersisted quarantine file: ${cleanupError.message}`);
+			});
+		}
+
         console.error("Error creating version:", error);
         if(error?.statusCode === 400) {
             return res.status(400).json({ message: error.message });
@@ -2687,8 +2731,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 		const disclosureState = await disclosureStatePromise;
 		const versionDependencies = await versionDependenciesPromise;
 
-        const formattedVersions = versions.map((version) => {
-            let gameVersions, loaders;
+		const formattedVersions = await Promise.all(versions.map(async (version) => {
+			let gameVersions, loaders;
             
             try {
                 gameVersions = version.game_versions ? JSON.parse(version.game_versions).join(',') : '';
@@ -2699,14 +2743,16 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 loaders = '';
             }
 
-            return sanitizeVersionForPublicResponse({
-                ...version,
-                game_versions: gameVersions,
+			const versionWithFileAccess = await getVersionWithPrivateFileAccess(version, canViewModerationFields);
+
+			return sanitizeVersionForPublicResponse({
+				...versionWithFileAccess,
+				game_versions: gameVersions,
 				loaders: loaders,
-				...getVersionFileFields(version),
+				...getVersionFileFields(versionWithFileAccess),
 				dependencies: versionDependencies.get(String(version.id || "").trim()) || [],
 			}, { includeModeration: canViewModerationFields });
-        });
+		}));
 
         const shouldShowPlayersLast14Days = Number(projectData.show_players_last_14d) === 1;
         const playersLast14DaysBySlug = shouldShowPlayersLast14Days ? await getProjectPlayersInLastDaysBySlug({
@@ -2875,7 +2921,10 @@ router.delete("/:slug", auth, async (req, res) => {
 
         const projectId = project.id;
         try {
-            await deletePrefix(`projects/${projectId}`);
+			await Promise.all([
+				deletePrefix(`projects/${projectId}`),
+				deletePrefix(`quarantine/projects/${projectId}`, "private"),
+			]);
         } catch (fileError) {
             console.warn(`Failed to delete project files for ${projectId}: ${fileError.message}`);
             return res.status(500).json({
@@ -3149,7 +3198,7 @@ router.post('/:slug/submit', auth, async (req, res) => {
 
         const projectMeta = projectMetaRows[0];
 
-        const [versions] = await db.query('SELECT id, file_url, file_size, moderation_status FROM project_versions WHERE project_id = ?', [project.id]);
+		const [versions] = await db.query('SELECT id, file_url, quarantine_key, file_size, moderation_status FROM project_versions WHERE project_id = ?', [project.id]);
         if(!projectMeta.icon_url || !projectMeta.summary || !projectMeta.description || versions.length === 0) {
             return res.status(400).json({ message: 'Project missing required fields: icon, description, summary or versions' });
         }
@@ -3192,11 +3241,12 @@ router.post('/:slug/submit', auth, async (req, res) => {
         }
 
         draftVersions.forEach((version) => {
-            queueArgusScan({
-                versionId: version.id,
-                project,
-                fileUrl: version.file_url,
-                fileName: version.file_url?.split("/").pop() || version.id,
+			queueArgusScan({
+				versionId: version.id,
+				project,
+				quarantineKey: version.quarantine_key,
+				fileUrl: version.file_url,
+				fileName: (version.quarantine_key || version.file_url)?.split("/").pop() || version.id,
                 fileSize: version.file_size,
             });
         });
@@ -3212,6 +3262,8 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
     const { slug, versionId } = req.params;
     const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
     const file = req.file;
+	let uploadedQuarantineKey = null;
+	let replacementPersisted = false;
 
     try {
         const project = await getProjectBySlug(slug);
@@ -3229,7 +3281,7 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             return;
         }
 
-        const [version] = await db.query('SELECT id, moderation_status, file_url FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
+        const [version] = await db.query('SELECT id, moderation_status, file_url, quarantine_key FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: 'Version not found' });
         }
@@ -3239,27 +3291,15 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             return res.status(400).json({ message: "Invalid game versions" });
         }
 
-        const storedVersionFile = file ? await storeProjectFile({
+        const storedVersionFile = file ? await storeProjectVersionFile({
 			projectId: project.id,
+			versionId,
 			file,
-			directory: `versions/${versionId}`,
 		}) : null;
-        const fileUrl = storedVersionFile?.url || null;
+		uploadedQuarantineKey = storedVersionFile?.objectKey || null;
         const fileSize = file ? file.size : null;
 
-        const nextModerationStatus = fileUrl
-            ? shouldHoldVersionForProjectModeration(project) && version[0].moderation_status === "draft" ? "draft" : "pending"
-            : null;
-
-        const updateData = {
-            version_number: version_number ? sanitizePlainText(version_number) : version_number,
-            changelog: changelog ? sanitizeMarkdownText(changelog) : null,
-            release_channel: release_channel || 'release',
-            file_url: fileUrl,
-            file_size: fileSize,
-            game_versions: JSON.stringify(normalizedGameVersions),
-            loaders: loaders || '[]',
-        };
+        const nextModerationStatus = uploadedQuarantineKey ? shouldHoldVersionForProjectModeration(project) && version[0].moderation_status === "draft" ? "draft" : "pending" : null;
 
         const connection = await db.getConnection();
 
@@ -3268,50 +3308,50 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
 
             const resolvedDependencies = await resolveVersionDependencies({ connection, dependenciesRaw: dependencies });
 
-            await connection.query(
-                `UPDATE project_versions
-                SET version_number = ?,
-                changelog = ?,
-                release_channel = ?,
-                file_url = COALESCE(?, file_url),
-                file_size = COALESCE(?, file_size),
-                game_versions = ?,
-                loaders = ?,
-                moderation_status = COALESCE(?, moderation_status),
-                moderation_reason = IF(? IS NULL, moderation_reason, NULL),
-                moderated_by = IF(? IS NULL, moderated_by, NULL),
-                moderated_at = IF(? IS NULL, moderated_at, NULL),
-                scan_requested_at = CASE WHEN ? IS NULL THEN scan_requested_at WHEN ? = 'draft' THEN NULL ELSE NOW() END,
-                scanned_at = IF(? IS NULL, scanned_at, NULL),
-                argus_report = IF(? IS NULL, argus_report, NULL)
-                WHERE id = ?`,
-                [
-                    updateData.version_number,
-                    updateData.changelog,
-                    updateData.release_channel,
-                    updateData.file_url,
-                    updateData.file_size,
-                    updateData.game_versions,
-                    updateData.loaders,
-                    nextModerationStatus,
-                    updateData.file_url,
-                    updateData.file_url,
-                    updateData.file_url,
-                    nextModerationStatus,
-                    nextModerationStatus,
-                    updateData.file_url,
-                    updateData.file_url,
-                    versionId,
-                ]
-            );
+            const updateFields = [
+				"version_number = ?",
+				"changelog = ?",
+				"release_channel = ?",
+				"game_versions = ?",
+				"loaders = ?",
+			];
+			const updateParams = [
+				version_number ? sanitizePlainText(version_number) : version_number,
+				changelog ? sanitizeMarkdownText(changelog) : null,
+				release_channel || "release",
+				JSON.stringify(normalizedGameVersions),
+				loaders || "[]",
+			];
+
+			if(uploadedQuarantineKey) {
+				updateFields.push(
+					"file_url = NULL",
+					"quarantine_key = ?",
+					"file_size = ?",
+					"moderation_status = ?",
+					"moderation_reason = NULL",
+					"moderated_by = NULL",
+					"moderated_at = NULL",
+					nextModerationStatus === "draft" ? "scan_requested_at = NULL" : "scan_requested_at = NOW()",
+					"scanned_at = NULL",
+					"argus_report = NULL"
+				);
+				updateParams.push(uploadedQuarantineKey, fileSize, nextModerationStatus);
+			}
+
+			await connection.query(
+				`UPDATE project_versions SET ${updateFields.join(", ")} WHERE id = ?`,
+				[...updateParams, versionId]
+			);
 
             await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
 
-            if(!fileUrl && version[0].moderation_status === "approved") {
+            if(!uploadedQuarantineKey && version[0].moderation_status === "approved") {
                 await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
             }
 
             await connection.commit();
+			replacementPersisted = Boolean(uploadedQuarantineKey);
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -3319,17 +3359,23 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             connection.release();
         }
 
-		if(fileUrl && version[0].file_url !== fileUrl) {
+		if(uploadedQuarantineKey && version[0].file_url) {
 			await deletePublicUrlWithinPrefix(version[0].file_url, `projects/${project.id}`).catch((error) => {
 				console.warn(`Failed to delete replaced version file: ${error.message}`);
 			});
 		}
 
-        if(fileUrl && nextModerationStatus === "pending") {
+		if(uploadedQuarantineKey && version[0].quarantine_key && version[0].quarantine_key !== uploadedQuarantineKey) {
+			await deleteObject(version[0].quarantine_key, "private").catch((error) => {
+				console.warn(`Failed to delete replaced quarantine file: ${error.message}`);
+			});
+		}
+
+        if(uploadedQuarantineKey && nextModerationStatus === "pending") {
             queueArgusScan({
                 versionId,
                 project,
-                fileUrl,
+				quarantineKey: uploadedQuarantineKey,
                 fileName: file.originalname || file.filename,
                 fileSize,
             });
@@ -3337,6 +3383,12 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
 
         res.json({ success: true });
     } catch (error) {
+		if(uploadedQuarantineKey && !replacementPersisted) {
+			await deleteObject(uploadedQuarantineKey, "private").catch((cleanupError) => {
+				console.warn(`Failed to delete unpersisted replacement quarantine file: ${cleanupError.message}`);
+			});
+		}
+
         console.error('Error updating version:', error);
         if(error?.statusCode === 400) {
             return res.status(400).json({ message: error.message });
@@ -3365,7 +3417,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
             return;
         }
 
-        const [version] = await db.query("SELECT id, file_url, moderation_status FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
+        const [version] = await db.query("SELECT id, file_url, quarantine_key, moderation_status FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: "Version not found" });
         }
@@ -3378,6 +3430,12 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
                 console.warn(`Failed to delete version file ${fileUrl}: ${fileError.message}`);
             }
         }
+
+		if(version[0].quarantine_key) {
+			await deleteObject(version[0].quarantine_key, "private").catch((fileError) => {
+				console.warn(`Failed to delete quarantined version file: ${fileError.message}`);
+			});
+		}
 
         try {
             await db.query("DELETE FROM dependencies WHERE version_id = ? OR dependency_version_id = ?", [versionId, versionId]);
@@ -5680,8 +5738,8 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
             return res.status(404).json({ message: 'Project not found' });
         }
 
-        const [version] = await db.query(
-            'SELECT id, project_id, version_number, downloads, changelog, release_channel, game_versions, loaders, file_url, file_size, created_at, moderation_status, moderation_reason FROM project_versions WHERE project_id = ? AND id = ?',
+		const [version] = await db.query(
+			'SELECT id, project_id, version_number, downloads, changelog, release_channel, game_versions, loaders, file_url, quarantine_key, file_size, created_at, moderation_status, moderation_reason FROM project_versions WHERE project_id = ? AND id = ?',
             [project[0].id, version_number]
         );
 
@@ -5691,14 +5749,15 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
             return res.status(404).json({ message: 'Version not found' });
         }
 
-        const dependencies = await getVersionDependencies(db, version[0].id);
-        const safeVersion = sanitizeVersionForPublicResponse(version[0], { includeModeration: canViewModerationFields });
+		const dependencies = await getVersionDependencies(db, version[0].id);
+		const versionWithFileAccess = await getVersionWithPrivateFileAccess(version[0], canViewModerationFields);
+		const safeVersion = sanitizeVersionForPublicResponse(versionWithFileAccess, { includeModeration: canViewModerationFields });
 
         res.json({
             ...safeVersion,
             game_versions: version[0].game_versions ? JSON.parse(version[0].game_versions) : [],
             loaders: version[0].loaders ? JSON.parse(version[0].loaders) : [],
-			...getVersionFileFields(version[0]),
+			...getVersionFileFields(versionWithFileAccess),
             dependencies,
         });
     } catch (error) {

@@ -836,7 +836,10 @@ router.delete("/me", auth, async (req, res) => {
         if(projectIds.length > 0) {
             for(const projectId of projectIds) {
                 try {
-                    await deletePrefix(`projects/${projectId}`);
+					await Promise.all([
+						deletePrefix(`projects/${projectId}`),
+						deletePrefix(`quarantine/projects/${projectId}`, "private"),
+					]);
                 } catch (err) {
                     console.warn(`Не удалось удалить файлы проекта ${projectId}:`, err);
                 }

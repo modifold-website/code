@@ -6,6 +6,7 @@ const path = require("path");
 const { pipeline } = require("stream/promises");
 const { DeleteObjectCommand, DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const DEFAULT_PUBLIC_BASE = "https://cdn.modifold.com";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
@@ -28,7 +29,11 @@ const buildSafeObjectFilename = (value) => {
 };
 
 const validateStorageConfiguration = () => {
-	getBucket();
+	getBucket("public");
+};
+
+const validatePrivateStorageConfiguration = () => {
+	getBucket("private");
 };
 
 const normalizeObjectKey = (value) => {
@@ -40,15 +45,25 @@ const normalizeObjectKey = (value) => {
 	return normalized;
 };
 
-const getBucketConfig = () => {
-	const scope = "PUBLIC";
+const normalizeStorageScope = (value) => {
+	const scope = String(value || "public").trim().toLowerCase();
+	if(scope !== "public" && scope !== "private") {
+		throw new Error("Invalid storage scope");
+	}
+
+	return scope;
+};
+
+const getBucketConfig = (publicity = "public") => {
+	const normalizedScope = normalizeStorageScope(publicity);
+	const scope = normalizedScope.toUpperCase();
 	const bucketName = String(process.env[`S3_${scope}_BUCKET_NAME`] || "").trim();
 	const configuredUrl = String(process.env[`S3_${scope}_URL`] || "").trim();
 	const accessKeyId = String(process.env[`S3_${scope}_ACCESS_TOKEN`] || "").trim();
 	const secretAccessKey = String(process.env[`S3_${scope}_SECRET`] || "").trim();
 
 	if([bucketName, configuredUrl, accessKeyId, secretAccessKey].some(isUnsetStorageValue)) {
-		throw new Error("S3 public storage is not fully configured");
+		throw new Error(`S3 ${normalizedScope} storage is not fully configured`);
 	}
 
 	const endpoint = /^https?:\/\//i.test(configuredUrl) ? configuredUrl.replace(/\/+$/, "") : `https://${configuredUrl}.r2.cloudflarestorage.com`;
@@ -67,17 +82,19 @@ const getBucketConfig = () => {
 	};
 };
 
-const getBucket = () => {
-	if(bucketCache.has("public")) {
-		return bucketCache.get("public");
+const getBucket = (publicity = "public") => {
+	const scope = normalizeStorageScope(publicity);
+	if(bucketCache.has(scope)) {
+		return bucketCache.get(scope);
 	}
 
-	const config = getBucketConfig();
+	const config = getBucketConfig(scope);
 	const bucket = {
 		name: config.bucketName,
 		client: new S3Client(config.clientConfig),
 	};
-	bucketCache.set("public", bucket);
+	
+	bucketCache.set(scope, bucket);
 	return bucket;
 };
 
@@ -109,7 +126,7 @@ const safelyRemoveFile = async (filePath) => {
 
 const uploadBuffer = async ({ key, body, contentType, cacheControl = IMMUTABLE_CACHE_CONTROL, publicity = "public" }) => {
 	const objectKey = normalizeObjectKey(key);
-	const bucket = getBucket();
+	const bucket = getBucket(publicity);
 	await bucket.client.send(new PutObjectCommand({
 		Bucket: bucket.name,
 		Key: objectKey,
@@ -121,7 +138,7 @@ const uploadBuffer = async ({ key, body, contentType, cacheControl = IMMUTABLE_C
 
 const uploadFile = async ({ key, filePath, contentType, cacheControl = IMMUTABLE_CACHE_CONTROL, publicity = "public", removeSource = true }) => {
 	const objectKey = normalizeObjectKey(key);
-	const bucket = getBucket();
+	const bucket = getBucket(publicity);
 	const fileStat = await fsp.stat(filePath);
 	const partSize = 16 * 1024 * 1024;
 	const upload = new Upload({
@@ -147,8 +164,71 @@ const uploadFile = async ({ key, filePath, contentType, cacheControl = IMMUTABLE
 
 const deleteObject = async (key, publicity = "public") => {
 	const objectKey = normalizeObjectKey(key);
-	const bucket = getBucket();
+	const bucket = getBucket(publicity);
 	await bucket.client.send(new DeleteObjectCommand({ Bucket: bucket.name, Key: objectKey }));
+};
+
+const getPrivateObjectDownloadUrl = async (key, { expiresInSeconds = 6 * 60 * 60 } = {}) => {
+	const objectKey = normalizeObjectKey(key);
+	const bucket = getBucket("private");
+	const expiresIn = Math.min(7 * 24 * 60 * 60, Math.max(60, Number(expiresInSeconds) || 6 * 60 * 60));
+
+	return getSignedUrl(
+		bucket.client,
+		new GetObjectCommand({ Bucket: bucket.name, Key: objectKey }),
+		{ expiresIn }
+	);
+};
+
+const transferObject = async ({ sourceKey, sourcePublicity, destinationKey, destinationPublicity }) => {
+	const normalizedSourceKey = normalizeObjectKey(sourceKey);
+	const normalizedDestinationKey = normalizeObjectKey(destinationKey);
+	const sourceBucket = getBucket(sourcePublicity);
+	const destinationBucket = getBucket(destinationPublicity);
+	const source = await sourceBucket.client.send(new GetObjectCommand({
+		Bucket: sourceBucket.name,
+		Key: normalizedSourceKey,
+	}));
+	const upload = new Upload({
+		client: destinationBucket.client,
+		params: {
+			Bucket: destinationBucket.name,
+			Key: normalizedDestinationKey,
+			Body: source.Body,
+			ContentLength: source.ContentLength,
+			ContentType: source.ContentType || "application/octet-stream",
+			CacheControl: destinationPublicity === "public" ? IMMUTABLE_CACHE_CONTROL : undefined,
+		},
+		queueSize: 4,
+		partSize: 16 * 1024 * 1024,
+		leavePartsOnError: false,
+	});
+
+	await upload.done();
+	return normalizedDestinationKey;
+};
+
+const promotePrivateObject = async ({ key, destinationKey }) => {
+	const publicKey = await transferObject({
+		sourceKey: key,
+		sourcePublicity: "private",
+		destinationKey,
+		destinationPublicity: "public",
+	});
+
+	return {
+		key: publicKey,
+		url: getPublicUrl(publicKey),
+	};
+};
+
+const quarantinePublicObject = async ({ key, destinationKey }) => {
+	return transferObject({
+		sourceKey: key,
+		sourcePublicity: "public",
+		destinationKey,
+		destinationPublicity: "private",
+	});
 };
 
 const getPublicObjectKeyFromUrl = (value) => {
@@ -163,9 +243,7 @@ const getPublicObjectKeyFromUrl = (value) => {
 		return null;
 	}
 
-	const publicBases = [getPublicBase(), DEFAULT_PUBLIC_BASE]
-		.map((base) => String(base || "").replace(/\/+$/, ""))
-		.filter(Boolean);
+	const publicBases = [getPublicBase(), DEFAULT_PUBLIC_BASE].map((base) => String(base || "").replace(/\/+$/, "")).filter(Boolean);
 
 	for(const base of new Set(publicBases)) {
 		try {
@@ -199,14 +277,16 @@ const deletePublicUrlWithinPrefix = async (url, prefix) => {
 
 const deletePrefix = async (prefix, publicity = "public") => {
 	const objectPrefix = `${normalizeObjectKey(prefix).replace(/\/+$/, "")}/`;
-	const bucket = getBucket();
+	const bucket = getBucket(publicity);
 	let continuationToken;
+
 	do {
 		const result = await bucket.client.send(new ListObjectsV2Command({
 			Bucket: bucket.name,
 			Prefix: objectPrefix,
 			ContinuationToken: continuationToken,
 		}));
+
 		const objects = (result.Contents || []).map((item) => ({ Key: item.Key })).filter((item) => item.Key);
 		if(objects.length > 0) {
 			await bucket.client.send(new DeleteObjectsCommand({
@@ -223,6 +303,7 @@ const getLocalReadableObjectPath = async (key, publicity = "public") => {
 	const objectKey = normalizeObjectKey(key);
 	const cacheRoot = path.join(getRuntimeTempRoot(), "storage-cache");
 	const cachePath = path.join(cacheRoot, publicity, ...objectKey.split("/"));
+	
 	try {
 		await fsp.access(cachePath, fs.constants.R_OK);
 		return cachePath;
@@ -236,9 +317,10 @@ const getLocalReadableObjectPath = async (key, publicity = "public") => {
 	}
 
 	const downloadPromise = (async () => {
-		const bucket = getBucket();
+		const bucket = getBucket(publicity);
 		const temporaryPath = `${cachePath}.${crypto.randomBytes(6).toString("hex")}.tmp`;
 		await ensureParentDirectory(cachePath);
+		
 		try {
 			const response = await bucket.client.send(new GetObjectCommand({ Bucket: bucket.name, Key: objectKey }));
 			await pipeline(response.Body, fs.createWriteStream(temporaryPath, { flags: "wx" }));
@@ -251,6 +333,7 @@ const getLocalReadableObjectPath = async (key, publicity = "public") => {
 	})();
 
 	localObjectPromises.set(promiseKey, downloadPromise);
+
 	try {
 		return await downloadPromise;
 	} finally {
@@ -266,14 +349,18 @@ module.exports = {
 	deletePrefix,
 	deletePublicUrl,
 	deletePublicUrlWithinPrefix,
+	getPrivateObjectDownloadUrl,
 	getLocalReadableObjectPath,
 	getPublicBase,
 	getPublicObjectKeyFromUrl,
 	getPublicUrl,
 	getUploadTempRoot,
 	normalizeObjectKey,
+	promotePrivateObject,
+	quarantinePublicObject,
 	safelyRemoveFile,
 	uploadBuffer,
 	uploadFile,
+	validatePrivateStorageConfiguration,
 	validateStorageConfiguration,
 };
