@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const { db } = require("../../config/db");
 const { clickhouse, hasClickHouseConfig } = require("../../config/clickhouse");
 const auth = require("../../middleware/auth");
-const { getCacheJson, setCacheJson } = require("../../utils/cache");
+const { getCacheJson, setCacheJson, getCacheGeneration } = require("../../utils/cache");
 const router = express.Router();
 const multer = require("multer");
 const sharp = require("sharp");
@@ -347,7 +347,11 @@ router.get("/me/likes", auth, async (req, res) => {
 		const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 50) : 20;
 		const offset = (page - 1) * limit;
 		const userId = req.user.id;
-		const cacheKey = `user_likes_${userId}_${page}_${limit}`;
+		const [globalGeneration, userGeneration] = await Promise.all([
+			getCacheGeneration("user_likes"),
+			getCacheGeneration(`user_likes:${userId}`),
+		]);
+		const cacheKey = `user_likes_${globalGeneration}_${userGeneration}_${userId}_${page}_${limit}`;
 		const cachedResponse = await getCacheJson(cacheKey);
 
 		if(cachedResponse) {

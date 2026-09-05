@@ -14,7 +14,7 @@ const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require
 const { validateSlug } = require("../../utils/slug");
 const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
 const optionalAuth = require('../../middleware/optionalAuth');
-const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
+const { getCacheJson, setCacheJson, getCacheGeneration, bumpCacheGeneration } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
 const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
@@ -1437,7 +1437,8 @@ router.get("/", async (req, res) => {
 
         const offset = (page - 1) * limit;
 
-        const cacheKey = `modifold_projects_${Buffer.from(JSON.stringify(req.query)).toString('base64')}`;
+		const cacheGeneration = await getCacheGeneration("projects");
+		const cacheKey = `modifold_projects_${cacheGeneration}_${Buffer.from(JSON.stringify(req.query)).toString('base64')}`;
         
         const cachedResponse = await getCacheJson(cacheKey);
         if(cachedResponse) {
@@ -5531,7 +5532,7 @@ router.post('/:slug/like', auth, async (req, res) => {
         }
 
         await db.query('INSERT INTO project_likes (project_id, user_id, created_at) VALUES (?, ?, ?)', [projectId, userId, Math.floor(Date.now() / 1000)]);
-        await deleteCacheByPattern(`user_likes_${userId}_*`);
+		await bumpCacheGeneration(`user_likes:${userId}`);
 
         await db.query('UPDATE projects SET followers = followers + 1 WHERE id = ?', [projectId]);
 
@@ -5572,7 +5573,7 @@ router.delete('/:slug/like', auth, async (req, res) => {
         }
 
         await db.query('DELETE FROM project_likes WHERE project_id = ? AND user_id = ?', [projectId, userId]);
-        await deleteCacheByPattern(`user_likes_${userId}_*`);
+		await bumpCacheGeneration(`user_likes:${userId}`);
 
         await db.query('UPDATE projects SET followers = followers - 1 WHERE id = ?', [projectId]);
 
@@ -5980,9 +5981,9 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 
 		await Promise.all([
 			bumpProjectCacheVersion(project.slug),
-			deleteCacheByPattern("modifold_projects_*"),
-			deleteCacheByPattern("modifold_discover_v2_*"),
-			deleteCacheByPattern("user_likes_*"),
+			bumpCacheGeneration("projects"),
+			bumpCacheGeneration("discover"),
+			bumpCacheGeneration("user_likes"),
 		]);
 
 		const disclosureState = await getProjectDisclosureState(db, project.id);

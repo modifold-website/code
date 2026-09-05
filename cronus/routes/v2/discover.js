@@ -4,6 +4,7 @@ const { db } = require("../../config/db");
 const { clickhouse, hasClickHouseConfig } = require("../../config/clickhouse");
 const { cacheClient } = require("../../config/cache");
 const { createSingleFlightCache } = require("../../utils/singleFlightCache");
+const { getCacheGeneration } = require("../../utils/cache");
 
 const router = express.Router();
 
@@ -361,9 +362,10 @@ const fetchCategorySectionProjects = async (projectType, tags) => {
 	return projectsByTag;
 };
 
-const getDiscoverCacheKey = (scope) => {
+const getDiscoverCacheKey = async (scope) => {
+	const cacheGeneration = await getCacheGeneration("discover");
 	const cacheHash = crypto.createHash("sha1").update(JSON.stringify(scope)).digest("hex");
-	return `modifold_discover_v2_${cacheHash}`;
+	return `modifold_discover_v2_${cacheGeneration}_${cacheHash}`;
 };
 
 const setDiscoverCacheHeaders = (res) => {
@@ -464,7 +466,7 @@ const combinePopularCategories = (categoryGroups = [], limit = 6) => {
 
 router.get("/", async (req, res) => {
 	try {
-		const cacheKey = getDiscoverCacheKey({ types: ["mod", "world", "prefab"], version: 5 });
+		const cacheKey = await getDiscoverCacheKey({ types: ["mod", "world", "prefab"], version: 5 });
 		const { value: responseData, cacheStatus } = await getCachedDiscoverResponse(cacheKey, async () => {
 			const rankedDownloadsPromise = getWeeklyDownloadCounts();
 			const [mods, worlds, prefabs] = await Promise.all([
@@ -505,7 +507,7 @@ router.get("/:type", async (req, res) => {
 			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-		const cacheKey = getDiscoverCacheKey({ type: projectType, version: 7 });
+		const cacheKey = await getDiscoverCacheKey({ type: projectType, version: 7 });
 		const { value: responseData, cacheStatus } = await getCachedDiscoverResponse(cacheKey, () => buildDiscoverData(projectType));
 		setDiscoverCacheHeaders(res);
 		res.set("X-Discover-Cache", cacheStatus);

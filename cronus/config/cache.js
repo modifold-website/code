@@ -103,6 +103,22 @@ const cacheClient = {
 			return redis.eval(script, keys.length, ...keys, ...args);
 		});
 	},
+	scan: async (cursor, pattern, count) => {
+		return runRedisOperation("scan", async () => {
+			await ensureConnected();
+			return redis.scan(cursor, "MATCH", pattern, "COUNT", count);
+		});
+	},
+	unlink: async (keys) => {
+		if(!Array.isArray(keys) || keys.length === 0) {
+			return 0;
+		}
+
+		return runRedisOperation("unlink", async () => {
+			await ensureConnected();
+			return redis.unlink(...keys);
+		});
+	},
 	quit: async () => {
 		return runRedisOperation("quit", async () => {
 			if(redis.status === "end") {
