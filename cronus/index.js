@@ -33,8 +33,9 @@ const SERVER_PORT = Number(process.env.SERVER_PORT) || 4000;
 const recommendedRoutes = require("./routes/v1/recommended");
 const modJamsRoutes = require("./routes/v1/mod-jams");
 
-const startServer = () => {
+const startServer = async () => {
 	validateStorageConfiguration();
+	await discoverRoutesV2.initializeDiscover();
 	const app = express();
 
 	app.disable("x-powered-by");

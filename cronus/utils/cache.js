@@ -9,7 +9,6 @@ const getCacheJson = async (key) => {
 
 		return JSON.parse(value.toString());
 	} catch (error) {
-		console.warn("Redis cache read failed:", key, error.message);
 		return null;
 	}
 };
@@ -18,8 +17,10 @@ const setCacheJson = async (key, value, ttlSeconds) => {
 	try {
 		await cacheClient.set(key, JSON.stringify(value), { expires: ttlSeconds });
 	} catch (error) {
-		console.warn("Redis cache write failed:", key, error.message);
+		return false;
 	}
+
+	return true;
 };
 
 const deleteCacheByPattern = async (pattern) => {
@@ -42,7 +43,6 @@ const deleteCacheByPattern = async (pattern) => {
 
 		return await cacheClient.eval(script, [], [prefixedPattern]);
 	} catch (error) {
-		console.warn("Redis cache delete failed:", pattern, error.message);
 		return 0;
 	}
 };
