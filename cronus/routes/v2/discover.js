@@ -442,6 +442,35 @@ const combineProjects = (projectGroups = [], limit = 10) => {
 	return projects;
 };
 
+const mergeSortedProjects = (projectGroups = [], compareProjects, limit = 10) => {
+	const projectsByKey = new Map();
+
+	for(const project of projectGroups.flat()) {
+		const projectKey = project.id || `${project.project_type || "project"}:${project.slug}`;
+		if(!projectsByKey.has(projectKey)) {
+			projectsByKey.set(projectKey, project);
+		}
+	}
+
+	return [...projectsByKey.values()].sort(compareProjects).slice(0, limit);
+};
+
+const getProjectTimestamp = (value) => {
+	if(typeof value === "number") {
+		return value < 1e12 ? value * 1000 : value;
+	}
+
+	return Date.parse(String(value || "").replace(" ", "T")) || 0;
+};
+
+const compareProjectIds = (firstProject, secondProject) => String(secondProject.id || "").localeCompare(String(firstProject.id || ""));
+
+const compareByWeeklyDownloads = (firstProject, secondProject) => Number(secondProject.weekly_downloads || 0) - Number(firstProject.weekly_downloads || 0) || Number(secondProject.downloads || 0) - Number(firstProject.downloads || 0) || compareProjectIds(firstProject, secondProject);
+
+const compareByUpdatedAt = (firstProject, secondProject) => getProjectTimestamp(secondProject.updated_at) - getProjectTimestamp(firstProject.updated_at) || compareProjectIds(firstProject, secondProject);
+
+const compareByCreatedAt = (firstProject, secondProject) => getProjectTimestamp(secondProject.created_at) - getProjectTimestamp(firstProject.created_at) || compareProjectIds(firstProject, secondProject);
+
 const combinePopularCategories = (categoryGroups = [], limit = 6) => {
 	const categoriesByName = new Map();
 
@@ -466,7 +495,7 @@ const combinePopularCategories = (categoryGroups = [], limit = 6) => {
 
 router.get("/", async (req, res) => {
 	try {
-		const cacheKey = await getDiscoverCacheKey({ types: ["mod", "world", "prefab"], version: 5 });
+		const cacheKey = await getDiscoverCacheKey({ types: ["mod", "world", "prefab"], version: 6 });
 		const { value: responseData, cacheStatus } = await getCachedDiscoverResponse(cacheKey, async () => {
 			const rankedDownloadsPromise = getWeeklyDownloadCounts();
 			const [mods, worlds, prefabs] = await Promise.all([
@@ -477,15 +506,15 @@ router.get("/", async (req, res) => {
 			return {
 				types: ["mod", "world", "prefab"],
 				featured: combineProjects([mods.featured, worlds.featured, prefabs.featured], 5),
-				weeklyPopular: combineProjects([mods.weeklyPopular, worlds.weeklyPopular, prefabs.weeklyPopular]),
-				weeklyNewPopular: combineProjects([mods.weeklyNewPopular, worlds.weeklyNewPopular, prefabs.weeklyNewPopular]),
-				recentlyUpdated: combineProjects([mods.recentlyUpdated, worlds.recentlyUpdated, prefabs.recentlyUpdated]),
+				weeklyPopular: mergeSortedProjects([mods.weeklyPopular, worlds.weeklyPopular, prefabs.weeklyPopular], compareByWeeklyDownloads),
+				weeklyNewPopular: mergeSortedProjects([mods.weeklyNewPopular, worlds.weeklyNewPopular, prefabs.weeklyNewPopular], compareByWeeklyDownloads),
+				recentlyUpdated: mergeSortedProjects([mods.recentlyUpdated, worlds.recentlyUpdated, prefabs.recentlyUpdated], compareByUpdatedAt),
 				popularCategories: combinePopularCategories([
 					[mods.popularCategories, "mod"],
 					[worlds.popularCategories, "world"],
 					[prefabs.popularCategories, "prefab"],
 				]),
-				latest: combineProjects([mods.latest, worlds.latest, prefabs.latest], 6),
+				latest: mergeSortedProjects([mods.latest, worlds.latest, prefabs.latest], compareByCreatedAt, 6),
 				generatedAt: new Date().toISOString(),
 			};
 		});
