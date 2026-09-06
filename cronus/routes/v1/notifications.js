@@ -1,6 +1,7 @@
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
+const { parsePagination } = require("../../utils/queryPagination");
 const router = express.Router();
 
 const getVisibleNotificationPredicate = (alias) => `
@@ -65,9 +66,6 @@ router.post("/mark-all-read", auth, async (req, res) => {
 
 router.get("/", auth, async (req, res) => {
     const userId = req.user.id;
-    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
-    const offset = (page - 1) * limit;
     const daySeconds = 86400;
     const rawTzOffset = Number.parseInt(req.query.tzOffset, 10);
     const tzOffsetMinutes = Number.isFinite(rawTzOffset) ? rawTzOffset : 0;
@@ -75,6 +73,7 @@ router.get("/", auth, async (req, res) => {
     const tzOffsetSeconds = clampedTzOffsetMinutes * 60;
 
     try {
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
         const [groupRows] = await db.query(
             `SELECT
             event_type,
@@ -367,8 +366,11 @@ router.get("/", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error fetching notifications:", error);
-        return res.status(500).json({ message: "Error fetching notifications", error: error.message });
+		if(!error.statusCode) {
+			console.error("Error fetching notifications:", error);
+		}
+        
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching notifications", error: error.statusCode ? undefined : error.message });
     }
 });
 

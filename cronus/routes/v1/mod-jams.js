@@ -11,6 +11,7 @@ const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require
 const { getSlugValidationMessage, validateSlug } = require("../../utils/slug");
 const { bumpProjectCacheVersionById } = require("../../utils/projectCache");
 const { deletePublicUrlWithinPrefix, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 
 const router = express.Router();
 
@@ -767,29 +768,24 @@ router.get("/mine", auth, async (req, res) => {
 
 router.get("/", async (req, res) => {
 	try {
-		const { status = "active", page = 1, limit = 20, search = "" } = req.query;
-
-		if(isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
-			return res.status(400).json({ message: "Invalid pagination" });
-		}
-
-		const offset = (Number(page) - 1) * Number(limit);
+		const status = normalizeEnum(req.query.status, ["active", "completed"], "active", { name: "status filter", rejectInvalid: true });
+		const search = normalizeSearch(req.query.search);
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
 		const params = [];
 		const countParams = [];
 		let whereClause = "WHERE mj.status = 'approved'";
 
 		if(status === "active") {
 			whereClause += " AND mj.voting_end_at >= NOW()";
-		} else if(status === "completed") {
-			whereClause += " AND mj.voting_end_at < NOW()";
 		} else {
-			return res.status(400).json({ message: "Invalid status filter" });
+			whereClause += " AND mj.voting_end_at < NOW()";
 		}
 
 		if(search) {
 			whereClause += " AND mj.title LIKE ?";
-			params.push(`%${search}%`);
-			countParams.push(`%${search}%`);
+			const prefixSearch = `${search.replace(/[\\%_]/g, "\\$&")}%`;
+			params.push(prefixSearch);
+			countParams.push(prefixSearch);
 		}
 
 		const [rows] = await db.query(
@@ -800,7 +796,7 @@ router.get("/", async (req, res) => {
 			FROM mod_jams mj
 			LEFT JOIN users u ON u.id = mj.owner_user_id
 			${whereClause}
-			ORDER BY mj.starts_at DESC
+			ORDER BY mj.starts_at DESC, mj.id DESC
 			LIMIT ? OFFSET ?`,
 			[...params, Number(limit), Number(offset)]
 		);
@@ -813,8 +809,11 @@ router.get("/", async (req, res) => {
 			currentPage: Number(page),
 		});
 	} catch (error) {
-		console.error("Error fetching mod jams:", error);
-		res.status(500).json({ message: "Error fetching mod jams", error: error.message });
+		if(!error.statusCode) {
+			console.error("Error fetching mod jams:", error);
+		}
+		
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching mod jams", error: error.statusCode ? undefined : error.message });
 	}
 });
 

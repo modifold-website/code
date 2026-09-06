@@ -7,6 +7,7 @@ const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotificatio
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { bumpProjectCacheVersion } = require("../../utils/projectCache");
 const { deleteObject, getPrivateObjectDownloadUrl, normalizeObjectKey, promotePrivateObject } = require("../../utils/fileHosting");
+const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 const router = express.Router();
 const PROJECT_TYPE_PATH_SEGMENTS = {
 	mod: "mod",
@@ -355,7 +356,10 @@ router.get("/technical-review", auth, async (req, res) => {
 	}
 
 	try {
-		const { search = "", status = "needs_review", sort = "oldest", page = 1, limit = 20 } = req.query;
+		const search = normalizeSearch(req.query.search);
+		const status = normalizeEnum(req.query.status, ["needs_review", "pending", "scanning", "blocked", "error", "all"], "needs_review", { name: "status", rejectInvalid: true });
+		const sort = normalizeEnum(req.query.sort, ["oldest", "newest"], "oldest", { name: "sort option", rejectInvalid: true });
+		const { page: pageNumber, limit: limitNumber, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 		const allowedStatuses = ["needs_review", "pending", "scanning", "blocked", "error", "all"];
 		const allowedSort = ["oldest", "newest"];
 
@@ -365,17 +369,6 @@ router.get("/technical-review", auth, async (req, res) => {
 
 		if(!allowedSort.includes(String(sort))) {
 			return res.status(400).json({ message: "Invalid sort option" });
-		}
-
-		const pageNumber = Number(page);
-		const limitNumber = Number(limit);
-
-		if(!Number.isFinite(pageNumber) || pageNumber < 1) {
-			return res.status(400).json({ message: "Invalid page number" });
-		}
-
-		if(!Number.isFinite(limitNumber) || limitNumber < 1 || limitNumber > 100) {
-			return res.status(400).json({ message: "Invalid limit" });
 		}
 
 		const where = [];
@@ -399,7 +392,6 @@ router.get("/technical-review", auth, async (req, res) => {
 
 		const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 		const orderSql = sort === "newest" ? "ORDER BY v.created_at DESC" : "ORDER BY v.created_at ASC";
-		const offset = (pageNumber - 1) * limitNumber;
 
 		const listQuery = `
 			SELECT
@@ -432,7 +424,7 @@ router.get("/technical-review", auth, async (req, res) => {
 			INNER JOIN projects p ON p.id = v.project_id
 			LEFT JOIN users u ON u.id = p.user_id
 			${whereSql}
-			${orderSql}
+			${orderSql}, v.id ${sort === "newest" ? "DESC" : "ASC"}
 			LIMIT ? OFFSET ?
 		`;
 
@@ -453,8 +445,11 @@ router.get("/technical-review", auth, async (req, res) => {
 			totalVersions: total,
 		});
 	} catch (error) {
-		console.error("Error fetching Argus technical review queue:", error);
-		return res.status(500).json({ message: "Error fetching technical review queue" });
+		if(!error.statusCode) {
+			console.error("Error fetching Argus technical review queue:", error);
+		}
+		
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching technical review queue" });
 	}
 });
 
@@ -608,7 +603,10 @@ router.get("/", auth, async (req, res) => {
     }
 
     try {
-        const { search = "", type, sort = "oldest", page = 1, limit = 20 } = req.query;
+		const search = normalizeSearch(req.query.search);
+		const type = req.query.type;
+		const sort = normalizeEnum(req.query.sort, ["oldest", "newest"], "oldest", { name: "sort option", rejectInvalid: true });
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
         const typeMap = {
             mods: "mod",
             mod: "mod",
@@ -626,19 +624,6 @@ router.get("/", auth, async (req, res) => {
             return res.status(400).json({ message: "Invalid project type" });
         }
 
-        if(sort && !["oldest", "newest"].includes(sort)) {
-            return res.status(400).json({ message: "Invalid sort option" });
-        }
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: "Invalid limit" });
-        }
-
-        const offset = (page - 1) * limit;
         let query = `
             SELECT id, slug, title, summary, project_type, status, visibility, created_at, icon_url, tags
             FROM projects
@@ -668,7 +653,7 @@ router.get("/", auth, async (req, res) => {
             countParams.push(normalizedType);
         }
 
-        query += sort === "newest" ? " ORDER BY created_at DESC" : " ORDER BY created_at ASC";
+		query += sort === "newest" ? " ORDER BY created_at DESC, id DESC" : " ORDER BY created_at ASC, id ASC";
 
         query += " LIMIT ? OFFSET ?";
         params.push(Number(limit), Number(offset));
@@ -686,8 +671,11 @@ router.get("/", auth, async (req, res) => {
             totalProjects: total,
         });
     } catch (error) {
-        console.error("Error fetching projects for moderation:", error);
-        res.status(500).json({ message: "Error fetching projects", error: error.message });
+		if(!error.statusCode) {
+			console.error("Error fetching projects for moderation:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching projects", error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -903,7 +891,11 @@ router.get("/reports", auth, async (req, res) => {
     }
 
     try {
-        const { search = "", status = "open", reason = "all", sort = "newest", page = 1, limit = 20 } = req.query;
+		const search = normalizeSearch(req.query.search);
+		const status = normalizeEnum(req.query.status, ["open", "resolved", "dismissed", "all"], "open", { name: "report status", rejectInvalid: true });
+		const reason = normalizeSearch(req.query.reason, { maxLength: 64 }) || "all";
+		const sort = normalizeEnum(req.query.sort, ["newest", "oldest"], "newest", { name: "sort option", rejectInvalid: true });
+		const { page: pageNumber, limit: limitNumber, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
         const allowedStatuses = ["open", "resolved", "dismissed", "all"];
         const allowedSort = ["newest", "oldest"];
@@ -914,17 +906,6 @@ router.get("/reports", auth, async (req, res) => {
 
         if(!allowedSort.includes(String(sort))) {
             return res.status(400).json({ message: "Invalid sort option" });
-        }
-
-        const pageNumber = Number(page);
-        const limitNumber = Number(limit);
-
-        if(!Number.isFinite(pageNumber) || pageNumber < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(!Number.isFinite(limitNumber) || limitNumber < 1 || limitNumber > 100) {
-            return res.status(400).json({ message: "Invalid limit" });
         }
 
         const where = [];
@@ -951,8 +932,7 @@ router.get("/reports", auth, async (req, res) => {
         }
 
         const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-        const orderSql = sort === "oldest" ? "ORDER BY pr.created_at ASC" : "ORDER BY pr.created_at DESC";
-        const offset = (pageNumber - 1) * limitNumber;
+		const orderSql = sort === "oldest" ? "ORDER BY pr.created_at ASC, pr.id ASC" : "ORDER BY pr.created_at DESC, pr.id DESC";
 
         const listQuery = `
             SELECT
@@ -1000,9 +980,12 @@ router.get("/reports", auth, async (req, res) => {
             currentPage: pageNumber,
             totalReports: total,
         });
-    } catch (error) {
-        console.error("Error fetching reports for moderation:", error);
-        return res.status(500).json({ message: "Error fetching reports" });
+	} catch (error) {
+		if(!error.statusCode) {
+			console.error("Error fetching reports for moderation:", error);
+		}
+
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching reports" });
     }
 });
 

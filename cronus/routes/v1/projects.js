@@ -23,6 +23,7 @@ const { countProjectVersionDownload, prepareProjectVersionDownloadRedirect } = r
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
 const { buildVisibleVersionWhereClause, canAccessRestrictedProject, canViewPrivateProjectVersions } = require("../../utils/projectVisibility");
 const { buildProjectOwnerDto, buildVersionsPagination, getProjectVersionPage } = require("../../utils/projectDetails");
+const { buildBooleanFullTextSearch, buildCursorPage, createCanonicalCacheKey, decodeCursor, getCursorContext, normalizeCsvFilter, normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const router = express.Router();
@@ -1299,6 +1300,7 @@ const getProjectWikiData = async ({ projectSlug, pageSlug }) => {
     if(!targetMod?.id) {
         return { error: "wiki_mod_not_found", statusCode: 404 };
     }
+    
     const pages = Array.isArray(details?.pages) ? details.pages : [];
     const allPages = flattenWikiPages(pages);
     const fallbackSlug = targetMod?.index?.slug || allPages?.[0]?.slug || targetMod?.slug || null;
@@ -1436,6 +1438,7 @@ const getPrivateVersionKeys = async (projectId, versions, canViewPrivateVersions
 		if(error?.code !== "ER_BAD_FIELD_ERROR") {
 			throw error;
 		}
+
 		return new Map();
 	}
 };
@@ -1464,8 +1467,7 @@ router.get("/dependency-options", async (req, res) => {
 	try {
 		const search = String(req.query.search || "").trim().slice(0, 120);
 		const projectId = String(req.query.id || "").trim().slice(0, 120);
-		const requestedLimit = Number.parseInt(req.query.limit, 10);
-		const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 12) : 8;
+		const { limit } = parsePagination({ limit: req.query.limit }, { defaultLimit: 8, maxLimit: 12 });
 
 		if(!search && !projectId) {
 			return res.json({ projects: [] });
@@ -1478,8 +1480,12 @@ router.get("/dependency-options", async (req, res) => {
 			whereClause.push("p.id = ?");
 			params.push(projectId);
 		} else {
-			whereClause.push("(p.id = ? OR p.slug LIKE ? OR p.title LIKE ?)");
-			params.push(search, `%${search}%`, `%${search}%`);
+			const prefixSearch = `${search.replace(/[\\%_]/g, "\\$&")}%`;
+			const fullTextSearch = buildBooleanFullTextSearch(search);
+			whereClause.push(fullTextSearch
+				? "(p.id = ? OR p.slug LIKE ? OR MATCH(p.title, p.summary) AGAINST (? IN BOOLEAN MODE))"
+				: "(p.id = ? OR p.slug LIKE ? OR p.title LIKE ?)");
+			params.push(search, prefixSearch, fullTextSearch || prefixSearch);
 		}
 
 		const [projects] = await db.query(
@@ -1501,154 +1507,168 @@ router.get("/dependency-options", async (req, res) => {
 			})),
 		});
 	} catch(error) {
-		console.error("Error fetching dependency project options:", error);
-		res.status(500).json({ message: "Error fetching dependency project options" });
+		if(!error.statusCode) {
+			console.error("Error fetching dependency project options:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching dependency project options" });
 	}
 });
 
 router.get("/", async (req, res) => {
-    try {
-        const { type, sort = "downloads", search = "", tags, game_versions, loaders, dependency_project, dependency_type, page = 1, limit = 20 } = req.query;
-        const normalizedType = type ? normalizeProjectType(type) : null;
-		const normalizedDependencyProject = String(dependency_project || "").trim();
-		const normalizedDependencyType = String(dependency_type || "required").trim().toLowerCase();
+	try {
+		const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
+		const normalizedType = req.query.type ? normalizeProjectType(req.query.type) : null;
+		const sort = normalizeEnum(req.query.sort, ["downloads", "recent", "updated"], "downloads");
+		const order = normalizeEnum(req.query.order, ["asc", "desc"], "desc");
+		const search = normalizeSearch(req.query.search);
+		const fullTextSearch = buildBooleanFullTextSearch(search);
+		const tags = normalizeCsvFilter(req.query.tags, { name: "tags" });
+		const gameVersions = normalizeCsvFilter(req.query.game_versions, { name: "game_versions" });
+		const loaders = normalizeCsvFilter(req.query.loaders, { name: "loaders" });
+		const normalizedDependencyProject = normalizeSearch(req.query.dependency_project, { maxLength: 120 });
+		const normalizedDependencyType = normalizeEnum(req.query.dependency_type, ["required", "optional", "embedded"], "required", {
+			name: "dependency type",
+			rejectInvalid: req.query.dependency_type !== undefined,
+		});
 
-        if(type && !normalizedType) {
-            return res.status(400).json({ message: "Invalid project type" });
-        }
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: "Invalid limit" });
-        }
-
-		if(dependency_type && !["required", "optional", "embedded"].includes(normalizedDependencyType)) {
-			return res.status(400).json({ message: "Invalid dependency type" });
+		if(req.query.type && !normalizedType) {
+			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-        const offset = (page - 1) * limit;
+		const normalizedFilters = {
+			type: normalizedType,
+			search,
+			tags,
+			game_versions: gameVersions,
+			loaders,
+			dependency_project: normalizedDependencyProject,
+			dependency_type: normalizedDependencyProject ? normalizedDependencyType : null,
+		};
+		const cursorContext = getCursorContext(normalizedFilters);
+		const cursor = decodeCursor(req.query.cursor, { sort: `${sort}:${order}`, context: cursorContext });
+		const sortConfig = {
+			downloads: { expression: "COALESCE(p.downloads, 0)", column: "downloads" },
+			recent: { expression: "p.created_at", column: "created_at" },
+			updated: { expression: "p.updated_at", column: "updated_at" },
+		}[sort];
+		const direction = order.toUpperCase();
+		const cursorOperator = order === "asc" ? ">" : "<";
+		const canonicalQuery = {
+			...normalizedFilters,
+			sort,
+			order,
+			limit: pagination.limit,
+			page: cursor ? null : pagination.page,
+			cursor: cursor ? req.query.cursor : null,
+		};
+		const cacheable = !search && tags.length === 0 && gameVersions.length === 0 && loaders.length === 0 && !normalizedDependencyProject;
+		const cacheGeneration = cacheable ? await getCacheGeneration("projects") : null;
+		const cacheKey = cacheable ? createCanonicalCacheKey(`modifold_projects_${cacheGeneration}`, canonicalQuery) : null;
 
-		const cacheGeneration = await getCacheGeneration("projects");
-		const cacheKey = `modifold_projects_${cacheGeneration}_${Buffer.from(JSON.stringify(req.query)).toString('base64')}`;
-        
-        const cachedResponse = await getCacheJson(cacheKey);
-        if(cachedResponse) {
-            res.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=30");
-            return res.json(cachedResponse);
-        }
+		if(cacheKey) {
+			const cachedResponse = await getCacheJson(cacheKey);
+			if(cachedResponse) {
+				res.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=30");
+				return res.json(cachedResponse);
+			}
+		}
 
-        let query = `
-            SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.color, p.downloads, p.followers, p.created_at, p.updated_at, p.project_type, p.tags, p.license_id, p.license_name, p.show_players_last_14d,
-            ANY_VALUE(u.username) AS username, ANY_VALUE(u.slug) AS user_slug, ANY_VALUE(u.avatar) AS avatar, ANY_VALUE(u.id) AS user_id, ANY_VALUE(u.isVerified) AS isVerified, ANY_VALUE(u.active_profile_badge) AS activeProfileBadge,
-            ANY_VALUE(o.id) AS organization_id, ANY_VALUE(o.slug) AS organization_slug, ANY_VALUE(o.name) AS organization_name, ANY_VALUE(o.icon_url) AS organization_icon_url, ANY_VALUE(o.summary) AS organization_summary,
-            ANY_VALUE(pv.game_versions) AS game_versions, ANY_VALUE(pv.loaders) AS loaders,
-            (SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 LIMIT 1) AS featured_image
-            FROM projects p
-            LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN project_versions pv ON p.id = pv.project_id AND pv.moderation_status = 'approved'
-        `;
+		let query = `
+			SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.color, COALESCE(p.downloads, 0) AS downloads, p.followers, p.created_at, p.updated_at, p.project_type, p.tags, p.license_id, p.license_name, p.show_players_last_14d,
+			u.username, u.slug AS user_slug, u.avatar, u.id AS user_id, u.isVerified, u.active_profile_badge AS activeProfileBadge,
+			o.id AS organization_id, o.slug AS organization_slug, o.name AS organization_name, o.icon_url AS organization_icon_url, o.summary AS organization_summary,
+			(SELECT display_version.game_versions FROM project_versions display_version WHERE display_version.project_id = p.id AND display_version.moderation_status = 'approved' ORDER BY display_version.created_at DESC, display_version.id DESC LIMIT 1) AS game_versions,
+			(SELECT display_version.loaders FROM project_versions display_version WHERE display_version.project_id = p.id AND display_version.moderation_status = 'approved' ORDER BY display_version.created_at DESC, display_version.id DESC LIMIT 1) AS loaders,
+			(SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 ORDER BY id ASC LIMIT 1) AS featured_image
+			FROM projects p
+			LEFT JOIN users u ON p.user_id = u.id
+			LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+			LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
+		`;
+		let countQuery = "SELECT COUNT(*) AS total FROM projects p";
+		let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public'";
+		const params = [];
+		const countParams = [];
+		const addFilterParams = (...values) => {
+			params.push(...values);
+			countParams.push(...values);
+		};
 
-        let countQuery = `
-            SELECT COUNT(DISTINCT p.id) as total
-            FROM projects p
-            LEFT JOIN project_versions pv ON p.id = pv.project_id AND pv.moderation_status = 'approved'
-        `;
+		if(normalizedType) {
+			whereClause += " AND p.project_type = ?";
+			addFilterParams(normalizedType);
+		}
 
-        let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public'";
-        const params = [];
-        const countParams = [];
+		if(search) {
+			if(fullTextSearch) {
+				whereClause += " AND MATCH(p.title, p.summary) AGAINST (? IN BOOLEAN MODE)";
+				addFilterParams(fullTextSearch);
+			} else {
+				const prefixSearch = `${search.replace(/[\\%_]/g, "\\$&")}%`;
+				whereClause += " AND p.title LIKE ?";
+				addFilterParams(prefixSearch);
+			}
+		}
 
-        if(normalizedType) {
-            whereClause += " AND p.project_type = ?";
-            params.push(normalizedType);
-            countParams.push(normalizedType);
-        }
+		if(tags.length > 0) {
+			whereClause += ` AND (${tags.map(() => "FIND_IN_SET(?, p.tags)").join(" OR ")})`;
+			addFilterParams(...tags);
+		}
 
-        if(search) {
-            whereClause += " AND p.title LIKE ?";
-            params.push(`%${search}%`);
-            countParams.push(`%${search}%`);
-        }
-
-        if(tags) {
-            const tagArray = tags.split(",").map((tag) => tag.trim());
-            whereClause += " AND (";
-            tagArray.forEach((tag, index) => {
-                whereClause += `p.tags LIKE ?${index < tagArray.length - 1 ? " OR " : ""}`;
-                params.push(`%${tag}%`);
-                countParams.push(`%${tag}%`);
-            });
-            whereClause += ")";
-        }
-
-        if(game_versions) {
-            const versionArray = game_versions.split(",").map((v) => v.trim());
-            whereClause += " AND (";
-            versionArray.forEach((version, index) => {
-                whereClause += `JSON_CONTAINS(pv.game_versions, ?)${index < versionArray.length - 1 ? " OR " : ""}`;
-                params.push(JSON.stringify(version));
-                countParams.push(JSON.stringify(version));
-            });
-            whereClause += ")";
-        }
-
-        if(loaders) {
-            const loaderArray = loaders.split(",").map((l) => l.trim());
-            whereClause += " AND (";
-            loaderArray.forEach((loader, index) => {
-                whereClause += `JSON_CONTAINS(pv.loaders, ?)${index < loaderArray.length - 1 ? " OR " : ""}`;
-                params.push(JSON.stringify(loader));
-                countParams.push(JSON.stringify(loader));
-            });
-            whereClause += ")";
-        }
-
-		if(normalizedDependencyProject) {
-			const dependencyWhereClause = [
-				"source_version.project_id = p.id",
-				"source_version.moderation_status = 'approved'",
-				"d.project_id = ?",
-			];
-			const dependencyParams = [normalizedDependencyProject];
-
-			if(dependency_type) {
-				dependencyWhereClause.push("d.dependency_type = ?");
-				dependencyParams.push(normalizedDependencyType);
+		if(gameVersions.length > 0 || loaders.length > 0) {
+			const compatibilityWhere = ["compatible_version.project_id = p.id", "compatible_version.moderation_status = 'approved'"];
+			const compatibilityParams = [];
+			if(gameVersions.length > 0) {
+				compatibilityWhere.push(`(${gameVersions.map(() => "JSON_CONTAINS(compatible_version.game_versions, ?)").join(" OR ")})`);
+				compatibilityParams.push(...gameVersions.map(JSON.stringify));
 			}
 
-			whereClause += ` AND EXISTS (
-				SELECT 1
-				FROM dependencies d
-				INNER JOIN project_versions source_version ON source_version.id = d.version_id
-				WHERE ${dependencyWhereClause.join(" AND ")}
-			)`;
-			params.push(...dependencyParams);
-			countParams.push(...dependencyParams);
+			if(loaders.length > 0) {
+				compatibilityWhere.push(`(${loaders.map(() => "JSON_CONTAINS(compatible_version.loaders, ?)").join(" OR ")})`);
+				compatibilityParams.push(...loaders.map(JSON.stringify));
+			}
+
+			whereClause += ` AND EXISTS (SELECT 1 FROM project_versions compatible_version WHERE ${compatibilityWhere.join(" AND ")})`;
+			addFilterParams(...compatibilityParams);
 		}
 
-        query += whereClause;
-        countQuery += whereClause;
+		if(normalizedDependencyProject) {
+			whereClause += ` AND EXISTS (
+				SELECT 1 FROM dependencies d
+				INNER JOIN project_versions source_version ON source_version.id = d.version_id
+				WHERE source_version.project_id = p.id
+				AND source_version.moderation_status = 'approved'
+				AND d.project_id = ?
+				AND d.dependency_type = ?
+			)`;
+			addFilterParams(normalizedDependencyProject, normalizedDependencyType);
+		}
 
-        query += " GROUP BY p.id";
+		countQuery += whereClause;
+		query += whereClause;
+		if(cursor) {
+			query += ` AND (${sortConfig.expression} ${cursorOperator} ? OR (${sortConfig.expression} = ? AND p.id ${cursorOperator} ?))`;
+			params.push(cursor.value, cursor.value, cursor.id);
+		}
 
-        if(sort === "recent") {
-            query += " ORDER BY p.created_at DESC";
-        } else if(sort === "updated") {
-            query += " ORDER BY p.updated_at DESC";
-        } else {
-            query += " ORDER BY p.downloads DESC";
-        }
+		query += ` ORDER BY ${sortConfig.expression} ${direction}, p.id ${direction} LIMIT ?`;
+		params.push(pagination.limit + 1);
+		if(!cursor) {
+			query += " OFFSET ?";
+			params.push(pagination.offset);
+		}
 
-        query += " LIMIT ? OFFSET ?";
-        params.push(Number(limit), Number(offset));
-
-        const [projects] = await db.query(query, params);
-        const [[{ total }]] = await db.query(countQuery, countParams);
+		const [projectRows] = await db.query(query, params);
+		const [[{ total }]] = await db.query(countQuery, countParams);
+		const cursorPage = buildCursorPage({
+			rows: projectRows,
+			limit: pagination.limit,
+			sort: `${sort}:${order}`,
+			sortColumn: sortConfig.column,
+			context: cursorContext,
+		});
+		const projects = cursorPage.items;
 
         const projectSlugs = projects.filter((project) => Number(project.show_players_last_14d) === 1).map((project) => project.slug).filter(Boolean);
         const playersLast14DaysBySlug = await getProjectPlayersInLastDaysBySlug({
@@ -1696,17 +1716,28 @@ router.get("/", async (req, res) => {
                     profile_url: `/user/${project.user_slug}`,
                 },
             })),
-            totalPages: Math.ceil(total / limit),
-            currentPage: Number(page),
+			totalPages: Math.ceil(total / pagination.limit),
+			currentPage: pagination.page,
+			pagination: {
+				mode: cursor ? "cursor" : "offset",
+				limit: pagination.limit,
+				hasMore: cursorPage.hasMore,
+				nextCursor: cursorPage.nextCursor,
+			},
         };
 
-        await setCacheJson(cacheKey, responseData, 60);
+		if(cacheKey) {
+			await setCacheJson(cacheKey, responseData, 60);
+		}
 
         res.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=30");
         res.json(responseData);
-    } catch (error) {
-        console.error("Error fetching projects:", error);
-        res.status(500).json({ message: "Error fetching projects", error: error.message });
+	} catch (error) {
+		if(!error.statusCode) {
+			console.error("Error fetching projects:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching projects", error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -1755,19 +1786,7 @@ router.put("/:slug/tags", auth, async (req, res) => {
 
 router.get('/user/projects', auth, async (req, res) => {
     try {
-        const { page = 1, limit = 20 } = req.query;
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: 'Invalid page number' });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: 'Invalid limit' });
-        }
-
-        const normalizedPage = Number(page);
-        const normalizedLimit = Number(limit);
-        const offset = (normalizedPage - 1) * normalizedLimit;
+		const { page: normalizedPage, limit: normalizedLimit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
         const [projects] = await db.query(
             `
@@ -1868,8 +1887,10 @@ router.get('/user/projects', auth, async (req, res) => {
             currentPage: normalizedPage,
         });
     } catch (error) {
-        console.error('Error fetching user projects:', error);
-        res.status(500).json({ message: 'Error fetching user projects', error: error.message });
+		if(!error.statusCode) {
+			console.error('Error fetching user projects:', error);
+		}
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Error fetching user projects', error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -3001,8 +3022,10 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         }
         res.json(responseData);
     } catch (error) {
-        console.error('Error fetching project:', error);
-        res.status(500).json({ message: 'Error fetching project', error: error.message });
+		if(!error.statusCode) {
+			console.error('Error fetching project:', error);
+		}
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Error fetching project', error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -4301,11 +4324,9 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const status = (req.query.status || "open").toString().toLowerCase();
-        const sort = (req.query.sort || "newest").toString().toLowerCase();
-        const page = Math.max(1, Number(req.query.page) || 1);
-        const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
-        const offset = (page - 1) * limit;
+		const status = normalizeEnum(req.query.status, ["open", "closed", "all"], "open");
+		const sort = normalizeEnum(req.query.sort, ["newest", "oldest"], "newest");
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
 
         const statusFilter = status === "closed" ? "closed" : status === "open" ? "open" : null;
         const orderDirection = sort === "oldest" ? "ASC" : "DESC";
@@ -4418,8 +4439,10 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
             issues: formatted,
         });
     } catch (error) {
-        console.error("Error fetching issues:", error);
-        return res.status(500).json({ message: "Error fetching issues", error: error.message });
+		if(!error.statusCode) {
+			console.error("Error fetching issues:", error);
+		}
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching issues", error: error.statusCode ? undefined : error.message });
     }
 });
 

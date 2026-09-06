@@ -1,11 +1,40 @@
 const PROJECT_DETAILS_DEFAULT_VERSION_LIMIT = 100;
 const PROJECT_DETAILS_MAX_VERSION_LIMIT = 100;
+const PROJECT_DETAILS_MAX_VERSION_OFFSET = 1000;
+
+const parseVersionInteger = (value, { name, fallback, maximum }) => {
+	if(value === undefined || value === null || value === "") {
+		return fallback;
+	}
+	
+	if(!/^\d+$/.test(String(value).trim())) {
+		const error = new Error(`Invalid ${name}`);
+		error.statusCode = 400;
+		throw error;
+	}
+
+	const parsed = Number(value);
+	if(!Number.isSafeInteger(parsed) || parsed < 0 || parsed > maximum) {
+		const error = new Error(`${name} is too large or invalid`);
+		error.statusCode = 400;
+		throw error;
+	}
+	
+	return parsed;
+};
 
 const getProjectVersionPage = (query = {}) => {
-	const requestedLimit = Number.parseInt(query.versions_limit, 10);
-	const requestedOffset = Number.parseInt(query.versions_offset, 10);
-	const limit = Number.isFinite(requestedLimit) ? Math.max(0, Math.min(PROJECT_DETAILS_MAX_VERSION_LIMIT, requestedLimit)) : PROJECT_DETAILS_DEFAULT_VERSION_LIMIT;
-	const offset = Number.isFinite(requestedOffset) ? Math.max(0, requestedOffset) : 0;
+	const requestedLimit = parseVersionInteger(query.versions_limit, {
+		name: "versions_limit",
+		fallback: PROJECT_DETAILS_DEFAULT_VERSION_LIMIT,
+		maximum: Number.MAX_SAFE_INTEGER,
+	});
+	const limit = Math.min(PROJECT_DETAILS_MAX_VERSION_LIMIT, requestedLimit);
+	const offset = parseVersionInteger(query.versions_offset, {
+		name: "versions_offset",
+		fallback: 0,
+		maximum: PROJECT_DETAILS_MAX_VERSION_OFFSET,
+	});
 
 	return { limit, offset };
 };
@@ -56,6 +85,7 @@ const buildProjectOwnerDto = (project, aggregates, normalizeOwnerRole) => {
 module.exports = {
 	PROJECT_DETAILS_DEFAULT_VERSION_LIMIT,
 	PROJECT_DETAILS_MAX_VERSION_LIMIT,
+	PROJECT_DETAILS_MAX_VERSION_OFFSET,
 	buildProjectOwnerDto,
 	buildVersionsPagination,
 	getProjectVersionPage,
