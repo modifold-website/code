@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import DisclosuresSettings from "@/components/project/settings/DisclosuresSettings";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -9,15 +10,7 @@ export async function generateMetadata({ params }) {
 	const { slug } = await params;
 	const resolvedLocale = await getLocale();
 	const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectDisclosures" });
-	const response = await fetch(`${serverApiBase}/projects/${slug}`, {
-		headers: { Accept: "application/json" },
-	});
-
-	if(!response.ok) {
-		return { title: t("metadata.notFound") };
-	}
-
-	const project = await response.json();
+	const { project } = await getProjectForRequest(slug);
 	return { title: t("metadata.title", { title: project.title }) };
 }
 

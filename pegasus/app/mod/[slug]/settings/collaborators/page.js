@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectCollaboratorsSettings from "@/components/project/settings/ProjectCollaboratorsSettings";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -9,8 +10,9 @@ export async function generateMetadata({ params }) {
 	const { slug } = await params;
 	const locale = await getLocale();
 	const t = await getTranslations({ locale, namespace: "ProjectCollaborators" });
+	const { project } = await getProjectForRequest(slug);
 
-	return { title: `${t("title")} — ${slug} — Modifold` };
+	return { title: `${t("title")} — ${project.title} — Modifold` };
 }
 
 export default async function ProjectCollaboratorsRoute({ params }) {

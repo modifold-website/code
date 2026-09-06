@@ -4,8 +4,10 @@ const PRIVILEGED_USER_ROLES = new Set(["admin", "moderator"]);
 
 const isPrivilegedUserRole = (role) => PRIVILEGED_USER_ROLES.has(String(role || "").toLowerCase());
 
-const canAccessPrivateProject = ({ project, userId, userRole, access }) => {
-	if(project?.visibility !== "private") {
+const canAccessRestrictedProject = ({ project, userId, userRole, access }) => {
+	const isApproved = String(project?.status || "").toLowerCase() === "approved";
+	const isPrivate = String(project?.visibility || "").toLowerCase() === "private";
+	if(isApproved && !isPrivate) {
 		return true;
 	}
 
@@ -52,7 +54,7 @@ module.exports = {
 	PRIVATE_VERSION_STATUSES,
 	VISIBLE_VERSION_STATUSES,
 	buildVisibleVersionWhereClause,
-	canAccessPrivateProject,
+	canAccessRestrictedProject,
 	canViewPrivateProjectVersions,
 	isPrivilegedUserRole,
 };

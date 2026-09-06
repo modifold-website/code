@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import IssueCreatePage from "@/components/pages/IssueCreatePage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-import { getProjectBySlug } from "@/utils/projects/server";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -13,15 +12,7 @@ export async function generateMetadata({ params, searchParams }) {
     const tProject = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
     const tIssues = await getTranslations({ locale: resolvedLocale, namespace: "Issues" });
 
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    if(!res.ok) {
-        return { title: tProject("metadata.notFound") };
-    }
-
-    const project = await res.json();
+	const { project } = await getProjectForRequest(slug);
     if(!project.issues_enabled) {
         return { title: tProject("metadata.notFound") };
     }
@@ -40,30 +31,27 @@ export async function generateMetadata({ params, searchParams }) {
 
 export default async function Page({ params, searchParams }) {
     const { slug } = await params;
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get("authToken")?.value;
+	const { project, authToken } = await getProjectForRequest(slug);
     const templateId = (await searchParams)?.template;
 
-    const project = await getProjectBySlug(slug, authToken || "");
     if(!project.issues_enabled) {
         notFound();
     }
 
-    const templatesRes = await fetch(`${serverApiBase}/projects/${slug}/issues/templates`, {
-        headers: {
-            Accept: "application/json",
-            Authorization: authToken ? `Bearer ${authToken}` : undefined,
-        },
-        cache: "no-store",
-    });
-
-    const labelsRes = await fetch(`${serverApiBase}/projects/${slug}/issues/labels`, {
-        headers: {
-            Accept: "application/json",
-            Authorization: authToken ? `Bearer ${authToken}` : undefined,
-        },
-        cache: "no-store",
-    });
+	const requestHeaders = {
+		Accept: "application/json",
+		...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+	};
+	const [templatesRes, labelsRes] = await Promise.all([
+		fetch(`${serverApiBase}/projects/${slug}/issues/templates`, {
+			headers: requestHeaders,
+			cache: "no-store",
+		}),
+		fetch(`${serverApiBase}/projects/${slug}/issues/labels`, {
+			headers: requestHeaders,
+			cache: "no-store",
+		}),
+	]);
 
     const templatesData = templatesRes.ok ? await templatesRes.json() : { templates: [] };
     const labelsData = labelsRes.ok ? await labelsRes.json() : { labels: [] };

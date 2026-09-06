@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectAnalyticsSettingsPage from "@/components/project/settings/ProjectAnalyticsSettingsPage";
 import { getProjectBasePath, isBuildContentProjectType } from "@/utils/projectRoutes";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -48,18 +49,8 @@ async function fetchProjectAnalytics(slug, authToken, timeRange) {
 export async function generateMetadata({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
-    const tProject = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
     const tSettings = await getTranslations({ locale: resolvedLocale, namespace: "SettingsProjectPage" });
-
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    if(!res.ok) {
-        return { title: tProject("metadata.notFound") };
-    }
-
-    const project = await res.json();
+	const { project } = await getProjectForRequest(slug);
     return { title: tSettings("analytics.metadataTitle", { title: project.title }) };
 }
 

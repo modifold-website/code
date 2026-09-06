@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { after } from "next/server";
-import { notFound } from "next/navigation";
+import { forbidden, notFound } from "next/navigation";
 import { cookies } from "next/headers";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
@@ -44,6 +44,10 @@ export const getProjectBySlug = cache(async (slug, authToken = "", versionsLimit
     } catch {
         notFound();
     }
+
+    if(response.status === 403) {
+		forbidden();
+	}
 
     if(!response.ok) {
         notFound();

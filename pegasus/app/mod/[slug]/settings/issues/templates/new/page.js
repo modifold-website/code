@@ -1,24 +1,15 @@
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import IssueTemplateEditorPage from "@/components/project/settings/IssueTemplateEditorPage";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
-    const tProject = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
     const tIssues = await getTranslations({ locale: resolvedLocale, namespace: "IssueSettings" });
-
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    if(!res.ok) {
-        return { title: tProject("metadata.notFound") };
-    }
-
-    const project = await res.json();
+	const { project } = await getProjectForRequest(slug);
     return { title: `${project.title} — ${tIssues("template.createTitle")}` };
 }
 

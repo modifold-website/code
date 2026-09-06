@@ -4,22 +4,13 @@ const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 import { getLocale, getTranslations } from "next-intl/server";
 import VersionsSettings from "@/components/project/settings/VersionsSettings";
 import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
-    const tProject = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
     const tSettings = await getTranslations({ locale: resolvedLocale, namespace: "SettingsProjectPage" });
-
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-    });
-
-    if(!res.ok) {
-        return { title: tProject("metadata.notFound") };
-    }
-
-    const project = await res.json();
+	const { project } = await getProjectForRequest(slug);
     return { title: tSettings("metadata.title", { title: project.title }) };
 }
 

@@ -21,7 +21,7 @@ const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { countProjectVersionDownload, prepareProjectVersionDownloadRedirect } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
-const { buildVisibleVersionWhereClause, canAccessPrivateProject, canViewPrivateProjectVersions } = require("../../utils/projectVisibility");
+const { buildVisibleVersionWhereClause, canAccessRestrictedProject, canViewPrivateProjectVersions } = require("../../utils/projectVisibility");
 const { buildProjectOwnerDto, buildVersionsPagination, getProjectVersionPage } = require("../../utils/projectDetails");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
@@ -2755,15 +2755,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         const userId = req.user?.id;
 		const { limit: versionsLimit, offset: versionsOffset } = getProjectVersionPage(req.query);
 		const cacheVersion = await getProjectCacheVersion(slug);
-		const cacheKey = `modifold_project_details_publicsafe_v4_${slug}_${userId || "anon"}_${versionsLimit}_${versionsOffset}_${cacheVersion}`;
+		const cacheKey = `modifold_project_details_publicsafe_v5_${slug}_${userId || "anon"}_${versionsLimit}_${versionsOffset}_${cacheVersion}`;
         const shouldUseProjectCache = !userId;
-
-        if(shouldUseProjectCache) {
-            const cachedProject = await getCacheJson(cacheKey);
-            if(cachedProject) {
-                return res.json(cachedProject);
-            }
-        }
 
 		const projectData = req.project;
 		if(!projectData) {
@@ -2774,8 +2767,15 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 			userId ? resolveProjectAccess(db, projectData, userId) : null,
 			getUserRole(userId),
 		]);
-		if(!canAccessPrivateProject({ project: projectData, userId, userRole, access })) {
-			return res.status(404).json({ message: "Project not found" });
+		if(!canAccessRestrictedProject({ project: projectData, userId, userRole, access })) {
+			return res.status(403).json({ message: "You do not have permission to view this project" });
+		}
+
+		if(shouldUseProjectCache) {
+			const cachedProject = await getCacheJson(cacheKey);
+			if(cachedProject) {
+				return res.json(cachedProject);
+			}
 		}
 
 		const canViewModerationFields = canViewPrivateProjectVersions({
@@ -5868,7 +5868,7 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
     const { slug, version_number } = req.params;
 
     try {
-        const [project] = await db.query('SELECT id, user_id, slug FROM projects WHERE slug = ?', [slug]);
+		const [project] = await db.query('SELECT id, user_id, slug, status, visibility FROM projects WHERE slug = ?', [slug]);
         if(!project.length) {
             return res.status(404).json({ message: 'Project not found' });
         }
@@ -5883,13 +5883,13 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
 			versionViewerUserId ? resolveProjectAccess(db, project[0], versionViewerUserId) : null,
 			getUserRole(versionViewerUserId),
 		]);
-		if(!canAccessPrivateProject({
+		if(!canAccessRestrictedProject({
 			project: project[0],
 			userId: versionViewerUserId,
 			userRole: versionViewerRole,
 			access: versionAccess,
 		})) {
-			return res.status(404).json({ message: 'Project not found' });
+			return res.status(403).json({ message: 'You do not have permission to view this project' });
 		}
 		const canViewModerationFields = canViewPrivateProjectVersions({
 			userId: versionViewerUserId,

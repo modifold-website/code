@@ -1,8 +1,8 @@
-import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import IssueDetailPage from "@/components/pages/IssueDetailPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getProjectForRequest } from "@/utils/projects/server";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -11,16 +11,7 @@ export async function generateMetadata({ params }) {
     const resolvedLocale = await getLocale();
     const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
 
-    const res = await fetch(`${serverApiBase}/projects/${slug}`, {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    });
-
-    if(!res.ok) {
-        return { title: t("metadata.notFound") };
-    }
-
-    const project = await res.json();
+	const { project } = await getProjectForRequest(slug);
     if(!project.issues_enabled) {
         return { title: t("metadata.notFound") };
     }
@@ -42,32 +33,7 @@ export default async function Page({ params }) {
     const { slug, issueId } = await params;
     const resolvedLocale = await getLocale();
     const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get("authToken")?.value;
-
-    const projectFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    };
-
-    let projectRes;
-    try {
-        projectRes = await fetch(`${serverApiBase}/projects/${slug}`, projectFetchOptions);
-    } catch {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    if(!projectRes.ok) {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    const project = await projectRes.json();
+	const { project, authToken } = await getProjectForRequest(slug);
     if(!project.issues_enabled) {
         notFound();
     }
@@ -75,7 +41,7 @@ export default async function Page({ params }) {
     const issueRes = await fetch(`${serverApiBase}/projects/${slug}/issues/${issueId}`, {
         headers: {
             Accept: "application/json",
-            Authorization: authToken ? `Bearer ${authToken}` : undefined,
+			...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
         cache: "no-store",
     });

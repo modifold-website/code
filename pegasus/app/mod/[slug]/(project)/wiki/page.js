@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import WikiPage from "@/components/pages/WikiPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
@@ -19,58 +18,18 @@ export default async function Page({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
     const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get("authToken")?.value;
-
-    const projectFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}`] },
-    };
-
-    const membersFetchOptions = authToken ? {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    } : {
-        headers: { Accept: "application/json" },
-        next: { revalidate: 60, tags: [`project:${slug}:members`] },
-    };
-
-    let projectRes;
-    try {
-        projectRes = await fetch(`${serverApiBase}/projects/${slug}`, projectFetchOptions);
-    } catch {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    if(!projectRes.ok) {
-        return <div>{t("projectNotFound")}</div>;
-    }
-
-    const project = await projectRes.json();
-
-    let members = [];
-    try {
-        const membersRes = await fetch(`${serverApiBase}/projects/${slug}/members`, membersFetchOptions);
-        if(membersRes.ok) {
-            members = await membersRes.json();
-        }
-    } catch {}
+	const { project, authToken } = await getProjectForRequest(slug);
+	const requestHeaders = {
+		Accept: "application/json",
+		...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+	};
 
     let wikiData = null;
     let wikiError = null;
 
     try {
         const wikiRes = await fetch(`${serverApiBase}/projects/${slug}/wiki`, {
-            headers: { Accept: "application/json" },
+			headers: requestHeaders,
             cache: "no-store",
         });
 
@@ -80,7 +39,7 @@ export default async function Page({ params }) {
 
             if(firstPageSlug) {
                 const firstPageRes = await fetch(`${serverApiBase}/projects/${slug}/wiki/${encodeURIComponent(firstPageSlug)}`, {
-                    headers: { Accept: "application/json" },
+					headers: requestHeaders,
                     cache: "no-store",
                 });
 
@@ -99,5 +58,5 @@ export default async function Page({ params }) {
         wikiError = t("errorOccurred");
     }
 
-    return <WikiPage project={{ ...project, members }} authToken={authToken} wikiData={wikiData} wikiError={wikiError} />;
+	return <WikiPage project={project} authToken={authToken} wikiData={wikiData} wikiError={wikiError} />;
 }
