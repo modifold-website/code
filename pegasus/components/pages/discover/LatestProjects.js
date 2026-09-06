@@ -10,8 +10,8 @@ import { ProjectStatDownloads } from "./DiscoverProjectRail";
 import { getOwnerHref } from "./discoverHelpers";
 
 function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" }) {
-	const projectIcon = project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg";
-	const ownerAvatar = project.owner?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg";
+	const projectIcon = project.icon_url || "/images/no-project-icon.svg";
+	const ownerAvatar = project.owner?.avatar || "/images/no-project-icon.svg";
 	const visibleTags = (project.tags || []).slice(0, 1);
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
 

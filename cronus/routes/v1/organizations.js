@@ -45,7 +45,7 @@ const buildOrganizationSummary = (org) => ({
     slug: org.slug,
     name: org.name,
     summary: org.summary || "",
-    icon_url: org.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+    icon_url: org.icon_url || "https://modifold.com/images/no-project-icon.svg",
     discord_url: org.discord_url || null,
     website_url: org.website_url || null,
     twitter_url: org.twitter_url || null,
@@ -224,7 +224,7 @@ router.post("/", auth, async (req, res) => {
                 slugValidation.normalized,
                 rawName,
                 rawSummary,
-                iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg",
+                iconUrl || "https://modifold.com/images/no-project-icon.svg",
                 req.user.id,
                 now,
                 now,
@@ -261,7 +261,7 @@ router.post("/", auth, async (req, res) => {
                 slug: slugValidation.normalized,
                 name: rawName,
                 summary: rawSummary,
-                icon_url: iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: iconUrl || "https://modifold.com/images/no-project-icon.svg",
             },
         });
     } catch (error) {
@@ -608,7 +608,7 @@ router.put("/:slug/settings", auth, async (req, res) => {
         }
 
         if(req.body?.icon_url !== undefined) {
-            updates.icon_url = sanitizePlainText(req.body.icon_url || "") || "https://cdn.modifold.com/static/no-project-icon.svg";
+            updates.icon_url = sanitizePlainText(req.body.icon_url || "") || "https://modifold.com/images/no-project-icon.svg";
         }
 
         if(req.body?.slug !== undefined) {

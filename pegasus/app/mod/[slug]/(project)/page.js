@@ -48,7 +48,7 @@ export default async function Page({ params }) {
                     "description": project.summary,
                     "datePublished": project.created_at,
                     "url": `https://modifold.com${basePath}/${project.slug}`,
-                    "image": project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    "image": project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                     "inLanguage": resolvedLocale,
                 })}
             </Script>

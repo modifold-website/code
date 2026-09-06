@@ -53,7 +53,7 @@ const buildProjectOwnerDto = (project, aggregates, normalizeOwnerRole) => {
 			id: project.organization_id,
 			username: project.organization_name,
 			slug: project.organization_slug,
-			avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+			avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
 			summary: project.organization_summary || "",
 			isVerified: 0,
 			type: "organization",

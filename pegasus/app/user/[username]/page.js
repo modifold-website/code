@@ -43,7 +43,7 @@ export async function generateMetadata({ params }) {
     }
 
     const description = getProfileDescription(user.description, tProfile("defaultDescription"));
-    const avatar = user.avatar || "https://cdn.modifold.com/static/no-project-icon.svg";
+    const avatar = user.avatar || "https://modifold.com/images/no-project-icon.svg";
     const profileUrl = `https://modifold.com/user/${encodeURIComponent(user.slug || username)}`;
 
     return {

@@ -1502,7 +1502,7 @@ router.get("/dependency-options", async (req, res) => {
 				id: project.id,
 				slug: project.slug,
 				title: project.title,
-				icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+				icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
 				project_type: project.project_type,
 			})),
 		});
@@ -1682,7 +1682,7 @@ router.get("/", async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 color: project.color,
                 downloads: project.downloads,
                 show_players_last_14d: Number(project.show_players_last_14d) === 1,
@@ -1701,7 +1701,7 @@ router.get("/", async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     isVerified: 0,
                     type: "organization",
@@ -1850,7 +1850,7 @@ router.get('/user/projects', auth, async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 downloads: project.downloads,
                 created_at: project.created_at,
                 updated_at: project.updated_at,
@@ -1861,7 +1861,7 @@ router.get('/user/projects', auth, async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     type: "organization",
                     profile_url: profileUrl,
@@ -1958,7 +1958,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
         }
 
         const projectId = generateId();
-        let iconUrl = getPublicUrl("static/no-project-icon.svg");
+        let iconUrl = "https://modifold.com/images/no-project-icon.svg";
         let projectColor = null;
 
         if(req.file) {
@@ -2918,7 +2918,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             discord_url: projectData.discord_url,
             hytale_wiki_slug: projectData.hytale_wiki_slug || null,
             hytale_wiki_url: projectData.hytale_wiki_slug ? `https://wiki.hytalemodding.dev/mod/${projectData.hytale_wiki_slug}` : null,
-            icon_url: projectData.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+            icon_url: projectData.icon_url || "https://modifold.com/images/no-project-icon.svg",
             downloads: projectData.downloads,
             show_players_last_14d: shouldShowPlayersLast14Days,
             players_last_14d: playersLast14DaysBySlug.get(projectData.slug) || 0,
@@ -2956,7 +2956,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 				slug: projectData.organization_slug,
 				name: projectData.organization_name,
 				summary: projectData.organization_summary || "",
-				icon_url: projectData.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+				icon_url: projectData.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
 			} : null,
 			disclosures: disclosureState.disclosures,
 			archive: disclosureState.archive,
@@ -2986,7 +2986,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 slug: jam.slug,
                 title: jam.title,
                 summary: jam.summary,
-                avatar_url: jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                avatar_url: jam.avatar_url || "https://modifold.com/images/no-project-icon.svg",
                 cover_url: jam.cover_url || null,
                 starts_at: jam.starts_at ? new Date(jam.starts_at).toISOString() : null,
                 submissions_start_at: (jam.submissions_start_at || jam.starts_at) ? new Date(jam.submissions_start_at || jam.starts_at).toISOString() : null,
@@ -3136,7 +3136,7 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
             }
         }
 
-        let iconUrl = projectMeta.icon_url || getPublicUrl("static/no-project-icon.svg");
+        let iconUrl = projectMeta.icon_url || "https://modifold.com/images/no-project-icon.svg";
         let projectColor = projectMeta.color;
         if(req.file) {
             const iconFile = await convertImageToWebp(req.file);
@@ -3698,14 +3698,14 @@ const getProjectOrganizationSettings = async ({ projectId, userId }) => {
 		slug: row.slug,
 		name: row.name,
 		summary: row.summary || "",
-		icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+		icon_url: row.icon_url || "https://modifold.com/images/no-project-icon.svg",
 	}));
 	const currentOrganization = organizationRows[0] ? {
 		id: organizationRows[0].id,
 		slug: organizationRows[0].slug,
 		name: organizationRows[0].name,
 		summary: organizationRows[0].summary || "",
-		icon_url: organizationRows[0].icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+		icon_url: organizationRows[0].icon_url || "https://modifold.com/images/no-project-icon.svg",
 	} : null;
 
 	if(currentOrganization && !organizationOptions.some((item) => item.slug === currentOrganization.slug)) {
@@ -6280,7 +6280,7 @@ router.get("/:slug/organization-options", auth, async (req, res) => {
             slug: row.slug,
             name: row.name,
             summary: row.summary || "",
-            icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+            icon_url: row.icon_url || "https://modifold.com/images/no-project-icon.svg",
         }));
 
         return res.json({ organizations });
@@ -6445,7 +6445,7 @@ router.put("/:slug/organization", auth, async (req, res) => {
                 slug: targetOrganization.slug,
                 name: targetOrganization.name,
                 summary: targetOrganization.summary || "",
-                icon_url: targetOrganization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: targetOrganization.icon_url || "https://modifold.com/images/no-project-icon.svg",
             },
         });
     } catch (error) {

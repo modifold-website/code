@@ -64,7 +64,7 @@ export default function OrganizationsDashboardPage({ authToken, initialOrganizat
 									<Link prefetch={false} className="new-project-card__overlay" href={`/organization/${organization.slug}`} aria-label={t("dashboard.open", { organization: organization.name })} />
 
 									<div className="dashboard-project-card__content organization-dashboard-card__content">
-										<img className="new-project-icon organization-dashboard-card__icon" src={organization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={t("dashboard.iconAlt", { organization: organization.name })} />
+										<img className="new-project-icon organization-dashboard-card__icon" src={organization.icon_url || "/images/no-project-icon.svg"} alt={t("dashboard.iconAlt", { organization: organization.name })} />
 
 										<div className="new-project-info">
 											<div className="organization-dashboard-card__title-row">

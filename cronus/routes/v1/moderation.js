@@ -236,7 +236,7 @@ const mapVersionReview = (version) => ({
 	project_slug: version.project_slug,
 	project_title: version.project_title,
 	project_summary: version.project_summary,
-	project_icon_url: version.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+	project_icon_url: version.project_icon_url || "https://modifold.com/images/no-project-icon.svg",
 	project_type: version.project_type,
 	owner_username: version.owner_username,
 	owner_slug: version.owner_slug,
@@ -664,7 +664,7 @@ router.get("/", auth, async (req, res) => {
         res.json({
             projects: projects.map((project) => ({
                 ...project,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
             })),
             totalPages: Math.ceil(total / limit),
             currentPage: Number(page),
@@ -736,7 +736,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 								type: "New",
 								title: project.title,
 								description: project.summary,
-								iconLink: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+								iconLink: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
 								modLink: `https://modifold.com/${getProjectPathSegment(project.project_type)}/${project.slug}`,
 								developerName: project.username || "Unknown",
 							}),
