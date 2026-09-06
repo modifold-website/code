@@ -1,11 +1,11 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectAnalyticsSettingsPage from "@/components/project/settings/ProjectAnalyticsSettingsPage";
+import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
 import { getProjectBasePath, isBuildContentProjectType } from "@/utils/projectRoutes";
 import { getProjectForRequest } from "@/utils/projects/server";
 
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
+const serverApiBase = getServerApiBase();
 
 const ALLOWED_TIME_RANGES = new Set(["3d", "7d", "30d", "90d"]);
 const ONLINE_RANGE_DAYS = { "3d": 3, "7d": 7, "30d": 30, "90d": 90 };
@@ -16,7 +16,7 @@ const getNormalizedTimeRange = (value) => {
 };
 
 async function fetchOnlineNow(slug) {
-    const response = await fetch(`${serverApiBase}/analytics/${slug}/online-now`, {
+    const response = await serverApiFetch(`${serverApiBase}/analytics/${slug}/online-now`, {
         headers: { Accept: "application/json" },
         next: { revalidate: 60 },
     });
@@ -25,7 +25,7 @@ async function fetchOnlineNow(slug) {
 }
 
 async function fetchOnlineSeries(slug, days) {
-    const response = await fetch(`${serverApiBase}/analytics/${slug}/chart/daily-joins?days=${days}`, {
+    const response = await serverApiFetch(`${serverApiBase}/analytics/${slug}/chart/daily-joins?days=${days}`, {
         headers: { Accept: "application/json" },
         next: { revalidate: 60 },
     });
@@ -34,7 +34,7 @@ async function fetchOnlineSeries(slug, days) {
 }
 
 async function fetchProjectAnalytics(slug, authToken, timeRange) {
-    const response = await fetch(`${serverApiBase}/projects/${slug}/analytics?time_range=${timeRange}`, {
+    const response = await serverApiFetch(`${serverApiBase}/projects/${slug}/analytics?time_range=${timeRange}`, {
         headers: {
             Accept: "application/json",
             Authorization: `Bearer ${authToken}`,
@@ -59,38 +59,18 @@ export default async function Page({ params, searchParams }) {
     const resolvedSearchParams = await searchParams;
     const requestedTimeRange = Array.isArray(resolvedSearchParams?.time_range) ? resolvedSearchParams.time_range[0] : resolvedSearchParams?.time_range;
     const timeRange = getNormalizedTimeRange(resolvedSearchParams?.time_range);
-    const resolvedLocale = await getLocale();
-    const tNotFound = await getTranslations({ locale: resolvedLocale, namespace: "NotFound" });
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get("authToken")?.value;
+    const { project, authToken } = await getProjectForRequest(slug);
 
     if(!authToken) {
         redirect("/");
     }
 
-    const [projectResponse, analyticsResponse] = await Promise.all([
-        fetch(`${serverApiBase}/projects/${slug}`, {
-            headers: {
-                Accept: "application/json",
-                Authorization: authToken ? `Bearer ${authToken}` : undefined,
-            },
-            next: { revalidate: 60 },
-        }),
-        
-        fetchProjectAnalytics(slug, authToken, timeRange),
-    ]);
+    const analyticsResponse = await fetchProjectAnalytics(slug, authToken, timeRange);
 
-    if(!projectResponse.ok || !analyticsResponse.ok) {
-        return (
-            <div className="layout">
-                <div className="view">
-                    <div className="not-found-page__dummy">{tNotFound("message")}</div>
-                </div>
-            </div>
-        );
+	if(!analyticsResponse.ok) {
+		throw new Error(`Could not load project analytics: API returned ${analyticsResponse.status}`);
     }
 
-    const project = await projectResponse.json();
     const analytics = await analyticsResponse.json();
 	const isBuildContentProject = isBuildContentProjectType(project.project_type);
     let onlineSeries = [];

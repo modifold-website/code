@@ -1,54 +1,33 @@
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
-
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectSettings from "@/components/project/settings/ProjectSettings";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-import { getProjectForRequest } from "@/utils/projects/server";
+import { getProjectSettingsForRequest } from "@/utils/projects/server";
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
     const resolvedLocale = await getLocale();
     const tSettings = await getTranslations({ locale: resolvedLocale, namespace: "SettingsProjectPage" });
-	const { project } = await getProjectForRequest(slug);
+	const { project } = await getProjectSettingsForRequest(slug);
+	if(!project) {
+		return { title: tSettings("metadata.title", { title: slug }) };
+	}
+
     return { title: tSettings("metadata.title", { title: project.title }) };
 }
 
 export default async function Page({ params }) {
     const { slug } = await params;
-    const resolvedLocale = await getLocale();
-    const tNotFound = await getTranslations({ locale: resolvedLocale, namespace: "NotFound" });
-    const cookieStore = await cookies();
-    const authToken = cookieStore.get("authToken")?.value;
+    const { project: settingsData, status } = await getProjectSettingsForRequest(slug);
 
-    if(!authToken) {
+    if(status === 401) {
         redirect("/");
     }
 
-    const res = await fetch(`${serverApiBase}/projects/${slug}/settings`, {
-        headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${authToken}`,
-        },
-        cache: "no-store",
-    });
-
-    if(res.status === 401 || res.status === 403) {
+    if(status === 403) {
         redirect("/403");
     }
 
-    if(!res.ok) {
-        return (
-            <div className="layout">
-                <div className="view">
-                    <div className="not-found-page__dummy">{tNotFound("message")}</div>
-                </div>
-            </div>
-        );
-    }
-
-    const settingsData = await res.json();
 	if(!settingsData?.permissions?.can_edit_details) {
 		const baseProjectPath = `${getProjectBasePath(settingsData?.project_type)}/${settingsData?.slug || slug}`;
 		if(settingsData?.permissions?.can_manage_collaborators) {
@@ -64,6 +43,7 @@ export default async function Page({ params }) {
 			redirect(`${baseProjectPath}/settings/description`);
 		}
 	}
+    
     const project = {
         ...settingsData,
         organization: settingsData?.organization || null,

@@ -21,7 +21,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
     return (
         <div className="sidebar">
             <div className="sidebar__main">
-                <Link href={baseProjectPath} scroll={false} className="sidebar-item sidebar-item--profile" data-ripple>
+                <Link href={baseProjectPath} prefetch={false} scroll={false} className="sidebar-item sidebar-item--profile" data-ripple>
                     <img src={project.icon_url} alt={iconAlt} className="icon" width="28" height="28" style={{ borderRadius: "8px" }} />
                     
                     <span className="sidebar-item__label">{project.title}</span>
@@ -30,7 +30,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
                 <div className="sidebar-separator-view _theme_default _size_s"></div>
 
 				{canEditDetails || canDeleteProject ? (
-                    <Link href={`${baseProjectPath}/settings`} scroll={false} className={`sidebar-item ${isExact(`${baseProjectPath}/settings`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings`} prefetch={false} scroll={false} className={`sidebar-item ${isExact(`${baseProjectPath}/settings`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide-settings-icon lucide-settings">
                             <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
                             <circle cx="12" cy="12" r="3" />
@@ -41,7 +41,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canManageCollaborators ? (
-					<Link href={`${baseProjectPath}/settings/collaborators`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/collaborators`) ? "sidebar-item--active" : ""}`} data-ripple>
+					<Link href={`${baseProjectPath}/settings/collaborators`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/collaborators`) ? "sidebar-item--active" : ""}`} data-ripple>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon" aria-hidden="true">
 							<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
 							<circle cx="9" cy="7" r="4" />
@@ -53,7 +53,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditBody ? (
-                    <Link href={`${baseProjectPath}/settings/description`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/description`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/description`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/description`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide-type-icon lucide-type">
                             <path d="M12 4v16" />
                             <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" />
@@ -65,7 +65,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditDetails ? (
-                    <Link href={`${baseProjectPath}/settings/details`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/details`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/details`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/details`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-list-collapse-icon lucide-list-collapse">
                             <path d="M10 5h11"/>
                             <path d="M10 12h11"/>
@@ -79,7 +79,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditBody ? (
-                    <Link href={`${baseProjectPath}/settings/links`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/links`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/links`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/links`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide-link-icon lucide-link">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -90,7 +90,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canManageVersions ? (
-                    <Link href={`${baseProjectPath}/settings/versions`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/versions`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/versions`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/versions`) ? "sidebar-item--active" : ""}`} data-ripple>
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-download-icon lucide-download">
 							<path d="M12 15V3" />
 							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -102,7 +102,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditGallery ? (
-                    <Link href={`${baseProjectPath}/settings/gallery`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/gallery`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/gallery`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/gallery`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide-image-icon lucide-image">
                             <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                             <circle cx="9" cy="9" r="2" />
@@ -114,7 +114,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditDetails ? (
-                    <Link href={`${baseProjectPath}/settings/tags`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/tags`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/tags`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/tags`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-tag-icon lucide-tag">
                             <path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
                             <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
@@ -125,7 +125,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditDetails ? (
-                    <Link href={`${baseProjectPath}/settings/issues`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/issues`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/issues`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/issues`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg className="icon icon--info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 16v-4"/>
@@ -137,7 +137,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canViewAnalytics ? (
-                    <Link href={`${baseProjectPath}/settings/analytics`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/analytics`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/analytics`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/analytics`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-chart-no-axes-combined-icon lucide-chart-no-axes-combined">
                             <path d="M12 16v5"/>
                             <path d="M16 14v7"/>
@@ -152,7 +152,7 @@ export default function ProjectSettingsSidebar({ project, labels, iconAlt }) {
 				) : null}
 
 				{canEditDetails ? (
-                    <Link href={`${baseProjectPath}/settings/moderation`} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/moderation`) ? "sidebar-item--active" : ""}`} data-ripple>
+                    <Link href={`${baseProjectPath}/settings/moderation`} prefetch={false} scroll={false} className={`sidebar-item ${isActive(`${baseProjectPath}/settings/moderation`) ? "sidebar-item--active" : ""}`} data-ripple>
                         <svg className="icon icon--settings" height="24" width="24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m3 6 3 1m0 0-3 9a5 5 0 0 0 6.001 0M6 7l3 9M6 7l6-2m6 2 3-1m-3 1-3 9a5 5 0 0 0 6.001 0M18 7l3 9m-3-9-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                         </svg>

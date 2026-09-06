@@ -2,9 +2,10 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectCollaboratorsSettings from "@/components/project/settings/ProjectCollaboratorsSettings";
+import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
 import { getProjectForRequest } from "@/utils/projects/server";
 
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
+const serverApiBase = getServerApiBase();
 
 export async function generateMetadata({ params }) {
 	const { slug } = await params;
@@ -24,7 +25,7 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 		redirect("/403");
 	}
 
-	const response = await fetch(`${serverApiBase}/projects/${slug}/collaborators`, {
+	const response = await serverApiFetch(`${serverApiBase}/projects/${slug}/collaborators`, {
 		headers: {
 			Accept: "application/json",
 			Authorization: `Bearer ${authToken}`,
