@@ -174,6 +174,27 @@ export default function DescriptionSettings({ project, authToken }) {
         updateTextareaValue(nextValue, selectionStart, selectionStart + selected.length);
     };
 
+	const insertCollapsibleSection = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
+
+		const start = textarea.selectionStart ?? 0;
+		const end = textarea.selectionEnd ?? 0;
+		const selected = description.slice(start, end);
+		const before = description.slice(0, start);
+		const after = description.slice(end);
+		const title = "Section title";
+		const content = selected || "Hidden content";
+		const leadingNewline = before && !before.endsWith("\n\n") ? (before.endsWith("\n") ? "\n" : "\n\n") : "";
+		const trailingNewline = after && !after.startsWith("\n\n") ? (after.startsWith("\n") ? "\n" : "\n\n") : "";
+		const block = `${leadingNewline}<details>\n<summary>${title}</summary>\n\n${content}\n\n</details>${trailingNewline}`;
+		const nextValue = `${before}${block}${after}`;
+		const titleStart = start + leadingNewline.length + "<details>\n<summary>".length;
+		updateTextareaValue(nextValue, titleStart, titleStart + title.length);
+	};
+
     const prefixLines = (prefix) => {
         const textarea = textareaRef.current;
         if(!textarea) {
@@ -281,6 +302,10 @@ export default function DescriptionSettings({ project, authToken }) {
                                             <MarkdownToolbarButton label="Image" onClick={openImageModal} disabled={isPreviewVisible}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                             </MarkdownToolbarButton>
+
+											<MarkdownToolbarButton label="Collapsible section" onClick={insertCollapsibleSection} disabled={isPreviewVisible}>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 3 3 3-3"/><path d="m9 6 3-3 3 3"/><path d="M12 3v18"/><path d="M5 9h14"/><path d="M5 15h14"/></svg>
+											</MarkdownToolbarButton>
 
                                             <label className="markdown-editor__preview-toggle">
                                                 <input type="checkbox" checked={isPreviewVisible} onChange={(e) => setIsPreviewVisible(e.target.checked)} />

@@ -164,7 +164,6 @@ strong {
     padding: 0.5rem;
 }
 .markdown-body details[open] summary {
-    border-radius: .25rem .25rem 0 0;
     margin-bottom: 0.5rem;
 }
 .markdown-body details[open] > :last-child:not(summary),
