@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const crypto = require("crypto");
 const express = require("express");
 const fs = require("fs/promises");
@@ -740,7 +742,7 @@ router.get("/moderation", auth, async (req, res) => {
 
 		res.json({ mod_jams: rows.map(formatJam) });
 	} catch (error) {
-		console.error("Error fetching mod jams for moderation:", error);
+		logger.error("Error fetching mod jams for moderation:", error);
 		res.status(500).json({ message: "Error fetching mod jams", error: error.message });
 	}
 });
@@ -761,7 +763,7 @@ router.get("/mine", auth, async (req, res) => {
 
 		res.json({ mod_jams: rows.map(formatJam) });
 	} catch (error) {
-		console.error("Error fetching user mod jams:", error);
+		logger.error("Error fetching user mod jams:", error);
 		res.status(500).json({ message: "Error fetching user mod jams", error: error.message });
 	}
 });
@@ -810,7 +812,7 @@ router.get("/", async (req, res) => {
 		});
 	} catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching mod jams:", error);
+			logger.error("Error fetching mod jams:", error);
 		}
 		
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching mod jams", error: error.statusCode ? undefined : error.message });
@@ -869,7 +871,7 @@ router.post("/", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { name: "
 
 		res.json({ success: true, mod_jam: formatJam({ ...jam, status: "draft", created_at: new Date(), updated_at: new Date() }) });
 	} catch (error) {
-		console.error("Error creating mod jam:", error);
+		logger.error("Error creating mod jam:", error);
 		res.status(error.statusCode || 500).json({ message: error.message || "Error creating mod jam" });
 	}
 });
@@ -905,7 +907,7 @@ router.get("/:slug", async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error fetching mod jam:", error);
+		logger.error("Error fetching mod jam:", error);
 		res.status(500).json({ message: "Error fetching mod jam", error: error.message });
 	}
 });
@@ -945,7 +947,7 @@ router.post("/:slug/nominations", auth, async (req, res) => {
 			return res.status(400).json({ message: "Nomination already exists" });
 		}
 
-		console.error("Error adding mod jam nomination:", error);
+		logger.error("Error adding mod jam nomination:", error);
 		res.status(500).json({ message: "Error adding nomination", error: error.message });
 	}
 });
@@ -984,7 +986,7 @@ router.put("/:slug/nominations/:nominationId", auth, async (req, res) => {
 			return res.status(400).json({ message: "Nomination already exists" });
 		}
 
-		console.error("Error updating mod jam nomination:", error);
+		logger.error("Error updating mod jam nomination:", error);
 		res.status(500).json({ message: "Error updating nomination", error: error.message });
 	}
 });
@@ -1012,7 +1014,7 @@ router.delete("/:slug/nominations/:nominationId", auth, async (req, res) => {
 		const nominations = await getJamNominations(jam.id);
 		res.json({ success: true, nominations });
 	} catch (error) {
-		console.error("Error deleting mod jam nomination:", error);
+		logger.error("Error deleting mod jam nomination:", error);
 		res.status(500).json({ message: "Error deleting nomination", error: error.message });
 	}
 });
@@ -1045,7 +1047,7 @@ router.post("/:slug/jury", auth, async (req, res) => {
 			return res.status(400).json({ message: "User is already a jury member" });
 		}
 
-		console.error("Error adding mod jam jury member:", error);
+		logger.error("Error adding mod jam jury member:", error);
 		res.status(500).json({ message: "Error adding jury member", error: error.message });
 	}
 });
@@ -1065,7 +1067,7 @@ router.delete("/:slug/jury/:userId", auth, async (req, res) => {
 		const jury = await getJamJury(jam.id);
 		res.json({ success: true, jury });
 	} catch (error) {
-		console.error("Error removing mod jam jury member:", error);
+		logger.error("Error removing mod jam jury member:", error);
 		res.status(500).json({ message: "Error removing jury member", error: error.message });
 	}
 });
@@ -1098,12 +1100,12 @@ router.put("/:slug", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { nam
 		await db.query("UPDATE mod_jams SET ? WHERE id = ?", [payload, jam.id]);
 		if(payload.avatar_url && payload.avatar_url !== jam.avatar_url) {
 			await deletePublicUrlWithinPrefix(jam.avatar_url, `mod-jams/${jam.id}`).catch((error) => {
-				console.warn(`Failed to delete replaced mod jam avatar: ${error.message}`);
+				logger.warn(`Failed to delete replaced mod jam avatar: ${error.message}`);
 			});
 		}
 		if(payload.cover_url && payload.cover_url !== jam.cover_url) {
 			await deletePublicUrlWithinPrefix(jam.cover_url, `mod-jams/${jam.id}`).catch((error) => {
-				console.warn(`Failed to delete replaced mod jam cover: ${error.message}`);
+				logger.warn(`Failed to delete replaced mod jam cover: ${error.message}`);
 			});
 		}
 		await db.query(
@@ -1114,7 +1116,7 @@ router.put("/:slug", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { nam
 		const updated = await getJamBySlug(payload.slug || jam.slug);
 		res.json({ success: true, mod_jam: formatJam(updated) });
 	} catch (error) {
-		console.error("Error updating mod jam:", error);
+		logger.error("Error updating mod jam:", error);
 		res.status(error.statusCode || 500).json({ message: error.message || "Error updating mod jam" });
 	}
 });
@@ -1139,7 +1141,7 @@ router.post("/:slug/submit-review", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error submitting mod jam:", error);
+		logger.error("Error submitting mod jam:", error);
 		res.status(500).json({ message: "Error submitting mod jam", error: error.message });
 	}
 });
@@ -1171,7 +1173,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error moderating mod jam:", error);
+		logger.error("Error moderating mod jam:", error);
 		res.status(500).json({ message: "Error moderating mod jam", error: error.message });
 	}
 });
@@ -1196,7 +1198,7 @@ router.post("/:slug/participants", auth, async (req, res) => {
 
 		res.json({ success: true, user_joined: true, participants_count: participantsCount });
 	} catch (error) {
-		console.error("Error joining mod jam:", error);
+		logger.error("Error joining mod jam:", error);
 		res.status(500).json({ message: "Error joining mod jam", error: error.message });
 	}
 });
@@ -1241,7 +1243,7 @@ router.post("/:slug/submissions", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error submitting project to mod jam:", error);
+		logger.error("Error submitting project to mod jam:", error);
 		res.status(500).json({ message: "Error submitting project", error: error.message });
 	}
 });
@@ -1264,7 +1266,7 @@ router.delete("/:slug/submissions/me", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error withdrawing mod jam submission:", error);
+		logger.error("Error withdrawing mod jam submission:", error);
 		res.status(500).json({ message: "Error withdrawing submission", error: error.message });
 	}
 });
@@ -1335,7 +1337,7 @@ router.post("/:slug/votes", auth, async (req, res) => {
 			return res.status(400).json({ message: "You already voted in this mod jam" });
 		}
 
-		console.error("Error voting in mod jam:", error);
+		logger.error("Error voting in mod jam:", error);
 		res.status(500).json({ message: "Error voting", error: error.message });
 	}
 });
@@ -1358,7 +1360,7 @@ router.get("/:slug/results", async (req, res) => {
 		const submissions = await getSubmissions({ jamId: jam.id, userId: req.user?.id, resultsOnly: true });
 		res.json({ mod_jam: formatJam(jam), results: submissions });
 	} catch (error) {
-		console.error("Error fetching mod jam results:", error);
+		logger.error("Error fetching mod jam results:", error);
 		res.status(500).json({ message: "Error fetching results", error: error.message });
 	}
 });

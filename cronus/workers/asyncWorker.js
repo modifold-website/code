@@ -3,6 +3,7 @@ require("dotenv").config();
 const crypto = require("crypto");
 const os = require("os");
 
+const { logger } = require("../packages/shared/logger");
 const { db } = require("../config/db");
 const { clickhouse, hasClickHouseConfig } = require("../config/clickhouse");
 const { claimJobs, completeJob, completeJobs, retryOrDeadLetterJob } = require("../utils/asyncJobs");
@@ -338,14 +339,14 @@ const cleanupNotifications = async () => {
 
 const run = async () => {
 	await db.query("SELECT id FROM async_jobs LIMIT 1");
-	console.log(`[async-worker] ${WORKER_ID} started`);
+	logger.info(`[async-worker] ${WORKER_ID} started`);
 	while(!stopping) {
 		if(Date.now() - lastCleanupAt >= CLEANUP_INTERVAL_MS) {
 			lastCleanupAt = Date.now();
 			try {
 				await cleanupNotifications();
 			} catch(error) {
-				console.error("[async-worker] notification cleanup failed:", error.message);
+				logger.error("[async-worker] notification cleanup failed:", error.message);
 			}
 		}
 
@@ -357,7 +358,7 @@ const run = async () => {
 				claimJobs({ workerId: WORKER_ID, jobTypes: FANOUT_JOB_TYPES, limit: FANOUT_JOB_BATCH_SIZE, leaseSeconds: LEASE_SECONDS }),
 			]);
 		} catch(error) {
-			console.error("[async-worker] claim failed:", error.message);
+			logger.error("[async-worker] claim failed:", error.message);
 			await delay(IDLE_DELAY_MS);
 			continue;
 		}
@@ -371,7 +372,7 @@ const run = async () => {
 			try {
 				await processDownloadJobs(downloadJobs);
 			} catch(error) {
-				console.error("[async-worker] download batch failed:", error.message);
+				logger.error("[async-worker] download batch failed:", error.message);
 				for(const job of downloadJobs) {
 					await retryOrDeadLetterJob(job, error);
 				}
@@ -382,7 +383,7 @@ const run = async () => {
 			try {
 				await processFanoutJob(job);
 			} catch(error) {
-				console.error(`[async-worker] ${job.job_type} failed:`, error.message);
+				logger.error(`[async-worker] ${job.job_type} failed:`, error.message);
 				await retryOrDeadLetterJob(job, error);
 			}
 		}
@@ -390,7 +391,7 @@ const run = async () => {
 };
 
 const requestShutdown = (signal) => {
-	console.log(`[async-worker] received ${signal}, stopping`);
+	logger.info(`[async-worker] received ${signal}, stopping`);
 	stopping = true;
 };
 
@@ -400,7 +401,7 @@ process.once("SIGINT", () => requestShutdown("SIGINT"));
 run().then(async () => {
 	await db.end();
 }).catch(async (error) => {
-	console.error("[async-worker] fatal error:", error);
+	logger.error("[async-worker] fatal error:", error);
 	await db.end();
 	process.exit(1);
 });

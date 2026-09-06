@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const ORG_PROJECT_PERMISSIONS = {
     EDIT_DETAILS: "project_edit_details",
     EDIT_BODY: "project_edit_body",
@@ -117,7 +119,7 @@ const logOrganizationAudit = async (db, { organizationId, actorUserId, action, t
             ]
         );
     } catch (error) {
-        console.error("Failed to write organization audit log:", error.message);
+        logger.error("Failed to write organization audit log:", error.message);
     }
 };
 

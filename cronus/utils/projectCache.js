@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const { cacheClient } = require("../config/cache");
 
 const PROJECT_CACHE_VERSION_TTL_SECONDS = 60 * 60 * 24 * 14;
@@ -13,7 +15,7 @@ const getProjectCacheVersion = async (slug) => {
 
 		return value.toString();
 	} catch (error) {
-		console.warn("Redis cache version read failed:", versionKey, error.message);
+		logger.warn("Redis cache version read failed:", versionKey, error.message);
 		return "1";
 	}
 };
@@ -29,7 +31,7 @@ const bumpProjectCacheVersion = async (slug) => {
 	try {
 		await cacheClient.set(versionKey, nextVersion, { expires: PROJECT_CACHE_VERSION_TTL_SECONDS });
 	} catch (error) {
-		console.warn("Redis cache version write failed:", versionKey, error.message);
+		logger.warn("Redis cache version write failed:", versionKey, error.message);
 	}
 };
 
@@ -45,7 +47,7 @@ const bumpProjectCacheVersionById = async (db, projectId) => {
 			await bumpProjectCacheVersion(slug);
 		}
 	} catch (error) {
-		console.warn("Failed to bump cache version by project id:", projectId, error.message);
+		logger.warn("Failed to bump cache version by project id:", projectId, error.message);
 	}
 };
 

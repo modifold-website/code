@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const crypto = require("crypto");
 
 const { db } = require("../config/db");
@@ -144,7 +146,7 @@ const retryOrDeadLetterJob = async (job, error) => {
 	);
 
 	if(dead) {
-		console.error(`[async-worker] job ${job.id} moved to DLQ after ${attempts} attempts`);
+		logger.error(`[async-worker] job ${job.id} moved to DLQ after ${attempts} attempts`);
 	}
 };
 

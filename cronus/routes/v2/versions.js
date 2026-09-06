@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 
 const { db } = require("../../config/db");
@@ -157,7 +159,7 @@ router.get("/:versionId", optionalAuth, async (req, res) => {
 
 		return res.json(response);
 	} catch(error) {
-		console.error("Error fetching v2 version:", error);
+		logger.error("Error fetching v2 version:", error);
 		return res.status(500).json({ message: "Error fetching version", error: error.message });
 	}
 });

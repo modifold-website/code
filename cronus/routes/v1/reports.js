@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
@@ -50,7 +52,7 @@ router.get("/projects/:slug/my-status", auth, async (req, res) => {
             report,
         });
     } catch (error) {
-        console.error("Error fetching report status:", error);
+        logger.error("Error fetching report status:", error);
         return res.status(500).json({ message: "Error fetching report status" });
     }
 });
@@ -112,7 +114,7 @@ router.post("/projects/:slug", auth, async (req, res) => {
             return res.status(409).json({ message: "Report already submitted" });
         }
 
-        console.error("Error creating report:", error);
+        logger.error("Error creating report:", error);
         return res.status(500).json({ message: "Error creating report" });
     }
 });

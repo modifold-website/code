@@ -1,6 +1,11 @@
 require("dotenv").config();
 
 const { createClient } = require("@clickhouse/client");
+const { createLogger } = require("../packages/shared/logger");
+
+const logger = createLogger("clickhouse");
+const errorLogIntervalMs = Number(process.env.CLICKHOUSE_ERROR_LOG_INTERVAL_MS) || 30000;
+const errorLogState = new Map();
 
 const hasClickHouseConfig = Boolean(
 	process.env.CLICKHOUSE_URL &&
@@ -14,12 +19,23 @@ const createLoggedClickHouseClient = (client) => {
 		try {
 			return await callback();
 		} catch(error) {
-			console.error(`[clickhouse] ${operation} failed:`, {
-				operation,
-				table: payload?.table,
-				query: payload?.query,
-				format: payload?.format,
-			}, error);
+			const now = Date.now();
+			const previous = errorLogState.get(operation) || { loggedAt: 0, suppressed: 0 };
+			if(now - previous.loggedAt >= errorLogIntervalMs) {
+				logger.error("ClickHouse operation failed", {
+					operation,
+					table: payload?.table,
+					format: payload?.format,
+					suppressedCount: previous.suppressed,
+					error,
+				});
+				errorLogState.set(operation, { loggedAt: now, suppressed: 0 });
+			} else {
+				errorLogState.set(operation, {
+					...previous,
+					suppressed: previous.suppressed + 1,
+				});
+			}
 			throw error;
 		}
 	};

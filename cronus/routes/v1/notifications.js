@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
@@ -39,7 +41,7 @@ router.get("/unread-count", auth, async (req, res) => {
 
         return res.json({ unreadCount: Number(row?.unreadCount || 0) });
     } catch (error) {
-        console.error("Error fetching unread notifications count:", error);
+        logger.error("Error fetching unread notifications count:", error);
         return res.status(500).json({ message: "Error fetching unread notifications count", error: error.message });
     }
 });
@@ -59,7 +61,7 @@ router.post("/mark-all-read", auth, async (req, res) => {
 
         return res.json({ success: true, updated: Number(result?.affectedRows || 0) });
     } catch (error) {
-        console.error("Error marking notifications as read:", error);
+        logger.error("Error marking notifications as read:", error);
         return res.status(500).json({ message: "Error marking notifications as read", error: error.message });
     }
 });
@@ -367,7 +369,7 @@ router.get("/", auth, async (req, res) => {
         });
     } catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching notifications:", error);
+			logger.error("Error fetching notifications:", error);
 		}
         
 		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching notifications", error: error.statusCode ? undefined : error.message });

@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const crypto = require("crypto");
 const { db } = require("../../config/db");
@@ -115,7 +117,7 @@ const getProjectPlayersInLastDaysBySlug = async ({ projectSlugs, days }) => {
 
         await setCacheJson(playersCacheKey, Object.fromEntries(countsBySlug.entries()), 60 * 5);
     } catch (error) {
-        console.warn("Failed to fetch project players for period:", error.message);
+        logger.warn("Failed to fetch project players for period:", error.message);
     }
 
     return countsBySlug;
@@ -225,12 +227,12 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
 		if(updates.avatar && currentUser.avatar !== updates.avatar) {
 			await deleteUserMediaUrl(currentUser.avatar, req.user.id).catch((error) => {
-				console.warn(`Failed to delete replaced user avatar: ${error.message}`);
+				logger.warn(`Failed to delete replaced user avatar: ${error.message}`);
 			});
 		}
 		if(updates.cover && currentUser.cover !== updates.cover) {
 			await deleteUserMediaUrl(currentUser.cover, req.user.id).catch((error) => {
-				console.warn(`Failed to delete replaced user cover: ${error.message}`);
+				logger.warn(`Failed to delete replaced user cover: ${error.message}`);
 			});
 		}
 
@@ -245,7 +247,7 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
         res.json(updatedUser[0]);
     } catch (error) {
-        console.error("Error updating user:", error);
+        logger.error("Error updating user:", error);
         res.status(500).json({ message: "Error updating user", error: error.message });
     }
 });
@@ -286,7 +288,7 @@ router.put("/me/profile-badge", auth, async (req, res) => {
 
 		return res.json(updatedUser);
 	} catch (error) {
-		console.error("Error updating profile badge:", error);
+		logger.error("Error updating profile badge:", error);
 		return res.status(500).json({ message: "Error updating profile badge", error: error.message });
 	}
 });
@@ -335,7 +337,7 @@ router.get("/slug-availability/:slug", auth, async (req, res) => {
             message: null,
         });
     } catch (error) {
-        console.error("Error checking user slug availability:", error);
+        logger.error("Error checking user slug availability:", error);
         return res.status(500).json({ message: "Error checking slug availability" });
     }
 });
@@ -473,7 +475,7 @@ router.get("/me/likes", auth, async (req, res) => {
 		return res.json(responseData);
 	} catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching liked projects:", error);
+			logger.error("Error fetching liked projects:", error);
 		}
 
 		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching liked projects", error: error.statusCode ? undefined : error.message });
@@ -515,7 +517,7 @@ router.get("/search", auth, async (req, res) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Error searching users:", error);
+		logger.error("Error searching users:", error);
 		return res.status(500).json({ message: "Error searching users", error: error.message });
 	}
 });
@@ -677,7 +679,7 @@ router.get("/:username/projects", async (req, res) => {
         });
     } catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching user projects:", error);
+			logger.error("Error fetching user projects:", error);
 		}
 
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching user projects", error: error.statusCode ? undefined : error.message });
@@ -753,7 +755,7 @@ router.get("/:username/follows", async (req, res) => {
         res.json(responseData);
 	} catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching user follow list:", error);
+			logger.error("Error fetching user follow list:", error);
 		}
 
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching user follow list", error: error.statusCode ? undefined : error.message });
@@ -796,7 +798,7 @@ router.get("/:username/organizations", async (req, res) => {
             })),
         });
     } catch (error) {
-        console.error("Error fetching user organizations:", error);
+        logger.error("Error fetching user organizations:", error);
         return res.status(500).json({ message: "Error fetching user organizations", error: error.message });
     }
 });
@@ -842,7 +844,7 @@ router.get("/:username/achievements", async (req, res) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Error fetching user achievements:", error);
+		logger.error("Error fetching user achievements:", error);
 		return res.status(500).json({ message: "Error fetching user achievements", error: error.message });
 	}
 });
@@ -904,7 +906,7 @@ router.delete("/me", auth, async (req, res) => {
 						deletePrefix(`quarantine/projects/${projectId}`, "private"),
 					]);
                 } catch (err) {
-                    console.warn(`Не удалось удалить файлы проекта ${projectId}:`, err);
+                    logger.warn(`Не удалось удалить файлы проекта ${projectId}:`, err);
                 }
             }
 
@@ -925,11 +927,11 @@ router.delete("/me", auth, async (req, res) => {
         }
 
         await deletePrefix(`users/${userId}`).catch((error) => {
-			console.warn(`Не удалось удалить медиа пользователя ${userId}:`, error);
+			logger.warn(`Не удалось удалить медиа пользователя ${userId}:`, error);
 		});
 		for(const mediaUrl of [userMediaRows[0]?.avatar, userMediaRows[0]?.cover].filter(Boolean)) {
 			await deleteUserMediaUrl(mediaUrl, userId).catch((error) => {
-				console.warn(`Не удалось удалить старый медиафайл пользователя ${userId}:`, error);
+				logger.warn(`Не удалось удалить старый медиафайл пользователя ${userId}:`, error);
 			});
 		}
 
@@ -937,7 +939,7 @@ router.delete("/me", auth, async (req, res) => {
 
         res.json({ success: true, message: "Account and all related data successfully deleted" });
     } catch (error) {
-        console.error("Error deleting account:", error);
+        logger.error("Error deleting account:", error);
         res.status(500).json({
             success: false,
             message: "Failed to delete account",

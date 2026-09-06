@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
@@ -112,7 +114,7 @@ router.get("/", auth, async (req, res) => {
         });
     } catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching users:", error);
+			logger.error("Error fetching users:", error);
 		}
         
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching users", error: error.statusCode ? undefined : error.message });
@@ -189,7 +191,7 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
 
 		if(updates.avatar && targetUser.avatar !== updates.avatar) {
 			await deleteUserAvatarUrl(targetUser.avatar, id).catch((error) => {
-				console.warn(`Failed to delete replaced user avatar: ${error.message}`);
+				logger.warn(`Failed to delete replaced user avatar: ${error.message}`);
 			});
 		}
 
@@ -200,7 +202,7 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
 
         res.json(updatedUser[0]);
     } catch (error) {
-        console.error("Error updating user:", error);
+        logger.error("Error updating user:", error);
         res.status(500).json({ message: "Error updating user", error: error.message });
     }
 });

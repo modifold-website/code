@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 
 const { countCdnDownload } = require("../../utils/downloadAccounting");
@@ -9,7 +11,7 @@ router.all("/count", async (req, res) => {
 		const result = await countCdnDownload(req);
 		return res.status(result.status).json(result.body);
 	} catch(error) {
-		console.error("Error counting CDN download:", error);
+		logger.error("Error counting CDN download:", error);
 		return res.status(500).json({ success: false, counted: false, reason: "internal_error", error: error.message });
 	}
 });

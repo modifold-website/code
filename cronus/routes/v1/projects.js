@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 require("dotenv").config();
 
 const express = require('express');
@@ -469,7 +471,7 @@ const getProjectPlayersInLastDaysBySlug = async ({ projectSlugs, days }) => {
 
         await setCacheJson(playersCacheKey, Object.fromEntries(countsBySlug.entries()), 60 * 5);
     } catch (error) {
-        console.warn("Failed to fetch project players for period:", error.message);
+        logger.warn("Failed to fetch project players for period:", error.message);
     }
 
     return countsBySlug;
@@ -522,7 +524,7 @@ router.param("slug", async (req, res, next, identifier) => {
 
 		next();
 	} catch(error) {
-		console.error("Error resolving project identifier:", error);
+		logger.error("Error resolving project identifier:", error);
 		res.status(500).json({ message: "Error resolving project identifier", error: error.message });
 	}
 });
@@ -543,7 +545,7 @@ router.use("/:slug*", (req, res, next) => {
     res.on("finish", () => {
         if(res.statusCode < 400) {
             bumpProjectCacheVersion(slug).catch((error) => {
-                console.warn("Failed to bump project cache version:", slug, error.message);
+                logger.warn("Failed to bump project cache version:", slug, error.message);
             });
         }
     });
@@ -629,7 +631,7 @@ const summarizeVersionResponse = (value) => {
 	}
 
 	const response = {};
-	for(const key of ["success", "message", "error", "versionId", "moderation_status"]) {
+	for(const key of ["success", "message", "versionId", "moderation_status"]) {
 		if(value[key] !== undefined) {
 			response[key] = summarizeVersionLogValue(value[key]);
 		}
@@ -650,23 +652,24 @@ const logVersionRequest = (req, res, next) => {
 
 	res.once("finish", () => {
 		const status = res.statusCode;
-		const logMethod = status >= 400 ? console.error : console.log;
+		const logMethod = status >= 400 ? logger.error : logger.info;
 
-		logMethod("[version-request]", JSON.stringify({
+		logMethod({
+			event: "version_request",
 			method: req.method,
 			path: String(req.originalUrl || "").split("?")[0],
-			project_identifier: req.projectIdentifier?.requested || req.params?.slug || null,
-			status,
-			duration_ms: Date.now() - startedAt,
-			user_id: req.user?.id || null,
-			via_api_token: req.user?.viaApiToken === true,
-			version_number: summarizeVersionLogValue(req.body?.version_number),
-			game_versions: summarizeVersionLogValue(req.body?.game_versions),
+			projectIdentifier: req.projectIdentifier?.requested || req.params?.slug || null,
+			statusCode: status,
+			durationMs: Date.now() - startedAt,
+			userId: req.user?.id || null,
+			viaApiToken: req.user?.viaApiToken === true,
+			versionNumber: summarizeVersionLogValue(req.body?.version_number),
+			gameVersions: summarizeVersionLogValue(req.body?.game_versions),
 			loaders: summarizeVersionLogValue(req.body?.loaders),
-			has_file: Boolean(req.file),
-			file_size: req.file?.size || null,
+			hasFile: Boolean(req.file),
+			fileSize: req.file?.size || null,
 			response: responseBody,
-		}));
+		}, "Version request completed");
 	});
 
 	next();
@@ -682,14 +685,15 @@ const uploadVersionFile = (req, res, next) => {
 		const status = isFileTooLarge ? 413 : 400;
 		const message = isFileTooLarge ? "File is too large" : error.message || "Invalid file upload";
 
-		console.error("[version-upload-middleware-error]", JSON.stringify({
+		logger.error({
+			event: "version_upload_middleware_error",
 			method: req.method,
 			path: String(req.originalUrl || "").split("?")[0],
-			project_identifier: req.projectIdentifier?.requested || req.params?.slug || null,
-			status,
+			projectIdentifier: req.projectIdentifier?.requested || req.params?.slug || null,
+			statusCode: status,
 			code: error.code || null,
 			message,
-		}));
+		}, "Version upload rejected");
 
 		return res.status(status).json({ message });
 	});
@@ -894,14 +898,14 @@ const queueArgusScan = ({ versionId, project, quarantineKey = null, fileUrl = nu
 			);
 		}
 	}).catch(async (error) => {
-		console.error("Error queuing Argus scan:", error);
+		logger.error("Error queuing Argus scan:", error);
 		try {
 			await db.query(
 				"UPDATE project_versions SET moderation_status = 'needs_review', moderation_reason = ?, argus_report = JSON_OBJECT('error', ?, 'source', 'cronus_argus_dispatch') WHERE id = ? AND moderation_status IN ('pending', 'scanning')",
 				["Argus scan could not be started. Manual review is required.", error.message, versionId]
 			);
 		} catch (updateError) {
-			console.error("Error marking version for manual Argus review:", updateError);
+			logger.error("Error marking version for manual Argus review:", updateError);
 		}
 	});
 };
@@ -1508,7 +1512,7 @@ router.get("/dependency-options", async (req, res) => {
 		});
 	} catch(error) {
 		if(!error.statusCode) {
-			console.error("Error fetching dependency project options:", error);
+			logger.error("Error fetching dependency project options:", error);
 		}
 
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching dependency project options" });
@@ -1734,7 +1738,7 @@ router.get("/", async (req, res) => {
         res.json(responseData);
 	} catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching projects:", error);
+			logger.error("Error fetching projects:", error);
 		}
 
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching projects", error: error.statusCode ? undefined : error.message });
@@ -1779,7 +1783,7 @@ router.put("/:slug/tags", auth, async (req, res) => {
 
         res.json({ success: true, message: "Tags updated", tags });
     } catch (error) {
-        console.error("Error updating tags:", error);
+        logger.error("Error updating tags:", error);
         res.status(500).json({ message: "Error updating tags", error: error.message });
     }
 });
@@ -1888,7 +1892,7 @@ router.get('/user/projects', auth, async (req, res) => {
         });
     } catch (error) {
 		if(!error.statusCode) {
-			console.error('Error fetching user projects:', error);
+			logger.error('Error fetching user projects:', error);
 		}
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Error fetching user projects', error: error.statusCode ? undefined : error.message });
     }
@@ -1968,7 +1972,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
                 const storedIcon = await storeProjectFile({ projectId, file: iconFile });
                 iconUrl = storedIcon.url;
             } catch (fileError) {
-                console.error("Failed to store project icon:", fileError);
+                logger.error("Failed to store project icon:", fileError);
                 return res.status(500).json({ message: "Error storing icon file", error: fileError.message });
             }
         }
@@ -1980,7 +1984,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
 
 		res.json({ id: projectId, slug, title: safeTitle, summary: safeSummary, visibility, project_type: normalizedProjectType, icon_url: iconUrl, color: projectColor, success: true });
     } catch (error) {
-        console.error("Error creating project:", error);
+        logger.error("Error creating project:", error);
         res.status(500).json({ message: "Error creating project", error: error.message });
     }
 });
@@ -2046,7 +2050,7 @@ router.put('/:slug/settings', auth, async (req, res) => {
         await db.query('UPDATE projects SET ? WHERE id = ?', [updates, project.id]);
         res.json({ success: true, message: 'Project settings updated' });
     } catch (error) {
-        console.error('Error updating project:', error);
+        logger.error('Error updating project:', error);
         res.status(500).json({ message: 'Error updating project', error: error.message });
     }
 });
@@ -2073,7 +2077,7 @@ router.put('/:slug/description', auth, async (req, res) => {
         await db.query('UPDATE projects SET description = ? WHERE id = ?', [sanitizeMarkdownText(description || ""), project.id]);
         res.json({ success: true, message: 'Project description updated' });
     } catch (error) {
-        console.error('Error updating description:', error);
+        logger.error('Error updating description:', error);
         res.status(500).json({ message: 'Error updating description', error: error.message });
     }
 });
@@ -2115,7 +2119,7 @@ router.put('/:slug/license', auth, async (req, res) => {
         await db.query('UPDATE projects SET ? WHERE id = ?', [updates, project.id]);
         res.json({ success: true, message: 'Project license updated' });
     } catch (error) {
-        console.error('Error updating license:', error);
+        logger.error('Error updating license:', error);
         res.status(500).json({ message: 'Error updating license', error: error.message });
     }
 });
@@ -2196,7 +2200,7 @@ router.put('/:slug/links', auth, async (req, res) => {
         await db.query('UPDATE projects SET ? WHERE id = ?', [updates, project.id]);
         res.json({ success: true, message: 'Project links updated' });
     } catch (error) {
-        console.error('Error updating links:', error);
+        logger.error('Error updating links:', error);
         res.status(500).json({ message: 'Error updating links', error: error.message });
     }
 });
@@ -2229,11 +2233,11 @@ router.put('/:slug/icon', auth, upload.single('icon'), async (req, res) => {
         
         await db.query('UPDATE projects SET icon_url = ?, color = ? WHERE id = ?', [iconUrl, projectColor, project.id]);
 		await deletePublicUrlWithinPrefix(project.icon_url, `projects/${project.id}`).catch((error) => {
-			console.warn(`Failed to delete replaced project icon: ${error.message}`);
+			logger.warn(`Failed to delete replaced project icon: ${error.message}`);
 		});
         res.json({ success: true, icon_url: iconUrl, color: projectColor });
     } catch (error) {
-        console.error('Error uploading icon:', error);
+        logger.error('Error uploading icon:', error);
         res.status(500).json({ message: 'Error uploading icon', error: error.message });
     }
 });
@@ -2326,11 +2330,11 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
 	} catch (error) {
 		if(uploadedQuarantineKey && !versionPersisted) {
 			await deleteObject(uploadedQuarantineKey, "private").catch((cleanupError) => {
-				console.warn(`Failed to delete unpersisted quarantine file: ${cleanupError.message}`);
+				logger.warn(`Failed to delete unpersisted quarantine file: ${cleanupError.message}`);
 			});
 		}
 
-        console.error("Error creating version:", error);
+        logger.error("Error creating version:", error);
         if(error?.statusCode === 400) {
             return res.status(400).json({ message: error.message });
         }
@@ -2392,7 +2396,7 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
 			await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 			await connection.commit();
 			await bumpProjectCacheVersion(project.slug).catch((error) => {
-				console.warn(`Failed to bump project cache after adding gallery image: ${error.message}`);
+				logger.warn(`Failed to bump project cache after adding gallery image: ${error.message}`);
 			});
 
 			res.status(201).json({ success: true, id: result.insertId, url, ordering: nextOrdering });
@@ -2403,7 +2407,7 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
 			connection.release();
 		}
     } catch (error) {
-        console.error('Error uploading gallery image:', error);
+        logger.error('Error uploading gallery image:', error);
         res.status(500).json({ message: 'Error uploading gallery image', error: error.message });
     }
 });
@@ -2453,7 +2457,7 @@ router.post("/:slug/gallery/videos", auth, async (req, res) => {
 			await connection.commit();
 
 			await bumpProjectCacheVersion(project.slug).catch((error) => {
-				console.warn(`Failed to bump project cache after adding gallery video: ${error.message}`);
+				logger.warn(`Failed to bump project cache after adding gallery video: ${error.message}`);
 			});
 
 			return res.status(201).json({
@@ -2477,7 +2481,7 @@ router.post("/:slug/gallery/videos", auth, async (req, res) => {
 			connection.release();
 		}
 	} catch(error) {
-		console.error("Error adding gallery video:", error);
+		logger.error("Error adding gallery video:", error);
 		return res.status(500).json({ message: "Error adding gallery video", error: error.message });
 	}
 });
@@ -2529,12 +2533,12 @@ router.put("/:slug/gallery/videos/:galleryId", auth, async (req, res) => {
 		);
 		await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after updating gallery video: ${error.message}`);
+			logger.warn(`Failed to bump project cache after updating gallery video: ${error.message}`);
 		});
 
 		return res.json({ success: true, message: "Gallery video updated" });
 	} catch(error) {
-		console.error("Error updating gallery video:", error);
+		logger.error("Error updating gallery video:", error);
 		return res.status(500).json({ message: "Error updating gallery video", error: error.message });
 	}
 });
@@ -2594,12 +2598,12 @@ router.put("/:slug/gallery/order", auth, async (req, res) => {
 		}
 
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after reordering gallery: ${error.message}`);
+			logger.warn(`Failed to bump project cache after reordering gallery: ${error.message}`);
 		});
 
 		return res.json({ success: true, ordered_ids: uniqueIds });
 	} catch(error) {
-		console.error("Error reordering gallery:", error);
+		logger.error("Error reordering gallery:", error);
 		return res.status(500).json({ message: "Error reordering gallery", error: error.message });
 	}
 });
@@ -2661,19 +2665,19 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
 			const replacedUrls = [...new Set([gallery[0].url, gallery[0].raw_url].filter(Boolean))];
 			for(const replacedUrl of replacedUrls) {
 				await deletePublicUrlWithinPrefix(replacedUrl, `projects/${project.id}`).catch((error) => {
-					console.warn(`Failed to delete replaced gallery image: ${error.message}`);
+					logger.warn(`Failed to delete replaced gallery image: ${error.message}`);
 				});
 			}
 		}
 
         await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after updating gallery image: ${error.message}`);
+			logger.warn(`Failed to bump project cache after updating gallery image: ${error.message}`);
 		});
 
         res.json({ success: true, message: 'Gallery image updated' });
     } catch (error) {
-        console.error('Error updating gallery image:', error);
+        logger.error('Error updating gallery image:', error);
         res.status(500).json({ message: 'Error updating gallery image', error: error.message });
     }
 });
@@ -2707,7 +2711,7 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
             try {
                 await deletePublicUrl(fileUrl);
             } catch (fileError) {
-                console.warn(`Failed to delete gallery image ${fileUrl}: ${fileError.message}`);
+                logger.warn(`Failed to delete gallery image ${fileUrl}: ${fileError.message}`);
             }
         }
 
@@ -2726,12 +2730,12 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
 		}
 
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after deleting gallery item: ${error.message}`);
+			logger.warn(`Failed to bump project cache after deleting gallery item: ${error.message}`);
 		});
 
 		res.json({ success: true, message: "Gallery item deleted successfully" });
     } catch (error) {
-        console.error("Error deleting gallery image:", error);
+        logger.error("Error deleting gallery image:", error);
         res.status(500).json({ message: "Error deleting gallery image", error: error.message });
     }
 });
@@ -2765,7 +2769,7 @@ router.get("/:slug/wiki/:pageSlug?", async (req, res) => {
             hytale_wiki_url: `https://wiki.hytalemodding.dev/mod/${wikiData.project.hytale_wiki_slug}`,
         });
     } catch (error) {
-        console.error("Error loading project wiki:", error);
+        logger.error("Error loading project wiki:", error);
         res.status(500).json({ message: "Error loading project wiki", error: error.message });
     }
 });
@@ -2876,7 +2880,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 gameVersions = version.game_versions ? JSON.parse(version.game_versions).join(',') : '';
                 loaders = version.loaders ? JSON.parse(version.loaders).join(',') : '';
             } catch (error) {
-                console.error(`Error parsing JSON for version ${version.version_number}:`, error);
+                logger.error(`Error parsing JSON for version ${version.version_number}:`, error);
                 gameVersions = '';
                 loaders = '';
             }
@@ -3023,7 +3027,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         res.json(responseData);
     } catch (error) {
 		if(!error.statusCode) {
-			console.error('Error fetching project:', error);
+			logger.error('Error fetching project:', error);
 		}
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Error fetching project', error: error.statusCode ? undefined : error.message });
     }
@@ -3053,7 +3057,7 @@ router.delete("/:slug", auth, async (req, res) => {
 				deletePrefix(`quarantine/projects/${projectId}`, "private"),
 			]);
         } catch (fileError) {
-            console.warn(`Failed to delete project files for ${projectId}: ${fileError.message}`);
+            logger.warn(`Failed to delete project files for ${projectId}: ${fileError.message}`);
             return res.status(500).json({
                 message: "Project deleted, but some files could not be removed",
                 error: fileError.message,
@@ -3072,7 +3076,7 @@ router.delete("/:slug", auth, async (req, res) => {
 
         res.json({ success: true, message: "Project and associated files deleted" });
     } catch (error) {
-        console.error("Error deleting project:", error);
+        logger.error("Error deleting project:", error);
         res.status(500).json({ message: "Error deleting project", error: error.message });
     }
 });
@@ -3184,7 +3188,7 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
 
 		if(req.file && projectMeta.icon_url !== iconUrl) {
 			await deletePublicUrlWithinPrefix(projectMeta.icon_url, `projects/${id}`).catch((error) => {
-				console.warn(`Failed to delete replaced project icon: ${error.message}`);
+				logger.warn(`Failed to delete replaced project icon: ${error.message}`);
 			});
 		}
 
@@ -3201,7 +3205,7 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
 
         res.json({ success: true, message: 'Project updated', slug: nextSlug });
     } catch (error) {
-        console.error('Error updating project:', error);
+        logger.error('Error updating project:', error);
         res.status(500).json({ message: 'Error updating project', error: error.message });
     }
 });
@@ -3213,7 +3217,7 @@ router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res
         const result = await countProjectVersionDownload(req, { slug, versionId });
         return res.status(result.status).json(result.body);
     } catch (error) {
-        console.error('Error counting download:', error);
+        logger.error('Error counting download:', error);
         return res.status(500).json({ message: 'Error counting download', error: error.message });
     }
 });
@@ -3230,7 +3234,7 @@ router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res)
 		res.set("Cache-Control", "private, no-store");
 		return res.redirect(302, result.downloadUrl);
 	} catch(error) {
-		console.error("Error preparing download redirect:", error);
+		logger.error("Error preparing download redirect:", error);
 		return res.status(500).json({ message: "Error preparing download" });
 	}
 });
@@ -3245,7 +3249,7 @@ router.get("/moderation", auth, async (req, res) => {
 		const [projects] = await db.query("SELECT id, slug, title, summary, project_type, status, tags, icon FROM projects WHERE status IN ('queued', 'pending')");
 		res.json({ projects });
     } catch (error) {
-        console.error("Error fetching projects for moderation:", error);
+        logger.error("Error fetching projects for moderation:", error);
         res.status(500).json({ message: "Error fetching projects", error: error.message });
     }
 });
@@ -3320,7 +3324,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Error moderating project:", error);
+        logger.error("Error moderating project:", error);
         res.status(500).json({ message: "Error moderating project", error: error.message });
     }
 });
@@ -3411,7 +3415,7 @@ router.post('/:slug/submit', auth, async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Error submitting project for moderation:', error);
+        logger.error('Error submitting project for moderation:', error);
         res.status(500).json({ message: 'Error submitting project', error: error.message });
     }
 });
@@ -3519,13 +3523,13 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
 
 		if(uploadedQuarantineKey && version[0].file_url) {
 			await deletePublicUrlWithinPrefix(version[0].file_url, `projects/${project.id}`).catch((error) => {
-				console.warn(`Failed to delete replaced version file: ${error.message}`);
+				logger.warn(`Failed to delete replaced version file: ${error.message}`);
 			});
 		}
 
 		if(uploadedQuarantineKey && version[0].quarantine_key && version[0].quarantine_key !== uploadedQuarantineKey) {
 			await deleteObject(version[0].quarantine_key, "private").catch((error) => {
-				console.warn(`Failed to delete replaced quarantine file: ${error.message}`);
+				logger.warn(`Failed to delete replaced quarantine file: ${error.message}`);
 			});
 		}
 
@@ -3543,11 +3547,11 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
     } catch (error) {
 		if(uploadedQuarantineKey && !replacementPersisted) {
 			await deleteObject(uploadedQuarantineKey, "private").catch((cleanupError) => {
-				console.warn(`Failed to delete unpersisted replacement quarantine file: ${cleanupError.message}`);
+				logger.warn(`Failed to delete unpersisted replacement quarantine file: ${cleanupError.message}`);
 			});
 		}
 
-        console.error('Error updating version:', error);
+        logger.error('Error updating version:', error);
         if(error?.statusCode === 400) {
             return res.status(400).json({ message: error.message });
         }
@@ -3585,13 +3589,13 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
             try {
                 await deletePublicUrl(fileUrl);
             } catch (fileError) {
-                console.warn(`Failed to delete version file ${fileUrl}: ${fileError.message}`);
+                logger.warn(`Failed to delete version file ${fileUrl}: ${fileError.message}`);
             }
         }
 
 		if(version[0].quarantine_key) {
 			await deleteObject(version[0].quarantine_key, "private").catch((fileError) => {
-				console.warn(`Failed to delete quarantined version file: ${fileError.message}`);
+				logger.warn(`Failed to delete quarantined version file: ${fileError.message}`);
 			});
 		}
 
@@ -3618,7 +3622,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
 
         res.json({ success: true, message: "Version deleted successfully" });
     } catch (error) {
-        console.error("Error deleting version:", error);
+        logger.error("Error deleting version:", error);
         res.status(500).json({ message: "Error deleting version", error: error.message });
     }
 });
@@ -3826,7 +3830,7 @@ const inviteProjectCollaborator = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error inviting project collaborator:", error);
+		logger.error("Error inviting project collaborator:", error);
 		return res.status(500).json({ message: "Error inviting project collaborator", error: error.message });
 	}
 };
@@ -3884,7 +3888,7 @@ const updateProjectCollaborator = async (req, res) => {
 		await bumpProjectCacheVersion(project.slug);
 		return res.json({ success: true, role, show_as_author: showAsAuthor, permissions });
 	} catch (error) {
-		console.error("Error updating project collaborator:", error);
+		logger.error("Error updating project collaborator:", error);
 		return res.status(500).json({ message: "Error updating project collaborator", error: error.message });
 	}
 };
@@ -3913,7 +3917,7 @@ const updateProjectOwnerAttribution = async (req, res) => {
 		await bumpProjectCacheVersion(management.project.slug);
 		return res.json({ success: true, role, show_as_author: showAsAuthor });
 	} catch (error) {
-		console.error("Error updating project owner attribution:", error);
+		logger.error("Error updating project owner attribution:", error);
 		return res.status(500).json({ message: "Error updating project owner attribution", error: error.message });
 	}
 };
@@ -4038,7 +4042,7 @@ const transferProjectOwnership = async (req, res) => {
 		try {
 			await bumpProjectCacheVersion(project.slug);
 		} catch (cacheError) {
-			console.warn("Failed to invalidate project cache after ownership transfer:", cacheError.message);
+			logger.warn("Failed to invalidate project cache after ownership transfer:", cacheError.message);
 		}
 		return res.json({
 			success: true,
@@ -4077,7 +4081,7 @@ const transferProjectOwnership = async (req, res) => {
 		});
 	} catch (error) {
 		await connection.rollback();
-		console.error("Error transferring project ownership:", error);
+		logger.error("Error transferring project ownership:", error);
 		return res.status(500).json({ code: "OWNERSHIP_TRANSFER_FAILED", message: "Error transferring project ownership" });
 	} finally {
 		connection.release();
@@ -4139,7 +4143,7 @@ const removeProjectCollaborator = async (req, res) => {
 		await bumpProjectCacheVersion(project.slug);
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error removing project collaborator:", error);
+		logger.error("Error removing project collaborator:", error);
 		return res.status(500).json({ message: "Error removing project collaborator", error: error.message });
 	}
 };
@@ -4213,7 +4217,7 @@ router.get("/:slug/collaborators", auth, async (req, res) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Error fetching project collaborators:", error);
+		logger.error("Error fetching project collaborators:", error);
 		return res.status(500).json({ message: "Error fetching project collaborators", error: error.message });
 	}
 });
@@ -4275,7 +4279,7 @@ router.post("/collaborator-invitations/:inviteId/:action", auth, async (req, res
 		});
 	} catch (error) {
 		await connection.rollback();
-		console.error("Error responding to project collaboration invitation:", error);
+		logger.error("Error responding to project collaboration invitation:", error);
 		return res.status(500).json({ message: "Error responding to project collaboration invitation", error: error.message });
 	} finally {
 		connection.release();
@@ -4309,7 +4313,7 @@ router.get('/:slug/members', async (req, res) => {
 		await setCacheJson(cacheKey, members, 30);
 		return res.json(members);
 	} catch (error) {
-		console.error("Error fetching project members:", error);
+		logger.error("Error fetching project members:", error);
 		return res.status(500).json({ message: 'Error fetching members' });
 	}
 });
@@ -4440,7 +4444,7 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
         });
     } catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching issues:", error);
+			logger.error("Error fetching issues:", error);
 		}
 		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching issues", error: error.statusCode ? undefined : error.message });
     }
@@ -4485,7 +4489,7 @@ router.get("/:slug/issues/templates", optionalAuth, async (req, res) => {
 
         return res.json({ templates });
     } catch (error) {
-        console.error("Error fetching issue templates:", error);
+        logger.error("Error fetching issue templates:", error);
         return res.status(500).json({ message: "Error fetching issue templates", error: error.message });
     }
 });
@@ -4553,7 +4557,7 @@ router.post("/:slug/issues/templates", auth, async (req, res) => {
             updated_at: now,
         });
     } catch (error) {
-        console.error("Error creating issue template:", error);
+        logger.error("Error creating issue template:", error);
         return res.status(500).json({ message: "Error creating issue template", error: error.message });
     }
 });
@@ -4652,7 +4656,7 @@ router.patch("/:slug/issues/templates/:templateId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating issue template:", error);
+        logger.error("Error updating issue template:", error);
         return res.status(500).json({ message: "Error updating issue template", error: error.message });
     }
 });
@@ -4688,7 +4692,7 @@ router.delete("/:slug/issues/templates/:templateId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error deleting issue template:", error);
+        logger.error("Error deleting issue template:", error);
         return res.status(500).json({ message: "Error deleting issue template", error: error.message });
     }
 });
@@ -4729,7 +4733,7 @@ router.get("/:slug/issues/labels", optionalAuth, async (req, res) => {
 
         return res.json({ labels });
     } catch (error) {
-        console.error("Error fetching issue labels:", error);
+        logger.error("Error fetching issue labels:", error);
         return res.status(500).json({ message: "Error fetching issue labels", error: error.message });
     }
 });
@@ -4783,7 +4787,7 @@ router.post("/:slug/issues/labels", auth, async (req, res) => {
             updated_at: now,
         });
     } catch (error) {
-        console.error("Error creating issue label:", error);
+        logger.error("Error creating issue label:", error);
         return res.status(500).json({ message: "Error creating issue label", error: error.message });
     }
 });
@@ -4862,7 +4866,7 @@ router.patch("/:slug/issues/labels/:labelId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating issue label:", error);
+        logger.error("Error updating issue label:", error);
         return res.status(500).json({ message: "Error updating issue label", error: error.message });
     }
 });
@@ -4898,7 +4902,7 @@ router.delete("/:slug/issues/labels/:labelId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error deleting issue label:", error);
+        logger.error("Error deleting issue label:", error);
         return res.status(500).json({ message: "Error deleting issue label", error: error.message });
     }
 });
@@ -5046,7 +5050,7 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
             availableLabels,
         });
     } catch (error) {
-        console.error("Error fetching issue:", error);
+        logger.error("Error fetching issue:", error);
         return res.status(500).json({ message: "Error fetching issue", error: error.message });
     }
 });
@@ -5169,7 +5173,7 @@ router.post("/:slug/issues", auth, async (req, res) => {
             created_at: now,
         });
     } catch (error) {
-        console.error("Error creating issue:", error);
+        logger.error("Error creating issue:", error);
         return res.status(500).json({ message: "Error creating issue", error: error.message });
     }
 });
@@ -5308,7 +5312,7 @@ router.patch("/:slug/issues/:issueId", auth, async (req, res) => {
 
         return res.status(400).json({ message: "Invalid action" });
     } catch (error) {
-        console.error("Error updating issue status:", error);
+        logger.error("Error updating issue status:", error);
         return res.status(500).json({ message: "Error updating issue status", error: error.message });
     }
 });
@@ -5358,7 +5362,7 @@ router.delete("/:slug/issues/:issueId", auth, async (req, res) => {
             await connection.rollback();
         }
 
-        console.error("Error deleting issue:", error);
+        logger.error("Error deleting issue:", error);
         return res.status(500).json({ message: "Error deleting issue", error: error.message });
     } finally {
         if(connection) {
@@ -5447,7 +5451,7 @@ router.post("/:slug/issues/:issueId/labels", auth, async (req, res) => {
 
         return res.status(400).json({ message: "Invalid action" });
     } catch (error) {
-        console.error("Error updating issue labels:", error);
+        logger.error("Error updating issue labels:", error);
         return res.status(500).json({ message: "Error updating issue labels", error: error.message });
     }
 });
@@ -5544,7 +5548,7 @@ router.post("/:slug/issues/:issueId/comments", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error creating issue comment:", error);
+        logger.error("Error creating issue comment:", error);
         return res.status(500).json({ message: "Error creating issue comment", error: error.message });
     }
 });
@@ -5635,7 +5639,7 @@ router.patch("/:slug/issues/:issueId/comments/:commentId", auth, async (req, res
 
         return res.status(400).json({ message: "Invalid action" });
     } catch (error) {
-        console.error("Error moderating issue comment:", error);
+        logger.error("Error moderating issue comment:", error);
         return res.status(500).json({ message: "Error moderating issue comment", error: error.message });
     }
 });
@@ -5676,7 +5680,7 @@ router.post('/:slug/like', auth, async (req, res) => {
 
         res.json({ success: true, message: 'Project liked', followers, is_liked: true });
     } catch (error) {
-        console.error('Error liking project:', error);
+        logger.error('Error liking project:', error);
         res.status(500).json({ message: 'Error liking project', error: error.message });
     }
 });
@@ -5719,7 +5723,7 @@ router.delete('/:slug/like', auth, async (req, res) => {
 
         res.json({ success: true, message: 'Project unliked', followers, is_liked: false });
     } catch (error) {
-        console.error('Error unliking project:', error);
+        logger.error('Error unliking project:', error);
         res.status(500).json({ message: 'Error unliking project', error: error.message });
     }
 });
@@ -5762,7 +5766,7 @@ router.post('/:slug/view', async (req, res) => {
 
         res.json({ success: true, counted: shouldCount, windowMinutes, totalViews });
     } catch (error) {
-        console.error('Error tracking view:', error);
+        logger.error('Error tracking view:', error);
         res.status(500).json({ message: 'Error tracking view', error: error.message });
     }
 });
@@ -5821,7 +5825,7 @@ router.get('/user/projects/analytics', auth, async (req, res) => {
 
         res.json({ analytics: Object.values(projectsMap) });
     } catch (error) {
-        console.error('Error fetching project analytics:', error);
+        logger.error('Error fetching project analytics:', error);
         res.status(500).json({ message: 'Error fetching project analytics', error: error.message });
     }
 });
@@ -5882,7 +5886,7 @@ router.get("/:slug/analytics", auth, async (req, res) => {
 
         res.json(responseData);
     } catch (error) {
-        console.error("Error fetching project analytics page data:", error);
+        logger.error("Error fetching project analytics page data:", error);
         res.status(500).json({ message: "Error fetching project analytics", error: error.message });
     }
 });
@@ -5944,7 +5948,7 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
             dependencies,
         });
     } catch (error) {
-        console.error('Error fetching version:', error);
+        logger.error('Error fetching version:', error);
         res.status(500).json({ message: 'Error fetching version', error: error.message });
     }
 });
@@ -6018,7 +6022,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error fetching project settings:", error);
+        logger.error("Error fetching project settings:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
@@ -6144,7 +6148,7 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 			license: hasLicenseUpdate ? { id: licenseId, name: licenseName } : undefined,
 		});
 	} catch (error) {
-		console.error("Error updating project disclosures:", error);
+		logger.error("Error updating project disclosures:", error);
 		return res.status(500).json({ message: "Error updating project disclosures", error: error.message });
 	}
 });
@@ -6192,7 +6196,7 @@ router.get("/:slug/moderation-history", auth, async (req, res) => {
             history
         });
     } catch (error) {
-        console.error("Error fetching moderation history:", error);
+        logger.error("Error fetching moderation history:", error);
         res.status(500).json({ 
             message: "Failed to fetch moderation history",
             error: error.message 
@@ -6229,7 +6233,7 @@ router.get("/license/:licenseKey", async (req, res) => {
             html_url: data.html_url,
         });
     } catch (err) {
-        console.error("License fetch error:", err);
+        logger.error("License fetch error:", err);
         res.status(500).json({ message: "Failed to fetch license text" });
     }
 });
@@ -6285,7 +6289,7 @@ router.get("/:slug/organization-options", auth, async (req, res) => {
 
         return res.json({ organizations });
     } catch (error) {
-        console.error("Error fetching project organization options:", error);
+        logger.error("Error fetching project organization options:", error);
         return res.status(500).json({ message: "Error fetching organizations" });
     }
 });
@@ -6449,7 +6453,7 @@ router.put("/:slug/organization", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error attaching organization to project:", error);
+        logger.error("Error attaching organization to project:", error);
         return res.status(500).json({ message: "Error updating project organization" });
     }
 });

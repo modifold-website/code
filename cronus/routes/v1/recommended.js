@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 
@@ -100,7 +102,7 @@ router.get("/", async (req, res) => {
             })),
         });
     } catch (error) {
-        console.error("Error fetching recommended projects:", error);
+        logger.error("Error fetching recommended projects:", error);
         return res.status(500).json({ message: "Error fetching recommended projects" });
     }
 });

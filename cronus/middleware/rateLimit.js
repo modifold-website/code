@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const { cacheClient } = require("../config/cache");
 
 const RATE_LIMIT_SCRIPT = `
@@ -108,7 +110,7 @@ const createRateLimiter = ({ namespace, requestsPerMinute, burstSize, expirySeco
 			// fail-open: do not take API down when Redis is degraded
 			if(nowMs - lastDegradedLogAt >= degradedLogIntervalMs) {
 				const suppressedMessage = suppressedDegradedLogs > 0 ? ` (${suppressedDegradedLogs} similar errors suppressed)` : "";
-				console.warn(`Rate limiter ${namespace} degraded (fail-open)${suppressedMessage}:`, error.message);
+				logger.warn(`Rate limiter ${namespace} degraded (fail-open)${suppressedMessage}:`, error.message);
 				lastDegradedLogAt = nowMs;
 				suppressedDegradedLogs = 0;
 			} else {

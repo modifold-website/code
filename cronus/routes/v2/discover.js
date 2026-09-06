@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const crypto = require("crypto");
 const { db } = require("../../config/db");
@@ -43,7 +45,7 @@ const initializeDiscover = async () => {
 			hasCustomImageColumn: recommendedColumns.some((column) => column?.Field === "custom_image_url"),
 		};
 	} catch(error) {
-		console.warn("[discover] failed to inspect recommended schema at startup; using legacy-compatible columns:", error.message);
+		logger.warn("[discover] failed to inspect recommended schema at startup; using legacy-compatible columns:", error.message);
 	}
 };
 
@@ -244,7 +246,7 @@ const getWeeklyDownloadCounts = async ({ limit = 120 } = {}) => {
 
 		return downloadRows;
 	} catch (error) {
-		console.warn("Failed to fetch weekly discover downloads:", error.message);
+		logger.warn("Failed to fetch weekly discover downloads:", error.message);
 		return [];
 	}
 };
@@ -523,7 +525,7 @@ router.get("/", async (req, res) => {
 		res.set("X-Discover-Cache", cacheStatus);
 		return res.json(responseData);
 	} catch (error) {
-		console.error("Error fetching unified discover page:", error);
+		logger.error("Error fetching unified discover page:", error);
 		return res.status(500).json({ message: "Error fetching discover page", error: error.message });
 	}
 });
@@ -542,7 +544,7 @@ router.get("/:type", async (req, res) => {
 		res.set("X-Discover-Cache", cacheStatus);
 		return res.json(responseData);
 	} catch (error) {
-		console.error("Error fetching discover page:", error);
+		logger.error("Error fetching discover page:", error);
 		return res.status(500).json({ message: "Error fetching discover page", error: error.message });
 	}
 });

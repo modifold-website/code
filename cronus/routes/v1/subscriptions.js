@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
@@ -9,7 +11,7 @@ router.get("/:userId", auth, async (req, res) => {
 
         res.json({ isSubscribed: !!subscription.length, subscriptionId: subscription[0]?.id || null });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ message: "Error checking subscription", error });
     }
 });
@@ -38,7 +40,7 @@ router.post("/", auth, async (req, res) => {
 
         res.json({ subscriptionId: subscription.insertId });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ message: "Error during subscription", error });
     }
 });
@@ -65,7 +67,7 @@ router.delete("/:id", auth, async (req, res) => {
 
         res.json({ message: "Subscription deleted" });
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ message: "Error when unsubscribing", error });
     }
 });

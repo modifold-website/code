@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 require("dotenv").config();
 
 const express = require("express");
@@ -460,7 +462,7 @@ router.get("/user", auth, async (req, res) => {
 					viewsByProject = analyticsResults[6] || {};
 				}
 			} catch (analyticsError) {
-				console.warn("Failed to fetch user analytics:", analyticsError.message);
+				logger.warn("Failed to fetch user analytics:", analyticsError.message);
 			}
 		} else {
 			downloads = buildDailySeriesBetween(from, to);
@@ -496,7 +498,7 @@ router.get("/user", auth, async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error fetching user analytics dashboard:", error);
+		logger.error("Error fetching user analytics dashboard:", error);
 		res.status(500).json({ message: "Error fetching user analytics", error: error.message });
 	}
 });
@@ -533,7 +535,7 @@ router.post("/:projectSlug/server/add-plugin", async (req, res) => {
 
 		res.json({ ok: true });
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		res.status(500).json({ error: "internal_error" });
 	}
 });
@@ -575,7 +577,7 @@ router.post("/:projectSlug/server/update-server", async (req, res) => {
 
 		res.json({ ok: true });
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		res.status(500).json({ error: "internal_error" });
 	}
 });
@@ -601,7 +603,7 @@ router.get("/:projectSlug/online-now", async (req, res) => {
 			activeServersNow,
 		});
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		res.status(500).json({ error: "internal_error" });
 	}
 });
@@ -641,7 +643,7 @@ router.get("/:projectSlug/embed", async (req, res) => {
 		res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=300");
 		return res.status(200).send(svg);
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		res.status(500).json({ error: "internal_error" });
 	}
 });
@@ -670,7 +672,7 @@ router.get("/:projectSlug/chart/daily-joins", async (req, res) => {
 			points,
 		});
 	} catch (e) {
-		console.error(e);
+		logger.error(e);
 		res.status(500).json({ error: "internal_error" });
 	}
 });

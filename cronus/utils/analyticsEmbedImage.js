@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const fs = require("fs");
 const path = require("path");
 
@@ -7,7 +9,7 @@ const loadFontDataUri = (fileName) => {
 		const fontBuffer = fs.readFileSync(fontPath);
 		return `data:font/ttf;base64,${fontBuffer.toString("base64")}`;
 	} catch (error) {
-		console.warn(`[analyticsEmbedImage] Failed to load font ${fileName}:`, error.message);
+		logger.warn(`[analyticsEmbedImage] Failed to load font ${fileName}:`, error.message);
 		return null;
 	}
 };

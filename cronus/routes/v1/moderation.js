@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const { clickhouse } = require("../../config/clickhouse");
@@ -299,7 +301,7 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 			createdAt,
 		});
 	} catch (error) {
-		console.error("Error sending owner version approval notification:", error);
+		logger.error("Error sending owner version approval notification:", error);
 	}
 };
 
@@ -345,7 +347,7 @@ router.post("/argus/versions/:versionId/report", async (req, res) => {
 
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error applying Argus report:", error);
+		logger.error("Error applying Argus report:", error);
 		return res.status(500).json({ message: "Error applying Argus report", error: error.message });
 	}
 });
@@ -446,7 +448,7 @@ router.get("/technical-review", auth, async (req, res) => {
 		});
 	} catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching Argus technical review queue:", error);
+			logger.error("Error fetching Argus technical review queue:", error);
 		}
 		
 		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching technical review queue" });
@@ -549,7 +551,7 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 		} catch(error) {
 			if(promotion) {
 				await deleteObject(promotion.key, "public").catch((cleanupError) => {
-					console.warn(`Failed to roll back uncommitted public version file: ${cleanupError.message}`);
+					logger.warn(`Failed to roll back uncommitted public version file: ${cleanupError.message}`);
 				});
 				promotion = null;
 			}
@@ -568,13 +570,13 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 					[versionId, promotion.quarantineKey]
 				);
 			} catch (cleanupError) {
-				console.warn(`Failed to remove promoted quarantine file: ${cleanupError.message}`);
+				logger.warn(`Failed to remove promoted quarantine file: ${cleanupError.message}`);
 			}
 		}
 
 		if(decision === "approved" && previousModerationStatus !== "approved") {
 			await bumpProjectCacheVersion(version.project_slug).catch((error) => {
-				console.warn(`Failed to bump project cache after approving version: ${error.message}`);
+				logger.warn(`Failed to bump project cache after approving version: ${error.message}`);
 			});
 		}
 
@@ -592,7 +594,7 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error applying technical review decision:", error);
+		logger.error("Error applying technical review decision:", error);
 		return res.status(error.statusCode || 500).json({ message: error.message || "Error applying technical review decision" });
 	}
 });
@@ -672,7 +674,7 @@ router.get("/", auth, async (req, res) => {
         });
     } catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching projects for moderation:", error);
+			logger.error("Error fetching projects for moderation:", error);
 		}
 
 		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching projects", error: error.statusCode ? undefined : error.message });
@@ -717,7 +719,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
                 const project = projectRows[0];
 
                 if(!project) {
-                    console.warn(`Project ${id} not found after approval, skipping published-mod notification`);
+                    logger.warn(`Project ${id} not found after approval, skipping published-mod notification`);
                 } else {
 					await awardFirstApprovedProjectAchievement(db, {
 						projectId: project.id,
@@ -744,13 +746,13 @@ router.post("/:id/moderate", auth, async (req, res) => {
 					}
                 }
             } catch (publishError) {
-                console.error("Error sending published-mod notification:", publishError);
+                logger.error("Error sending published-mod notification:", publishError);
             }
         }
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Error moderating project:", error);
+        logger.error("Error moderating project:", error);
         res.status(500).json({ message: "Error moderating project", error: error.message });
     }
 });
@@ -852,7 +854,7 @@ router.get("/analytics", auth, async (req, res) => {
                 getGlobalOnlineSeriesForLast30Days(),
             ]);
         } catch (analyticsError) {
-            console.error("Error fetching global online analytics:", analyticsError);
+            logger.error("Error fetching global online analytics:", analyticsError);
         }
 
         res.json({
@@ -880,7 +882,7 @@ router.get("/analytics", auth, async (req, res) => {
             globalOnlineSeries,
         });
     } catch (error) {
-        console.error("Error fetching moderation analytics:", error);
+        logger.error("Error fetching moderation analytics:", error);
         res.status(500).json({ message: "Error fetching analytics", error: error.message });
     }
 });
@@ -982,7 +984,7 @@ router.get("/reports", auth, async (req, res) => {
         });
 	} catch (error) {
 		if(!error.statusCode) {
-			console.error("Error fetching reports for moderation:", error);
+			logger.error("Error fetching reports for moderation:", error);
 		}
 
 		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching reports" });
@@ -1031,7 +1033,7 @@ router.post("/reports/:id/decision", auth, async (req, res) => {
 
         return res.json({ success: true, report: rows[0] });
     } catch (error) {
-        console.error("Error updating report decision:", error);
+        logger.error("Error updating report decision:", error);
         return res.status(500).json({ message: "Error updating report" });
     }
 });

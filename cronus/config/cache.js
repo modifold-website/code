@@ -1,6 +1,9 @@
 require("dotenv").config();
 
 const Redis = require("ioredis");
+const { createLogger } = require("../packages/shared/logger");
+
+const logger = createLogger("redis");
 
 const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 const redisPrefix = process.env.REDIS_PREFIX || "modifold:";
@@ -30,8 +33,12 @@ const logRedisError = (operation, error) => {
 		return;
 	}
 
-	const suppressedMessage = previous.suppressed > 0 ? ` (${previous.suppressed} similar errors suppressed)` : "";
-	console.warn(`[redis] ${operation} unavailable${suppressedMessage}:`, error.message);
+	logger.warn({
+		event: "dependency_unavailable",
+		operation,
+		suppressedCount: previous.suppressed,
+		error,
+	}, "Redis operation unavailable");
 	lastErrorLogs.set(operation, { loggedAt: now, suppressed: 0 });
 };
 

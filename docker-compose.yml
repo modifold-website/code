@@ -5,6 +5,11 @@ services:
     image: mysql:8.4
     container_name: modifold-mysql
     restart: unless-stopped
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: --mysql-native-password=ON
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root-password}
@@ -23,6 +28,7 @@ services:
     image: clickhouse/clickhouse-server:24.8-alpine
     container_name: modifold-clickhouse
     restart: unless-stopped
+    logging: *default-logging
     environment:
       CLICKHOUSE_DB: ${CLICKHOUSE_DB:-modifold}
       CLICKHOUSE_USER: ${CLICKHOUSE_USER:-modifold}
@@ -42,6 +48,7 @@ services:
     image: redis:7-alpine
     container_name: modifold-redis
     restart: unless-stopped
+    logging: *default-logging
     command: sh -c 'redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis-password}
@@ -61,6 +68,7 @@ services:
       dockerfile: Dockerfile
     container_name: modifold-argus
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - path: ./.env.docker
         required: false
@@ -78,6 +86,7 @@ services:
     image: phpmyadmin:5-apache
     container_name: modifold-phpmyadmin
     restart: unless-stopped
+    logging: *default-logging
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
@@ -94,6 +103,7 @@ services:
       dockerfile: Dockerfile
     container_name: modifold-cronus
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - path: ./.env.docker
         required: false
@@ -146,6 +156,7 @@ services:
       context: ./cronus
       dockerfile: Dockerfile
     restart: unless-stopped
+    logging: *default-logging
     command: ["bun", "workers/asyncWorker.js"]
     env_file:
       - path: ./.env.docker
@@ -182,6 +193,7 @@ services:
         NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_HCAPTCHA_SITE_KEY:-}
     container_name: modifold-pegasus
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - path: ./.env.docker
         required: false
@@ -206,6 +218,7 @@ services:
       dockerfile: Dockerfile
     container_name: modifold-docs
     restart: unless-stopped
+    logging: *default-logging
     environment:
       HOSTNAME: 0.0.0.0
       PORT: 3001
