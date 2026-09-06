@@ -84,7 +84,7 @@ export default function AuthCallbackClient() {
                         
                         <p style={{ marginBottom: "16px" }}>{errorMessage}</p>
                         
-                        <Link href="/" className="button button--size-l button--type-primary button--active-transform">
+                        <Link prefetch={false} href="/" className="button button--size-l button--type-primary button--active-transform">
                             Return to home
                         </Link>
                     </>

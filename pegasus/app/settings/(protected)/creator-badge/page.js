@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import SettingsVerificationPage from "@/components/pages/SettingsVerificationPage";
@@ -20,7 +21,7 @@ export default async function Page() {
     let initialVerification = null;
 
     try {
-        const verificationResponse = await fetch(`${serverApiBase}/verification/me`, {
+        const verificationResponse = await serverApiFetch(`${serverApiBase}/verification/me`, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
                 Accept: "application/json",

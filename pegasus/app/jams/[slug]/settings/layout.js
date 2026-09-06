@@ -1,11 +1,12 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound, forbidden } from "next/navigation";
 import ModJamSettingsSidebar from "@/components/mod-jams/settings/ModJamSettingsSidebar";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 async function getJam(slug, authToken) {
-	const response = await fetch(`${serverApiBase}/mod-jams/${slug}`, {
+	const response = await serverApiFetch(`${serverApiBase}/mod-jams/${slug}`, {
 		headers: { Authorization: `Bearer ${authToken}` },
 		cache: "no-store",
 	});
@@ -23,7 +24,7 @@ export default async function ModJamSettingsLayout({ children, params }) {
 	const authToken = cookieStore.get("authToken")?.value;
 
 	if(!authToken) {
-		redirect("/403");
+		forbidden();
 	}
 
 	const data = await getJam(slug, authToken);
@@ -32,7 +33,7 @@ export default async function ModJamSettingsLayout({ children, params }) {
 	}
 
 	if(!data.permissions?.can_edit) {
-		redirect("/403");
+		forbidden();
 	}
 
 	return (

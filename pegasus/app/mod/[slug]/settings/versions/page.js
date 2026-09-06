@@ -1,6 +1,6 @@
 ﻿import { getLocale, getTranslations } from "next-intl/server";
 import VersionsSettings from "@/components/project/settings/VersionsSettings";
-import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { fetchGameVersionItems } from "@/utils/gameVersions/server";
 import { getProjectForRequest } from "@/utils/projects/server";
 
 export async function generateMetadata({ params }) {

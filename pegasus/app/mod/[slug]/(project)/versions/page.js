@@ -1,6 +1,6 @@
 import VersionsPage from "@/components/pages/VersionsPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-import { fetchGameVersions } from "@/utils/gameVersions";
+import { fetchGameVersions } from "@/utils/gameVersions/server";
 import { getProjectForRequest } from "@/utils/projects/server";
 import { getProjectMetadata } from "@/utils/projects/metadata";
 

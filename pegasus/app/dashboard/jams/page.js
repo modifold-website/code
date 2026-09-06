@@ -1,5 +1,6 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ModJamsDashboardPage from "@/components/mod-jams/ModJamsDashboardPage";
 
@@ -19,12 +20,12 @@ export default async function DashboardJamsRoute() {
 	const authToken = cookieStore.get("authToken")?.value;
 
 	if(!authToken) {
-		redirect("/403");
+		forbidden();
 	}
 
 	let modJams = [];
 	try {
-		const response = await fetch(`${serverApiBase}/mod-jams/mine`, {
+		const response = await serverApiFetch(`${serverApiBase}/mod-jams/mine`, {
 			headers: {
 				Authorization: `Bearer ${authToken}`,
 				Accept: "application/json",

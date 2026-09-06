@@ -51,7 +51,7 @@ export default function ModJamsDashboardPage({ authToken, initialJams = [] }) {
 						<div className="mod-jams-dashboard-list">
 							{jams.map((jam) => (
 								<div key={jam.id} className="new-project-card mod-jams-dashboard-card">
-									<Link className="new-project-card__overlay" href={`/jams/${jam.slug}`} aria-label={jam.title} />
+									<Link prefetch={false} className="new-project-card__overlay" href={`/jams/${jam.slug}`} aria-label={jam.title} />
 
 									<img className="new-project-icon" src={jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={jam.title} />
 
@@ -76,7 +76,7 @@ export default function ModJamsDashboardPage({ authToken, initialJams = [] }) {
 									</div>
 
 									<div className="new-project-stats">
-										<Link href={`/jams/${jam.slug}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
+										<Link prefetch={false} href={`/jams/${jam.slug}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
 											<svg style={{ fill: "none", marginRight: "4px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon--settings">
 												<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path>
 												<circle cx="12" cy="12" r="3"></circle>

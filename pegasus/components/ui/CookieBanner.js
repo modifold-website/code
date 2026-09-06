@@ -49,7 +49,7 @@ export default function CookieBanner() {
             <div className="cookie-banner__content">
                 <p>
                     {t("message")}{" "}
-                    <Link href="/legal/privacy" className="cookie-banner__link">
+                    <Link prefetch={false} href="/legal/privacy" className="cookie-banner__link">
                         {t("learnMore")}
                     </Link>
                 </p>

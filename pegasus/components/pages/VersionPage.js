@@ -135,7 +135,7 @@ function VersionDependencySection({ title, dependencies, t }) {
 				{dependencies.map((item) => (
 					<div key={item.id} className="version-page__required-card">
 						{item.href ? (
-							<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
+							<Link prefetch={false} href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
 								<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
 
 								<div className="version-page__required-copy">
@@ -157,7 +157,7 @@ function VersionDependencySection({ title, dependencies, t }) {
 						<div className="version-page__required-actions">
 							{item.href && (
 								<Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
-									<Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
+									<Link prefetch={false} href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
 										<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 											<path d="M15 3h6v6"/>
 											<path d="M10 14 21 3"/>

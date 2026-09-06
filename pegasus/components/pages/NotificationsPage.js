@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useAuth } from "../providers/AuthProvider";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
 import NotificationItem from "@/components/ui/NotificationItem";
@@ -15,7 +14,6 @@ export default function NotificationsPage({ authToken, initialNotifications = []
     const tSidebar = useTranslations("SettingsBlogPage.sidebar");
     const locale = useLocale();
     const { isLoggedIn, user } = useAuth();
-    const router = useRouter();
     const hasMarkedInitialRead = useRef(false);
     const tzOffset = useMemo(() => (
         typeof window === "undefined" ? null : new Date().getTimezoneOffset()
@@ -61,12 +59,6 @@ export default function NotificationsPage({ authToken, initialNotifications = []
     const loading = notificationsQuery.isPending;
     const loadingMore = notificationsQuery.isFetchingNextPage;
 	const error = notificationsQuery.isError || inviteActionMutation.isError || collaboratorInviteActionMutation.isError ? t("errors.fetch") : "";
-
-    useEffect(() => {
-        if(!isLoggedIn) {
-            router.push("/403");
-        }
-    }, [isLoggedIn, router]);
 
     useEffect(() => {
         if(!isLoggedIn || hasMarkedInitialRead.current || !notificationsQuery.isSuccess) {

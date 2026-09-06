@@ -1,5 +1,6 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { forbidden, unstable_rethrow } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import NotificationsPage from "@/components/pages/NotificationsPage";
 
@@ -19,7 +20,7 @@ export default async function Page() {
     const authToken = cookieStore.get("authToken")?.value;
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
     let initialNotifications = [];
@@ -28,7 +29,7 @@ export default async function Page() {
     let initialDataLoaded = false;
 
     try {
-        const response = await fetch(`${serverApiBase}/notifications?page=1&limit=20`, {
+        const response = await serverApiFetch(`${serverApiBase}/notifications?page=1&limit=20`, {
             headers: {
                 Accept: "application/json",
                 Authorization: `Bearer ${authToken}`,
@@ -37,7 +38,7 @@ export default async function Page() {
         });
 
         if(response.status === 401 || response.status === 403) {
-            redirect("/403");
+            forbidden();
         }
 
         if(response.ok) {
@@ -48,6 +49,7 @@ export default async function Page() {
             initialDataLoaded = true;
         }
     } catch (error) {
+		unstable_rethrow(error);
         console.error("Error fetching notifications page data:", error);
     }
 

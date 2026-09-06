@@ -1,4 +1,5 @@
-﻿import { cookies } from "next/headers";
+import { serverApiFetch } from "@/utils/api/server";
+import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProfilePage from "@/components/pages/ProfilePage";
 
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }) {
     const resolvedLocale = await getLocale();
     const tProfile = await getTranslations({ locale: resolvedLocale, namespace: "ProfilePage" });
 
-    const res = await fetch(`${apiBase}/users/${username}`, {
+    const res = await serverApiFetch(`${apiBase}/users/${username}`, {
         headers: { Accept: "application/json" },
         next: { revalidate: 60, tags: [`user:${username}`] },
     });
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }) {
 
     const user = await res.json();
 
-    const banRes = await fetch(`${apiBase}/bans/${user.id}`, {
+    const banRes = await serverApiFetch(`${apiBase}/bans/${user.id}`, {
         headers: { Accept: "application/json" },
         next: { revalidate: 60, tags: [`user:${username}:ban`] },
     });
@@ -87,7 +88,7 @@ export default async function Page({ params, searchParams }) {
     const requestedSort = typeof resolvedSearchParams?.sort === "string" ? resolvedSearchParams.sort : "";
     const currentProjectsSort = ["downloads", "recent", "updated"].includes(requestedSort) ? requestedSort : "downloads";
 
-    const userRes = await fetch(`${apiBase}/users/${username}`, {
+    const userRes = await serverApiFetch(`${apiBase}/users/${username}`, {
         headers: { Accept: "application/json" },
         cache: "no-store",
     });
@@ -115,13 +116,13 @@ export default async function Page({ params, searchParams }) {
     };
 
     const [banRes, projectsRes, organizationsRes, achievementsRes] = await Promise.all([
-        fetch(`${apiBase}/bans/${user.id}`, banFetchOptions),
-        fetch(`${apiBase}/users/${username}/projects?page=${currentProjectsPage}&limit=20&sort=${currentProjectsSort}`, projectsFetchOptions),
-        fetch(`${apiBase}/users/${username}/organizations`, {
+        serverApiFetch(`${apiBase}/bans/${user.id}`, banFetchOptions),
+        serverApiFetch(`${apiBase}/users/${username}/projects?page=${currentProjectsPage}&limit=20&sort=${currentProjectsSort}`, projectsFetchOptions),
+        serverApiFetch(`${apiBase}/users/${username}/organizations`, {
             headers: { Accept: "application/json" },
             cache: "no-store",
         }),
-        fetch(`${apiBase}/users/${username}/achievements`, {
+        serverApiFetch(`${apiBase}/users/${username}/achievements`, {
             headers: { Accept: "application/json" },
             cache: "no-store",
         }),
@@ -136,7 +137,7 @@ export default async function Page({ params, searchParams }) {
     let subscriptionId = null;
 
     if(authToken) {
-        const subRes = await fetch(`${apiBase}/subscriptions/${user.id}`, {
+        const subRes = await serverApiFetch(`${apiBase}/subscriptions/${user.id}`, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
                 Accept: "application/json",

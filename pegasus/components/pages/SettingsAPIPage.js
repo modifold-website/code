@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../providers/AuthProvider";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,7 +12,6 @@ import ConfirmModal from "@/modal/ConfirmModal";
 export default function SettingsAPIPage({ initialUser = null, initialTokens = null, authToken = null }) {
     const t = useTranslations("SettingsAPIPage");
     const { isLoggedIn, user } = useAuth();
-    const router = useRouter();
     const effectiveUser = user || initialUser;
 
     const [tokens, setTokens] = useState(initialTokens || []);
@@ -29,15 +27,10 @@ export default function SettingsAPIPage({ initialUser = null, initialTokens = nu
     const [isRevokingToken, setIsRevokingToken] = useState(false);
 
     useEffect(() => {
-        if(!isLoggedIn && !initialUser) {
-            router.push("/403");
-            return;
-        }
-
         if(initialTokens === null) {
             loadTokens();
         }
-    }, [isLoggedIn, router, initialTokens, initialUser]);
+    }, [initialTokens]);
 
     const loadTokens = async () => {
         try {

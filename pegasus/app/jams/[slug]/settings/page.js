@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -6,7 +7,7 @@ import ModJamGeneralSettings from "@/components/mod-jams/settings/ModJamGeneralS
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 async function getJam(slug, authToken) {
-	const response = await fetch(`${serverApiBase}/mod-jams/${slug}`, {
+	const response = await serverApiFetch(`${serverApiBase}/mod-jams/${slug}`, {
 		headers: { Authorization: `Bearer ${authToken}` },
 		cache: "no-store",
 	});

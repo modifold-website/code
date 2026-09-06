@@ -1,6 +1,7 @@
+import { serverApiFetch } from "@/utils/api/server";
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import SettingsAPIPage from "@/components/pages/SettingsAPIPage";
 
@@ -20,7 +21,7 @@ export default async function Page() {
     let initialTokens = null;
 
     try {
-        const tokensResponse = await fetch(`${serverApiBase}/api-tokens`, {
+        const tokensResponse = await serverApiFetch(`${serverApiBase}/api-tokens`, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
                 Accept: "application/json",

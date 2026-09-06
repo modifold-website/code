@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -11,7 +12,7 @@ export async function generateMetadata({ params }) {
     const t = await getTranslations({ locale, namespace: "Organizations" });
 
     try {
-        const response = await fetch(`${serverApiBase}/organizations/${slug}`, {
+        const response = await serverApiFetch(`${serverApiBase}/organizations/${slug}`, {
             headers: { Accept: "application/json" },
             next: { revalidate: 60, tags: [`organization:${slug}`] },
         });
@@ -36,7 +37,7 @@ export default async function OrganizationRoute({ params }) {
     const cookieStore = await cookies();
     const authToken = cookieStore.get("authToken")?.value;
 
-    const response = await fetch(`${serverApiBase}/organizations/${slug}`, {
+    const response = await serverApiFetch(`${serverApiBase}/organizations/${slug}`, {
         headers: {
             Accept: "application/json",
             Authorization: authToken ? `Bearer ${authToken}` : undefined,

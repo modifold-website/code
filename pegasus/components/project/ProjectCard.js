@@ -76,7 +76,7 @@ export default function ProjectCard({ project, maxTags = 5, actions = null, rela
 
     return (
         <div className="new-project-card" id={project.slug}>
-            <Link className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
+            <Link prefetch={false} className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
             <div style={{ display: "flex", gap: "12px", borderBottom: hasTags ? "1px solid var(--theme-color-border)" : "none", paddingBottom: hasTags ? "12px" : "16px", paddingTop: "16px", paddingRight: "16px", paddingLeft: "16px" }}>
                 <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
@@ -85,7 +85,7 @@ export default function ProjectCard({ project, maxTags = 5, actions = null, rela
                     <div className="new-project-header">
                         <span className="new-project-title">{project.title}</span>
                         <span className="new-project-author">
-                            {t("by")} <Link className="new-project-author__link" href={project.owner?.profile_url || `/user/${project.owner?.slug || ""}`}><UserName user={project.owner} /></Link>
+                            {t("by")} <Link prefetch={false} className="new-project-author__link" href={project.owner?.profile_url || `/user/${project.owner?.slug || ""}`}><UserName user={project.owner} /></Link>
                         </span>
                     </div>
 

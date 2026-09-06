@@ -1,7 +1,9 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import BrowsePage from "@/components/pages/BrowsePage";
-import { fetchGameVersionItems, getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
+import { getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
+import { fetchGameVersionItems } from "@/utils/gameVersions/server";
 
 const apiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -91,7 +93,7 @@ export default async function ModpacksPage({ searchParams }) {
             requestParams.set("game_versions", apiParams.game_versions);
         }
 
-        const response = await fetch(`${apiBase}/projects?${requestParams.toString()}`, {
+        const response = await serverApiFetch(`${apiBase}/projects?${requestParams.toString()}`, {
             next: { revalidate: 60 },
         });
 
@@ -111,7 +113,7 @@ export default async function ModpacksPage({ searchParams }) {
     }
 
     try {
-        const tagsResponse = await fetch(`${apiBase}/tags/modpack`, {
+        const tagsResponse = await serverApiFetch(`${apiBase}/tags/modpack`, {
             next: { revalidate: 300 },
         });
         if(tagsResponse.ok) {

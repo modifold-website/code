@@ -63,7 +63,7 @@ export default function ModJamModerationSettings({ authToken, jam }) {
 						)}
 
 						<div className="mod-jam-settings-actions">
-							<Link className="button button--size-m button--type-minimal" href={`/jams/${jam.slug}`}>
+							<Link prefetch={false} className="button button--size-m button--type-minimal" href={`/jams/${jam.slug}`}>
 								{t("settings.moderation.preview")}
 							</Link>
 

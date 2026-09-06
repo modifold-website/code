@@ -62,19 +62,19 @@ export default function BrowseTabs() {
 
 	return (
 		<div className="tabs browse-tabs" ref={tabsRef} style={{ paddingLeft: "16px", "--40010a00": "46px", "--58752bc5": "0px", "--b2a58f2e": "0" }}>
-			<Link href="/discover" className={`tabs__tab ${activeSection === "discover" ? "tabs__tab--active" : ""}`}>
+			<Link prefetch={false} href="/discover" className={`tabs__tab ${activeSection === "discover" ? "tabs__tab--active" : ""}`}>
 				{t("discover")}
 			</Link>
 
-			<Link href="/mods" className={`tabs__tab ${activeSection === "mods" ? "tabs__tab--active" : ""}`}>
+			<Link prefetch={false} href="/mods" className={`tabs__tab ${activeSection === "mods" ? "tabs__tab--active" : ""}`}>
 				{t("mods")}
 			</Link>
 
-			<Link href="/prefabs" className={`tabs__tab ${activeSection === "prefabs" ? "tabs__tab--active" : ""}`}>
+			<Link prefetch={false} href="/prefabs" className={`tabs__tab ${activeSection === "prefabs" ? "tabs__tab--active" : ""}`}>
 				{t("prefabs")}
 			</Link>
 
-			<Link href="/worlds" className={`tabs__tab ${activeSection === "worlds" ? "tabs__tab--active" : ""}`}>
+			<Link prefetch={false} href="/worlds" className={`tabs__tab ${activeSection === "worlds" ? "tabs__tab--active" : ""}`}>
 				{t("worlds")}
 			</Link>
 

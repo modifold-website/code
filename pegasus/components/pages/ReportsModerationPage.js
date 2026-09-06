@@ -222,7 +222,7 @@ export default function ReportsModerationPage({ authToken, initialReports, initi
                             <div key={report.id} className="content content--padding" style={{ background: "var(--theme-color-background)", display: "flex", flexDirection: "column", gap: "10px" }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
                                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                                        <Link href={`${getProjectPathByType({ slug: report.project_slug, projectType: report.project_type })}`} style={{ fontWeight: 600 }}>{report.project_title || report.project_slug}</Link>
+                                        <Link prefetch={false} href={`${getProjectPathByType({ slug: report.project_slug, projectType: report.project_type })}`} style={{ fontWeight: 600 }}>{report.project_title || report.project_slug}</Link>
                                     </div>
 
                                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -242,7 +242,7 @@ export default function ReportsModerationPage({ authToken, initialReports, initi
                                     <div>
                                         <div style={{ fontWeight: 500 }}>{t("fields.reporter")}</div>
                                         {report.reporter_username ? (
-                                            <Link href={`/user/${report.reporter_slug}`} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                            <Link prefetch={false} href={`/user/${report.reporter_slug}`} style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
                                                 <img src={report.reporter_avatar || "/images/user/default_ava.png"} alt={report.reporter_username} width="24" height="24" style={{ borderRadius: "6px" }} />
                                                 <UserName user={{ username: report.reporter_username, slug: report.reporter_slug, isVerified: 0 }} />
                                             </Link>

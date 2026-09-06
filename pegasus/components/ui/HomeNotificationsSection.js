@@ -32,7 +32,7 @@ function PreviewNotificationItem({ item, t }) {
 		<div className="notification-item home-notification-item">
 			<div className="notification-item__image">
 				<div className="notification-avatars-stack">
-					<Link className="notification-avatars-stack__item" href="/user/siren">
+					<Link prefetch={false} className="notification-avatars-stack__item" href="/user/siren">
 						<img alt="Siren" className="notification-avatars-stack__avatar" loading="lazy" src="https://cdn.modifold.com/1772557202640-siren-logo.webp" />
 					</Link>
 
@@ -45,7 +45,7 @@ function PreviewNotificationItem({ item, t }) {
 
 			<div className="notification-item__body">
 				<div className="notification-item__text">
-					<Link className="notification-item__actor-link" href="/user/siren">
+					<Link prefetch={false} className="notification-item__actor-link" href="/user/siren">
 						<b>
 							<span className="home-notification-actor">
 								<span>Siren</span>
@@ -54,7 +54,7 @@ function PreviewNotificationItem({ item, t }) {
 						</b>
 					</Link>{" "}
 					{t("notificationsPreview.releasedVersion", { version: item.version })}{" "}
-					<Link className="notification-item__project-link" href="/mod/mermaids">
+					<Link prefetch={false} className="notification-item__project-link" href="/mod/mermaids">
 						<b>Mermaids</b>
 					</Link>
 				</div>
@@ -63,7 +63,7 @@ function PreviewNotificationItem({ item, t }) {
 			</div>
 
 			<div className="notification-item__etc">
-				<Link href="/mod/mermaids">
+				<Link prefetch={false} href="/mod/mermaids">
 					<img alt="Mermaids" className="notification-project-thumb" loading="lazy" src="https://cdn.modifold.com/projects/FlmWzw/mermaids-logo-2.0.0_small_f0581b02.webp" />
 				</Link>
 			</div>

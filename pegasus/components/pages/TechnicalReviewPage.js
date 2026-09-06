@@ -410,13 +410,13 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 						return (
 							<div key={version.id} className="new-project-card technical-review-card">
 								<div className="technical-review-card__header">
-									<Link href={getProjectPath(project)} target="_blank" rel="noreferrer" tabIndex={-1} className="technical-review-card__icon-link">
+									<Link prefetch={false} href={getProjectPath(project)} target="_blank" rel="noreferrer" tabIndex={-1} className="technical-review-card__icon-link">
 										<img className="new-project-icon" alt={version.project_title} src={version.project_icon_url} />
 									</Link>
 
 									<div className="technical-review-card__summary">
 										<div className="technical-review-card__title-row">
-											<Link href={getProjectPath(project)} target="_blank" rel="noreferrer" className="technical-review-card__project">
+											<Link prefetch={false} href={getProjectPath(project)} target="_blank" rel="noreferrer" className="technical-review-card__project">
 												{version.project_title}
 											</Link>
 
@@ -444,7 +444,7 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 										</div>
 
 										<div className="technical-review-card__meta">
-											{version.owner_username ? <Link href={`/user/${version.owner_slug || version.owner_username}`} target="_blank" rel="noreferrer" className="technical-review-card__owner">{version.owner_username}</Link> : null}
+											{version.owner_username ? <Link prefetch={false} href={`/user/${version.owner_slug || version.owner_username}`} target="_blank" rel="noreferrer" className="technical-review-card__owner">{version.owner_username}</Link> : null}
 											
 											<span>{fileName} · {formatBytes(version.file_size)}</span>
 											
@@ -462,7 +462,7 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 											</svg>
 										</button>
 
-										<Link className="technical-review-card__icon-action" href={getProjectPath(project)} target="_blank" rel="noreferrer" aria-label="Open in new tab" title="Open in new tab">
+										<Link prefetch={false} className="technical-review-card__icon-action" href={getProjectPath(project)} target="_blank" rel="noreferrer" aria-label="Open in new tab" title="Open in new tab">
 											<svg viewBox="0 0 24 24" aria-hidden="true">
 												<path d="M15 3h6v6"></path>
 												<path d="M10 14 21 3"></path>

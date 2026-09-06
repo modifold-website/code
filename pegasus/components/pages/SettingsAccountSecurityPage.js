@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "../providers/AuthProvider";
 import DeleteAccountSection from "../DeleteAccountSection";
@@ -49,7 +48,6 @@ export default function SettingsAccountSecurityPage({ initialUser = null, initia
 	const t = useTranslations("SettingsBlogPage");
 	const locale = useLocale();
 	const { isLoggedIn, user } = useAuth();
-	const router = useRouter();
 	const effectiveUser = user || initialUser;
 	const [twoFactorEnabled, setTwoFactorEnabled] = useState(Boolean(initialTwoFactor?.enabled));
 	const [passwordEnabled, setPasswordEnabled] = useState(Boolean(initialPassword?.enabled));
@@ -64,12 +62,6 @@ export default function SettingsAccountSecurityPage({ initialUser = null, initia
 	const disconnectProvider = useDisconnectAuthProvider({ authToken: token });
 	const providerStatus = providersQuery.data?.providers || {};
 	const pendingProvider = AUTH_PROVIDERS.find((provider) => provider.id === pendingDisconnectProvider) || null;
-
-	useEffect(() => {
-		if(!isLoggedIn && !initialUser) {
-			router.push("/403");
-		}
-	}, [initialUser, isLoggedIn, router]);
 
 	if(!isLoggedIn && !effectiveUser) {
 		return null;

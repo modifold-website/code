@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import ModJamCatalog from "@/components/mod-jams/ModJamCards";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -21,10 +22,10 @@ export default async function ModJamsPage() {
 
 	try {
 		const [activeResponse, completedResponse] = await Promise.all([
-			fetch(`${serverApiBase}/mod-jams?status=active`, {
+			serverApiFetch(`${serverApiBase}/mod-jams?status=active`, {
 				next: { revalidate: 60 },
 			}),
-			fetch(`${serverApiBase}/mod-jams?status=completed`, {
+			serverApiFetch(`${serverApiBase}/mod-jams?status=completed`, {
 				next: { revalidate: 60 },
 			}),
 		]);

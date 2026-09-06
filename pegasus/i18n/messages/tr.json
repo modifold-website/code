@@ -2079,7 +2079,8 @@
     "metadata": {
       "title": "Erişim reddedildi - Modifold"
     },
-    "message": "Erişim reddedildi"
+    "title": "Erişim reddedildi",
+    "message": "Bu sayfayı görüntüleme izniniz yok."
   },
   "ShareButtons": {
     "copiedToast": "Bağlantı kopyalandı",

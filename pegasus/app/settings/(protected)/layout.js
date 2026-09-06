@@ -1,5 +1,6 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { forbidden, unstable_rethrow } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
 import { isDeveloperModeEnabledFromCookieValue } from "@/utils/featureFlags";
@@ -13,7 +14,7 @@ export default async function Layout({ children }) {
 	const isFeatureFlagsVisible = isDeveloperModeEnabledFromCookieValue(featureFlagsCookie);
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
     const resolvedLocale = await getLocale();
@@ -23,7 +24,7 @@ export default async function Layout({ children }) {
     let initialUser = null;
 
     try {
-        const response = await fetch(`${serverApiBase}/auth/user`, {
+        const response = await serverApiFetch(`${serverApiBase}/auth/user`, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
                 Accept: "application/json",
@@ -32,7 +33,7 @@ export default async function Layout({ children }) {
         });
 
         if(response.status === 401 || response.status === 403) {
-            redirect("/403");
+            forbidden();
         }
 
         if(response.ok) {
@@ -42,11 +43,12 @@ export default async function Layout({ children }) {
             }
         }
     } catch (error) {
+		unstable_rethrow(error);
         console.error("Failed to preload user settings:", error);
     }
 
     if(!initialUser) {
-        redirect("/403");
+        forbidden();
     }
 
     return (

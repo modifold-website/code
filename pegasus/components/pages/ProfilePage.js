@@ -372,7 +372,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                     {isLoggedIn && (
                                         <div className="profile-page-actions">
                                             {currentUser?.id === profileUser.id ? (
-                                                <Link href="/settings" className="button button--size-l button--type-secondary button--active-transform">{t("edit")}</Link>
+                                                <Link prefetch={false} href="/settings" className="button button--size-l button--type-secondary button--active-transform">{t("edit")}</Link>
                                             ) : (
                                                 <button className={`button button--size-l ${isSubscribed ? "button--type-secondary" : "button--type-primary"}`} type="button" onClick={handleSubscribe}>
                                                     {isSubscribed ? t("subscribed") : t("subscribe")}
@@ -515,7 +515,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
 
                                     <div className="profile-organization-list">
                                         {organizations.map((organization) => (
-                                            <Link key={organization.id} href={`/organization/${organization.slug}`} className="profile-organization-item button--active-transform">
+                                            <Link prefetch={false} key={organization.id} href={`/organization/${organization.slug}`} className="profile-organization-item button--active-transform">
                                                 <img src={organization.icon_url} alt={organization.name} />
                                                 <span>{organization.name}</span>
                                             </Link>

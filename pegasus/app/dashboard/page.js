@@ -1,6 +1,7 @@
+import { serverApiFetch } from "@/utils/api/server";
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import DashboardClient from "@/components/pages/DashboardClient";
@@ -34,7 +35,7 @@ export default async function DashboardPage() {
     let totalPages = 1;
 
     try {
-        const res = await fetch(`${serverApiBase}/projects/user/projects?page=${initialPage}&limit=${limit}`, {
+        const res = await serverApiFetch(`${serverApiBase}/projects/user/projects?page=${initialPage}&limit=${limit}`, {
             headers: {
                 Accept: "application/json",
                 Authorization: `Bearer ${authToken}`,

@@ -2079,7 +2079,8 @@
     "metadata": {
       "title": "Acesso negado — Modifold"
     },
-    "message": "Acesso negado"
+    "title": "Acesso negado",
+    "message": "Você não tem permissão para ver esta página."
   },
   "ShareButtons": {
     "copiedToast": "Link copiado",

@@ -20,7 +20,7 @@ export default function PopularCategories({ categories, tCategoryLabels, t, brow
 				{categories.map((category) => {
 					const categoryBrowseHref = category.project_type ? getBrowseHref(category.project_type) : browseHref;
 					return (
-						<Link key={`${categoryBrowseHref}:${category.name}`} href={`${categoryBrowseHref}?c=${encodeURIComponent(category.name)}`} className="discover-category-pill">
+						<Link prefetch={false} key={`${categoryBrowseHref}:${category.name}`} href={`${categoryBrowseHref}?c=${encodeURIComponent(category.name)}`} className="discover-category-pill">
 							<span className="discover-category-pill__icon" aria-hidden="true">
 								<CategoryIcon category={category.name} />
 							</span>

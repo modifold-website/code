@@ -16,7 +16,15 @@ export default async function Page() {
     return (
         <div className="layout">
             <div className="view">
-                <div className="not-found-page__dummy">{t("message")}</div>
+                <section className="not-found">
+                    <h2 className="not-found__code">403</h2>
+
+                    <div className="content content--padding">
+                        <h2 className="not-found__title">{t("title")}</h2>
+
+                        <p className="not-found__text">{t("message")}</p>
+                    </div>
+                </section>
             </div>
         </div>
     );

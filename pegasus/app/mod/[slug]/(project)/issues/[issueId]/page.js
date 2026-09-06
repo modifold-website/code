@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import IssueDetailPage from "@/components/pages/IssueDetailPage";
@@ -38,7 +39,7 @@ export default async function Page({ params }) {
         notFound();
     }
 
-    const issueRes = await fetch(`${serverApiBase}/projects/${slug}/issues/${issueId}`, {
+    const issueRes = await serverApiFetch(`${serverApiBase}/projects/${slug}/issues/${issueId}`, {
         headers: {
             Accept: "application/json",
 			...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),

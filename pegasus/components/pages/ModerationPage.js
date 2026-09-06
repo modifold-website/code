@@ -246,13 +246,13 @@ export default function ModerationPage({ authToken, initialProjects, initialTota
                         return (
 							<article key={project.id} className="moderation-queue-card" id={project.slug}>
 								<div className="moderation-queue-card__identity">
-									<Link href={projectPath} target="_blank" rel="noreferrer" tabIndex={-1} className="moderation-queue-card__icon-link">
+									<Link prefetch={false} href={projectPath} target="_blank" rel="noreferrer" tabIndex={-1} className="moderation-queue-card__icon-link">
 										<img className="moderation-queue-card__icon" alt="" src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
 									</Link>
 
 									<div className="moderation-queue-card__details">
 										<div className="moderation-queue-card__title-row">
-											<Link href={projectPath} target="_blank" rel="noreferrer" className="moderation-queue-card__title">{project.title}</Link>
+											<Link prefetch={false} href={projectPath} target="_blank" rel="noreferrer" className="moderation-queue-card__title">{project.title}</Link>
 
 											<span className="moderation-card-pill">
 												<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

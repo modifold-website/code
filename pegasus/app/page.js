@@ -1,4 +1,5 @@
-﻿import { getLocale, getTranslations } from "next-intl/server";
+import { serverApiFetch } from "@/utils/api/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import HomePage from "@/components/pages/HomePage";
 import fs from "fs/promises";
@@ -65,7 +66,7 @@ async function fetchDiscoverData() {
 	}
 
 	try {
-		const response = await fetch(`${apiBase}/v2/discover`, {
+		const response = await serverApiFetch(`${apiBase}/v2/discover`, {
 			next: { revalidate: 60 },
 		});
 

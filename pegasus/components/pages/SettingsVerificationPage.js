@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../providers/AuthProvider";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
@@ -10,7 +9,6 @@ import { useTranslations } from "next-intl";
 export default function SettingsVerificationPage({ initialUser = null, initialVerification = null }) {
 	const t = useTranslations("SettingsVerificationPage");
 	const { isLoggedIn, user } = useAuth();
-	const router = useRouter();
 	const effectiveUser = user || initialUser;
 
 	const [verificationStatus, setVerificationStatus] = useState(() => ({
@@ -38,15 +36,10 @@ export default function SettingsVerificationPage({ initialUser = null, initialVe
 	};
 
 	useEffect(() => {
-		if(!isLoggedIn && !initialUser) {
-			router.push("/403");
-			return;
-		}
-
 		if(!initialVerification) {
 			fetchVerificationStatus();
 		}
-	}, [isLoggedIn, initialUser, initialVerification, router]);
+	}, [initialVerification]);
 
 	if(!isLoggedIn && !initialUser) {
 		return null;

@@ -535,7 +535,7 @@ export default function IssueDetailPage({ project, authToken, initialIssue, init
                         <img src={comment.author.avatar} alt={comment.author.username} style={{ width: "28px", height: "28px", borderRadius: "50%" }} />
                     ) : null}
 
-                    <Link href={`/user/${comment.author?.slug || ""}`} className="issue-comment__author">
+                    <Link prefetch={false} href={`/user/${comment.author?.slug || ""}`} className="issue-comment__author">
                         {comment.author?.username || t("comments.unknown")}
                     </Link>
 
@@ -652,7 +652,7 @@ export default function IssueDetailPage({ project, authToken, initialIssue, init
                                 <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                                     {t("meta.by")}
 
-                                    <Link href={issue.author.profile_url || `/user/${issue.author.slug || ""}`} className="issue-comment__author" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                    <Link prefetch={false} href={issue.author.profile_url || `/user/${issue.author.slug || ""}`} className="issue-comment__author" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                                         {issue.author.avatar && (
                                             <img src={issue.author.avatar} alt={issue.author.username} style={{ width: "18px", height: "18px", borderRadius: "50%" }} />
                                         )}

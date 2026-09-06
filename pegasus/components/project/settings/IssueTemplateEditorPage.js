@@ -169,7 +169,7 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
                 <div className="blog-settings">
                     <div className="blog-settings__body">
                         <div className="version-page__breadcrumb">
-                            <Link href={getProjectPath(project, "/settings/issues")} className="version-page__back-link button--active-transform">
+                            <Link prefetch={false} href={getProjectPath(project, "/settings/issues")} className="version-page__back-link button--active-transform">
                                 {t("common.backToSettings")}
                             </Link>
 

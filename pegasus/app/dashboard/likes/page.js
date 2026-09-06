@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -34,7 +35,7 @@ export default async function DashboardLikesPage() {
 	let totalPages = 1;
 
 	try {
-		const res = await fetch(`${serverApiBase}/users/me/likes?page=${initialPage}&limit=${limit}`, {
+		const res = await serverApiFetch(`${serverApiBase}/users/me/likes?page=${initialPage}&limit=${limit}`, {
 			headers: {
 				Accept: "application/json",
 				Authorization: `Bearer ${authToken}`,

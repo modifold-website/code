@@ -26,7 +26,7 @@ export default function NewsPage({ featuredArticle, otherArticles, locale }) {
                 <h2 className="news-title">{t("title")}</h2>
 
                 {featuredArticle && (
-                    <Link href={featuredArticle.slug} className="featured-article-link">
+                    <Link prefetch={false} href={featuredArticle.slug} className="featured-article-link">
                         <div className="featured-article">
                             <div className="featured-article-inner button--active-transform">
                                 <img src={featuredArticle.image} alt={featuredArticle.title} />
@@ -49,7 +49,7 @@ export default function NewsPage({ featuredArticle, otherArticles, locale }) {
 
                 <div className="articles-grid">
                     {otherArticles.map((article, index) => (
-                        <Link key={index} href={article.slug}>
+                        <Link prefetch={false} key={index} href={article.slug}>
                             <article className="article button--active-transform">
                                 <img src={article.image} alt={article.title} />
 

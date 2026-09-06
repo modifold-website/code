@@ -17,7 +17,7 @@ function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "la
 
 	return (
 		<>
-			<Link className="discover-latest-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
+			<Link prefetch={false} className="discover-latest-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
 			<div className="discover-latest-card__icon">
 				<img key={`icon:${projectIcon}`} src={projectIcon} alt="" loading={imageLoading} />
@@ -26,7 +26,7 @@ function LatestProjectCardContent({ project, tCategoryLabels, imageLoading = "la
 			<div className="discover-latest-card__content">
 				<span className="discover-latest-card__title">{project.title}</span>
 				
-				<Link href={getOwnerHref(project)} className="discover-latest-card__author">
+				<Link prefetch={false} href={getOwnerHref(project)} className="discover-latest-card__author">
 					<img key={`owner:${ownerAvatar}`} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 					
 					<UserName user={project.owner} className="discover-author__name" />
@@ -145,7 +145,7 @@ export default function LatestProjects({ projects, t, viewAllHref }) {
 				<h2>{t("latest")}</h2>
 				
 				{viewAllHref && (
-					<Link href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
+					<Link prefetch={false} href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
 						{t("viewAll")}
 					</Link>
 				)}

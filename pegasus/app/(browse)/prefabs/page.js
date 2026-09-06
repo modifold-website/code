@@ -1,7 +1,9 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import BrowsePage from "@/components/pages/BrowsePage";
-import { fetchGameVersionItems, getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
+import { getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
+import { fetchGameVersionItems } from "@/utils/gameVersions/server";
 
 const apiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
@@ -56,7 +58,7 @@ function parseBrowseSearchParams(searchParams) {
 
 async function fetchPrefabTags() {
 	try {
-		const response = await fetch(`${apiBase}/tags/prefab`, {
+		const response = await serverApiFetch(`${apiBase}/tags/prefab`, {
 			next: { revalidate: 300 },
 		});
 
@@ -108,7 +110,7 @@ export default async function PrefabsPage({ searchParams }) {
 			requestParams.set("game_versions", apiParams.game_versions);
 		}
 
-		const response = await fetch(`${apiBase}/projects?${requestParams.toString()}`, {
+		const response = await serverApiFetch(`${apiBase}/projects?${requestParams.toString()}`, {
 			next: { revalidate: 60 },
 		});
 

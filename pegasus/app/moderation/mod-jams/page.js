@@ -1,5 +1,6 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { forbidden, unstable_rethrow } from "next/navigation";
 import ModJamModerationPage from "@/components/mod-jams/ModJamModerationPage";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
@@ -13,19 +14,19 @@ export default async function ModJamsModerationServerPage() {
 	const authToken = cookieStore.get("authToken")?.value;
 
 	if(!authToken) {
-		redirect("/403");
+		forbidden();
 	}
 
 	let modJams = [];
 
 	try {
-		const response = await fetch(`${serverApiBase}/mod-jams/moderation`, {
+		const response = await serverApiFetch(`${serverApiBase}/mod-jams/moderation`, {
 			headers: { Authorization: `Bearer ${authToken}` },
 			cache: "no-store",
 		});
 
 		if(response.status === 403) {
-			redirect("/403");
+			forbidden();
 		}
 
 		if(response.ok) {
@@ -33,6 +34,7 @@ export default async function ModJamsModerationServerPage() {
 			modJams = data.mod_jams || [];
 		}
 	} catch (error) {
+		unstable_rethrow(error);
 		console.error("Failed to fetch mod jams moderation queue:", error);
 	}
 

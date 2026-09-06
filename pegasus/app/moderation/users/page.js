@@ -1,10 +1,10 @@
+import { serverApiFetch } from "@/utils/api/server";
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-﻿import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { redirect, forbidden, unstable_rethrow } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import UsersModerationPage from "@/components/pages/UsersModerationPage";
-import axios from "axios";
 
 export async function generateMetadata() {
     const resolvedLocale = await getLocale();
@@ -17,14 +17,19 @@ export async function generateMetadata() {
 
 async function fetchUsers(authToken) {
     try {
-        const response = await axios.get(`${serverApiBase}/moderation/users`, {
+        const query = new URLSearchParams({ page: "1", limit: "15" });
+        const response = await serverApiFetch(`${serverApiBase}/moderation/users?${query}`, {
             headers: { Authorization: `Bearer ${authToken}` },
-            params: { page: 1, limit: 15 },
+            cache: "no-store",
         });
+		if(!response.ok) {
+			throw new Error(`Moderation users API returned ${response.status}`);
+		}
+		const data = await response.json();
 
         return {
-            users: response.data.users,
-            totalPages: response.data.totalPages,
+            users: data.users,
+            totalPages: data.totalPages,
         };
     } catch (err) {
         console.error("Error fetching users for moderation:", err);
@@ -37,11 +42,11 @@ export default async function UsersModerationServer() {
     const authToken = cookieStore.get("authToken")?.value;
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
     try {
-        const response = await fetch(`${serverApiBase}/auth/user`, {
+        const response = await serverApiFetch(`${serverApiBase}/auth/user`, {
             headers: { Authorization: `Bearer ${authToken}` },
             cache: "no-store",
         });
@@ -54,9 +59,10 @@ export default async function UsersModerationServer() {
         const role = data?.user?.isRole;
 
         if(role !== "admin" && role !== "moderator") {
-            redirect("/403");
+            forbidden();
         }
     } catch (error) {
+		unstable_rethrow(error);
         console.error("Error checking moderation access:", error);
         redirect("/");
     }

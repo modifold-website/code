@@ -24,7 +24,7 @@ export default function ModJamCard({ jam }) {
 
 	return (
 		<div className="media-project-card">
-			<Link className="media-project-card__overlay" href={`/jams/${jam.slug}`}></Link>
+			<Link prefetch={false} className="media-project-card__overlay" href={`/jams/${jam.slug}`}></Link>
 			
 			<div className="media-project-cover">
 				{jam.cover_url ? <img src={jam.cover_url} loading="lazy" alt="" /> : null}

@@ -61,7 +61,7 @@ export default function OrganizationsDashboardPage({ authToken, initialOrganizat
 						<div className="organizations-dashboard__list">
 							{organizations.map((organization) => (
 								<article key={organization.id} className="new-project-card dashboard-project-card organization-dashboard-card">
-									<Link className="new-project-card__overlay" href={`/organization/${organization.slug}`} aria-label={t("dashboard.open", { organization: organization.name })} />
+									<Link prefetch={false} className="new-project-card__overlay" href={`/organization/${organization.slug}`} aria-label={t("dashboard.open", { organization: organization.name })} />
 
 									<div className="dashboard-project-card__content organization-dashboard-card__content">
 										<img className="new-project-icon organization-dashboard-card__icon" src={organization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={t("dashboard.iconAlt", { organization: organization.name })} />
@@ -100,7 +100,7 @@ export default function OrganizationsDashboardPage({ authToken, initialOrganizat
 
 									{organization.can_manage ? (
 										<div className="dashboard-project-card__actions">
-											<Link href={`/organization/${organization.slug}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
+											<Link prefetch={false} href={`/organization/${organization.slug}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
 												<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 													<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
 													<circle cx="12" cy="12" r="3" />

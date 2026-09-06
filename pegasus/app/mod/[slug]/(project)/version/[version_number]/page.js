@@ -1,7 +1,8 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import VersionPage from "@/components/pages/VersionPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-import { fetchGameVersionItems } from "@/utils/gameVersions";
+import { fetchGameVersionItems } from "@/utils/gameVersions/server";
 import { getProjectForRequest } from "@/utils/projects/server";
 import { getProjectMetadata } from "@/utils/projects/metadata";
 
@@ -11,7 +12,7 @@ export async function generateMetadata({ params }) {
     const { slug, version_number } = await params;
     const [project, versionRes] = await Promise.all([
 		getProjectForRequest(slug).then(({ project }) => project),
-        fetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
+        serverApiFetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
             headers: { Accept: "application/json" },
         }),
     ]);
@@ -30,7 +31,7 @@ export default async function Page({ params }) {
     const t = await getTranslations({ locale: resolvedLocale, namespace: "ProjectPage" });
 	const { project, authToken } = await getProjectForRequest(slug);
 
-    const versionRes = await fetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
+    const versionRes = await serverApiFetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
         headers: {
             Accept: "application/json",
             Authorization: authToken ? `Bearer ${authToken}` : undefined,
@@ -43,7 +44,7 @@ export default async function Page({ params }) {
 
     const version = await versionRes.json();
 
-	const settingsAccessRes = authToken ? await fetch(`${serverApiBase}/projects/${slug}/settings`, {
+	const settingsAccessRes = authToken ? await serverApiFetch(`${serverApiBase}/projects/${slug}/settings`, {
         headers: {
             Accept: "application/json",
             Authorization: `Bearer ${authToken}`,

@@ -57,7 +57,7 @@ export default function OrganizationPage({ organization, members = [], projects 
 
                                     {canEditOrganization && (
                                         <div className="subsite-header__controls">
-                                            <Link href={`/organization/${organization.slug}/settings`} className="button button--size-m button--type-minimal button--active-transform">
+                                            <Link prefetch={false} href={`/organization/${organization.slug}/settings`} className="button button--size-m button--type-minimal button--active-transform">
                                                 {t("page.edit")}
                                             </Link>
                                         </div>
@@ -140,14 +140,14 @@ export default function OrganizationPage({ organization, members = [], projects 
 
                                     return (
                                         <div key={member.user_id} className="author author-card" style={{ "--1ebedaf6": "40px" }}>
-                                            <Link href={`/user/${member.slug}`} className="author__avatar button--active-transform">
+                                            <Link prefetch={false} href={`/user/${member.slug}`} className="author__avatar button--active-transform">
                                                 <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none" }}>
                                                     <img src={member.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} className="magnify" alt={member.username} />
                                                 </div>
                                             </Link>
 
                                             <div className="author__main">
-                                                <Link href={`/user/${member.slug}`} className="author__name">
+                                                <Link prefetch={false} href={`/user/${member.slug}`} className="author__name">
                                                     <UserName user={member} />
                                                 </Link>
                                             </div>

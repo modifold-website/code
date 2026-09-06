@@ -52,9 +52,7 @@ export default function ProjectSettings({ project }) {
     const playersCountMenuRef = useRef(null);
 
     useEffect(() => {
-        if(!isLoggedIn) {
-            router.push("/403");
-        } else if(project) {
+        if(project) {
             const initialData = getInitialFormData(project);
             const initialPreview = project.icon_url || "";
             setFormData(initialData);
@@ -62,7 +60,7 @@ export default function ProjectSettings({ project }) {
             setPreviewIcon(initialPreview);
             setSavedPreviewIcon(initialPreview);
         }
-    }, [isLoggedIn, project, router]);
+    }, [project]);
 
     const isDirty = (
         formData.title !== savedFormData.title ||

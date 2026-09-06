@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectCollaboratorsSettings from "@/components/project/settings/ProjectCollaboratorsSettings";
 import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
@@ -22,7 +22,7 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 	const authToken = cookieStore.get("authToken")?.value;
 
 	if(!authToken) {
-		redirect("/403");
+		forbidden();
 	}
 
 	const response = await serverApiFetch(`${serverApiBase}/projects/${slug}/collaborators`, {
@@ -34,7 +34,7 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 	});
 
 	if(response.status === 401 || response.status === 403) {
-		redirect("/403");
+		forbidden();
 	}
 	
 	if(response.status === 404) {

@@ -144,13 +144,13 @@ function ProjectCreatorCard({ creator, authToken, t, locale, compact = false }) 
 	return (
 		<div className={`project-creator-card ${compact ? "project-creator-card--compact" : ""}`}>
 			<div className="project-creator-card__header">
-				<Link className="project-creator-card__avatar button--active-transform" href={getCreatorHref(creator)}>
+				<Link prefetch={false} className="project-creator-card__avatar button--active-transform" href={getCreatorHref(creator)}>
 					<div className={avatarClassName} style={{ aspectRatio: "480 / 320", width: "38px", height: "38px", maxWidth: "none", maxHeight: "none", backgroundColor: "var(--theme-color-background)" }}>
 						<img alt="" loading="lazy" width="38" height="38" decoding="async" data-nimg="1" style={{ color: "transparent" }} src={getCreatorAvatar(creator)} />
 					</div>
 				</Link>
 
-				<Link className={`project-creator-card__name ${isOrganization || creator?.role ? "project-creator-card__name--with-meta" : ""}`} href={getCreatorHref(creator)}>
+				<Link prefetch={false} className={`project-creator-card__name ${isOrganization || creator?.role ? "project-creator-card__name--with-meta" : ""}`} href={getCreatorHref(creator)}>
 					<UserName user={creator} className="project-creator-card__name-text" />
 
 					{isOrganization && <ProjectCreatorOrganizationLabel t={t} />}
@@ -261,14 +261,14 @@ export default function ProjectSidebar({ project, authToken, showLicense = true,
                             <Fragment key={jam.submission_id || jam.id}>
                                 <div className="mod-jam-project-participation">
                                     <div className="author author-card" style={{ "--1ebedaf6": "40px", display: "flex" }}>
-                                        <Link className="author__avatar button--active-transform" href={`/jams/${jam.slug}`}>
+                                        <Link prefetch={false} className="author__avatar button--active-transform" href={`/jams/${jam.slug}`}>
                                             <div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none", borderRadius: "8px" }}>
                                                 <img src={jam.avatar_url} className="magnify" alt={t("ownerAvatarAlt", { username: jam.owner?.username })} />
                                             </div>
                                         </Link>
 
                                         <div className="author__main">
-                                            <Link className="author__name" href={`/jams/${jam.slug}`}>
+                                            <Link prefetch={false} className="author__name" href={`/jams/${jam.slug}`}>
                                                 {jam.title}
                                             </Link>
                                         </div>

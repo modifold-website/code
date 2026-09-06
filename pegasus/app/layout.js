@@ -1,4 +1,5 @@
-﻿import Header from "@/components/layout/Header";
+import { serverApiFetch } from "@/utils/api/server";
+import Header from "@/components/layout/Header";
 import HeaderMobile from "@/components/layout/HeaderMobile";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { cookies, headers } from "next/headers";
@@ -74,7 +75,7 @@ export default async function RootLayout({ children }) {
 
     if(token) {
         try {
-            const response = await fetch(`${apiBase}/auth/user`, {
+            const response = await serverApiFetch(`${apiBase}/auth/user`, {
                 headers: { Authorization: `Bearer ${token}` },
                 cache: "no-store",
             });
@@ -236,7 +237,7 @@ export default async function RootLayout({ children }) {
                                                 <div className="footer-col footer-col__wrap">
                                                     <p className="footer-col__header">{messages.Footer.community}</p>
                                                     
-                                                    <Link href="/blog" className="footer-link">
+                                                    <Link prefetch={false} href="/blog" className="footer-link">
                                                         {messages.Footer.news}
                                                     </Link>
                                                 </div>
@@ -244,19 +245,19 @@ export default async function RootLayout({ children }) {
                                                 <div className="footer-col footer-col__wrap">
                                                     <p className="footer-col__header">{messages.Footer.legal}</p>
                                                     
-                                                    <Link href="/legal/privacy" className="footer-link">
+                                                    <Link prefetch={false} href="/legal/privacy" className="footer-link">
                                                         {messages.Footer.privacyPolicy}
                                                     </Link>
 
-                                                    <Link href="/legal/terms" className="footer-link">
+                                                    <Link prefetch={false} href="/legal/terms" className="footer-link">
                                                         {messages.Footer.termsOfUse}
                                                     </Link>
 
-                                                    <Link href="/legal/rules" className="footer-link">
+                                                    <Link prefetch={false} href="/legal/rules" className="footer-link">
                                                         {messages.Footer.contentRules}
                                                     </Link>
 
-                                                    <Link href="/legal/copyright" className="footer-link">
+                                                    <Link prefetch={false} href="/legal/copyright" className="footer-link">
                                                         {messages.Footer.copyrightPolicy}
                                                     </Link>
                                                 </div>

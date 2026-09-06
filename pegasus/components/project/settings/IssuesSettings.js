@@ -161,7 +161,7 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
                             <p className="blog-settings__field-title" style={{ marginBottom: "0" }}>{t("template.sectionTitle")}</p>
                             
-                            <Link className="button button--size-m button--type-minimal button--active-transform" href={getProjectPath(project, "/settings/issues/templates/new")}>
+                            <Link prefetch={false} className="button button--size-m button--type-minimal button--active-transform" href={getProjectPath(project, "/settings/issues/templates/new")}>
                                 {t("template.create")}
                             </Link>
                         </div>
@@ -179,7 +179,7 @@ export default function IssuesSettings({ project, authToken, initialTemplates = 
                                     </div>
 
                                     <div style={{ display: "flex", gap: "8px" }}>
-                                        <Link className="button button--size-m button--type-secondary button--active-transform" href={getProjectPath(project, `/settings/issues/templates/${template.id}`)}>
+                                        <Link prefetch={false} className="button button--size-m button--type-secondary button--active-transform" href={getProjectPath(project, `/settings/issues/templates/${template.id}`)}>
                                             {t("template.edit")}
                                         </Link>
 

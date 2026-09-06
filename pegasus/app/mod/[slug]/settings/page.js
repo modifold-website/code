@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectSettings from "@/components/project/settings/ProjectSettings";
 import { getProjectBasePath } from "@/utils/projectRoutes";
@@ -25,7 +25,7 @@ export default async function Page({ params }) {
     }
 
     if(status === 403) {
-        redirect("/403");
+        forbidden();
     }
 
 	if(!settingsData?.permissions?.can_edit_details) {

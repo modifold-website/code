@@ -6,7 +6,7 @@ import { getProjectPath } from "@/utils/projectRoutes";
 
 const ProjectLink = ({ project, children }) => (
     project?.slug ? (
-        <Link href={getProjectPath(project)} className="notification-item__project-link"><b>{children}</b></Link>
+        <Link prefetch={false} href={getProjectPath(project)} className="notification-item__project-link"><b>{children}</b></Link>
     ) : (
         <b>{children}</b>
     )
@@ -14,7 +14,7 @@ const ProjectLink = ({ project, children }) => (
 
 const OrganizationLink = ({ organization, children }) => (
     organization?.slug ? (
-        <Link href={`/organization/${organization.slug}`} className="notification-item__organization-link"><b>{children}</b></Link>
+        <Link prefetch={false} href={`/organization/${organization.slug}`} className="notification-item__organization-link"><b>{children}</b></Link>
     ) : (
         <b>{children}</b>
     )
@@ -25,7 +25,7 @@ const VersionLink = ({ projectVersion, children }) => {
     const href = project?.slug && projectVersion?.id ? `${getProjectPath(project)}/version/${projectVersion.id}` : "";
 
     return href ? (
-        <Link href={href} className="notification-item__version-link">{children}</Link>
+        <Link prefetch={false} href={href} className="notification-item__version-link">{children}</Link>
     ) : (
         <span>{children}</span>
     );
@@ -49,7 +49,7 @@ function NotificationText({ notification, t, disableActorLink = false }) {
     const firstActor = notification.actors?.[0];
     const firstActorView = firstActor ? (
         firstActor.slug && !disableActorLink ? (
-            <Link href={`/user/${firstActor.slug}`} className="notification-item__actor-link"><b><UserName user={firstActor} /></b></Link>
+            <Link prefetch={false} href={`/user/${firstActor.slug}`} className="notification-item__actor-link"><b><UserName user={firstActor} /></b></Link>
         ) : (
             <b><UserName user={firstActor} /></b>
         )
@@ -274,7 +274,7 @@ function ProjectThumbnail({ project }) {
     return (
         <div className="notification-item__etc">
             {project.slug ? (
-                <Link href={getProjectPath(project)} className="notification-item__project-thumb-link">
+                <Link prefetch={false} href={getProjectPath(project)} className="notification-item__project-thumb-link">
                     {image}
                 </Link>
             ) : image}
@@ -290,7 +290,7 @@ function ProjectAvatar({ project }) {
     const image = <img src={project.iconUrl} alt={project.title || ""} className="notification-avatars-stack__avatar" loading="lazy" />;
 
     return project.slug ? (
-        <Link href={getProjectPath(project)} className="notification-avatars-stack__item">
+        <Link prefetch={false} href={getProjectPath(project)} className="notification-avatars-stack__item">
             {image}
         </Link>
     ) : (
@@ -323,7 +323,7 @@ export default function NotificationItem({ notification, timeFormatter, t, onOrg
                         <ProjectAvatar project={notificationProject} />
                     ) : notification.actors?.slice(0, 3).map((actor) => (
                         actor.slug && !isSingleFollowNotification ? (
-                            <Link key={actor.id} href={`/user/${actor.slug}`} className="notification-avatars-stack__item">
+                            <Link prefetch={false} key={actor.id} href={`/user/${actor.slug}`} className="notification-avatars-stack__item">
                                 <img src={actor.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} alt={actor.username} className="notification-avatars-stack__avatar" loading="lazy" />
                             </Link>
                         ) : (

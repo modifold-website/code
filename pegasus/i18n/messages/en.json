@@ -2174,7 +2174,8 @@
     "metadata": {
       "title": "Access Denied — Modifold"
     },
-    "message": "Access Denied"
+    "title": "Access denied",
+    "message": "You don’t have permission to view this page."
   },
   "ShareButtons": {
     "copiedToast": "Link copied",

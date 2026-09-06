@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import IssuesPage from "@/components/pages/IssuesPage";
@@ -46,11 +47,11 @@ export default async function Page({ params, searchParams }) {
 		...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
 	};
 	const [issuesRes, templatesRes] = await Promise.all([
-		fetch(`${serverApiBase}/projects/${slug}/issues?status=${encodeURIComponent(status)}&sort=${encodeURIComponent(sort)}&page=${encodeURIComponent(page)}&limit=20`, {
+		serverApiFetch(`${serverApiBase}/projects/${slug}/issues?status=${encodeURIComponent(status)}&sort=${encodeURIComponent(sort)}&page=${encodeURIComponent(page)}&limit=20`, {
 			headers: requestHeaders,
 			cache: "no-store",
 		}),
-		fetch(`${serverApiBase}/projects/${slug}/issues/templates`, {
+		serverApiFetch(`${serverApiBase}/projects/${slug}/issues/templates`, {
 			headers: requestHeaders,
 			cache: "no-store",
 		}),

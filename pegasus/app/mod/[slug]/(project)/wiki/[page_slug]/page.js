@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import WikiPage from "@/components/pages/WikiPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
@@ -28,7 +29,7 @@ export default async function Page({ params }) {
     let wikiError = null;
 
     try {
-        const wikiRes = await fetch(`${serverApiBase}/projects/${slug}/wiki/${encodeURIComponent(page_slug)}`, {
+        const wikiRes = await serverApiFetch(`${serverApiBase}/projects/${slug}/wiki/${encodeURIComponent(page_slug)}`, {
 			headers: requestHeaders,
             cache: "no-store",
         });

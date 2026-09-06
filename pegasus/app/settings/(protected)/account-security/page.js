@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import SettingsAccountSecurityPage from "@/components/pages/SettingsAccountSecurityPage";
@@ -30,9 +31,9 @@ export default async function Page() {
 			cache: "no-store",
 		};
 		const [twoFactorResponse, passwordResponse, providersResponse] = await Promise.all([
-			fetch(`${serverApiBase}/auth/2fa/status`, requestOptions),
-			fetch(`${serverApiBase}/auth/password/status`, requestOptions),
-			fetch(`${serverApiBase}/auth/providers`, requestOptions),
+			serverApiFetch(`${serverApiBase}/auth/2fa/status`, requestOptions),
+			serverApiFetch(`${serverApiBase}/auth/password/status`, requestOptions),
+			serverApiFetch(`${serverApiBase}/auth/providers`, requestOptions),
 		]);
 		const [twoFactorData, passwordData, providersData] = await Promise.all([
 			twoFactorResponse.json().catch(() => ({})),

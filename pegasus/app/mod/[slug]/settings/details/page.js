@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import DisclosuresSettings from "@/components/project/settings/DisclosuresSettings";
 import { getProjectSettingsForRequest } from "@/utils/projects/server";
@@ -22,7 +22,7 @@ export default async function Page({ params }) {
 	}
 
 	if(status === 403) {
-		redirect("/403");
+		forbidden();
 	}
 
 	return <DisclosuresSettings project={project} authToken={authToken} />;

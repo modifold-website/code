@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cache } from "react";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
@@ -8,7 +9,7 @@ export const getPrefabPreviewBySlug = cache(async (slug) => {
 	}
 
 	try {
-		const response = await fetch(`${serverApiBase}/v2/prefabs/${encodeURIComponent(slug)}/preview`, {
+		const response = await serverApiFetch(`${serverApiBase}/v2/prefabs/${encodeURIComponent(slug)}/preview`, {
 			headers: { Accept: "application/json" },
 			cache: "no-store",
 		});

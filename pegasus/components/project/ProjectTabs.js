@@ -68,28 +68,28 @@ export default function ProjectTabs({ project }) {
 
     return (
         <div className="tabs" ref={tabsRef} style={{ paddingLeft: "16px", "--40010a00": "46px", "--58752bc5": "0px", "--b2a58f2e": "0" }}>
-            <Link href={`${basePath}/${project.slug}`} scroll={false} className={`tabs__tab ${isActive(`${basePath}/${project.slug}`) ? "tabs__tab--active" : ""}`}>
+            <Link prefetch={false} href={`${basePath}/${project.slug}`} scroll={false} className={`tabs__tab ${isActive(`${basePath}/${project.slug}`) ? "tabs__tab--active" : ""}`}>
                 {t("tabs.description")}
             </Link>
 
-            <Link href={`${basePath}/${project.slug}/versions`} scroll={false} className={`tabs__tab ${isVersionsActive ? "tabs__tab--active" : ""}`}>
+            <Link prefetch={false} href={`${basePath}/${project.slug}/versions`} scroll={false} className={`tabs__tab ${isVersionsActive ? "tabs__tab--active" : ""}`}>
                 {t("tabs.versions")}
             </Link>
         
             {project?.gallery?.length > 0 && (
-                <Link href={`${basePath}/${project.slug}/gallery`} scroll={false} className={`tabs__tab ${isActive(`${basePath}/${project.slug}/gallery`) ? "tabs__tab--active" : ""}`}>
+                <Link prefetch={false} href={`${basePath}/${project.slug}/gallery`} scroll={false} className={`tabs__tab ${isActive(`${basePath}/${project.slug}/gallery`) ? "tabs__tab--active" : ""}`}>
                     {t("tabs.gallery")}
                 </Link>
             )}
 
             {project.hytale_wiki_slug && (
-                <Link href={`${basePath}/${project.slug}/wiki`} scroll={false} className={`tabs__tab ${isWikiActive ? "tabs__tab--active" : ""}`}>
+                <Link prefetch={false} href={`${basePath}/${project.slug}/wiki`} scroll={false} className={`tabs__tab ${isWikiActive ? "tabs__tab--active" : ""}`}>
                     {t("wiki")}
                 </Link>
             )}
 
             {showIssuesTab && (
-                <Link href={`${basePath}/${project.slug}/issues`} scroll={false} className={`tabs__tab ${isIssuesActive ? "tabs__tab--active" : ""}`}>
+                <Link prefetch={false} href={`${basePath}/${project.slug}/issues`} scroll={false} className={`tabs__tab ${isIssuesActive ? "tabs__tab--active" : ""}`}>
                     {t("tabs.issues")}
                     
                     {issuesCount > 0 && (

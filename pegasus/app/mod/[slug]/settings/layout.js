@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirect, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectSettingsSidebar from "@/components/ui/ProjectSettingsSidebar";
 import { getProjectSettingsForRequest } from "@/utils/projects/server";
@@ -14,7 +14,7 @@ export default async function Layout({ children, params }) {
     }
 
     if(status === 403) {
-        redirect("/403");
+        forbidden();
     }
     
     const project = {
