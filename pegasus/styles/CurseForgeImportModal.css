@@ -143,16 +143,21 @@
 	background: transparent !important;
 }
 .curseforge-import__page[data-page-id="source"] {
+	height: 100%;
 	min-height: 100%;
+	overflow: hidden;
 }
 .curseforge-import__page[data-page-id="source"] .curseforge-import__form {
 	flex: 1;
+	min-height: 0;
 }
 .curseforge-import__page[data-page-id="source"] .curseforge-import__actions {
 	margin-top: auto;
 }
 .curseforge-import__link-fields {
 	display: flex;
+	min-height: 0;
+	flex: 1 1 auto;
 	flex-direction: column;
 	gap: 10px;
 }
@@ -160,6 +165,7 @@
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) 36px;
 	align-items: center;
+	flex: 0 0 auto;
 	gap: 8px;
 }
 .curseforge-import__link-row .field {
@@ -388,12 +394,11 @@
 	flex-direction: column;
 	gap: 4px;
 }
-.curseforge-import__projects--selection {
+.curseforge-import__scrollable-list {
 	--_fade-height: 3rem;
 	--_top-fade-height: 0px;
 	--_bottom-fade-height: 0px;
 	min-height: 0;
-	flex: 1 1 auto;
 	overflow-y: auto;
 	overscroll-behavior: contain;
 	-webkit-overflow-scrolling: touch;
@@ -404,12 +409,15 @@
 	-webkit-mask-image: linear-gradient(transparent, #000 var(--_top-fade-height), #000 calc(100% - var(--_bottom-fade-height)), transparent 100%);
 	mask-image: linear-gradient(transparent, #000 var(--_top-fade-height), #000 calc(100% - var(--_bottom-fade-height)), transparent 100%);
 }
-.curseforge-import__projects--selection::-webkit-scrollbar {
+.curseforge-import__projects--selection {
+	flex: 1 1 auto;
+}
+.curseforge-import__scrollable-list::-webkit-scrollbar {
 	width: var(--scrollbar-size, 10px);
 	height: var(--scrollbar-size, 10px);
 	background-color: transparent;
 }
-.curseforge-import__projects--selection::-webkit-scrollbar-thumb {
+.curseforge-import__scrollable-list::-webkit-scrollbar-thumb {
 	border: solid transparent;
 	border-width: 3px;
 	border-radius: var(--scrollbar-size, 10px);
@@ -417,7 +425,7 @@
 	background-clip: padding-box;
 }
 @media (hover: hover) {
-	.curseforge-import__projects--selection::-webkit-scrollbar-thumb:hover {
+	.curseforge-import__scrollable-list::-webkit-scrollbar-thumb:hover {
 		border-width: 0;
 	}
 }

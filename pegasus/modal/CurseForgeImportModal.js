@@ -57,6 +57,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 	const [retryingItemId, setRetryingItemId] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const contentRef = useRef(null);
+	const linkListRef = useRef(null);
 	const projectListRef = useRef(null);
 
 	const progressQuery = useQuery({
@@ -84,8 +85,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		if(!items.length) return 0;
 		return Math.round(items.reduce((total, item) => total + Number(item.progress || 0), 0) / items.length);
 	}, [currentSession]);
-	const updateProjectListFade = useCallback(() => {
-		const list = projectListRef.current;
+	const updateListFade = useCallback((list) => {
 		if(!list) return;
 
 		const canScrollTop = list.scrollTop > 1;
@@ -94,10 +94,16 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		list.style.setProperty("--_top-fade-height", canScrollTop ? "var(--_fade-height)" : "0px");
 		list.style.setProperty("--_bottom-fade-height", canScrollBottom ? "var(--_fade-height)" : "0px");
 	}, []);
+	const updateLinkListFade = useCallback(() => updateListFade(linkListRef.current), [updateListFade]);
+	const updateProjectListFade = useCallback(() => updateListFade(projectListRef.current), [updateListFade]);
 
 	useEffect(() => {
-		if(phase === "selection") updateProjectListFade();
-	}, [phase, sessionItems.length, updateProjectListFade]);
+		if(isOpen && phase === "source" && method === "links") updateLinkListFade();
+	}, [isOpen, method, phase, projectUrls.length, updateLinkListFade]);
+
+	useEffect(() => {
+		if(isOpen && phase === "selection") updateProjectListFade();
+	}, [isOpen, phase, sessionItems.length, updateProjectListFade]);
 
 	useEffect(() => {
 		if(!codeCopied) return undefined;
@@ -305,7 +311,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 						<p style={{ color: "var(--theme-color-text-secondary)" }}>{t("links.hint", { limit: MAX_LINKS })}</p>
 					</div>
 
-					<div className="curseforge-import__link-fields">
+					<div ref={linkListRef} className="curseforge-import__link-fields curseforge-import__scrollable-list" onScroll={updateLinkListFade}>
 						{projectUrls.map((url, index) => (
 							<div className="curseforge-import__link-row" key={index}>
 								<label className="field field--default">
@@ -485,7 +491,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 
 			{rejectedLinks.length ? <div className="curseforge-import__notice">{t("selection.rejected", { count: rejectedLinks.length })}</div> : null}
 
-			<div ref={projectListRef} className="curseforge-import__projects curseforge-import__projects--selection" onScroll={updateProjectListFade}>
+			<div ref={projectListRef} className="curseforge-import__projects curseforge-import__projects--selection curseforge-import__scrollable-list" onScroll={updateProjectListFade}>
 				{sessionItems.map((item) => {
 					const selected = selectedIds.has(item.curseforgeProjectId);
 					const disabled = Boolean(item.alreadyImported);
