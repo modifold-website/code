@@ -8,6 +8,7 @@ import { useAuth } from "../components/providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getProjectPathByType } from "@/utils/projectRoutes";
+import CurseForgeImportModal from "./CurseForgeImportModal";
 
 Modal.setAppElement("body");
 
@@ -22,6 +23,7 @@ export default function ProjectCreationModal({ isOpen, authToken, onRequestClose
         project_type: "mod",
     });
     const [loading, setLoading] = useState(false);
+	const [isImportOpen, setIsImportOpen] = useState(false);
     const isFormValid = formData.title.trim().length > 0 && formData.summary.trim().length >= 30;
 
     if(!isLoggedIn && isOpen) {
@@ -58,88 +60,104 @@ export default function ProjectCreationModal({ isOpen, authToken, onRequestClose
     };
 
     return (
-        <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active" overlayClassName="modal-overlay">
-            <div className="modal-window">
-                <div className="modal-window__header">
-                    <h2 className="modal-window__title">{t("title")}</h2>
-                    
-                    <button className="icon-button modal-window__close" type="button" onClick={onRequestClose} aria-label={t("close")}>
-                        <svg className="icon icon--cross" height="24" width="24">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div className="modal-window__content">
-                    <form onSubmit={handleSubmit}>
-                        <p className="blog-settings__field-title">{t("name")}</p>
-                        <div className="field field--default">
-                            <label className="field__wrapper">
-                                <input type="text" name="title" placeholder={t("placeholders.name")} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="text-input" maxLength="70" disabled={loading} />
-                            </label>
-                        </div>
-
-                        <p className="blog-settings__field-title" style={{ marginBottom: "4px" }}>{t("summary")}</p>
-
-                        <p style={{ marginBottom: "8px", color: "var(--theme-color-text-secondary)" }}>{t("summaryHint")}</p>
+		<>
+            <Modal closeTimeoutMS={150} isOpen={isOpen && !isImportOpen} onRequestClose={onRequestClose} className="modal active" overlayClassName="modal-overlay">
+                <div className="modal-window">
+                    <div className="modal-window__header">
+                        <h2 className="modal-window__title">{t("title")}</h2>
                         
-                        <div className="field field--default textarea">
-                            <label className="field__wrapper">
-                                <textarea name="summary" value={formData.summary} onChange={(e) => setFormData({ ...formData, summary: e.target.value })} placeholder={t("placeholders.summary")} className="autosize textarea__input" style={{ height: "128px" }} required minLength={30} maxLength={256} disabled={loading} />
-                            </label>
-                        </div>
+                        <button className="icon-button modal-window__close" type="button" onClick={onRequestClose} aria-label={t("close")}>
+                            <svg className="icon icon--cross" height="24" width="24">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
+                            </svg>
+                        </button>
+                    </div>
 
-                        <p className="blog-settings__field-title">{t("projectType")}</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                            <button type="button" className={`button tag-selector__button button--size-m ${formData.project_type === "mod" ? "button--type-primary" : "button--type-minimal"}`} onClick={() => setFormData({ ...formData, project_type: "mod" })} disabled={loading}>
-                                <div className="tag-selector__icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-box-icon lucide-box">
-                                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
-                                        <path d="m3.3 7 8.7 5 8.7-5"/>
-                                        <path d="M12 22V12"/>
-                                    </svg>
-                                </div>
+                    <div className="modal-window__content">
+                        <form onSubmit={handleSubmit}>
+                            <p className="blog-settings__field-title">{t("name")}</p>
+                            <div className="field field--default">
+                                <label className="field__wrapper">
+                                    <input type="text" name="title" placeholder={t("placeholders.name")} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="text-input" maxLength="70" disabled={loading} />
+                                </label>
+                            </div>
 
-                                {t("projectTypes.mod")}
-                            </button>
+                            <p className="blog-settings__field-title" style={{ marginBottom: "4px" }}>{t("summary")}</p>
 
-							<button type="button" className={`button tag-selector__button button--size-m ${formData.project_type === "prefab" ? "button--type-primary" : "button--type-minimal"}`} onClick={() => setFormData({ ...formData, project_type: "prefab" })} disabled={loading}>
-								<div className="tag-selector__icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layers-icon lucide-layers">
-                                        <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/>
-                                        <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>
-                                        <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>
-                                    </svg>
-								</div>
-
-								{t("projectTypes.prefab")}
-							</button>
-
-                            <button type="button" className={`button tag-selector__button button--size-m ${formData.project_type === "world" ? "button--type-primary" : "button--type-minimal"}`} onClick={() => setFormData({ ...formData, project_type: "world" })} disabled={loading}>
-                                <div className="tag-selector__icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-icon lucide-map">
-                                        <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/>
-                                        <path d="M15 5.764v15"/>
-                                        <path d="M9 3.236v15"/>
-                                    </svg>
-                                </div>
-
-                                {t("projectTypes.world")}
-                            </button>
-                        </div>
-
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "16px" }}>
-                            <button type="button" className="button button--size-m button--type-minimal" onClick={onRequestClose} disabled={loading}>
-                                {t("cancel")}
-                            </button>
+                            <p style={{ marginBottom: "8px", color: "var(--theme-color-text-secondary)" }}>{t("summaryHint")}</p>
                             
-                            <button type="submit" className="button button--size-m button--type-primary" disabled={loading || !isFormValid}>
-                                {loading ? t("creating") : t("createProject")}
+                            <div className="field field--default textarea">
+                                <label className="field__wrapper">
+                                    <textarea name="summary" value={formData.summary} onChange={(e) => setFormData({ ...formData, summary: e.target.value })} placeholder={t("placeholders.summary")} className="autosize textarea__input" style={{ height: "128px" }} required minLength={30} maxLength={256} disabled={loading} />
+                                </label>
+                            </div>
+
+                            <p className="blog-settings__field-title">{t("projectType")}</p>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                                <button type="button" className={`button tag-selector__button button--size-m ${formData.project_type === "mod" ? "button--type-primary" : "button--type-minimal"}`} onClick={() => setFormData({ ...formData, project_type: "mod" })} disabled={loading}>
+                                    <div className="tag-selector__icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-box-icon lucide-box">
+                                            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                                            <path d="m3.3 7 8.7 5 8.7-5"/>
+                                            <path d="M12 22V12"/>
+                                        </svg>
+                                    </div>
+
+                                    {t("projectTypes.mod")}
+                                </button>
+
+                                <button type="button" className={`button tag-selector__button button--size-m ${formData.project_type === "prefab" ? "button--type-primary" : "button--type-minimal"}`} onClick={() => setFormData({ ...formData, project_type: "prefab" })} disabled={loading}>
+                                    <div className="tag-selector__icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layers-icon lucide-layers">
+                                            <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/>
+                                            <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/>
+                                            <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/>
+                                        </svg>
+                                    </div>
+
+                                    {t("projectTypes.prefab")}
+                                </button>
+
+                                <button type="button" className={`button tag-selector__button button--size-m ${formData.project_type === "world" ? "button--type-primary" : "button--type-minimal"}`} onClick={() => setFormData({ ...formData, project_type: "world" })} disabled={loading}>
+                                    <div className="tag-selector__icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map-icon lucide-map">
+                                            <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/>
+                                            <path d="M15 5.764v15"/>
+                                            <path d="M9 3.236v15"/>
+                                        </svg>
+                                    </div>
+
+                                    {t("projectTypes.world")}
+                                </button>
+                            </div>
+
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "16px" }}>
+                                <button type="button" className="button button--size-m button--type-minimal" onClick={onRequestClose} disabled={loading}>
+                                    {t("cancel")}
+                                </button>
+                                
+                                <button type="submit" className="button button--size-m button--type-primary" disabled={loading || !isFormValid}>
+                                    {loading ? t("creating") : t("createProject")}
+                                </button>
+                            </div>
+
+                            <button className="project-creation__import" type="button" onClick={() => setIsImportOpen(true)} disabled={loading}>
+                                {t("importFromCurseForge")}
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        </Modal>
+            </Modal>
+            
+            <CurseForgeImportModal
+                isOpen={isOpen && isImportOpen}
+                authToken={authToken}
+                onBack={() => setIsImportOpen(false)}
+                onRequestClose={() => {
+                    setIsImportOpen(false);
+                    onRequestClose();
+                }}
+            />
+		</>
     );
 }

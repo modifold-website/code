@@ -533,7 +533,25 @@
       "noProjectType": "Lütfen bir proje türü seçin",
       "generic": "Proje oluşturma hatası"
     },
-    "success": "Proje oluşturuldu!"
+    "success": "Proje oluşturuldu!",
+    "importFromCurseForge": "CurseForge'da projeleriniz var mı? İçe aktarın"
+  },
+  "CurseForgeImportModal": {
+    "title": "CurseForge'dan içe aktar", "close": "Kapat", "methodLabel": "İçe aktarma yöntemi",
+    "methods": { "profile": "Yazar profili", "links": "Proje bağlantıları" },
+    "validation": { "validProfile": "CurseForge profil bağlantısı tanındı", "invalidProfile": "HTTPS CurseForge profil bağlantısı girin", "validProject": "Hytale proje bağlantısı tanındı", "invalidProject": "HTTPS CurseForge Hytale proje bağlantısı girin" },
+    "profile": { "title": "Yazar profilinizden aktarın", "hint": "Hytale projelerinizi bulup kısa bir sahiplik doğrulaması isteyeceğiz.", "placeholder": "https://www.curseforge.com/members/kullanici-adiniz" },
+    "links": { "title": "Belirli projeleri aktarın", "hint": "En fazla {limit} Hytale proje bağlantısı ekleyin.", "placeholder": "https://www.curseforge.com/hytale/mods/project-name", "remove": "Bağlantıyı kaldır", "add": "Başka bağlantı ekle" },
+    "checking": "Kontrol ediliyor…", "continue": "Devam",
+    "verification": { "title": "Sahipliği doğrulayın", "hint": "CurseForge hesap sahipliği API'si sunmadığından bir proje açıklamasındaki geçici kodu kontrol ederiz.", "linksHint": "İçe aktarılacakları seçmeden önce bağlantılı her projenin size ait olduğunu doğrulayın.", "codeLabel": "Geçici kod", "stepOne": "<link>CurseForge doğrulama projesini</link> açıp açıklamasını düzenleyin.", "linksStepOne": "Aşağıdaki her projeyi CurseForge'da açıp açıklamasını düzenleyin.", "stepTwo": "Açıklamaya {code} ekleyip değişikliği yayınlayın.", "linksStepTwo": "Her proje açıklamasına {code} ekleyip değişiklikleri yayınlayın.", "stepThree": "Buraya dönüp kodu kontrol edin. Sonra kodu kaldırabilirsiniz.", "alternative": "Yalnızca herkese açık veriler kullanılır. Modifold şifrenizi veya CurseForge oturumunuzu istemez.", "copy": "Kodu kopyala", "copied": "Kod kopyalandı", "copyError": "Kod kopyalanamadı", "expiresIn": "{minutes} dakika daha geçerli", "expired": "Kodun süresi doldu", "status": { "pending": "Kod henüz kontrol edilmedi", "verified": "Kod açıklamada bulundu", "missing": "Kod açıklamada bulunamadı" }, "checking": "Kontrol ediliyor…", "check": "Kodu ekledim" },
+    "back": "Geri",
+    "selection": { "title": "Projeleri seçin", "hint": "{total} projeden {selected} tanesi seçili. Başlangıçta tümü seçilidir.", "clear": "Tümünü kaldır", "all": "Tümünü seç", "rejected": "{count} bağlantı çözümlenemedi.", "alreadyImported": "Zaten aktarıldı", "nameConflict": "Bu ada sahip bir proje zaten var.", "import": "{count} projeyi aktar" },
+    "starting": "Başlatılıyor…", "progress": { "title": "Projeler aktarılıyor", "hint": "%{progress} tamamlandı. Bu pencereyi kapatabilirsiniz; aktarım arka planda devam edecek.", "retry": "Yeniden dene", "retrying": "Yeniden deneniyor…" },
+    "result": { "completed": { "title": "Aktarım tamamlandı", "hint": "Tüm projeler taslak olarak aktarıldı." }, "partial": { "title": "Aktarım kısmen tamamlandı", "hint": "Bazı projeler aktarıldı; mesajları inceleyin." }, "failed": { "title": "Aktarım başarısız", "hint": "Üç denemeden sonra projeler aktarılamadı." } },
+    "stages": { "ready": "Hazır", "queued": "Sırada", "metadata": "Veriler ve açıklama aktarılıyor", "icon": "Simge kopyalanıyor", "gallery": "Galeri kopyalanıyor", "versions": "Son sürümler indiriliyor", "completed": "Tamamlandı", "failed": "Başarısız", "skipped": "Seçilmedi" },
+    "status": { "pending": "Başlamayı bekliyor", "queued": "Sırada", "processing": "Aktarım sürüyor", "completed": "Aktarıldı", "warning": "Uyarıyla aktarıldı", "failed": "Aktarım başarısız" },
+    "errors": { "prepare": "Projeler okunamadı", "verify": "Profil doğrulanamadı", "start": "Aktarım başlatılamadı", "retry": "Proje aktarımı yeniden denenemedi", "progress": "İlerleme geçici olarak kullanılamıyor." },
+    "done": "Bitti", "closeAndContinue": "Kapat"
   },
   "ProjectPage": {
     "previous": "Önceki",

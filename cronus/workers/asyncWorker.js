@@ -9,6 +9,7 @@ const { clickhouse, hasClickHouseConfig } = require("../config/clickhouse");
 const { claimJobs, completeJob, completeJobs, retryOrDeadLetterJob } = require("../utils/asyncJobs");
 const { awardProjectDownloadAchievements } = require("../utils/achievements");
 const { bumpProjectCacheVersion } = require("../utils/projectCache");
+const { IMPORT_JOB_TYPE, markImportJobFailed, processImportJob } = require("../utils/curseForgeImport");
 
 // WIP
 const WORKER_ID = `${os.hostname()}:${process.pid}`;
@@ -352,10 +353,12 @@ const run = async () => {
 
 		let downloadJobs;
 		let fanoutJobs;
+		let importJobs;
 		try {
-			[downloadJobs, fanoutJobs] = await Promise.all([
+			[downloadJobs, fanoutJobs, importJobs] = await Promise.all([
 				claimJobs({ workerId: WORKER_ID, jobTypes: ["download.account"], limit: BATCH_SIZE, leaseSeconds: LEASE_SECONDS }),
 				claimJobs({ workerId: WORKER_ID, jobTypes: FANOUT_JOB_TYPES, limit: FANOUT_JOB_BATCH_SIZE, leaseSeconds: LEASE_SECONDS }),
+				claimJobs({ workerId: WORKER_ID, jobTypes: [IMPORT_JOB_TYPE], limit: 1, leaseSeconds: 3600 }),
 			]);
 		} catch(error) {
 			logger.error("[async-worker] claim failed:", error.message);
@@ -363,7 +366,7 @@ const run = async () => {
 			continue;
 		}
 
-		if(!downloadJobs.length && !fanoutJobs.length) {
+		if(!downloadJobs.length && !fanoutJobs.length && !importJobs.length) {
 			await delay(IDLE_DELAY_MS);
 			continue;
 		}
@@ -384,6 +387,21 @@ const run = async () => {
 				await processFanoutJob(job);
 			} catch(error) {
 				logger.error(`[async-worker] ${job.job_type} failed:`, error.message);
+				await retryOrDeadLetterJob(job, error);
+			}
+		}
+
+		for(const job of importJobs) {
+			try {
+				await processImportJob(job);
+				await completeJob(job.id);
+			} catch(error) {
+				logger.error(`[async-worker] ${job.job_type} failed:`, error.message);
+				const isFinalAttempt = Number(job.attempts || 0) + 1 >= Number(job.max_attempts || 3);
+				if(isFinalAttempt) {
+					await markImportJobFailed(job, error);
+				}
+				
 				await retryOrDeadLetterJob(job, error);
 			}
 		}

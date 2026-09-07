@@ -352,7 +352,7 @@
 	background: transparent;
 	color: var(--theme-color-text-primary);
 	font-size: 14px;
-	font-weight: 700;
+	font-weight: 500;
 	line-height: 20px;
 	text-overflow: ellipsis;
 	white-space: nowrap;

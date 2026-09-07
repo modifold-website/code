@@ -1,0 +1,640 @@
+.project-creation__import {
+	display: block;
+	margin: 14px auto 0;
+	padding: 4px 8px;
+	border: 0;
+	color: var(--theme-color-text-secondary);
+	background: transparent;
+	font: inherit;
+	font-size: 14px;
+	cursor: pointer;
+}
+.project-creation__import:hover,
+.project-creation__import:focus-visible {
+	color: var(--theme-color-text-primary);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.curseforge-import-modal .modal-window {
+	grid-template-rows: minmax(0, 1fr);
+	max-height: min(680px, calc(100dvh - 32px));
+	overflow: hidden;
+}
+.curseforge-import-modal__media {
+	position: relative;
+	display: none;
+}
+.curseforge-import-modal__main {
+	display: grid;
+	min-width: 0;
+	min-height: 0;
+	grid-template-rows: var(--header-height) minmax(0, 1fr);
+}
+.curseforge-import-modal__header--back {
+	padding-left: 60px;
+}
+.curseforge-import-modal__header .modal-window__back {
+	left: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	color: var(--theme-color-text-secondary);
+	background: var(--theme-color-button-minimal);
+    transition: transform .05s ease-in-out;
+}
+.curseforge-import-modal__header .modal-window__back:hover {
+    opacity: 0.85;
+}
+.curseforge-import-modal__header .modal-window__back:active {
+    transform: scale(.95);
+}
+.curseforge-import-modal__header .modal-window__back svg {
+	fill: none;
+}
+.curseforge-import__flow,
+.curseforge-import__form {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+.curseforge-import__pages {
+	position: relative;
+	height: 100%;
+	min-height: 0;
+	overflow: clip;
+	overflow-clip-margin: 4px;
+}
+.curseforge-import__page {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 20px;
+	opacity: 0;
+	pointer-events: none;
+	visibility: hidden;
+	transform: translateX(8px);
+	filter: blur(3px);
+	transition: opacity 220ms cubic-bezier(.23, 1, .32, 1), transform 220ms cubic-bezier(.23, 1, .32, 1), filter 220ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 220ms;
+	will-change: opacity, transform, filter;
+}
+.curseforge-import__pages[data-page="verification"] .curseforge-import__page[data-page-id="source"],
+.curseforge-import__pages[data-page="selection"] .curseforge-import__page[data-page-id="source"],
+.curseforge-import__pages[data-page="selection"] .curseforge-import__page[data-page-id="verification"],
+.curseforge-import__pages[data-page="progress"] .curseforge-import__page:not([data-page-id="progress"]) {
+	transform: translateX(-8px);
+}
+.curseforge-import__pages[data-page="source"] .curseforge-import__page[data-page-id="source"],
+.curseforge-import__pages[data-page="verification"] .curseforge-import__page[data-page-id="verification"],
+.curseforge-import__pages[data-page="selection"] .curseforge-import__page[data-page-id="selection"],
+.curseforge-import__pages[data-page="progress"] .curseforge-import__page[data-page-id="progress"] {
+	position: relative;
+	opacity: 1;
+	pointer-events: auto;
+	visibility: visible;
+	transform: translateX(0);
+	filter: blur(0);
+	transition-delay: 0s;
+}
+.curseforge-import__methods {
+	position: relative;
+	display: grid;
+	width: fit-content;
+	grid-template-columns: repeat(2, 1fr);
+	isolation: isolate;
+	overflow: hidden;
+}
+.curseforge-import__methods::before {
+	position: absolute;
+	top: 4px;
+	bottom: 4px;
+	left: 4px;
+	width: calc((100% - 8px) / 2);
+	border-radius: 999px;
+	background: #307df040;
+	content: "";
+	pointer-events: none;
+	transform: translateX(0);
+	transition: transform 220ms cubic-bezier(.77, 0, .175, 1);
+	will-change: transform;
+}
+.curseforge-import__methods[data-active-tab="links"]::before {
+	transform: translateX(100%);
+}
+.curseforge-import__methods button {
+	position: relative;
+	z-index: 1;
+	transition: color 160ms cubic-bezier(.22, 1, .36, 1);
+}
+.curseforge-import__methods .technical-review-tabs__active {
+	color: #307df0 !important;
+	background: transparent !important;
+}
+.curseforge-import__page[data-page-id="source"] {
+	min-height: 100%;
+}
+.curseforge-import__page[data-page-id="source"] .curseforge-import__form {
+	flex: 1;
+}
+.curseforge-import__page[data-page-id="source"] .curseforge-import__actions {
+	margin-top: auto;
+}
+.curseforge-import__link-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.curseforge-import__link-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 36px;
+	align-items: center;
+	gap: 8px;
+}
+.curseforge-import__link-row .field {
+	margin: 0;
+}
+.curseforge-import__input-status,
+.curseforge-import__verification-status,
+.curseforge-import__status {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+.curseforge-import__input-status {
+	margin-left: 8px;
+}
+.curseforge-import__input-status svg {
+	fill: none;
+}
+.curseforge-import__input-status:focus-visible,
+.curseforge-import__verification-status:focus-visible,
+.curseforge-import__status:focus-visible {
+	border-radius: 6px;
+	outline: 2px solid var(--theme-color-signal-active-default);
+	outline-offset: 2px;
+}
+.curseforge-import__remove {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background: var(--theme-color-button-minimal);
+    transition: transform .05s ease-in-out;
+}
+.curseforge-import__remove:hover {
+    opacity: 0.85;
+}
+.curseforge-import__remove:active {
+    transform: scale(.95);
+}
+.curseforge-import__actions {
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 10px;
+}
+.curseforge-import__actions--split {
+	justify-content: space-between;
+}
+.curseforge-import__verification {
+	display: flex;
+	background: var(--theme-color-background);
+    border-radius: 50px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 26px;
+}
+.curseforge-import__verification span {
+	color: var(--theme-color-text-secondary);
+}
+.curseforge-import__verification code {
+	font-weight: 500;
+	user-select: all;
+}
+.curseforge-import__verification-label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.curseforge-import__verification-code {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.curseforge-import__verification-copy {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	color: var(--theme-color-text-secondary);
+	background: var(--theme-color-background-content);
+	transition: transform .05s ease-in-out;
+}
+.curseforge-import__verification-copy:active {
+    transform: scale(.95);
+}
+.curseforge-import__verification-copy svg {
+	fill: none;
+	width: 16px;
+    height: 16px;
+}
+.curseforge-import__verification-copy:hover {
+	opacity: 0.75;
+	background: var(--theme-color-background-content);
+}
+.curseforge-import__verification-copy--copied {
+	color: var(--theme-color-signal-positive-default);
+}
+.curseforge-import__verification-expiry {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	color: var(--theme-color-text-secondary);
+}
+.curseforge-import__verification-expiry svg {
+	fill: none;
+}
+.curseforge-import__verification-expiry--expired {
+	color: var(--theme-color-signal-negative-default) !important;
+}
+.curseforge-import__verification-expiry:focus-visible,
+.curseforge-import__project-warning:focus-visible {
+	border-radius: 6px;
+	outline: 2px solid var(--theme-color-signal-active-default);
+	outline-offset: 2px;
+}
+.curseforge-import__steps {
+	margin: 0;
+	padding-left: 22px;
+	line-height: 1.5;
+}
+.curseforge-import__steps li + li {
+	margin-top: 8px;
+}
+.curseforge-import__steps a,
+.curseforge-import__verification-projects a,
+.curseforge-import__project-copy a {
+	color: var(--theme-color-text-primary);
+    font-weight: 500;
+    text-decoration: none;
+    line-height: 1.2;
+	width: fit-content;
+}
+.curseforge-import__steps a:hover,
+.curseforge-import__verification-projects a:hover,
+.curseforge-import__project-copy a:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.curseforge-import__verification-projects {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding-left: 22px;
+}
+.curseforge-import__verification-project {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-width: 0;
+}
+.curseforge-import__verification-project > a {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.curseforge-import__notice,
+.curseforge-import__error {
+	color: var(--theme-color-text-secondary);
+    background: var(--theme-color-background);
+    border-radius: 21px;
+    margin: 0;
+    padding: 16px 20px;
+    line-height: 1.4;
+}
+.curseforge-import__error {
+	color: var(--theme-color-signal-negative-default);
+}
+.curseforge-import__notice--warning {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	border: 1px solid var(--banner-warning-border-color);
+	color: var(--banner-warning-color);
+	background: var(--banner-warning-bg);
+}
+.curseforge-import__notice--warning > svg {
+	flex: 0 0 auto;
+	fill: none;
+	margin-top: 1px;
+}
+.curseforge-import__notice--warning > p {
+	margin: 0;
+}
+.curseforge-import__selection-heading {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	flex: 0 0 auto;
+	gap: 16px;
+}
+.curseforge-import__page[data-page-id="selection"] {
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
+}
+.curseforge-import__page[data-page-id="selection"] .curseforge-import__flow {
+	height: 100%;
+	min-height: 0;
+}
+.curseforge-import__page[data-page-id="selection"] .curseforge-import__actions {
+	flex: 0 0 auto;
+}
+.curseforge-import__page[data-page-id="progress"] {
+	height: 100%;
+	min-height: 0;
+}
+.curseforge-import__page[data-page-id="progress"] .curseforge-import__flow {
+	height: 100%;
+	min-height: 0;
+}
+.curseforge-import__page[data-page-id="progress"] .curseforge-import__actions {
+	margin-top: auto;
+	flex: 0 0 auto;
+}
+.curseforge-import__projects {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.curseforge-import__projects--selection {
+	--_fade-height: 3rem;
+	--_top-fade-height: 0px;
+	--_bottom-fade-height: 0px;
+	min-height: 0;
+	flex: 1 1 auto;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-color: var(--theme-andropov-border-color) transparent;
+	scrollbar-color: var(--scrollbar-color, var(--theme-andropov-border-color)) transparent;
+	scrollbar-width: thin;
+	transition: --_top-fade-height .05s linear, --_bottom-fade-height .05s linear;
+	-webkit-mask-image: linear-gradient(transparent, #000 var(--_top-fade-height), #000 calc(100% - var(--_bottom-fade-height)), transparent 100%);
+	mask-image: linear-gradient(transparent, #000 var(--_top-fade-height), #000 calc(100% - var(--_bottom-fade-height)), transparent 100%);
+}
+.curseforge-import__projects--selection::-webkit-scrollbar {
+	width: var(--scrollbar-size, 10px);
+	height: var(--scrollbar-size, 10px);
+	background-color: transparent;
+}
+.curseforge-import__projects--selection::-webkit-scrollbar-thumb {
+	border: solid transparent;
+	border-width: 3px;
+	border-radius: var(--scrollbar-size, 10px);
+	background-color: var(--scrollbar-color, var(--theme-andropov-border-color));
+	background-clip: padding-box;
+}
+@media (hover: hover) {
+	.curseforge-import__projects--selection::-webkit-scrollbar-thumb:hover {
+		border-width: 0;
+	}
+}
+.curseforge-import__project,
+.curseforge-import__progress-item {
+	display: grid;
+	grid-template-columns: auto 44px minmax(0, 1fr);
+	align-items: center;
+	gap: 10px;
+	min-height: 68px;
+}
+.curseforge-import__project {
+	position: relative;
+	cursor: pointer;
+}
+.curseforge-import__project--disabled {
+	cursor: default;
+}
+.curseforge-import__project--disabled .curseforge-import__project-icon,
+.curseforge-import__project--disabled .curseforge-import__project-summary {
+	opacity: .55;
+}
+.curseforge-import__project-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: 0;
+	border-radius: 9px;
+	background: transparent;
+	cursor: pointer;
+}
+.curseforge-import__project-toggle:disabled {
+	cursor: default;
+}
+.curseforge-import__project-icon {
+	display: flex;
+    overflow: hidden;
+	width: 44px;
+    height: 44px;
+    background: var(--theme-color-background);
+    border-radius: 12px;
+    justify-content: center;
+    align-items: center;
+}
+.curseforge-import__project-icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.curseforge-import__project-copy {
+	display: flex;
+	min-width: 0;
+	flex-direction: column;
+	gap: 4px;
+}
+.curseforge-import__project-summary {
+	overflow: hidden;
+	color: var(--theme-color-text-secondary);
+	font-size: 16px;
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.curseforge-import__project-title {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	gap: 7px;
+}
+.curseforge-import__project-title > a {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.curseforge-import__project-warning {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	color: #f59e0b;
+}
+.curseforge-import__project-badge {
+	flex: 0 0 auto;
+	padding: 3px 8px;
+	border-radius: 999px;
+	color: var(--theme-color-text-secondary);
+	background: var(--theme-color-button-minimal);
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.2;
+}
+.curseforge-import__overall {
+	height: 8px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--theme-color-background);
+}
+.curseforge-import__overall span {
+	display: block;
+	width: 100%;
+	height: 100%;
+	transform-origin: left center;
+	border-radius: inherit;
+	background: var(--theme-color-signal-active-default);
+	transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+}
+.curseforge-import__projects--progress {
+	gap: 8px;
+}
+.curseforge-import__progress-item {
+	grid-template-columns: 24px minmax(0, 1fr) auto;
+	min-height: 58px;
+	background: var(--theme-color-background);
+	padding: 14px 20px;
+    border-radius: 21px;
+}
+.curseforge-import__progress-item strong {
+	color: var(--theme-color-text-secondary);
+	font-size: 14px;
+	font-weight: 500;
+}
+.curseforge-import__progress-item > .button {
+	min-width: 0;
+}
+.curseforge-import__status {
+	width: 24px;
+	height: 24px;
+	color: var(--theme-color-text-secondary);
+}
+.curseforge-import__status svg {
+	fill: none;
+	width: 24px;
+	height: 24px;
+}
+.curseforge-import__status--processing,
+.curseforge-import__status--queued {
+	color: var(--theme-color-signal-active-default);
+}
+.curseforge-import__input-status--valid,
+.curseforge-import__verification-status--verified,
+.curseforge-import__verification-copy--copied,
+.curseforge-import__status--completed {
+	color: var(--theme-color-signal-positive-default);
+}
+.curseforge-import__input-status--invalid,
+.curseforge-import__verification-status--missing,
+.curseforge-import__status--failed {
+	color: var(--theme-color-signal-negative-default);
+}
+.curseforge-import__verification-status--pending,
+.curseforge-import__status--pending,
+.curseforge-import__status--warning {
+	color: #f59e0b;
+}
+@media (min-width: 640px) {
+	.curseforge-import-modal .modal-window {
+		grid-template-columns: 280px minmax(0, 1fr);
+		min-height: 480px;
+	}
+	.curseforge-import-modal__media {
+		display: block;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+		background: var(--theme-color-background);
+	}
+	.curseforge-import-modal__image {
+		object-fit: cover;
+		object-position: left center;
+	}
+}
+@media (max-width: 639px) {
+	.curseforge-import-modal .modal-window {
+		max-height: calc(100dvh - var(--layout-header-height));
+	}
+	.curseforge-import__pages {
+		height: auto;
+	}
+	.curseforge-import__pages[data-page="selection"] {
+		height: 100%;
+	}
+	.curseforge-import__page[data-page-id="source"] {
+		min-height: 0;
+	}
+	.curseforge-import__page[data-page-id="source"] .curseforge-import__form {
+		flex: none;
+	}
+	.curseforge-import__page[data-page-id="source"] .curseforge-import__actions {
+		margin-top: 0;
+	}
+	.curseforge-import__selection-heading,
+	.curseforge-import__actions--split {
+		align-items: stretch;
+		flex-direction: column;
+	}
+	.curseforge-import__actions .button {
+		min-height: 44px;
+	}
+	.curseforge-import__project {
+		grid-template-columns: auto 44px minmax(0, 1fr);
+		padding-inline: 4px;
+	}
+	.curseforge-import__project-toggle {
+		width: 44px;
+		height: 44px;
+	}
+	.curseforge-import__project-icon {
+		width: 44px;
+		height: 44px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.curseforge-import__methods::before,
+	.curseforge-import__methods button {
+		transition: none;
+	}
+	.curseforge-import__page {
+		transform: none !important;
+		filter: none;
+		transition: opacity 150ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 150ms;
+	}
+	.curseforge-import__overall span {
+		transition: none;
+	}
+}

@@ -34,6 +34,7 @@ const internalDownloadsRoutes = require("./routes/internal/downloads");
 const SERVER_PORT = Number(process.env.SERVER_PORT) || 4000;
 const recommendedRoutes = require("./routes/v1/recommended");
 const modJamsRoutes = require("./routes/v1/mod-jams");
+const importsRoutesV2 = require("./routes/v2/imports");
 
 const startServer = async () => {
 	validateStorageConfiguration();
@@ -141,6 +142,12 @@ const startServer = async () => {
 		burstSize: Number(process.env.RATE_LIMIT_PROJECTS_BURST_SIZE) || 40,
 		expirySeconds: Number(process.env.RATE_LIMIT_EXPIRY_SECONDS) || 300,
 	});
+	const importsRateLimiter = createRateLimiter({
+		namespace: "imports",
+		requestsPerMinute: Number(process.env.RATE_LIMIT_IMPORTS_REQUESTS_PER_MINUTE) || 12,
+		burstSize: Number(process.env.RATE_LIMIT_IMPORTS_BURST_SIZE) || 6,
+		expirySeconds: Number(process.env.RATE_LIMIT_EXPIRY_SECONDS) || 300,
+	});
 
 	if(rateLimitEnabled) {
 		app.use(globalRateLimiter);
@@ -185,6 +192,7 @@ const startServer = async () => {
 	mountV1Route("/analytics", analyticsRoutes);
 	mountV1Route("/recommended", recommendedRoutes);
 	mountV1Route("/mod-jams", modJamsRoutes);
+	app.use("/v2/imports", rateLimitEnabled ? importsRateLimiter : (req, res, next) => next(), importsRoutesV2);
 	app.use(errorHandler);
 
 	const server = app.listen(SERVER_PORT, () => {

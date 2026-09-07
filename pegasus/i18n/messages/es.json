@@ -533,7 +533,25 @@
       "noProjectType": "Por favor, selecciona un tipo de proyecto",
       "generic": "Error al crear el proyecto"
     },
-    "success": "¡Proyecto creado!"
+    "success": "¡Proyecto creado!",
+    "importFromCurseForge": "¿Ya tienes proyectos en CurseForge? Importarlos"
+  },
+  "CurseForgeImportModal": {
+    "title": "Importar desde CurseForge", "close": "Cerrar", "methodLabel": "Método de importación",
+    "methods": { "profile": "Perfil del autor", "links": "Enlaces de proyectos" },
+    "validation": { "validProfile": "Enlace de perfil reconocido", "invalidProfile": "Introduce un enlace HTTPS de perfil de CurseForge", "validProject": "Enlace de proyecto de Hytale reconocido", "invalidProject": "Introduce un enlace HTTPS de un proyecto de Hytale en CurseForge" },
+    "profile": { "title": "Importar desde tu perfil", "hint": "Buscaremos tus proyectos de Hytale y verificaremos brevemente la propiedad.", "placeholder": "https://www.curseforge.com/members/tu-nombre" },
+    "links": { "title": "Importar proyectos específicos", "hint": "Añade hasta {limit} enlaces de proyectos de Hytale.", "placeholder": "https://www.curseforge.com/hytale/mods/project-name", "remove": "Eliminar enlace", "add": "Añadir otro enlace" },
+    "checking": "Comprobando…", "continue": "Continuar",
+    "verification": { "title": "Confirma la propiedad", "hint": "CurseForge no ofrece una API de propiedad de cuentas; verificaremos un código temporal en la descripción de un proyecto.", "linksHint": "Confirma que posees cada proyecto enlazado antes de elegir qué importar.", "codeLabel": "Código temporal", "stepOne": "Abre <link>el proyecto de verificación en CurseForge</link> y edita su descripción.", "linksStepOne": "Abre cada proyecto de la lista en CurseForge y edita su descripción.", "stepTwo": "Añade {code} a la descripción y publica el cambio.", "linksStepTwo": "Añade {code} a la descripción de cada proyecto y publica los cambios.", "stepThree": "Vuelve y comprueba el código. Puedes eliminarlo después.", "alternative": "Solo usamos datos públicos. Modifold nunca solicita tu contraseña ni sesión de CurseForge.", "copy": "Copiar código", "copied": "Código copiado", "copyError": "No se pudo copiar el código", "expiresIn": "Válido durante {minutes, plural, one {# minuto más} other {# minutos más}}", "expired": "El código ha caducado", "status": { "pending": "El código aún no se ha comprobado", "verified": "Código encontrado en la descripción", "missing": "Código no encontrado en la descripción" }, "checking": "Comprobando…", "check": "He añadido el código" },
+    "back": "Atrás",
+    "selection": { "title": "Elige proyectos", "hint": "{selected} de {total} seleccionados. Todos están seleccionados por defecto.", "clear": "Desmarcar todos", "all": "Seleccionar todos", "rejected": "No se pudieron resolver {count} enlace(s).", "alreadyImported": "Ya importado", "nameConflict": "Ya existe un proyecto con este nombre.", "import": "Importar {count}" },
+    "starting": "Iniciando…", "progress": { "title": "Importando proyectos", "hint": "{progress}% completado. Puedes cerrar esta ventana; la importación continuará en segundo plano.", "retry": "Reintentar", "retrying": "Reintentando…" },
+    "result": { "completed": { "title": "Importación completada", "hint": "Todos los proyectos se importaron como borradores." }, "partial": { "title": "Importación parcial", "hint": "Algunos proyectos se importaron; revisa los mensajes." }, "failed": { "title": "Error de importación", "hint": "No se pudo importar tras tres intentos." } },
+    "stages": { "ready": "Listo", "queued": "En cola", "metadata": "Importando datos y descripción", "icon": "Copiando icono", "gallery": "Copiando galería", "versions": "Descargando versiones recientes", "completed": "Completado", "failed": "Error", "skipped": "No seleccionado" },
+    "status": { "pending": "Esperando para comenzar", "queued": "En cola", "processing": "Importación en curso", "completed": "Importado", "warning": "Importado con una advertencia", "failed": "Error de importación" },
+    "errors": { "prepare": "No se pudieron leer los proyectos", "verify": "No se pudo verificar el perfil", "start": "No se pudo iniciar la importación", "retry": "No se pudo reintentar la importación del proyecto", "progress": "El progreso no está disponible temporalmente." },
+    "done": "Listo", "closeAndContinue": "Cerrar"
   },
   "ProjectPage": {
     "previous": "Anterior",

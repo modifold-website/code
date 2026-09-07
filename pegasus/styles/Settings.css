@@ -1319,6 +1319,7 @@
 }
 .mf-tooltip__bubble--portal {
     position: fixed;
+	z-index: calc(var(--layout-z-modal-overlay) + 1);
     left: auto;
     bottom: auto;
     transform: none;
