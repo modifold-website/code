@@ -537,24 +537,24 @@
     "importFromCurseForge": "Move a project from another platform"
   },
   "CurseForgeImportModal": {
-    "title": "Import from CurseForge",
+    "title": "Move from CurseForge",
     "close": "Close",
-    "methodLabel": "Import method",
-    "methods": { "profile": "Creator profile", "links": "Project links" },
+    "methodLabel": "Transfer method",
+    "methods": { "profile": "Profile", "links": "By link" },
     "validation": {
-      "validProfile": "CurseForge profile link recognized",
-      "invalidProfile": "Enter an HTTPS CurseForge profile link",
-      "validProject": "Hytale project link recognized",
-      "invalidProject": "Enter an HTTPS CurseForge Hytale project link"
+      "validProfile": "Link looks good",
+      "invalidProfile": "Paste a link to your CurseForge profile",
+      "validProject": "Link looks good",
+      "invalidProject": "Paste a link to a Hytale project on CurseForge"
     },
     "profile": {
-      "title": "Import from your creator profile",
-      "hint": "We will find the Hytale projects you own and ask for a short ownership check.",
+      "title": "Move projects from your profile",
+      "hint": "Paste your profile link and we'll find your projects.",
       "placeholder": "https://www.curseforge.com/members/your-name"
     },
     "links": {
-      "title": "Import specific projects",
-      "hint": "Add up to {limit} Hytale project links. Each valid project can be reviewed before import.",
+      "title": "Move specific projects",
+      "hint": "Paste up to {limit} links. You can choose which projects to move before starting.",
       "placeholder": "https://www.curseforge.com/hytale/mods/project-name",
       "remove": "Remove project link",
       "add": "Add another link"
@@ -562,16 +562,16 @@
     "checking": "Checking…",
     "continue": "Continue",
     "verification": {
-      "title": "Confirm ownership",
-      "hint": "CurseForge does not provide an account ownership endpoint, so we verify a temporary code in one project description.",
-      "linksHint": "Confirm that you own every linked project before choosing what to import.",
-      "codeLabel": "Temporary code",
-      "stepOne": "Open <link>the verification project on CurseForge</link> and edit its description.",
-      "linksStepOne": "Open each project below on CurseForge and edit its description.",
-      "stepTwo": "Add {code} anywhere in the description and publish the change.",
-      "linksStepTwo": "Add {code} to every project description and publish the changes.",
-      "stepThree": "Return here and check the code. You can remove it immediately after verification.",
-      "alternative": "This uses only public CurseForge data. Modifold never asks for your CurseForge password or session.",
+      "title": "Confirm these projects are yours",
+      "hint": "Add a temporary code to the project's CurseForge description. This lets us confirm it belongs to you.",
+      "linksHint": "Add the code to the description of every selected project.",
+      "codeLabel": "Verification code",
+      "stepOne": "Open <link>the project on CurseForge</link> and edit its description.",
+      "linksStepOne": "Open each project on CurseForge and edit its description.",
+      "stepTwo": "Paste {code} anywhere in the description and save your changes.",
+      "linksStepTwo": "Paste {code} into every project description and save your changes.",
+      "stepThree": "Return here and select “I added the code.” You can remove it after verification.",
+      "alternative": "We only use public CurseForge data. You don't need to enter your password.",
       "copy": "Copy code",
       "copied": "Code copied",
       "copyError": "Could not copy the code",
@@ -588,51 +588,51 @@
     "back": "Back",
     "selection": {
       "title": "Choose projects",
-      "hint": "{selected} of {total} selected. All projects are selected by default.",
+      "hint": "{selected} of {total} selected. Uncheck any projects you don't want to move.",
       "clear": "Clear all",
       "all": "Select all",
-      "rejected": "{count} link(s) could not be resolved and were left out.",
-	  "alreadyImported": "Already imported",
+      "rejected": "Some links could not be opened: {count}.",
+	  "alreadyImported": "Already moved",
 	  "nameConflict": "A project with this name already exists.",
-      "import": "Import {count}"
+      "import": "Move {count}"
     },
-    "starting": "Starting…",
+    "starting": "Getting started…",
     "progress": {
-      "title": "Importing projects",
-      "hint": "{progress}% complete. You may close this window; the import will continue in the background.",
+      "title": "Moving projects",
+      "hint": "{progress}% moved. You can close this window and we'll keep working in the background.",
 	  "retry": "Retry",
 	  "retrying": "Retrying…"
     },
     "result": {
-      "completed": { "title": "Import complete", "hint": "All selected projects were imported as drafts for review." },
-      "partial": { "title": "Import partly complete", "hint": "Some projects were imported. Review the messages below for skipped items." },
-      "failed": { "title": "Import failed", "hint": "The selected projects could not be imported after three attempts." }
+      "completed": { "title": "All done", "hint": "Your projects were moved and saved as drafts." },
+      "partial": { "title": "Some projects weren't moved", "hint": "You can retry them below." },
+      "failed": { "title": "Projects couldn't be moved", "hint": "Try moving them again." }
     },
     "stages": {
-      "ready": "Ready",
-      "queued": "Waiting in queue",
-      "metadata": "Importing metadata and description",
-      "icon": "Copying icon to Modifold",
-      "gallery": "Copying gallery to Modifold",
-      "versions": "Downloading recent versions",
-      "completed": "Import complete",
-      "failed": "Import failed",
+      "ready": "Ready to move",
+      "queued": "Starting soon",
+      "metadata": "Moving project information",
+      "icon": "Uploading icon",
+      "gallery": "Uploading images",
+      "versions": "Uploading versions",
+      "completed": "Transfer complete",
+      "failed": "Couldn't move",
       "skipped": "Not selected"
     },
     "status": {
-      "pending": "Waiting to start",
-      "queued": "Waiting in queue",
-      "processing": "Import in progress",
-      "completed": "Imported",
-      "warning": "Imported with a warning",
-      "failed": "Import failed"
+      "pending": "Starting soon",
+      "queued": "Starting soon",
+      "processing": "Moving",
+      "completed": "Moved",
+      "warning": "Moved with a warning",
+      "failed": "Couldn't move"
     },
     "errors": {
-      "prepare": "Could not read projects from CurseForge",
-      "verify": "Could not verify profile ownership",
-      "start": "Could not start the import",
-	  "retry": "Could not retry the project import",
-      "progress": "Progress is temporarily unavailable. We will try again automatically."
+      "prepare": "Couldn't find projects on CurseForge",
+      "verify": "Couldn't confirm these projects are yours",
+      "start": "Couldn't start moving projects",
+	  "retry": "Couldn't retry moving this project",
+      "progress": "Couldn't refresh the information. We'll try again automatically."
     },
     "done": "Done",
     "closeAndContinue": "Close"
