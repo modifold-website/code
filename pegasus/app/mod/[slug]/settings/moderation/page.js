@@ -15,7 +15,7 @@ export async function generateMetadata({ params }) {
 
 export default async function Page({ params }) {
     const { slug } = await params;
-    const { project, authToken } = await getProjectForRequest(slug);
+    const { project, authToken } = await getProjectForRequest(slug, 100);
 
     let initialModerationHistory = [];
 
