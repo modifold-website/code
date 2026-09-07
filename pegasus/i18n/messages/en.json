@@ -563,10 +563,10 @@
     "continue": "Continue",
     "verification": {
       "title": "Confirm these projects are yours",
-      "hint": "Add a temporary code to the project's CurseForge description. This lets us confirm it belongs to you.",
+      "hint": "To confirm your profile, add the code to one project description. We've selected one for you. The rest will appear after confirmation.",
       "linksHint": "Add the code to the description of every selected project.",
       "codeLabel": "Verification code",
-      "stepOne": "Open <link>the project on CurseForge</link> and edit its description.",
+      "stepOne": "Open the project “<link>{project}</link>” on CurseForge and edit its description.",
       "linksStepOne": "Open each project on CurseForge and edit its description.",
       "stepTwo": "Paste {code} anywhere in the description and save your changes.",
       "linksStepTwo": "Paste {code} into every project description and save your changes.",

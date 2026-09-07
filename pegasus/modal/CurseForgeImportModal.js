@@ -409,7 +409,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 
 			<ol className="curseforge-import__steps">
 				{method === "profile" ? (
-					<li>{t.rich("verification.stepOne", { link: (chunks) => <a href={session.verificationProject?.url} target="_blank" rel="noreferrer">{chunks}</a> })}</li>
+					<li>{t.rich("verification.stepOne", { project: String(session.verificationProject?.name || ""), link: (chunks) => <a href={session.verificationProject?.url} target="_blank" rel="noreferrer">{chunks}</a> })}</li>
 				) : (
 					<li>{t("verification.linksStepOne")}</li>
 				)}
