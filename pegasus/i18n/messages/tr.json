@@ -534,7 +534,7 @@
       "generic": "Proje oluşturma hatası"
     },
     "success": "Proje oluşturuldu!",
-    "importFromCurseForge": "CurseForge'da projeleriniz var mı? İçe aktarın"
+    "importFromCurseForge": "Başka bir platformdan proje aktar"
   },
   "CurseForgeImportModal": {
     "title": "CurseForge'dan içe aktar", "close": "Kapat", "methodLabel": "İçe aktarma yöntemi",

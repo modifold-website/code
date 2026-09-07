@@ -534,7 +534,7 @@
       "generic": "Erro ao criar projeto"
     },
     "success": "Projeto criado!",
-    "importFromCurseForge": "Já tem projetos no CurseForge? Importar"
+    "importFromCurseForge": "Transferir um projeto de outra plataforma"
   },
   "CurseForgeImportModal": {
     "title": "Importar do CurseForge", "close": "Fechar", "methodLabel": "Método de importação",

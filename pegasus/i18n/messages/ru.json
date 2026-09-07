@@ -534,7 +534,7 @@
       "generic": "Ошибка при создании проекта"
     },
     "success": "Проект создан!",
-    "importFromCurseForge": "Уже есть проекты на CurseForge? Импортировать"
+    "importFromCurseForge": "Перенести проект с другой платформы"
   },
   "CurseForgeImportModal": {
     "title": "Импорт с CurseForge",

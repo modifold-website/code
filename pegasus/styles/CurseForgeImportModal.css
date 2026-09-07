@@ -1,5 +1,8 @@
 .project-creation__import {
-	display: block;
+	display: flex;
+	width: fit-content;
+	align-items: center;
+	gap: 6px;
 	margin: 14px auto 0;
 	padding: 4px 8px;
 	border: 0;
@@ -9,9 +12,14 @@
 	font-size: 14px;
 	cursor: pointer;
 }
+.project-creation__import svg {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	fill: none;
+}
 .project-creation__import:hover,
 .project-creation__import:focus-visible {
-	color: var(--theme-color-text-primary);
 	text-decoration: underline;
 	text-underline-offset: 3px;
 }

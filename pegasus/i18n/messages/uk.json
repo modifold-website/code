@@ -535,7 +535,7 @@
       "generic": "Помилка створення проєкту"
     },
     "success": "Проєкт створено!",
-    "importFromCurseForge": "Уже є проєкти на CurseForge? Імпортувати"
+    "importFromCurseForge": "Перенести проєкт з іншої платформи"
   },
   "CurseForgeImportModal": {
     "title": "Імпорт із CurseForge", "close": "Закрити", "methodLabel": "Спосіб імпорту",
