@@ -614,7 +614,7 @@ const mapCurseForgeGameVersions = (sourceVersions, activeVersions) => {
 const importVersions = async ({ project, mod }) => {
 	const [files, activeVersionsRows] = await Promise.all([
 		getModFiles(mod.id),
-		db.query("SELECT version FROM game_versions WHERE is_active = 1 ORDER BY id DESC"),
+		db.query("SELECT version FROM game_versions WHERE is_active = 1 AND version_type = 'release' ORDER BY id DESC"),
 	]);
 	const activeVersions = activeVersionsRows[0].map((row) => String(row.version));
 	const latestFiles = files.toSorted((left, right) => new Date(right.fileDate || 0) - new Date(left.fileDate || 0)).slice(0, MAX_VERSION_FILES);
