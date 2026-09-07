@@ -120,20 +120,10 @@ const getRequestCountryCode = (req) => {
 	return /^[a-z]{2}$/.test(countryCode) ? countryCode : null;
 };
 
-const getIpPrefix = (ipAddress) => {
+const getIpIdentity = (ipAddress) => {
 	const normalizedIp = String(ipAddress || "").trim().toLowerCase();
 	if(!normalizedIp) {
 		return null;
-	}
-
-	const ipv4Match = normalizedIp.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/);
-	if(ipv4Match) {
-		return `${ipv4Match[1]}.${ipv4Match[2]}.${ipv4Match[3]}.0/24`;
-	}
-
-	if(normalizedIp.includes(":")) {
-		const parts = normalizedIp.split(":");
-		return `${parts.slice(0, 4).join(":")}::/64`;
 	}
 
 	return normalizedIp;
@@ -256,15 +246,15 @@ const getBotCheckResult = (req) => {
 
 const countApprovedVersionDownload = async ({ req, version }) => {
 	const ipAddress = getRequestIpAddress(req);
-	const ipPrefix = getIpPrefix(ipAddress);
-	if(!ipAddress || !ipPrefix) {
+	const ipIdentity = getIpIdentity(ipAddress);
+	if(!ipAddress || !ipIdentity) {
 		return { status: 200, body: { success: true, counted: false, reason: "no_ip" } };
 	}
 
 	const queued = await enqueueDownload({
 		version,
 		ipAddress,
-		ipPrefix,
+		ipIdentity,
 		countryCode: getRequestCountryCode(req),
 	});
 

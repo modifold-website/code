@@ -6,12 +6,13 @@ const { enqueueJob } = require("./asyncJobs");
 const DOWNLOAD_DEDUPE_TTL_SECONDS = Math.max(1, Number(process.env.DOWNLOAD_DEDUPE_TTL_SECONDS) || 6 * 60 * 60);
 const DOWNLOAD_DEDUPE_LIMIT = Math.max(1, Number(process.env.DOWNLOAD_DEDUPE_LIMIT) || 1);
 
-const getIdentityHash = ({ ipPrefix, projectId }) => {
+const getIdentityHash = ({ ipIdentity, projectId }) => {
 	const secret = process.env.JWT_SECRET;
 	if(!secret) {
 		throw new Error("JWT_SECRET is required for download deduplication");
 	}
-	return crypto.createHmac("sha256", secret).update(`${ipPrefix}:${projectId}`).digest("hex");
+	
+	return crypto.createHmac("sha256", secret).update(`${ipIdentity}:${projectId}`).digest("hex");
 };
 
 const reserveDownload = async (connection, { projectId, identityHash }) => {
@@ -41,6 +42,7 @@ const reserveDownload = async (connection, { projectId, identityHash }) => {
 			WHERE project_id = ? AND identity_hash = ?`,
 			[DOWNLOAD_DEDUPE_TTL_SECONDS, projectId, identityHash]
 		);
+
 		return { allowed: true, count: 1 };
 	}
 
@@ -57,11 +59,11 @@ const reserveDownload = async (connection, { projectId, identityHash }) => {
 	return { allowed: true, count: currentCount + 1 };
 };
 
-const enqueueDownload = async ({ version, ipAddress, ipPrefix, countryCode }) => {
+const enqueueDownload = async ({ version, ipAddress, ipIdentity, countryCode }) => {
 	const connection = await db.getConnection();
 	const eventId = crypto.randomUUID();
 	const projectId = String(version.project_id);
-	const identityHash = getIdentityHash({ ipPrefix, projectId });
+	const identityHash = getIdentityHash({ ipIdentity, projectId });
 
 	try {
 		await connection.beginTransaction();
