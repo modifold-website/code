@@ -388,19 +388,21 @@ export default function ProjectSettings({ project }) {
                 resetLabel={t("unsavedBar.reset")}
                 message={t("unsavedBar.message")}
             />
-            <ConfirmModal
-                isOpen={isDeleteConfirmOpen}
-                title={t("general.confirmDelete", { title: project.title })}
-                confirmLabel={t("general.actions.delete")}
-                cancelLabel={tProject("cancel")}
-                isLoading={isDeletingProject}
-                onConfirm={handleDelete}
-                onRequestClose={() => {
-                    if(!isDeletingProject) {
-                        setIsDeleteConfirmOpen(false);
-                    }
-                }}
-            />
+			<ConfirmModal
+				isOpen={isDeleteConfirmOpen}
+				title={t("general.deleteConfirmTitle")}
+				messageTitle={project.title}
+				description={t("general.deleteConfirmDescription")}
+				confirmLabel={t("general.actions.delete")}
+				cancelLabel={tProject("cancel")}
+				isLoading={isDeletingProject}
+				onConfirm={handleDelete}
+				onRequestClose={() => {
+					if(!isDeletingProject) {
+						setIsDeleteConfirmOpen(false);
+					}
+				}}
+			/>
         </>
     );
 }
