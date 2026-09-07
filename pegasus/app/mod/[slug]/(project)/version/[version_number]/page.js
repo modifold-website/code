@@ -10,12 +10,13 @@ const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
 export async function generateMetadata({ params }) {
     const { slug, version_number } = await params;
-    const [project, versionRes] = await Promise.all([
-		getProjectForRequest(slug).then(({ project }) => project),
-        serverApiFetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
-            headers: { Accept: "application/json" },
-        }),
-    ]);
+    const { project, authToken } = await getProjectForRequest(slug);
+	const versionRes = await serverApiFetch(`${serverApiBase}/projects/${slug}/version/${version_number}`, {
+		headers: {
+			Accept: "application/json",
+			Authorization: authToken ? `Bearer ${authToken}` : undefined,
+		},
+	});
     const basePath = getProjectBasePath(project.project_type);
     const version = versionRes.ok ? await versionRes.json() : null;
     const versionNumber = typeof version?.version_number === "string" ? version.version_number.trim() : "";

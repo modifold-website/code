@@ -20,6 +20,7 @@ import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
+import { getAuthHeaders } from "@/utils/api/client";
 import { getVersionDownloadUrl, getVersionPrimaryFile } from "@/utils/projects/downloads";
 import { getVersionDownloadEndpoint } from "@/utils/projects/downloadTracking";
 
@@ -365,7 +366,10 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
     const refreshVersion = async () => {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${currentVersion.id}`, {
-            headers: { Accept: "application/json" },
+            headers: {
+                Accept: "application/json",
+                ...getAuthHeaders(authToken),
+            },
         });
 
         setCurrentVersion(res.data);
@@ -432,7 +436,10 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
         try {
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${versionId}`, {
-                headers: { Accept: "application/json" },
+                headers: {
+                    Accept: "application/json",
+                    ...getAuthHeaders(authToken),
+                },
             });
 
             const version = res.data;
