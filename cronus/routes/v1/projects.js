@@ -858,7 +858,7 @@ const getVersionWithPrivateFileAccess = async (version, canViewPrivateFile) => {
 
 	return {
 		...version,
-		file_url: await getPrivateObjectDownloadUrl(version.quarantine_key, { expiresInSeconds: 15 * 60 }),
+		file_url: await getPrivateObjectDownloadUrl(version.quarantine_key, { expiresInSeconds: 60 * 60 }),
 	};
 };
 

@@ -1542,6 +1542,8 @@
         "deleted": "Project deleted successfully"
       },
       "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "deleteConfirmTitle": "Delete project?",
+      "deleteConfirmDescription": "All project versions, images, and files will be permanently deleted. This action cannot be undone.",
       "fields": {
         "icon": "Icon",
         "name": "Name",

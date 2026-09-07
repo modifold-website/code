@@ -1367,6 +1367,8 @@
         "deleted": "Proyecto eliminado correctamente"
       },
       "confirmDelete": "¿Seguro que quieres eliminar \"{title}\"? Esta acción no se puede deshacer.",
+      "deleteConfirmTitle": "¿Eliminar proyecto?",
+      "deleteConfirmDescription": "Todas las versiones, imágenes y archivos del proyecto se eliminarán permanentemente. Esta acción no se puede deshacer.",
       "fields": {
         "icon": "Icono",
         "name": "Nombre",

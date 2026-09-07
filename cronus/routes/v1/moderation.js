@@ -260,7 +260,7 @@ const mapVersionReview = (version) => ({
 
 const mapVersionReviewWithFileAccess = async (version) => {
 	const fileUrl = version.file_url || (version.quarantine_key ? await getPrivateObjectDownloadUrl(version.quarantine_key, {
-		expiresInSeconds: 15 * 60,
+		expiresInSeconds: 60 * 60,
 	}) : null);
 
 	return mapVersionReview({ ...version, file_url: fileUrl });
@@ -341,7 +341,7 @@ router.post("/argus/versions/:versionId/report", async (req, res) => {
 			moderation_reason = ?,
 			argus_report = ?,
 			scanned_at = NOW()
-			WHERE id = ?`,
+			WHERE id = ? AND moderation_status IN ('pending', 'scanning')`,
 			[status, moderationReason, report, versionId]
 		);
 

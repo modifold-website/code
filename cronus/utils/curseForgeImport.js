@@ -11,8 +11,7 @@ const { logger } = require("../packages/shared/logger");
 const { db } = require("../config/db");
 const { enqueueJob } = require("./asyncJobs");
 const { getFileDownloadUrl, getMod, getModDescription, getModFiles } = require("./curseForge");
-const { deleteObject, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("./fileHosting");
-const { notifyArgusAboutVersion } = require("./argus");
+const { deleteObject, getPublicUrl, getUploadTempRoot, uploadFile } = require("./fileHosting");
 const { sanitizeMarkdownText, sanitizePlainText } = require("./sanitize");
 
 const IMPORT_JOB_TYPE = "project.import.curseforge";
@@ -47,7 +46,10 @@ const normalizeFilename = (value, fallback) => {
 
 const getContentLength = (response) => {
 	const header = response.headers.get("content-length");
-	if(header === null) return null;
+	if(header === null) {
+		return null;
+	}
+
 	const value = Number(header);
 	return Number.isFinite(value) && value >= 0 ? value : null;
 };
@@ -111,6 +113,7 @@ const downloadRemoteFileOnce = async ({ url, filename, maximumBytes }) => {
 				error.retryable = false;
 				throw error;
 			}
+
 			yield chunk;
 		}
 	};
@@ -147,6 +150,21 @@ const downloadRemoteFile = async (options) => {
 	}
 
 	throw lastError;
+};
+
+const mapWithConcurrency = async (items, concurrency, operation) => {
+	const results = new Array(items.length);
+	let nextIndex = 0;
+	const workers = Array.from({ length: Math.min(items.length, concurrency) }, async () => {
+		while(nextIndex < items.length) {
+			const index = nextIndex;
+			nextIndex += 1;
+			results[index] = await operation(items[index], index);
+		}
+	});
+
+	await Promise.all(workers);
+	return results;
 };
 
 const updateItem = async (itemId, values) => {
@@ -484,6 +502,7 @@ const storeImage = async ({ projectId, url, prefix, index = 0 }) => {
 	const urlHash = crypto.createHash("sha256").update(url).digest("hex").slice(0, 16);
 	const downloaded = await downloadRemoteFile({ url, filename: `${prefix}-${index}-${urlHash}`, maximumBytes: MAX_IMAGE_BYTES });
 	const convertedPath = `${downloaded.path}.webp`;
+	
 	try {
 		await sharp(downloaded.path).rotate().webp({ quality: 82, effort: 4 }).toFile(convertedPath);
 		await fsp.unlink(downloaded.path).catch(() => undefined);
@@ -540,7 +559,10 @@ const createOrUpdateProject = async ({ item, mod, description, candidate, userId
 
 const importIcon = async ({ project, mod }) => {
 	const iconUrl = mod.logo?.url || mod.logo?.thumbnailUrl;
-	if(!iconUrl) return null;
+	if(!iconUrl) {
+		return null;
+	}
+
 	const storedUrl = await storeImage({ projectId: project.id, url: iconUrl, prefix: "curseforge-icon" });
 	await db.query("UPDATE projects SET icon_url = ? WHERE id = ?", [storedUrl, project.id]);
 	return storedUrl;
@@ -548,11 +570,12 @@ const importIcon = async ({ project, mod }) => {
 
 const importGallery = async ({ project, mod }) => {
 	const screenshots = Array.isArray(mod.screenshots) ? mod.screenshots.slice(0, 20) : [];
-	let imported = 0;
-	for(let index = 0; index < screenshots.length; index += 1) {
-		const screenshot = screenshots[index];
+	const results = await mapWithConcurrency(screenshots, 3, async (screenshot, index) => {
 		const remoteUrl = screenshot.url || screenshot.thumbnailUrl;
-		if(!remoteUrl) continue;
+		if(!remoteUrl) {
+			return false;
+		}
+
 		try {
 			const storedUrl = await storeImage({ projectId: project.id, url: remoteUrl, prefix: "curseforge-gallery", index });
 			const [[existing]] = await db.query("SELECT id FROM project_gallery WHERE project_id = ? AND url = ? LIMIT 1", [project.id, storedUrl]);
@@ -564,13 +587,14 @@ const importGallery = async ({ project, mod }) => {
 				);
 			}
 
-			imported += 1;
+			return true;
 		} catch(error) {
 			logger.warn(`CurseForge gallery image skipped for project ${mod.id}: ${error.message}`);
+			return false;
 		}
-	}
+	});
 
-	return imported;
+	return results.filter(Boolean).length;
 };
 
 const getReleaseChannel = (releaseType) => ({ 1: "release", 2: "beta", 3: "alpha" }[Number(releaseType)] || "release");
@@ -587,37 +611,6 @@ const mapCurseForgeGameVersions = (sourceVersions, activeVersions) => {
 	)));
 };
 
-const dispatchArgusScan = async ({ project, versionId, quarantineKey, filename, fileSize }) => {
-	try {
-		const fileUrl = await getPrivateObjectDownloadUrl(quarantineKey, {
-			expiresInSeconds: Number(process.env.ARGUS_FILE_URL_TTL_SECONDS) || 6 * 60 * 60,
-		});
-		const result = await notifyArgusAboutVersion({
-			versionId,
-			projectId: project.id,
-			projectSlug: project.slug,
-			fileUrl,
-			fileName: filename,
-			fileSize,
-		});
-
-		if(result.queued) {
-			await db.query("UPDATE project_versions SET moderation_status = 'scanning', scan_requested_at = NOW() WHERE id = ?", [versionId]);
-		} else if(result.mockClean) {
-			await db.query(
-				"UPDATE project_versions SET moderation_status = 'needs_review', moderation_reason = ?, argus_report = ?, scan_requested_at = NOW(), scanned_at = NOW() WHERE id = ?",
-				[result.result.reason, JSON.stringify(result.result.report), versionId]
-			);
-		}
-	} catch(error) {
-		logger.error(`Failed to dispatch imported version ${versionId} to Argus:`, error);
-		await db.query(
-			"UPDATE project_versions SET moderation_status = 'needs_review', moderation_reason = ?, argus_report = JSON_OBJECT('error', ?, 'source', 'curseforge_import') WHERE id = ?",
-			["Argus scan could not be started. Manual review is required.", error.message, versionId]
-		);
-	}
-};
-
 const importVersions = async ({ project, mod }) => {
 	const [files, activeVersionsRows] = await Promise.all([
 		getModFiles(mod.id),
@@ -625,9 +618,7 @@ const importVersions = async ({ project, mod }) => {
 	]);
 	const activeVersions = activeVersionsRows[0].map((row) => String(row.version));
 	const latestFiles = files.toSorted((left, right) => new Date(right.fileDate || 0) - new Date(left.fileDate || 0)).slice(0, MAX_VERSION_FILES);
-	let imported = 0;
-	const warnings = [];
-	for(const file of latestFiles) {
+	const results = await mapWithConcurrency(latestFiles, 2, async (file) => {
 		const sourceFileId = String(file.id);
 		const [[existing]] = await db.query(
 			"SELECT id FROM project_versions WHERE project_id = ? AND source_platform = 'curseforge' AND source_file_id = ? LIMIT 1",
@@ -635,26 +626,22 @@ const importVersions = async ({ project, mod }) => {
 		);
 
 		if(existing) {
-			imported += 1;
-			continue;
+			return { imported: true, warning: null };
 		}
 
 		const gameVersions = mapCurseForgeGameVersions(file.gameVersions, activeVersions);
 		if(!gameVersions.length) {
-			warnings.push(`${file.displayName || file.fileName}: no matching active Hytale version`);
-			continue;
+			return { imported: false, warning: `${file.displayName || file.fileName}: no matching active Hytale version` };
 		}
 
 		if(Number(file.fileLength || 0) > MAX_VERSION_BYTES) {
-			warnings.push(`${file.displayName || file.fileName}: file is larger than 100 MiB`);
-			continue;
+			return { imported: false, warning: `${file.displayName || file.fileName}: file is larger than 100 MiB` };
 		}
 
 		try {
 			const downloadUrl = file.downloadUrl || await getFileDownloadUrl(mod.id, file.id);
 			if(!downloadUrl) {
-				warnings.push(`${file.displayName || file.fileName}: downloads are disabled by the author`);
-				continue;
+				return { imported: false, warning: `${file.displayName || file.fileName}: downloads are disabled by the author` };
 			}
 
 			const filename = normalizeFilename(file.fileName, `curseforge-${file.id}.zip`);
@@ -672,8 +659,8 @@ const importVersions = async ({ project, mod }) => {
 			try {
 				await db.query(
 					`INSERT INTO project_versions
-				(id, project_id, version_number, changelog, release_channel, file_url, quarantine_key, source_platform, source_file_id, file_size, game_versions, loaders, moderation_status, scan_requested_at)
-				VALUES (?, ?, ?, NULL, ?, NULL, ?, 'curseforge', ?, ?, ?, ?, 'pending', NOW())`,
+					(id, project_id, version_number, changelog, release_channel, file_url, quarantine_key, source_platform, source_file_id, file_size, game_versions, loaders, moderation_status, scan_requested_at)
+					VALUES (?, ?, ?, NULL, ?, NULL, ?, 'curseforge', ?, ?, ?, ?, 'draft', NULL)`,
 					[
 						versionId,
 						project.id,
@@ -691,15 +678,18 @@ const importVersions = async ({ project, mod }) => {
 				throw error;
 			}
 
-			await dispatchArgusScan({ project, versionId, quarantineKey, filename, fileSize: downloaded.size });
-			imported += 1;
+			return { imported: true, warning: null };
 		} catch(error) {
-			warnings.push(`${file.displayName || file.fileName}: ${error.message}`);
 			logger.warn(`CurseForge version skipped for project ${mod.id}: ${error.message}`);
+			return { imported: false, warning: `${file.displayName || file.fileName}: ${error.message}` };
 		}
-	}
+	});
 
-	return { imported, requested: latestFiles.length, warnings };
+	return {
+		imported: results.filter((result) => result.imported).length,
+		requested: latestFiles.length,
+		warnings: results.map((result) => result.warning).filter(Boolean),
+	};
 };
 
 const refreshImportTotals = async (importId) => {
@@ -777,9 +767,15 @@ const processImportJob = async (job) => {
 
 const markImportJobFailed = async (job, error) => {
 	const itemId = job.payload?.itemId;
-	if(!itemId) return;
+	if(!itemId) {
+		return;
+	}
+
 	const [[item]] = await db.query("SELECT import_id FROM project_import_items WHERE id = ? LIMIT 1", [itemId]);
-	if(!item) return;
+	if(!item) {
+		return;
+	}
+	
 	await updateItem(itemId, {
 		status: "failed",
 		stage: "failed",

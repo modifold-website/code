@@ -1367,6 +1367,8 @@
         "deleted": "Proje başarıyla silindi"
       },
       "confirmDelete": "\"{title}\" projesini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      "deleteConfirmTitle": "Proje silinsin mi?",
+      "deleteConfirmDescription": "Projenin tüm sürümleri, görselleri ve dosyaları kalıcı olarak silinecek. Bu işlem geri alınamaz.",
       "fields": {
         "icon": "Simge",
         "name": "Ad",
