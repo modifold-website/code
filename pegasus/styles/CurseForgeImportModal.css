@@ -154,6 +154,9 @@
 .curseforge-import__page[data-page-id="source"] .curseforge-import__actions {
 	margin-top: auto;
 }
+.curseforge-import__page[data-page-id="source"] .curseforge-import__form > .field {
+	margin-inline: 3px;
+}
 .curseforge-import__link-fields {
 	display: flex;
 	max-height: 158px;
@@ -161,6 +164,7 @@
 	flex: 1 1 auto;
 	flex-direction: column;
 	gap: 10px;
+	padding: 3px;
 }
 .curseforge-import__link-row {
 	display: grid;
