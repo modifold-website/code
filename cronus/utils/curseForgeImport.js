@@ -536,8 +536,8 @@ const createOrUpdateProject = async ({ item, mod, description, candidate, userId
 	const safeDescription = sanitizeMarkdownText(String(description || "").slice(0, 60000));
 	await db.query(
 		`INSERT INTO projects
-		(id, slug, user_id, title, summary, description, visibility, project_type, icon_url, license_id, license_name, tags, source_url, source_platform, source_project_id)
-		VALUES (?, ?, ?, ?, ?, ?, 'public', ?, ?, 'arr', 'All Rights Reserved / No License', ?, ?, 'curseforge', ?)`,
+		(id, slug, user_id, title, summary, description, visibility, project_type, icon_url, license_id, license_name, tags, source_platform, source_project_id)
+		VALUES (?, ?, ?, ?, ?, ?, 'public', ?, ?, 'arr', 'All Rights Reserved / No License', ?, 'curseforge', ?)`,
 		[
 			projectId,
 			slug,
@@ -548,7 +548,6 @@ const createOrUpdateProject = async ({ item, mod, description, candidate, userId
 			projectType,
 			"https://cdn.modifold.com/static/no-project-icon.svg",
 			tags.join(","),
-			candidate.websiteUrl,
 			String(mod.id),
 		]
 	);
