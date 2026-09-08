@@ -157,6 +157,11 @@
 .curseforge-import__page[data-page-id="source"] .curseforge-import__form > .field {
 	margin-inline: 3px;
 }
+.curseforge-import__form .text-input {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
 .curseforge-import__link-fields {
 	display: flex;
 	max-height: 158px;
