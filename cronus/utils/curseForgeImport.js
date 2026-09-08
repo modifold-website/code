@@ -465,6 +465,7 @@ const resolveProjectType = (candidate) => {
 const normalizeTag = (value) => String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 const TAG_ALIASES = new Map([
 	["adventures", "adventure"],
+	["cosmetic", "cosmetics"],
 	["decor", "decoration"],
 	["decorative", "decoration"],
 	["minigames", "minigame"],
