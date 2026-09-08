@@ -3224,6 +3224,12 @@ router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res
 
 router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
 	const { slug, versionId } = req.params;
+	logger.info({
+		event: "project_version_download",
+		ipAddress: getRequestIpAddress(req),
+		slug,
+		versionId,
+	}, "Project version download requested");
 
 	try {
 		const result = await prepareProjectVersionDownloadRedirect(req, { slug, versionId });
