@@ -588,9 +588,11 @@
     "back": "Back",
     "selection": {
       "title": "Choose projects",
-      "hint": "{selected} of {total} selected. Uncheck any projects you don't want to move.",
+      "hint": "{selected} of {limit} selected",
       "clear": "Clear all",
       "all": "Select all",
+      "firstTen": "Select 10",
+      "limitReached": "You can move up to {limit} projects at a time.",
       "rejected": "Some links could not be opened: {count}.",
 	  "alreadyImported": "Already moved",
 	  "nameConflict": "A project with this name already exists.",

@@ -308,8 +308,8 @@ const startImport = async ({ importId, userId, selectedProjectIds }) => {
 			throw error;
 		}
 
-		if(session.method === "links" && normalizedIds.length > MAX_PROJECTS_PER_IMPORT) {
-			const error = new Error(`A link import is limited to ${MAX_PROJECTS_PER_IMPORT} projects`);
+		if(normalizedIds.length > MAX_PROJECTS_PER_IMPORT) {
+			const error = new Error(`An import is limited to ${MAX_PROJECTS_PER_IMPORT} projects`);
 			error.statusCode = 400;
 			throw error;
 		}

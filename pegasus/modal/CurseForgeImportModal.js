@@ -14,7 +14,7 @@ import { getProjectPathByType } from "@/utils/projectRoutes";
 import { getCurseForgeImport, prepareCurseForgeProfile, prepareCurseForgeProjects, retryCurseForgeImportItem, startCurseForgeImport, verifyCurseForgeImport } from "@/utils/imports/curseForge";
 
 const TERMINAL_STATUSES = new Set(["completed", "partial", "failed"]);
-const MAX_LINKS = 10; // maximum number of CurseForge project links allowed for import
+const MAX_PROJECTS_PER_IMPORT = 10;
 
 const getErrorMessage = (error, fallback) => error?.response?.data?.message || fallback;
 
@@ -71,7 +71,8 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 	const sessionItems = Array.isArray(session?.items) ? session.items : [];
 	const selectableItems = sessionItems.filter((item) => !item.alreadyImported);
 	const selectedCount = selectableItems.reduce((count, item) => count + Number(selectedIds.has(item.curseforgeProjectId)), 0);
-	const isAllSelected = selectableItems.length > 0 && selectedCount === selectableItems.length;
+	const selectableCount = Math.min(selectableItems.length, MAX_PROJECTS_PER_IMPORT);
+	const isAllSelected = selectableCount > 0 && selectedCount === selectableCount;
 	const profileUrlStatus = getCurseForgeUrlStatus(profileUrl, "profile");
 	const projectUrlStatuses = projectUrls.map((url) => getCurseForgeUrlStatus(url, "project"));
 	const areProjectUrlsValid = projectUrlStatuses.length > 0 && projectUrlStatuses.every((status) => status === "valid");
@@ -117,7 +118,10 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		return () => window.clearInterval(interval);
 	}, [isOpen, phase, verificationExpiresAt]);
 
-	const selectAll = (items) => setSelectedIds(new Set(items.filter((item) => !item.alreadyImported).map((item) => item.curseforgeProjectId)));
+	const selectAll = (items) => setSelectedIds(new Set(items
+		.filter((item) => !item.alreadyImported)
+		.slice(0, MAX_PROJECTS_PER_IMPORT)
+		.map((item) => item.curseforgeProjectId)));
 	const updateVerificationExpiration = (data) => {
 		const now = Date.now();
 		setVerificationNow(now);
@@ -248,6 +252,11 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 	};
 
 	const toggleProject = (projectId) => {
+		if(!selectedIds.has(projectId) && selectedIds.size >= MAX_PROJECTS_PER_IMPORT) {
+			toast.info(t("selection.limitReached", { limit: MAX_PROJECTS_PER_IMPORT }));
+			return;
+		}
+
 		setSelectedIds((current) => {
 			const next = new Set(current);
 			if(next.has(projectId)) next.delete(projectId);
@@ -308,7 +317,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 				<form className="curseforge-import__form" onSubmit={handleLinksPrepare}>
 					<div>
 						<p className="blog-settings__field-title">{t("links.title")}</p>
-						<p style={{ color: "var(--theme-color-text-secondary)" }}>{t("links.hint", { limit: MAX_LINKS })}</p>
+						<p style={{ color: "var(--theme-color-text-secondary)" }}>{t("links.hint", { limit: MAX_PROJECTS_PER_IMPORT })}</p>
 					</div>
 
 					<div ref={linkListRef} className="curseforge-import__link-fields curseforge-import__scrollable-list" onScroll={updateLinkListFade}>
@@ -349,7 +358,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 					</div>
 
 					<div className="curseforge-import__actions curseforge-import__actions--split">
-						<button className="button button--size-m button--type-minimal button--with-icon" type="button" onClick={() => setProjectUrls((current) => [...current, ""])} disabled={loading || projectUrls.length >= MAX_LINKS}>
+						<button className="button button--size-m button--type-minimal button--with-icon" type="button" onClick={() => setProjectUrls((current) => [...current, ""])} disabled={loading || projectUrls.length >= MAX_PROJECTS_PER_IMPORT}>
 							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
 								<path d="M12 5v14M5 12h14" />
 							</svg>
@@ -481,11 +490,11 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 			<div className="curseforge-import__selection-heading">
 				<div>
 					<p className="blog-settings__field-title">{t("selection.title")}</p>
-					<p style={{ color: "var(--theme-color-text-secondary)" }}>{t("selection.hint", { selected: selectedCount, total: sessionItems.length })}</p>
+					<p style={{ color: "var(--theme-color-text-secondary)" }}>{t("selection.hint", { selected: selectedCount, limit: MAX_PROJECTS_PER_IMPORT })}</p>
 				</div>
 
 				<button className="button button--size-s button--type-minimal" type="button" onClick={() => isAllSelected ? setSelectedIds(new Set()) : selectAll(sessionItems)} disabled={selectableItems.length === 0}>
-					{isAllSelected ? t("selection.clear") : t("selection.all")}
+					{isAllSelected ? t("selection.clear") : t(selectableItems.length > MAX_PROJECTS_PER_IMPORT ? "selection.firstTen" : "selection.all")}
 				</button>
 			</div>
 
