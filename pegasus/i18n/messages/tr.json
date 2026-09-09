@@ -3040,5 +3040,26 @@
       "invalidResponse": "Sunucudan geçersiz yanıt.",
       "generic": "Kod doğrulanamadı."
     }
-  }
+  },
+	"PasswordRecovery": {
+		"title": "Şifreyi sıfırla",
+		"description": "Modifold’a giriş yapmak için kullandığınız e-posta adresini girin.",
+		"requestButton": "Sıfırlama bağlantısı gönder",
+		"sentTitle": "E-postanızı kontrol edin",
+		"sentDescription": "Bu e-posta için bir Modifold şifresi varsa sıfırlama bağlantısı göndereceğiz. Bağlantı 30 dakika geçerlidir. Spam klasörünü de kontrol edin.",
+		"sendAgain": "Başka bir bağlantı gönder",
+		"resetTitle": "Yeni bir şifre oluşturun",
+		"resetDescription": "En az 8 karakter kullanın. Yeni şifrenizi iki kez girin.",
+		"newPassword": "Yeni şifre",
+		"confirmPassword": "Yeni şifreyi onaylayın",
+		"saveButton": "Şifreyi kaydet",
+		"success": "Şifreniz değiştirildi. Yeni şifrenizle giriş yapın.",
+		"invalid_link": "Bu bağlantının süresi dolmuş veya bağlantı zaten kullanılmış. Yeni bir bağlantı isteyin.",
+		"invalid_email": "Geçerli bir e-posta adresi girin.",
+		"invalid_password": "En az 8 karakter kullanın.",
+		"password_too_long": "Bu şifre çok uzun. Daha kısa bir şifre deneyin.",
+		"password_mismatch": "Şifreler eşleşmiyor.",
+		"rate_limited": "Çok fazla istek. Bir dakika sonra tekrar deneyin.",
+		"generic": "Bir şeyler ters gitti. Lütfen tekrar deneyin."
+	}
 }

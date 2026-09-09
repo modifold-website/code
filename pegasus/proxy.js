@@ -75,6 +75,7 @@ export default async function proxy(req) {
     const requestHeaders = new Headers(req.headers);
     requestHeaders.set("x-modifold-theme-preference", themePreference);
     requestHeaders.set("x-modifold-theme", resolvedThemeClass);
+	requestHeaders.set("x-modifold-pathname", req.nextUrl.pathname);
 
     const response = NextResponse.next({
         request: { headers: requestHeaders },

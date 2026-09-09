@@ -3040,5 +3040,26 @@
       "invalidResponse": "Resposta inválida do servidor.",
       "generic": "Falha ao verificar o código."
     }
-  }
+  },
+	"PasswordRecovery": {
+		"title": "Redefinir senha",
+		"description": "Digite o e-mail que você usa para entrar no Modifold.",
+		"requestButton": "Enviar link",
+		"sentTitle": "Verifique seu e-mail",
+		"sentDescription": "Se este e-mail tiver uma senha do Modifold, enviaremos um link de redefinição. Ele expira em 30 minutos. Verifique também a pasta de spam.",
+		"sendAgain": "Enviar outro link",
+		"resetTitle": "Crie uma nova senha",
+		"resetDescription": "Use pelo menos 8 caracteres. Digite sua nova senha duas vezes.",
+		"newPassword": "Nova senha",
+		"confirmPassword": "Confirmar nova senha",
+		"saveButton": "Salvar senha",
+		"success": "Sua senha foi alterada. Entre com a nova senha.",
+		"invalid_link": "Este link expirou ou já foi usado. Solicite um novo.",
+		"invalid_email": "Digite um endereço de e-mail válido.",
+		"invalid_password": "Use pelo menos 8 caracteres.",
+		"password_too_long": "Esta senha é muito longa. Tente uma mais curta.",
+		"password_mismatch": "As senhas não coincidem.",
+		"rate_limited": "Muitas solicitações. Tente novamente em um minuto.",
+		"generic": "Algo deu errado. Tente novamente."
+	}
 }

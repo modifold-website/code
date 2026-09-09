@@ -9,6 +9,7 @@ const axios = require("axios");
 const { authenticator, getTwoFactorRow, isTwoFactorEnabled } = require("../../utils/twoFactor");
 const { sendMail } = require("../../utils/smtpMailer");
 const router = express.Router();
+router.use("/password/recovery", require("./passwordRecovery"));
 const auth = require("../../middleware/auth");
 const { getVisibleProfileBadge } = require("../../utils/profileBadges");
 const { ACHIEVEMENT_CODES, awardAchievementToUser } = require("../../utils/achievements");

@@ -7685,3 +7685,17 @@ body.dark .home-api-code__token--string {
     width: 100%;
     height: max-content;
 }
+.email-auth__footer {
+	gap: 16px;
+}
+.password-recovery {
+	gap: 18px;
+}
+.password-recovery-page {
+	width: min(100%, 480px);
+	margin: 48px auto;
+	padding: 24px;
+}
+.password-recovery .email-auth__description {
+	overflow-wrap: anywhere;
+}

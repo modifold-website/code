@@ -62,6 +62,7 @@ export default async function RootLayout({ children }) {
     const resolvedLocale = await getLocale();
     const cookieStore = await cookies();
     const requestHeaders = await headers();
+	const isPasswordRecovery = requestHeaders.get("x-modifold-pathname") === "/auth/recovery";
     const token = cookieStore.get("authToken")?.value || null;
     const themeCookie = cookieStore.get("theme")?.value;
     const featureFlagsCookie = cookieStore.get("featureFlags")?.value;
@@ -122,6 +123,7 @@ export default async function RootLayout({ children }) {
                 <meta property="og:type" content="website" />
                 <meta property="robots" content="all" />
 
+				{!isPasswordRecovery && <>
                 <Script src="https://www.googletagmanager.com/gtag/js?id=G-P5V8PSTGNR" strategy="afterInteractive" />
                 <Script id="google-analytics" strategy="afterInteractive">
                     {`
@@ -145,6 +147,7 @@ export default async function RootLayout({ children }) {
                         ym(104468237, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
                     `}
                 </Script>
+				</>}
             </head>
 
             <body data-font-smoothing="Antialiased" className={`${inter.className} ${initialTheme}`} data-theme-preference={themePreference} data-feature-flag-frosted-menus={isFrostedMenusEnabled ? "true" : "false"}>
