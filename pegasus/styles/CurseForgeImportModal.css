@@ -574,6 +574,7 @@
 	height: 24px;
 }
 .curseforge-import__status--processing,
+.curseforge-import__status--pending,
 .curseforge-import__status--queued {
 	color: var(--theme-color-signal-active-default);
 }
@@ -589,7 +590,6 @@
 	color: var(--theme-color-signal-negative-default);
 }
 .curseforge-import__verification-status--pending,
-.curseforge-import__status--pending,
 .curseforge-import__status--warning {
 	color: #f59e0b;
 }
