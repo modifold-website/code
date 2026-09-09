@@ -85,16 +85,16 @@
 	opacity: 0;
 	pointer-events: none;
 	visibility: hidden;
-	transform: translateX(8px);
-	filter: blur(3px);
-	transition: opacity 220ms cubic-bezier(.23, 1, .32, 1), transform 220ms cubic-bezier(.23, 1, .32, 1), filter 220ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 220ms;
+	transform: translateX(16px);
+	filter: blur(2px);
+	transition: opacity 180ms cubic-bezier(.23, 1, .32, 1), transform 260ms cubic-bezier(.23, 1, .32, 1), filter 260ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 260ms;
 	will-change: opacity, transform, filter;
 }
 .curseforge-import__pages[data-page="verification"] .curseforge-import__page[data-page-id="source"],
 .curseforge-import__pages[data-page="selection"] .curseforge-import__page[data-page-id="source"],
 .curseforge-import__pages[data-page="selection"] .curseforge-import__page[data-page-id="verification"],
 .curseforge-import__pages[data-page="progress"] .curseforge-import__page:not([data-page-id="progress"]) {
-	transform: translateX(-8px);
+	transform: translateX(-16px);
 }
 .curseforge-import__pages[data-page="source"] .curseforge-import__page[data-page-id="source"],
 .curseforge-import__pages[data-page="verification"] .curseforge-import__page[data-page-id="verification"],
@@ -469,6 +469,10 @@
 	border-radius: 9px;
 	background: transparent;
 	cursor: pointer;
+	transition: transform 50ms ease-in-out;
+}
+.curseforge-import__project-toggle:active {
+    transform: scale(.97);
 }
 .curseforge-import__project-toggle:disabled {
 	cursor: default;
@@ -535,6 +539,19 @@
 	overflow: hidden;
 	border-radius: 999px;
 	background: var(--theme-color-background);
+}
+.curseforge-import__progress-heading--finished {
+	animation: curseforge-import-heading-in 220ms cubic-bezier(.23, 1, .32, 1) both;
+}
+@keyframes curseforge-import-heading-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 .curseforge-import__overall span {
 	display: block;
@@ -665,5 +682,8 @@
 	}
 	.curseforge-import__overall span {
 		transition: none;
+	}
+	.curseforge-import__progress-heading--finished {
+		animation: none;
 	}
 }

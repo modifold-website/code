@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Modal from "react-modal";
+import NumberFlow from "@number-flow/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -59,6 +60,8 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 	const contentRef = useRef(null);
 	const linkListRef = useRef(null);
 	const projectListRef = useRef(null);
+	const progressFlowRef = useRef(null);
+	const progressLayoutRectsRef = useRef(new Map());
 
 	const progressQuery = useQuery({
 		queryKey: ["curseforge-import", session?.id],
@@ -117,6 +120,35 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		const interval = window.setInterval(() => setVerificationNow(Date.now()), 30000);
 		return () => window.clearInterval(interval);
 	}, [isOpen, phase, verificationExpiresAt]);
+
+	useLayoutEffect(() => {
+		if(!isOpen || phase !== "progress" || !progressFlowRef.current) {
+			progressLayoutRectsRef.current = new Map();
+			return;
+		}
+
+		const elements = [...progressFlowRef.current.querySelectorAll(":scope > [data-layout-key]")];
+		const nextRects = new Map(elements.map((element) => [element.dataset.layoutKey, element.getBoundingClientRect()]));
+		const previousRects = progressLayoutRectsRef.current;
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+		if(previousRects.size > 0 && !reduceMotion) {
+			elements.forEach((element) => {
+				const previousRect = previousRects.get(element.dataset.layoutKey);
+				const nextRect = nextRects.get(element.dataset.layoutKey);
+				const deltaY = previousRect ? previousRect.top - nextRect.top : 0;
+				if(Math.abs(deltaY) < 0.5) return;
+
+				element.getAnimations().forEach((animation) => animation.cancel());
+				element.animate([
+					{ transform: `translateY(${deltaY}px)` },
+					{ transform: "translateY(0)" },
+				], { duration: 260, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
+			});
+		}
+
+		progressLayoutRectsRef.current = nextRects;
+	}, [currentSession, isFinished, isOpen, phase]);
 
 	const selectAll = (items) => setSelectedIds(new Set(items
 		.filter((item) => !item.alreadyImported)
@@ -561,18 +593,33 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		</div>
 	);
 
+	const renderProgressHint = () => {
+		const marker = "__CURSEFORGE_IMPORT_PROGRESS__";
+		const [prefix, suffix] = t("progress.hint", { progress: marker }).split(marker);
+
+		return (
+			<span aria-hidden="true">
+				{prefix}
+				<NumberFlow value={overallProgress} transformTiming={{ duration: 260, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} opacityTiming={{ duration: 180, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} respectMotionPreference willChange />
+				{suffix}
+			</span>
+		);
+	};
+
 	const renderProgress = () => (
-		<div className="curseforge-import__flow">
-			<div>
+		<div ref={progressFlowRef} className="curseforge-import__flow">
+			<div className={`curseforge-import__progress-heading${isFinished ? " curseforge-import__progress-heading--finished" : ""}`} key={isFinished ? `result-${currentSession.status}` : "progress"} data-layout-key="heading">
 				<p className="blog-settings__field-title">{isFinished ? t(`result.${currentSession.status}.title`) : t("progress.title")}</p>
-				<p style={{ color: "var(--theme-color-text-secondary)" }} aria-live="polite">{isFinished ? t(`result.${currentSession.status}.hint`) : t("progress.hint", { progress: overallProgress })}</p>
+				<p style={{ color: "var(--theme-color-text-secondary)" }} aria-live="polite" aria-label={isFinished ? t(`result.${currentSession.status}.hint`) : t("progress.hint", { progress: overallProgress })}>
+					{isFinished ? t(`result.${currentSession.status}.hint`) : renderProgressHint()}
+				</p>
 			</div>
 
-			<div className="curseforge-import__overall" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={overallProgress}>
+			<div className="curseforge-import__overall" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={overallProgress} data-layout-key="overall">
 				<span style={{ transform: `scaleX(${overallProgress / 100})` }} />
 			</div>
 
-			<div className="curseforge-import__projects curseforge-import__projects--progress">
+			<div className="curseforge-import__projects curseforge-import__projects--progress" data-layout-key="projects">
 				{(currentSession?.items || []).filter((item) => item.selected).map((item) => {
 					const knownStatus = ["pending", "queued", "processing", "completed", "failed"].includes(item.status) ? item.status : "pending";
 					const status = knownStatus === "completed" && item.warningMessage ? "warning" : knownStatus;
@@ -616,15 +663,19 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 								<button className="button button--size-s button--type-minimal" type="button" onClick={() => handleRetryItem(item.id)} disabled={retryingItemId === item.id}>
 									{retryingItemId === item.id ? t("progress.retrying") : t("progress.retry")}
 								</button>
-							) : <strong>{item.progress}%</strong>}
+							) : (
+								<strong>
+									<NumberFlow value={Number(item.progress) || 0} suffix="%" transformTiming={{ duration: 260, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} opacityTiming={{ duration: 180, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} respectMotionPreference willChange />
+								</strong>
+							)}
 						</div>
 					);
 				})}
 			</div>
 
-			{progressQuery.isError ? <p className="curseforge-import__error">{t("errors.progress")}</p> : null}
+			{progressQuery.isError ? <p className="curseforge-import__error" data-layout-key="error">{t("errors.progress")}</p> : null}
 
-			<div className="curseforge-import__actions">
+			<div className="curseforge-import__actions" data-layout-key="actions">
 				<button className="button button--size-m button--type-primary" type="button" onClick={handleProgressClose}>
 					{isFinished ? t("done") : t("closeAndContinue")}
 				</button>
