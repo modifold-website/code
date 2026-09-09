@@ -22,7 +22,7 @@ const getInitialFormData = (project) => ({
     icon: null,
 });
 
-export default function ProjectSettings({ project }) {
+export default function ProjectSettings({ project, analyticsConnected = false }) {
     const t = useTranslations("SettingsProjectPage");
     const tProject = useTranslations("ProjectPage");
     const { isLoggedIn } = useAuth();
@@ -43,7 +43,7 @@ export default function ProjectSettings({ project }) {
 	const projectType = project?.project_type || project?.projectType || project?.type;
 	const canEditDetails = Boolean(project?.permissions?.can_edit_details);
 	const canDeleteProject = Boolean(project?.permissions?.can_delete_project);
-	const showPlayersCountSetting = !isBuildContentProjectType(projectType);
+	const showPlayersCountSetting = !isBuildContentProjectType(projectType) && analyticsConnected;
     const issuesButtonRef = useRef(null);
     const issuesMenuRef = useRef(null);
     const visibilityButtonRef = useRef(null);
