@@ -1,8 +1,29 @@
 import { redirect, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectSettings from "@/components/project/settings/ProjectSettings";
-import { getProjectBasePath } from "@/utils/projectRoutes";
+import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
+import { getProjectBasePath, isBuildContentProjectType } from "@/utils/projectRoutes";
 import { getProjectSettingsForRequest } from "@/utils/projects/server";
+
+const serverApiBase = getServerApiBase();
+
+const hasModifoldAnalytics = async (slug) => {
+	try {
+		const response = await serverApiFetch(`${serverApiBase}/analytics/${slug}/chart/daily-joins?days=7`, {
+			headers: { Accept: "application/json" },
+			next: { revalidate: 60 },
+		});
+
+		if(!response.ok) {
+			return false;
+		}
+
+		const payload = await response.json();
+		return Array.isArray(payload?.points) && payload.points.length > 0;
+	} catch {
+		return false;
+	}
+};
 
 export async function generateMetadata({ params }) {
     const { slug } = await params;
@@ -44,14 +65,16 @@ export default async function Page({ params }) {
 		}
 	}
     
-    const project = {
+	const project = {
         ...settingsData,
         organization: settingsData?.organization || null,
     };
+	const analyticsConnected = !isBuildContentProjectType(project.project_type) && await hasModifoldAnalytics(project.slug);
 
     return (
         <ProjectSettings
             project={project}
+			analyticsConnected={analyticsConnected}
         />
     );
 }

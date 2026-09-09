@@ -614,11 +614,14 @@ const mapCurseForgeGameVersions = (sourceVersions, activeVersions) => {
 const importVersions = async ({ project, mod }) => {
 	const [files, activeVersionsRows] = await Promise.all([
 		getModFiles(mod.id),
-		db.query("SELECT version FROM game_versions WHERE is_active = 1 AND version_type = 'release' ORDER BY id DESC"),
+		db.query("SELECT version FROM game_versions WHERE is_active = 1 AND version_type = 'release' AND (version = '0.4' OR version LIKE '0.5.%' OR version LIKE '0.6.%') ORDER BY id DESC"),
 	]);
 	const activeVersions = activeVersionsRows[0].map((row) => String(row.version));
-	const latestFiles = files.toSorted((left, right) => new Date(right.fileDate || 0) - new Date(left.fileDate || 0)).slice(0, MAX_VERSION_FILES);
-	const results = await mapWithConcurrency(latestFiles, 2, async (file) => {
+	const latestFiles = files
+		.toSorted((left, right) => new Date(right.fileDate || 0) - new Date(left.fileDate || 0))
+		.slice(0, MAX_VERSION_FILES)
+		.reverse();
+	const results = await mapWithConcurrency(latestFiles, 1, async (file) => {
 		const sourceFileId = String(file.id);
 		const [[existing]] = await db.query(
 			"SELECT id FROM project_versions WHERE project_id = ? AND source_platform = 'curseforge' AND source_file_id = ? LIMIT 1",

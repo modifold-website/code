@@ -253,7 +253,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 
 	const toggleProject = (projectId) => {
 		if(!selectedIds.has(projectId) && selectedIds.size >= MAX_PROJECTS_PER_IMPORT) {
-			toast.info(t("selection.limitReached", { limit: MAX_PROJECTS_PER_IMPORT }));
+			toast.error(t("selection.limitReached", { limit: MAX_PROJECTS_PER_IMPORT }));
 			return;
 		}
 
@@ -592,7 +592,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 											<circle cx="12" cy="12" r="10" />
 											<path d="m15 9-6 6M9 9l6 6" />
 										</svg>
-									) : status === "warning" || status === "pending" ? (
+									) : status === "warning" ? (
 										<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 											<path d="M21.73 18 13.73 4a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
 											<path d="M12 9v4M12 17h.01" />
