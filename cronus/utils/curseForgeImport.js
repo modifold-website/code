@@ -611,7 +611,7 @@ const mapCurseForgeGameVersions = (sourceVersions, activeVersions) => {
 	)));
 };
 
-const importVersions = async ({ project, mod }) => {
+const importVersions = async ({ project, mod, onProgress }) => {
 	const [files, activeVersionsRows] = await Promise.all([
 		getModFiles(mod.id),
 		db.query("SELECT version FROM game_versions WHERE is_active = 1 AND version_type = 'release' AND (version = '0.4' OR version LIKE '0.5.%' OR version LIKE '0.6.%') ORDER BY id DESC"),
@@ -621,7 +621,7 @@ const importVersions = async ({ project, mod }) => {
 		.toSorted((left, right) => new Date(right.fileDate || 0) - new Date(left.fileDate || 0))
 		.slice(0, MAX_VERSION_FILES)
 		.reverse();
-	const results = await mapWithConcurrency(latestFiles, 1, async (file) => {
+	const importVersion = async (file) => {
 		const sourceFileId = String(file.id);
 		const [[existing]] = await db.query(
 			"SELECT id FROM project_versions WHERE project_id = ? AND source_platform = 'curseforge' AND source_file_id = ? LIMIT 1",
@@ -685,6 +685,13 @@ const importVersions = async ({ project, mod }) => {
 		} catch(error) {
 			logger.warn(`CurseForge version skipped for project ${mod.id}: ${error.message}`);
 			return { imported: false, warning: `${file.displayName || file.fileName}: ${error.message}` };
+		}
+	};
+	const results = await mapWithConcurrency(latestFiles, 1, async (file, index) => {
+		try {
+			return await importVersion(file);
+		} finally {
+			await onProgress?.(index + 1, latestFiles.length);
 		}
 	});
 
@@ -753,7 +760,14 @@ const processImportJob = async (job) => {
 	await updateStage(item, "gallery", 50);
 	await importGallery({ project, mod });
 	await updateStage(item, "versions", 65);
-	const versionResult = await importVersions({ project, mod });
+	const versionResult = await importVersions({
+		project,
+		mod,
+		onProgress: async (completed, total) => {
+			const progress = 65 + Math.round((completed / total) * 30);
+			await updateStage(item, "versions", progress);
+		},
+	});
 	warnings.push(...versionResult.warnings);
 
 	await updateItem(item.id, {
