@@ -9,6 +9,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { useAuth } from "../providers/AuthProvider";
 import { toast } from "react-toastify";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { insertMarkdownLink } from "@/utils/markdown/editor";
 import Tooltip from "@/components/ui/Tooltip";
 
 const formatDateTime = (timestamp, locale) => {
@@ -330,6 +331,20 @@ export default function IssueDetailPage({ project, authToken, initialIssue, init
         updateIssueTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
     };
 
+	const insertIssueLinkAtSelection = () => {
+		const textarea = issueTextareaRef.current;
+		if(!textarea) {
+			return;
+		}
+
+		const edit = insertMarkdownLink({
+			value: editIssueBody,
+			selectionStart: textarea.selectionStart ?? 0,
+			selectionEnd: textarea.selectionEnd ?? 0,
+		});
+		updateIssueTextareaValue(edit.value, edit.selectionStart, edit.selectionEnd);
+	};
+
     const prefixIssueLines = (prefix) => {
         const textarea = issueTextareaRef.current;
         if(!textarea) {
@@ -535,7 +550,7 @@ export default function IssueDetailPage({ project, authToken, initialIssue, init
                         <img src={comment.author.avatar} alt={comment.author.username} style={{ width: "28px", height: "28px", borderRadius: "50%" }} />
                     ) : null}
 
-                    <Link href={`/user/${comment.author?.slug || ""}`} className="issue-comment__author">
+                    <Link prefetch={false} href={`/user/${comment.author?.slug || ""}`} className="issue-comment__author">
                         {comment.author?.username || t("comments.unknown")}
                     </Link>
 
@@ -652,7 +667,7 @@ export default function IssueDetailPage({ project, authToken, initialIssue, init
                                 <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                                     {t("meta.by")}
 
-                                    <Link href={issue.author.profile_url || `/user/${issue.author.slug || ""}`} className="issue-comment__author" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                    <Link prefetch={false} href={issue.author.profile_url || `/user/${issue.author.slug || ""}`} className="issue-comment__author" style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
                                         {issue.author.avatar && (
                                             <img src={issue.author.avatar} alt={issue.author.username} style={{ width: "18px", height: "18px", borderRadius: "50%" }} />
                                         )}
@@ -710,7 +725,7 @@ export default function IssueDetailPage({ project, authToken, initialIssue, init
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-ordered-icon lucide-list-ordered"><path d="M11 5h10"/><path d="M11 12h10"/><path d="M11 19h10"/><path d="M4 4h1v5"/><path d="M4 9h2"/><path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/></svg>
                                     </button>
 
-                                    <button type="button" className="markdown-editor__tool" onClick={() => insertAtIssueSelection("[link text](https://)")} aria-label="Link" title="Link" disabled={isIssuePreviewVisible}>
+                                    <button type="button" className="markdown-editor__tool" onClick={insertIssueLinkAtSelection} aria-label="Link" title="Link" disabled={isIssuePreviewVisible}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                     </button>
 

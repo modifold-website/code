@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { getLocale, getTranslations } from "next-intl/server";
 import DiscoverProjectsPage from "@/components/pages/discover/DiscoverProjectsPage";
 
@@ -16,7 +17,7 @@ export async function generateMetadata() {
 
 async function fetchDiscoverData() {
 	try {
-		const response = await fetch(`${apiBase}/v2/discover`, {
+		const response = await serverApiFetch(`${apiBase}/v2/discover`, {
 			next: { revalidate: 300 },
 		});
 

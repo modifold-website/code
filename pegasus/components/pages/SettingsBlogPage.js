@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "../providers/AuthProvider";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,18 +40,11 @@ const areSnapshotsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 export default function SettingsBlogPage({ initialUser = null }) {
     const t = useTranslations("SettingsBlogPage");
     const { isLoggedIn, user, setUser } = useAuth();
-    const router = useRouter();
     const effectiveUser = user || initialUser;
 
     const [formData, setFormData] = useState(() => getInitialFormData(effectiveUser));
     const [savedSettings, setSavedSettings] = useState(() => getSettingsSnapshot(getInitialFormData(effectiveUser)));
     const [isSaving, setIsSaving] = useState(false);
-
-    useEffect(() => {
-        if(!isLoggedIn && !initialUser) {
-            router.push("/403");
-        }
-    }, [initialUser, isLoggedIn, router]);
 
     useEffect(() => {
         if(!effectiveUser) {

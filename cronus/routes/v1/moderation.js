@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const { clickhouse } = require("../../config/clickhouse");
@@ -6,6 +8,8 @@ const { sanitizePlainText } = require("../../utils/sanitize");
 const { fanoutVersionReleaseNotifications, sendVersionModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
 const { bumpProjectCacheVersion } = require("../../utils/projectCache");
+const { deleteObject, getPrivateObjectDownloadUrl, normalizeObjectKey, promotePrivateObject } = require("../../utils/fileHosting");
+const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 const router = express.Router();
 const PROJECT_TYPE_PATH_SEGMENTS = {
 	mod: "mod",
@@ -165,6 +169,7 @@ const getVersionForModeration = async (versionId) => {
 		v.changelog,
 		v.release_channel,
 		v.file_url,
+		v.quarantine_key,
 		v.file_size,
 		v.downloads,
 		v.created_at,
@@ -233,7 +238,7 @@ const mapVersionReview = (version) => ({
 	project_slug: version.project_slug,
 	project_title: version.project_title,
 	project_summary: version.project_summary,
-	project_icon_url: version.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+	project_icon_url: version.project_icon_url || "https://modifold.com/images/no-project-icon.svg",
 	project_type: version.project_type,
 	owner_username: version.owner_username,
 	owner_slug: version.owner_slug,
@@ -253,6 +258,37 @@ const mapVersionReview = (version) => ({
 	scanned_at: version.scanned_at,
 });
 
+const mapVersionReviewWithFileAccess = async (version) => {
+	const fileUrl = version.file_url || (version.quarantine_key ? await getPrivateObjectDownloadUrl(version.quarantine_key, {
+		expiresInSeconds: 60 * 60,
+	}) : null);
+
+	return mapVersionReview({ ...version, file_url: fileUrl });
+};
+
+const promoteVersionFile = async (version) => {
+	if(!version.quarantine_key) {
+		return null;
+	}
+
+	const quarantineKey = normalizeObjectKey(version.quarantine_key);
+	const expectedPrefix = `quarantine/projects/${version.project_id}/versions/${version.id}/`;
+	if(!quarantineKey.startsWith(expectedPrefix)) {
+		throw new Error("Invalid version quarantine key");
+	}
+
+	const destinationKey = quarantineKey.slice("quarantine/".length);
+	const promoted = await promotePrivateObject({
+		key: quarantineKey,
+		destinationKey,
+	});
+
+	return {
+		...promoted,
+		quarantineKey,
+	};
+};
+
 const notifyVersionApproved = async ({ version, createdAt }) => {
 	const actorId = version.project_owner_user_id;
 
@@ -265,18 +301,7 @@ const notifyVersionApproved = async ({ version, createdAt }) => {
 			createdAt,
 		});
 	} catch (error) {
-		console.error("Error sending owner version approval notification:", error);
-	}
-
-	try {
-		await fanoutVersionReleaseNotifications({
-			actorUserId: actorId,
-			projectId: version.project_id,
-			versionId: version.id,
-			createdAt,
-		});
-	} catch (error) {
-		console.error("Error sending project version release notifications:", error);
+		logger.error("Error sending owner version approval notification:", error);
 	}
 };
 
@@ -316,13 +341,13 @@ router.post("/argus/versions/:versionId/report", async (req, res) => {
 			moderation_reason = ?,
 			argus_report = ?,
 			scanned_at = NOW()
-			WHERE id = ?`,
+			WHERE id = ? AND moderation_status IN ('pending', 'scanning')`,
 			[status, moderationReason, report, versionId]
 		);
 
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error applying Argus report:", error);
+		logger.error("Error applying Argus report:", error);
 		return res.status(500).json({ message: "Error applying Argus report", error: error.message });
 	}
 });
@@ -333,7 +358,10 @@ router.get("/technical-review", auth, async (req, res) => {
 	}
 
 	try {
-		const { search = "", status = "needs_review", sort = "oldest", page = 1, limit = 20 } = req.query;
+		const search = normalizeSearch(req.query.search);
+		const status = normalizeEnum(req.query.status, ["needs_review", "pending", "scanning", "blocked", "error", "all"], "needs_review", { name: "status", rejectInvalid: true });
+		const sort = normalizeEnum(req.query.sort, ["oldest", "newest"], "oldest", { name: "sort option", rejectInvalid: true });
+		const { page: pageNumber, limit: limitNumber, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 		const allowedStatuses = ["needs_review", "pending", "scanning", "blocked", "error", "all"];
 		const allowedSort = ["oldest", "newest"];
 
@@ -343,17 +371,6 @@ router.get("/technical-review", auth, async (req, res) => {
 
 		if(!allowedSort.includes(String(sort))) {
 			return res.status(400).json({ message: "Invalid sort option" });
-		}
-
-		const pageNumber = Number(page);
-		const limitNumber = Number(limit);
-
-		if(!Number.isFinite(pageNumber) || pageNumber < 1) {
-			return res.status(400).json({ message: "Invalid page number" });
-		}
-
-		if(!Number.isFinite(limitNumber) || limitNumber < 1 || limitNumber > 100) {
-			return res.status(400).json({ message: "Invalid limit" });
 		}
 
 		const where = [];
@@ -377,7 +394,6 @@ router.get("/technical-review", auth, async (req, res) => {
 
 		const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 		const orderSql = sort === "newest" ? "ORDER BY v.created_at DESC" : "ORDER BY v.created_at ASC";
-		const offset = (pageNumber - 1) * limitNumber;
 
 		const listQuery = `
 			SELECT
@@ -387,6 +403,7 @@ router.get("/technical-review", auth, async (req, res) => {
 			v.changelog,
 			v.release_channel,
 			v.file_url,
+			v.quarantine_key,
 			v.file_size,
 			v.downloads,
 			v.created_at,
@@ -409,7 +426,7 @@ router.get("/technical-review", auth, async (req, res) => {
 			INNER JOIN projects p ON p.id = v.project_id
 			LEFT JOIN users u ON u.id = p.user_id
 			${whereSql}
-			${orderSql}
+			${orderSql}, v.id ${sort === "newest" ? "DESC" : "ASC"}
 			LIMIT ? OFFSET ?
 		`;
 
@@ -424,14 +441,17 @@ router.get("/technical-review", auth, async (req, res) => {
 		const [[{ total }]] = await db.query(countQuery, countParams);
 
 		return res.json({
-			versions: versions.map(mapVersionReview),
+			versions: await Promise.all(versions.map(mapVersionReviewWithFileAccess)),
 			totalPages: Math.max(1, Math.ceil(total / limitNumber)),
 			currentPage: pageNumber,
 			totalVersions: total,
 		});
 	} catch (error) {
-		console.error("Error fetching Argus technical review queue:", error);
-		return res.status(500).json({ message: "Error fetching technical review queue" });
+		if(!error.statusCode) {
+			logger.error("Error fetching Argus technical review queue:", error);
+		}
+		
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching technical review queue" });
 	}
 });
 
@@ -453,6 +473,8 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 	}
 
 	const createdAt = Math.floor(Date.now() / 1000);
+	let promotion = null;
+	let previousModerationStatus = null;
 
 	try {
 		const version = await getVersionForModeration(versionId);
@@ -463,19 +485,59 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 		const connection = await db.getConnection();
 		try {
 			await connection.beginTransaction();
+			const [lockedVersions] = await connection.query(
+				`SELECT moderation_status, file_url, quarantine_key, scanned_at
+				FROM project_versions
+				WHERE id = ?
+				FOR UPDATE`,
+				[versionId]
+			);
+            
+			const lockedVersion = lockedVersions[0];
+			if(!lockedVersion) {
+				const error = new Error("Version not found");
+				error.statusCode = 404;
+				throw error;
+			}
+
+			previousModerationStatus = lockedVersion.moderation_status;
+
+			if(decision === "approved" && previousModerationStatus !== "approved") {
+				if(!lockedVersion.file_url && !lockedVersion.quarantine_key) {
+					const error = new Error("Version file is unavailable");
+					error.statusCode = 409;
+					throw error;
+				}
+
+				if(previousModerationStatus !== "needs_review" || !lockedVersion.scanned_at) {
+					const error = new Error("Version must complete the Argus scan before approval");
+					error.statusCode = 409;
+					throw error;
+				}
+
+				promotion = await promoteVersionFile({ ...version, ...lockedVersion });
+			}
 
 			await connection.query(
 				`UPDATE project_versions
 				SET moderation_status = ?,
 				moderation_reason = ?,
 				moderated_by = ?,
-				moderated_at = NOW()
+				moderated_at = NOW(),
+				file_url = COALESCE(?, file_url)
 				WHERE id = ?`,
-				[decision, decision === "blocked" ? reason : null, req.user.id, versionId]
+				[decision, decision === "blocked" ? reason : null, req.user.id, promotion?.url || null, versionId]
 			);
 
-			if(decision === "approved" && version.moderation_status !== "approved") {
+			if(decision === "approved" && previousModerationStatus !== "approved") {
 				await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [version.project_id]);
+				await fanoutVersionReleaseNotifications({
+					connection,
+					actorUserId: version.project_owner_user_id,
+					projectId: version.project_id,
+					versionId: version.id,
+					createdAt,
+				});
 			}
 
 			await connection.query(
@@ -487,15 +549,34 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 			await connection.commit();
 		} catch(error) {
+			if(promotion) {
+				await deleteObject(promotion.key, "public").catch((cleanupError) => {
+					logger.warn(`Failed to roll back uncommitted public version file: ${cleanupError.message}`);
+				});
+				promotion = null;
+			}
+
 			await connection.rollback();
 			throw error;
 		} finally {
 			connection.release();
 		}
 
-		if(decision === "approved" && version.moderation_status !== "approved") {
+		if(promotion) {
+			try {
+				await deleteObject(promotion.quarantineKey, "private");
+				await db.query(
+					"UPDATE project_versions SET quarantine_key = NULL WHERE id = ? AND quarantine_key = ?",
+					[versionId, promotion.quarantineKey]
+				);
+			} catch (cleanupError) {
+				logger.warn(`Failed to remove promoted quarantine file: ${cleanupError.message}`);
+			}
+		}
+
+		if(decision === "approved" && previousModerationStatus !== "approved") {
 			await bumpProjectCacheVersion(version.project_slug).catch((error) => {
-				console.warn(`Failed to bump project cache after approving version: ${error.message}`);
+				logger.warn(`Failed to bump project cache after approving version: ${error.message}`);
 			});
 		}
 
@@ -513,8 +594,8 @@ router.post("/technical-review/:versionId/decision", auth, async (req, res) => {
 
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error applying technical review decision:", error);
-		return res.status(500).json({ message: "Error applying technical review decision", error: error.message });
+		logger.error("Error applying technical review decision:", error);
+		return res.status(error.statusCode || 500).json({ message: error.message || "Error applying technical review decision" });
 	}
 });
 
@@ -524,7 +605,10 @@ router.get("/", auth, async (req, res) => {
     }
 
     try {
-        const { search = "", type, sort = "oldest", page = 1, limit = 20 } = req.query;
+		const search = normalizeSearch(req.query.search);
+		const type = req.query.type;
+		const sort = normalizeEnum(req.query.sort, ["oldest", "newest"], "oldest", { name: "sort option", rejectInvalid: true });
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
         const typeMap = {
             mods: "mod",
             mod: "mod",
@@ -542,19 +626,6 @@ router.get("/", auth, async (req, res) => {
             return res.status(400).json({ message: "Invalid project type" });
         }
 
-        if(sort && !["oldest", "newest"].includes(sort)) {
-            return res.status(400).json({ message: "Invalid sort option" });
-        }
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: "Invalid limit" });
-        }
-
-        const offset = (page - 1) * limit;
         let query = `
             SELECT id, slug, title, summary, project_type, status, visibility, created_at, icon_url, tags
             FROM projects
@@ -584,7 +655,7 @@ router.get("/", auth, async (req, res) => {
             countParams.push(normalizedType);
         }
 
-        query += sort === "newest" ? " ORDER BY created_at DESC" : " ORDER BY created_at ASC";
+		query += sort === "newest" ? " ORDER BY created_at DESC, id DESC" : " ORDER BY created_at ASC, id ASC";
 
         query += " LIMIT ? OFFSET ?";
         params.push(Number(limit), Number(offset));
@@ -595,15 +666,18 @@ router.get("/", auth, async (req, res) => {
         res.json({
             projects: projects.map((project) => ({
                 ...project,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
             })),
             totalPages: Math.ceil(total / limit),
             currentPage: Number(page),
             totalProjects: total,
         });
     } catch (error) {
-        console.error("Error fetching projects for moderation:", error);
-        res.status(500).json({ message: "Error fetching projects", error: error.message });
+		if(!error.statusCode) {
+			logger.error("Error fetching projects for moderation:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching projects", error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -645,7 +719,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
                 const project = projectRows[0];
 
                 if(!project) {
-                    console.warn(`Project ${id} not found after approval, skipping published-mod notification`);
+                    logger.warn(`Project ${id} not found after approval, skipping published-mod notification`);
                 } else {
 					await awardFirstApprovedProjectAchievement(db, {
 						projectId: project.id,
@@ -664,7 +738,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 								type: "New",
 								title: project.title,
 								description: project.summary,
-								iconLink: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+								iconLink: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
 								modLink: `https://modifold.com/${getProjectPathSegment(project.project_type)}/${project.slug}`,
 								developerName: project.username || "Unknown",
 							}),
@@ -672,13 +746,13 @@ router.post("/:id/moderate", auth, async (req, res) => {
 					}
                 }
             } catch (publishError) {
-                console.error("Error sending published-mod notification:", publishError);
+                logger.error("Error sending published-mod notification:", publishError);
             }
         }
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Error moderating project:", error);
+        logger.error("Error moderating project:", error);
         res.status(500).json({ message: "Error moderating project", error: error.message });
     }
 });
@@ -780,7 +854,7 @@ router.get("/analytics", auth, async (req, res) => {
                 getGlobalOnlineSeriesForLast30Days(),
             ]);
         } catch (analyticsError) {
-            console.error("Error fetching global online analytics:", analyticsError);
+            logger.error("Error fetching global online analytics:", analyticsError);
         }
 
         res.json({
@@ -808,7 +882,7 @@ router.get("/analytics", auth, async (req, res) => {
             globalOnlineSeries,
         });
     } catch (error) {
-        console.error("Error fetching moderation analytics:", error);
+        logger.error("Error fetching moderation analytics:", error);
         res.status(500).json({ message: "Error fetching analytics", error: error.message });
     }
 });
@@ -819,7 +893,11 @@ router.get("/reports", auth, async (req, res) => {
     }
 
     try {
-        const { search = "", status = "open", reason = "all", sort = "newest", page = 1, limit = 20 } = req.query;
+		const search = normalizeSearch(req.query.search);
+		const status = normalizeEnum(req.query.status, ["open", "resolved", "dismissed", "all"], "open", { name: "report status", rejectInvalid: true });
+		const reason = normalizeSearch(req.query.reason, { maxLength: 64 }) || "all";
+		const sort = normalizeEnum(req.query.sort, ["newest", "oldest"], "newest", { name: "sort option", rejectInvalid: true });
+		const { page: pageNumber, limit: limitNumber, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
         const allowedStatuses = ["open", "resolved", "dismissed", "all"];
         const allowedSort = ["newest", "oldest"];
@@ -830,17 +908,6 @@ router.get("/reports", auth, async (req, res) => {
 
         if(!allowedSort.includes(String(sort))) {
             return res.status(400).json({ message: "Invalid sort option" });
-        }
-
-        const pageNumber = Number(page);
-        const limitNumber = Number(limit);
-
-        if(!Number.isFinite(pageNumber) || pageNumber < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(!Number.isFinite(limitNumber) || limitNumber < 1 || limitNumber > 100) {
-            return res.status(400).json({ message: "Invalid limit" });
         }
 
         const where = [];
@@ -867,8 +934,7 @@ router.get("/reports", auth, async (req, res) => {
         }
 
         const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-        const orderSql = sort === "oldest" ? "ORDER BY pr.created_at ASC" : "ORDER BY pr.created_at DESC";
-        const offset = (pageNumber - 1) * limitNumber;
+		const orderSql = sort === "oldest" ? "ORDER BY pr.created_at ASC, pr.id ASC" : "ORDER BY pr.created_at DESC, pr.id DESC";
 
         const listQuery = `
             SELECT
@@ -916,9 +982,12 @@ router.get("/reports", auth, async (req, res) => {
             currentPage: pageNumber,
             totalReports: total,
         });
-    } catch (error) {
-        console.error("Error fetching reports for moderation:", error);
-        return res.status(500).json({ message: "Error fetching reports" });
+	} catch (error) {
+		if(!error.statusCode) {
+			logger.error("Error fetching reports for moderation:", error);
+		}
+
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching reports" });
     }
 });
 
@@ -964,7 +1033,7 @@ router.post("/reports/:id/decision", auth, async (req, res) => {
 
         return res.json({ success: true, report: rows[0] });
     } catch (error) {
-        console.error("Error updating report decision:", error);
+        logger.error("Error updating report decision:", error);
         return res.status(500).json({ message: "Error updating report" });
     }
 });

@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const crypto = require("crypto");
 const express = require("express");
 const fs = require("fs/promises");
@@ -11,6 +13,7 @@ const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require
 const { getSlugValidationMessage, validateSlug } = require("../../utils/slug");
 const { bumpProjectCacheVersionById } = require("../../utils/projectCache");
 const { deletePublicUrlWithinPrefix, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 
 const router = express.Router();
 
@@ -312,7 +315,7 @@ const formatJam = (jam) => {
 		summary: jam.summary,
 		description: jam.description || "",
 		rules: jam.rules || "",
-		avatar_url: jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+		avatar_url: jam.avatar_url || "https://modifold.com/images/no-project-icon.svg",
 		cover_url: jam.cover_url || null,
 		color: jam.color === null || jam.color === undefined ? null : Number(jam.color),
 		external_links: links,
@@ -529,7 +532,7 @@ const getSubmissions = async ({ jamId, userId, resultsOnly = false }) => {
 			slug: row.project_slug,
 			title: row.project_title,
 			summary: row.project_summary,
-			icon_url: row.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+			icon_url: row.project_icon_url || "https://modifold.com/images/no-project-icon.svg",
 			downloads: Number(row.project_downloads) || 0,
 			followers: Number(row.project_followers) || Number(row.votes_count) || 0,
 			updated_at: formatDateForResponse(row.project_updated_at),
@@ -739,7 +742,7 @@ router.get("/moderation", auth, async (req, res) => {
 
 		res.json({ mod_jams: rows.map(formatJam) });
 	} catch (error) {
-		console.error("Error fetching mod jams for moderation:", error);
+		logger.error("Error fetching mod jams for moderation:", error);
 		res.status(500).json({ message: "Error fetching mod jams", error: error.message });
 	}
 });
@@ -760,36 +763,31 @@ router.get("/mine", auth, async (req, res) => {
 
 		res.json({ mod_jams: rows.map(formatJam) });
 	} catch (error) {
-		console.error("Error fetching user mod jams:", error);
+		logger.error("Error fetching user mod jams:", error);
 		res.status(500).json({ message: "Error fetching user mod jams", error: error.message });
 	}
 });
 
 router.get("/", async (req, res) => {
 	try {
-		const { status = "active", page = 1, limit = 20, search = "" } = req.query;
-
-		if(isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
-			return res.status(400).json({ message: "Invalid pagination" });
-		}
-
-		const offset = (Number(page) - 1) * Number(limit);
+		const status = normalizeEnum(req.query.status, ["active", "completed"], "active", { name: "status filter", rejectInvalid: true });
+		const search = normalizeSearch(req.query.search);
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
 		const params = [];
 		const countParams = [];
 		let whereClause = "WHERE mj.status = 'approved'";
 
 		if(status === "active") {
 			whereClause += " AND mj.voting_end_at >= NOW()";
-		} else if(status === "completed") {
-			whereClause += " AND mj.voting_end_at < NOW()";
 		} else {
-			return res.status(400).json({ message: "Invalid status filter" });
+			whereClause += " AND mj.voting_end_at < NOW()";
 		}
 
 		if(search) {
 			whereClause += " AND mj.title LIKE ?";
-			params.push(`%${search}%`);
-			countParams.push(`%${search}%`);
+			const prefixSearch = `${search.replace(/[\\%_]/g, "\\$&")}%`;
+			params.push(prefixSearch);
+			countParams.push(prefixSearch);
 		}
 
 		const [rows] = await db.query(
@@ -800,7 +798,7 @@ router.get("/", async (req, res) => {
 			FROM mod_jams mj
 			LEFT JOIN users u ON u.id = mj.owner_user_id
 			${whereClause}
-			ORDER BY mj.starts_at DESC
+			ORDER BY mj.starts_at DESC, mj.id DESC
 			LIMIT ? OFFSET ?`,
 			[...params, Number(limit), Number(offset)]
 		);
@@ -813,8 +811,11 @@ router.get("/", async (req, res) => {
 			currentPage: Number(page),
 		});
 	} catch (error) {
-		console.error("Error fetching mod jams:", error);
-		res.status(500).json({ message: "Error fetching mod jams", error: error.message });
+		if(!error.statusCode) {
+			logger.error("Error fetching mod jams:", error);
+		}
+		
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching mod jams", error: error.statusCode ? undefined : error.message });
 	}
 });
 
@@ -849,7 +850,7 @@ router.post("/", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { name: "
 			summary: payload.summary,
 			description: payload.description || "",
 			rules: payload.rules || "",
-			avatar_url: payload.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+			avatar_url: payload.avatar_url || "https://modifold.com/images/no-project-icon.svg",
 			cover_url: payload.cover_url || null,
 			color: payload.color === undefined ? null : payload.color,
 			external_links: payload.external_links || "{}",
@@ -870,7 +871,7 @@ router.post("/", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { name: "
 
 		res.json({ success: true, mod_jam: formatJam({ ...jam, status: "draft", created_at: new Date(), updated_at: new Date() }) });
 	} catch (error) {
-		console.error("Error creating mod jam:", error);
+		logger.error("Error creating mod jam:", error);
 		res.status(error.statusCode || 500).json({ message: error.message || "Error creating mod jam" });
 	}
 });
@@ -906,7 +907,7 @@ router.get("/:slug", async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error fetching mod jam:", error);
+		logger.error("Error fetching mod jam:", error);
 		res.status(500).json({ message: "Error fetching mod jam", error: error.message });
 	}
 });
@@ -946,7 +947,7 @@ router.post("/:slug/nominations", auth, async (req, res) => {
 			return res.status(400).json({ message: "Nomination already exists" });
 		}
 
-		console.error("Error adding mod jam nomination:", error);
+		logger.error("Error adding mod jam nomination:", error);
 		res.status(500).json({ message: "Error adding nomination", error: error.message });
 	}
 });
@@ -985,7 +986,7 @@ router.put("/:slug/nominations/:nominationId", auth, async (req, res) => {
 			return res.status(400).json({ message: "Nomination already exists" });
 		}
 
-		console.error("Error updating mod jam nomination:", error);
+		logger.error("Error updating mod jam nomination:", error);
 		res.status(500).json({ message: "Error updating nomination", error: error.message });
 	}
 });
@@ -1013,7 +1014,7 @@ router.delete("/:slug/nominations/:nominationId", auth, async (req, res) => {
 		const nominations = await getJamNominations(jam.id);
 		res.json({ success: true, nominations });
 	} catch (error) {
-		console.error("Error deleting mod jam nomination:", error);
+		logger.error("Error deleting mod jam nomination:", error);
 		res.status(500).json({ message: "Error deleting nomination", error: error.message });
 	}
 });
@@ -1046,7 +1047,7 @@ router.post("/:slug/jury", auth, async (req, res) => {
 			return res.status(400).json({ message: "User is already a jury member" });
 		}
 
-		console.error("Error adding mod jam jury member:", error);
+		logger.error("Error adding mod jam jury member:", error);
 		res.status(500).json({ message: "Error adding jury member", error: error.message });
 	}
 });
@@ -1066,7 +1067,7 @@ router.delete("/:slug/jury/:userId", auth, async (req, res) => {
 		const jury = await getJamJury(jam.id);
 		res.json({ success: true, jury });
 	} catch (error) {
-		console.error("Error removing mod jam jury member:", error);
+		logger.error("Error removing mod jam jury member:", error);
 		res.status(500).json({ message: "Error removing jury member", error: error.message });
 	}
 });
@@ -1099,12 +1100,12 @@ router.put("/:slug", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { nam
 		await db.query("UPDATE mod_jams SET ? WHERE id = ?", [payload, jam.id]);
 		if(payload.avatar_url && payload.avatar_url !== jam.avatar_url) {
 			await deletePublicUrlWithinPrefix(jam.avatar_url, `mod-jams/${jam.id}`).catch((error) => {
-				console.warn(`Failed to delete replaced mod jam avatar: ${error.message}`);
+				logger.warn(`Failed to delete replaced mod jam avatar: ${error.message}`);
 			});
 		}
 		if(payload.cover_url && payload.cover_url !== jam.cover_url) {
 			await deletePublicUrlWithinPrefix(jam.cover_url, `mod-jams/${jam.id}`).catch((error) => {
-				console.warn(`Failed to delete replaced mod jam cover: ${error.message}`);
+				logger.warn(`Failed to delete replaced mod jam cover: ${error.message}`);
 			});
 		}
 		await db.query(
@@ -1115,7 +1116,7 @@ router.put("/:slug", auth, upload.fields([{ name: "avatar", maxCount: 1 }, { nam
 		const updated = await getJamBySlug(payload.slug || jam.slug);
 		res.json({ success: true, mod_jam: formatJam(updated) });
 	} catch (error) {
-		console.error("Error updating mod jam:", error);
+		logger.error("Error updating mod jam:", error);
 		res.status(error.statusCode || 500).json({ message: error.message || "Error updating mod jam" });
 	}
 });
@@ -1140,7 +1141,7 @@ router.post("/:slug/submit-review", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error submitting mod jam:", error);
+		logger.error("Error submitting mod jam:", error);
 		res.status(500).json({ message: "Error submitting mod jam", error: error.message });
 	}
 });
@@ -1172,7 +1173,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error moderating mod jam:", error);
+		logger.error("Error moderating mod jam:", error);
 		res.status(500).json({ message: "Error moderating mod jam", error: error.message });
 	}
 });
@@ -1197,7 +1198,7 @@ router.post("/:slug/participants", auth, async (req, res) => {
 
 		res.json({ success: true, user_joined: true, participants_count: participantsCount });
 	} catch (error) {
-		console.error("Error joining mod jam:", error);
+		logger.error("Error joining mod jam:", error);
 		res.status(500).json({ message: "Error joining mod jam", error: error.message });
 	}
 });
@@ -1242,7 +1243,7 @@ router.post("/:slug/submissions", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error submitting project to mod jam:", error);
+		logger.error("Error submitting project to mod jam:", error);
 		res.status(500).json({ message: "Error submitting project", error: error.message });
 	}
 });
@@ -1265,7 +1266,7 @@ router.delete("/:slug/submissions/me", auth, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Error withdrawing mod jam submission:", error);
+		logger.error("Error withdrawing mod jam submission:", error);
 		res.status(500).json({ message: "Error withdrawing submission", error: error.message });
 	}
 });
@@ -1336,7 +1337,7 @@ router.post("/:slug/votes", auth, async (req, res) => {
 			return res.status(400).json({ message: "You already voted in this mod jam" });
 		}
 
-		console.error("Error voting in mod jam:", error);
+		logger.error("Error voting in mod jam:", error);
 		res.status(500).json({ message: "Error voting", error: error.message });
 	}
 });
@@ -1359,7 +1360,7 @@ router.get("/:slug/results", async (req, res) => {
 		const submissions = await getSubmissions({ jamId: jam.id, userId: req.user?.id, resultsOnly: true });
 		res.json({ mod_jam: formatJam(jam), results: submissions });
 	} catch (error) {
-		console.error("Error fetching mod jam results:", error);
+		logger.error("Error fetching mod jam results:", error);
 		res.status(500).json({ message: "Error fetching results", error: error.message });
 	}
 });

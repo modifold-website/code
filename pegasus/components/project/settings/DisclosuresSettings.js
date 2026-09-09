@@ -259,7 +259,7 @@ export default function DisclosuresSettings({ project, authToken }) {
 				<header className="disclosures-settings__heading">
 					<h1>{t("title")}</h1>
 
-					<p>{t("introBefore")} <Link href="/legal/rules#generative-ai">{t("contentRules")}</Link>.</p>
+					<p>{t("introBefore")} <Link prefetch={false} href="/legal/rules#generative-ai">{t("contentRules")}</Link>.</p>
 				</header>
 
 				<div className="disclosures-settings__cards">

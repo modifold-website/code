@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
@@ -9,6 +11,7 @@ const path = require("path");
 const { sanitizePlainText } = require("../../utils/sanitize");
 const { validateSlug } = require("../../utils/slug");
 const { buildSafeObjectFilename, deleteObject, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+const { parsePagination } = require("../../utils/queryPagination");
 
 const deleteUserAvatarUrl = async (url, userId) => {
 	const objectKey = getPublicObjectKeyFromUrl(url);
@@ -84,17 +87,7 @@ router.get("/", auth, async (req, res) => {
     }
 
     try {
-        const { page = 1, limit = 15 } = req.query;
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: "Invalid limit" });
-        }
-
-        const offset = (page - 1) * limit;
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 15, maxLimit: 50 });
 
         const query = `
             SELECT id, username, slug, avatar, email, description, created_at, isRole
@@ -120,8 +113,11 @@ router.get("/", auth, async (req, res) => {
             totalUsers: total,
         });
     } catch (error) {
-        console.error("Error fetching users:", error);
-        res.status(500).json({ message: "Error fetching users", error: error.message });
+		if(!error.statusCode) {
+			logger.error("Error fetching users:", error);
+		}
+        
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching users", error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -195,7 +191,7 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
 
 		if(updates.avatar && targetUser.avatar !== updates.avatar) {
 			await deleteUserAvatarUrl(targetUser.avatar, id).catch((error) => {
-				console.warn(`Failed to delete replaced user avatar: ${error.message}`);
+				logger.warn(`Failed to delete replaced user avatar: ${error.message}`);
 			});
 		}
 
@@ -206,7 +202,7 @@ router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
 
         res.json(updatedUser[0]);
     } catch (error) {
-        console.error("Error updating user:", error);
+        logger.error("Error updating user:", error);
         res.status(500).json({ message: "Error updating user", error: error.message });
     }
 });

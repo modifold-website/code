@@ -1,7 +1,8 @@
+import { serverApiFetch } from "@/utils/api/server";
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-﻿import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { redirect, forbidden, unstable_rethrow } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import StatisticsModerationPage from "@/components/pages/StatisticsModerationPage";
 
@@ -16,7 +17,7 @@ export async function generateMetadata() {
 
 async function fetchAnalytics(authToken) {
     try {
-        const response = await fetch(`${serverApiBase}/moderation/analytics?time_range=30d`, {
+        const response = await serverApiFetch(`${serverApiBase}/moderation/analytics?time_range=30d`, {
             headers: { Authorization: `Bearer ${authToken}` },
             next: { revalidate: 60 },
         });
@@ -55,11 +56,11 @@ export default async function StatisticsModerationServer() {
     const authToken = cookieStore.get("authToken")?.value;
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
     try {
-        const response = await fetch(`${serverApiBase}/auth/user`, {
+        const response = await serverApiFetch(`${serverApiBase}/auth/user`, {
             headers: { Authorization: `Bearer ${authToken}` },
             cache: "no-store",
         });
@@ -72,9 +73,10 @@ export default async function StatisticsModerationServer() {
         const role = data?.user?.isRole;
 
         if(role !== "admin" && role !== "moderator") {
-            redirect("/403");
+            forbidden();
         }
     } catch (error) {
+		unstable_rethrow(error);
         console.error("Error checking moderation access:", error);
         redirect("/");
     }

@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const ORG_PROJECT_PERMISSIONS = {
     EDIT_DETAILS: "project_edit_details",
     EDIT_BODY: "project_edit_body",
@@ -117,7 +119,7 @@ const logOrganizationAudit = async (db, { organizationId, actorUserId, action, t
             ]
         );
     } catch (error) {
-        console.error("Failed to write organization audit log:", error.message);
+        logger.error("Failed to write organization audit log:", error.message);
     }
 };
 
@@ -156,68 +158,107 @@ const getOrganizationMemberAccess = async (db, organizationId, userId) => {
     };
 };
 
-const resolveProjectAccess = async (db, projectId, userId) => {
-    if(!projectId || !userId) {
-        return {
-            isOwner: false,
-			hasDirectAccess: false,
-            hasOrganizationAccess: false,
-			directMember: null,
-            organization: null,
-            projectPermissions: new Set(),
-            organizationPermissions: new Set(),
-        };
-    }
+const createEmptyProjectAccess = () => ({
+	isOwner: false,
+	hasDirectAccess: false,
+	hasOrganizationAccess: false,
+	directMember: null,
+	organization: null,
+	projectPermissions: new Set(),
+	organizationPermissions: new Set(),
+});
 
-    const [projectRows] = await db.query("SELECT user_id FROM projects WHERE id = ? LIMIT 1", [projectId]);
-    if(projectRows.length === 0) {
-        return {
-            isOwner: false,
-			hasDirectAccess: false,
-            hasOrganizationAccess: false,
-			directMember: null,
-            organization: null,
-            projectPermissions: new Set(),
-            organizationPermissions: new Set(),
-        };
-    }
+const resolveProjectAccess = async (db, projectOrId, userId) => {
+	const projectId = typeof projectOrId === "object" ? projectOrId?.id : projectOrId;
+	if(!projectId || !userId) {
+		return createEmptyProjectAccess();
+	}
 
-    if(Number(projectRows[0].user_id) === Number(userId)) {
-        return {
-            isOwner: true,
-			hasDirectAccess: false,
-            hasOrganizationAccess: false,
-			directMember: null,
-            organization: null,
-            projectPermissions: new Set(ORG_OWNER_PROJECT_PERMISSIONS),
-            organizationPermissions: new Set(ORG_OWNER_ORGANIZATION_PERMISSIONS),
-        };
-    }
+	let projectOwnerUserId = typeof projectOrId === "object" ? projectOrId?.user_id : null;
+	if(projectOwnerUserId === null || projectOwnerUserId === undefined) {
+		const [projectRows] = await db.query("SELECT user_id FROM projects WHERE id = ? LIMIT 1", [projectId]);
+		if(projectRows.length === 0) {
+			return createEmptyProjectAccess();
+		}
 
-	const [directMemberRows] = await db.query(
-		`SELECT id, project_id, user_id, role, status, permissions, invited_by_user_id, created_at, updated_at
-		FROM project_members
-		WHERE project_id = ? AND user_id = ? AND status IN ('accept', 'accepted')
+		projectOwnerUserId = projectRows[0].user_id;
+	}
+
+	if(Number(projectOwnerUserId) === Number(userId)) {
+		return {
+			isOwner: true,
+			hasDirectAccess: false,
+			hasOrganizationAccess: false,
+			directMember: null,
+			organization: null,
+			projectPermissions: new Set(ORG_OWNER_PROJECT_PERMISSIONS),
+			organizationPermissions: new Set(ORG_OWNER_ORGANIZATION_PERMISSIONS),
+		};
+	}
+
+	const [accessRows] = await db.query(
+		`SELECT
+		direct_member.id AS direct_member_id,
+		direct_member.project_id AS direct_project_id,
+		direct_member.user_id AS direct_user_id,
+		direct_member.role AS direct_role,
+		direct_member.status AS direct_status,
+		direct_member.permissions AS direct_permissions,
+		direct_member.invited_by_user_id AS direct_invited_by_user_id,
+		direct_member.created_at AS direct_created_at,
+		direct_member.updated_at AS direct_updated_at,
+		o.id AS organization_id,
+		o.slug AS organization_slug,
+		o.name AS organization_name,
+		o.summary AS organization_summary,
+		o.icon_url AS organization_icon_url,
+		o.owner_user_id AS organization_owner_user_id,
+		organization_member.id AS organization_member_id,
+		organization_member.project_permissions AS organization_member_project_permissions,
+		organization_member.organization_permissions AS organization_member_permissions,
+		organization_member.project_access_mode AS organization_project_access_mode,
+		project_override.id AS project_override_id,
+		project_override.role AS project_override_role,
+		project_override.project_permissions AS project_override_permissions
+		FROM (SELECT 1 AS anchor) request_scope
+		LEFT JOIN project_members direct_member
+			ON direct_member.project_id = ?
+			AND direct_member.user_id = ?
+			AND direct_member.status IN ('accept', 'accepted')
+		LEFT JOIN organization_projects organization_project
+			ON organization_project.project_id = ?
+		LEFT JOIN organizations o
+			ON o.id COLLATE utf8mb4_unicode_ci = organization_project.organization_id COLLATE utf8mb4_unicode_ci
+		LEFT JOIN organization_members organization_member
+			ON organization_member.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci
+			AND organization_member.user_id = ?
+			AND organization_member.status = 'accepted'
+		LEFT JOIN organization_member_project_overrides project_override
+			ON project_override.organization_id COLLATE utf8mb4_unicode_ci = o.id COLLATE utf8mb4_unicode_ci
+			AND project_override.user_id = ?
+			AND project_override.project_id COLLATE utf8mb4_unicode_ci = ?
 		LIMIT 1`,
-		[projectId, userId]
+		[projectId, userId, projectId, userId, userId, projectId]
 	);
-	const directMember = directMemberRows[0] || null;
+	const row = accessRows[0] || {};
+	const directMember = row.direct_member_id ? {
+		id: row.direct_member_id,
+		project_id: row.direct_project_id,
+		user_id: row.direct_user_id,
+		role: row.direct_role,
+		status: row.direct_status,
+		permissions: row.direct_permissions,
+		invited_by_user_id: row.direct_invited_by_user_id,
+		created_at: row.direct_created_at,
+		updated_at: row.direct_updated_at,
+	} : null;
 	const directPermissions = new Set(
 		expandProjectPermissions(directMember?.permissions).filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission))
 	);
 
-    const [organizationRows] = await db.query(
-        `SELECT o.id, o.slug, o.name, o.summary, o.icon_url
-        FROM organization_projects op
-        INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-        WHERE op.project_id = ?
-        LIMIT 1`,
-        [projectId]
-    );
-
-    if(organizationRows.length === 0) {
-        return {
-            isOwner: false,
+	if(!row.organization_id) {
+		return {
+			isOwner: false,
 			hasDirectAccess: Boolean(directMember),
             hasOrganizationAccess: false,
 			directMember,
@@ -227,20 +268,16 @@ const resolveProjectAccess = async (db, projectId, userId) => {
         };
     }
 
-    const organization = organizationRows[0];
-    const [memberAccess, overrideRowsResult] = await Promise.all([
-        getOrganizationMemberAccess(db, organization.id, userId),
-        db.query(
-            `SELECT role, project_permissions
-            FROM organization_member_project_overrides
-            WHERE organization_id = ? AND user_id = ? AND project_id = ?
-            LIMIT 1`,
-            [organization.id, userId, projectId]
-        ),
-    ]);
+	const organization = {
+		id: row.organization_id,
+		slug: row.organization_slug,
+		name: row.organization_name,
+		summary: row.organization_summary,
+		icon_url: row.organization_icon_url,
+	};
 
-    if(!memberAccess) {
-        return {
+	if(!row.organization_member_id) {
+		return {
             isOwner: false,
 			hasDirectAccess: Boolean(directMember),
             hasOrganizationAccess: false,
@@ -251,11 +288,15 @@ const resolveProjectAccess = async (db, projectId, userId) => {
         };
     }
 
-	const projectOverride = overrideRowsResult[0][0] || null;
-	const projectAccessMode = memberAccess.member.project_access_mode === "selected" ? "selected" : "all";
-	const hasOrganizationProjectAccess = memberAccess.isOwner || Boolean(projectOverride) || projectAccessMode === "all";
-	const legacyProjectPermissions = expandProjectPermissions(memberAccess.member.project_permissions) .filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission));
-	const organizationProjectPermissions = !hasOrganizationProjectAccess ? [] : memberAccess.isOwner
+	const isOrganizationOwner = Number(row.organization_owner_user_id) === Number(userId);
+	const projectOverride = row.project_override_id ? {
+		role: row.project_override_role || null,
+		project_permissions: row.project_override_permissions,
+	} : null;
+	const projectAccessMode = row.organization_project_access_mode === "selected" ? "selected" : "all";
+	const hasOrganizationProjectAccess = isOrganizationOwner || Boolean(projectOverride) || projectAccessMode === "all";
+	const legacyProjectPermissions = expandProjectPermissions(row.organization_member_project_permissions).filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission));
+	const organizationProjectPermissions = !hasOrganizationProjectAccess ? [] : isOrganizationOwner
 		? PROJECT_COLLABORATOR_PERMISSIONS
 		: projectOverride?.project_permissions !== null && projectOverride?.project_permissions !== undefined
 		? expandProjectPermissions(projectOverride.project_permissions).filter((permission) => PROJECT_ACCESS_PERMISSION_SET.has(permission))
@@ -272,7 +313,7 @@ const resolveProjectAccess = async (db, projectId, userId) => {
 		directMember,
         organization,
 		projectPermissions,
-        organizationPermissions: memberAccess.organizationPermissions,
+		organizationPermissions: new Set(isOrganizationOwner ? ORG_OWNER_ORGANIZATION_PERMISSIONS : parsePermissions(row.organization_member_permissions)),
 		organizationProjectOverride: projectOverride ? {
 			role: projectOverride.role || null,
 			projectPermissions: projectOverride.project_permissions === null ? null : parsePermissions(projectOverride.project_permissions),

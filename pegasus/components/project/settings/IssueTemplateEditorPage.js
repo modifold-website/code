@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { insertMarkdownLink } from "@/utils/markdown/editor";
 import { getProjectPath } from "@/utils/projectRoutes";
 
 export default function IssueTemplateEditorPage({ project, authToken, labels = [], template = null }) {
@@ -84,6 +85,20 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
         const caret = start + text.length;
         updateTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
     };
+
+	const insertLinkAtSelection = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
+
+		const edit = insertMarkdownLink({
+			value: content,
+			selectionStart: textarea.selectionStart ?? 0,
+			selectionEnd: textarea.selectionEnd ?? 0,
+		});
+		updateTextareaValue(edit.value, edit.selectionStart, edit.selectionEnd);
+	};
 
     const prefixLines = (prefix) => {
         const textarea = textareaRef.current;
@@ -169,7 +184,7 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
                 <div className="blog-settings">
                     <div className="blog-settings__body">
                         <div className="version-page__breadcrumb">
-                            <Link href={getProjectPath(project, "/settings/issues")} className="version-page__back-link button--active-transform">
+                            <Link prefetch={false} href={getProjectPath(project, "/settings/issues")} className="version-page__back-link button--active-transform">
                                 {t("common.backToSettings")}
                             </Link>
 
@@ -239,7 +254,7 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-ordered-icon lucide-list-ordered"><path d="M11 5h10"/><path d="M11 12h10"/><path d="M11 19h10"/><path d="M4 4h1v5"/><path d="M4 9h2"/><path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/></svg>
                                         </button>
 
-                                        <button type="button" className="markdown-editor__tool" onClick={() => insertAtSelection("[link text](https://)")} aria-label="Link" title="Link" disabled={isPreviewVisible}>
+                                        <button type="button" className="markdown-editor__tool" onClick={insertLinkAtSelection} aria-label="Link" title="Link" disabled={isPreviewVisible}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                         </button>
 

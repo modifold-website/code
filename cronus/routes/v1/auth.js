@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const { db } = require("../../config/db");
@@ -7,6 +9,7 @@ const axios = require("axios");
 const { authenticator, getTwoFactorRow, isTwoFactorEnabled } = require("../../utils/twoFactor");
 const { sendMail } = require("../../utils/smtpMailer");
 const router = express.Router();
+router.use("/password/recovery", require("./passwordRecovery"));
 const auth = require("../../middleware/auth");
 const { getVisibleProfileBadge } = require("../../utils/profileBadges");
 const { ACHIEVEMENT_CODES, awardAchievementToUser } = require("../../utils/achievements");
@@ -365,8 +368,8 @@ router.get("/hytale-start", async (req, res) => {
 
 		return res.redirect(url);
 	} catch (error) {
-		console.error("Hytale OAuth Start Error:", error);
-		return redirectToFrontendAuth(res, { error: error.message || "Error starting Hytale authorization", next: normalizeReturnPath(req.query.next) });
+		logger.error("Hytale OAuth Start Error:", error);
+		return redirectToFrontendAuth(res, { error: "Error starting Hytale authorization", next: normalizeReturnPath(req.query.next) });
 	}
 });
 
@@ -380,7 +383,7 @@ router.post("/hytale-link/start", auth, async (req, res) => {
 
 		return res.json({ success: true, url });
 	} catch (error) {
-		console.error("Hytale Link Start Error:", error);
+		logger.error("Hytale Link Start Error:", error);
 		return res.status(500).json({ success: false, message: error.message || "Error starting Hytale account linking" });
 	}
 });
@@ -471,7 +474,7 @@ router.post("/providers/:provider/link/start", auth, async (req, res) => {
 
 		return res.json({ success: true, url });
 	} catch (error) {
-		console.error("Provider link start error:", {
+		logger.error("Provider link start error:", {
 			message: error?.message || "unknown error",
 			provider,
 			user_id: req.user.id,
@@ -573,8 +576,8 @@ router.get("/hytale-callback", async (req, res) => {
 		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 		return redirectToFrontendAuth(res, { token, next: nextPath });
 	} catch (error) {
-		console.error("Hytale Callback Error:", error);
-		return redirectToFrontendAuth(res, { error: error.message || "Error processing Hytale callback", next: nextPath });
+		logger.error("Hytale Callback Error:", error);
+		return redirectToFrontendAuth(res, { error: "Error processing Hytale callback", next: nextPath });
 	}
 });
 
@@ -608,7 +611,7 @@ router.post("/email-login", async (req, res) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: user.id, username: user.username, slug: user.slug }, success: true });
     } catch (error) {
-        console.error("Email Login Error:", {
+        logger.error("Email Login Error:", {
             message: error?.message || "unknown error",
             stack: error?.stack || null,
             email,
@@ -672,7 +675,7 @@ router.post("/email-register/start", async (req, res) => {
 
         res.json({ success: true, expiresIn: Math.floor(EMAIL_CODE_TTL_MS / 1000) });
     } catch (error) {
-        console.error("Email Register Start Error:", {
+        logger.error("Email Register Start Error:", {
             message: error?.message || "unknown error",
             stack: error?.stack || null,
             email,
@@ -728,7 +731,7 @@ router.post("/email-register/confirm", async (req, res) => {
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: verification.username, slug }, success: true });
     } catch (error) {
-        console.error("Email Register Confirm Error:", {
+        logger.error("Email Register Confirm Error:", {
             message: error?.message || "unknown error",
             stack: error?.stack || null,
             email,
@@ -826,7 +829,7 @@ router.post("/discord-login", async (req, res) => {
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: displayName, slug }, success: true });
     } catch (error) {
-        console.error("Discord Login Error:", error);
+        logger.error("Discord Login Error:", error);
         res.status(500).json({ success: false, message: "Error during authorization via Discord" });
     }
 });
@@ -842,7 +845,7 @@ router.get("/discord-callback", async (req, res) => {
 		}
 
         if(!code) {
-            console.error("No code provided in Discord callback");
+            logger.error("No code provided in Discord callback");
             return redirectToFrontendAuth(res, { error: "No code provided", next: nextPath });
         }
 
@@ -864,13 +867,13 @@ router.get("/discord-callback", async (req, res) => {
 
         const { access_token, error, error_description } = tokenResponse.data;
         if(error) {
-            console.error("Discord token error:", error, error_description);
+            logger.error("Discord token error:", error, error_description);
 
             return redirectToFrontendAuth(res, { error: error_description || "Unable to obtain Discord access token", next: nextPath });
         }
 
         if(!access_token) {
-            console.error("No access token received");
+            logger.error("No access token received");
 
             return redirectToFrontendAuth(res, { error: "Unable to obtain Discord access token", next: nextPath });
         }
@@ -946,8 +949,8 @@ router.get("/discord-callback", async (req, res) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
         return redirectToFrontendAuth(res, { token, next: nextPath });
     } catch (error) {
-        console.error("Discord Callback Error:", error.message, error.stack);
-        return redirectToFrontendAuth(res, { error: error.message || "Error processing Discord callback", next: nextPath });
+        logger.error("Discord Callback Error:", error.message, error.stack);
+		return redirectToFrontendAuth(res, { error: "Error processing Discord callback", next: nextPath });
     }
 });
 
@@ -967,7 +970,7 @@ router.get("/telegram-callback", async (req, res) => {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
     if(!verifyTelegramData(telegramData, botToken)) {
-        console.error("Telegram Callback Error: invalid signature", {
+        logger.error("Telegram Callback Error: invalid signature", {
             telegram_id: telegramData?.id || null,
             auth_date: telegramData?.auth_date || null,
         });
@@ -1046,12 +1049,12 @@ router.get("/telegram-callback", async (req, res) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
         return redirectToFrontendAuth(res, { token, next: nextPath });
     } catch (error) {
-        console.error("Telegram Callback Error:", {
+        logger.error("Telegram Callback Error:", {
             message: error?.message || "unknown error",
             stack: error?.stack || null,
             telegram_id: telegramId || null,
         });
-        return redirectToFrontendAuth(res, { error: error.message || "Error processing Telegram callback", next: nextPath });
+		return redirectToFrontendAuth(res, { error: "Error processing Telegram callback", next: nextPath });
     }
 });
 
@@ -1060,7 +1063,7 @@ router.post("/telegram-login", async (req, res) => {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
     if(!verifyTelegramData(telegramData, botToken)) {
-        console.error("Telegram Login Error: invalid signature", {
+        logger.error("Telegram Login Error: invalid signature", {
             telegram_id: telegramData?.id || null,
             auth_date: telegramData?.auth_date || null,
         });
@@ -1125,7 +1128,7 @@ router.post("/telegram-login", async (req, res) => {
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username, slug }, success: true });
     } catch (error) {
-        console.error("Telegram Login Error:", {
+        logger.error("Telegram Login Error:", {
             message: error?.message || "unknown error",
             stack: error?.stack || null,
             telegram_id: telegramId || null,
@@ -1223,7 +1226,7 @@ router.post("/github-login", async (req, res) => {
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: displayName, slug }, success: true });
     } catch (error) {
-        console.error("GitHub Login Error:", error);
+        logger.error("GitHub Login Error:", error);
         res.status(500).json({ success: false, message: "Error during authorization via GitHub" });
     }
 });
@@ -1239,7 +1242,7 @@ router.get("/github-callback", async (req, res) => {
 		}
 
         if(!code) {
-            console.error("No code provided in GitHub callback");
+            logger.error("No code provided in GitHub callback");
             return redirectToFrontendAuth(res, { error: "No code provided", next: nextPath });
         }
 
@@ -1258,12 +1261,12 @@ router.get("/github-callback", async (req, res) => {
 
         const { access_token, error, error_description } = tokenResponse.data;
         if(error) {
-            console.error("GitHub token error:", error, error_description);
+            logger.error("GitHub token error:", error, error_description);
             return redirectToFrontendAuth(res, { error: error_description || "Unable to obtain GitHub access token", next: nextPath });
         }
 
         if(!access_token) {
-            console.error("No access token received");
+            logger.error("No access token received");
             return redirectToFrontendAuth(res, { error: "Unable to obtain GitHub access token", next: nextPath });
         }
 
@@ -1345,8 +1348,8 @@ router.get("/github-callback", async (req, res) => {
         const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "30d" });
         return redirectToFrontendAuth(res, { token, next: nextPath });
     } catch (error) {
-        console.error("GitHub Callback Error:", error.message, error.stack);
-        return redirectToFrontendAuth(res, { error: error.message || "Error processing GitHub callback", next: nextPath });
+        logger.error("GitHub Callback Error:", error.message, error.stack);
+		return redirectToFrontendAuth(res, { error: "Error processing GitHub callback", next: nextPath });
     }
 });
 
@@ -1359,7 +1362,7 @@ router.get("/providers", auth, async (req, res) => {
 
 		return res.json({ success: true, ...buildAuthProviderPayload(user) });
 	} catch (error) {
-		console.error("Auth providers status error:", {
+		logger.error("Auth providers status error:", {
 			message: error?.message || "unknown error",
 			user_id: req.user?.id || null,
 		});
@@ -1426,7 +1429,7 @@ router.delete("/providers/:provider", auth, async (req, res) => {
 			await connection.rollback();
 		}
 
-		console.error("Auth provider disconnect error:", {
+		logger.error("Auth provider disconnect error:", {
 			message: error?.message || "unknown error",
 			provider,
 			user_id: req.user?.id || null,
@@ -1454,7 +1457,7 @@ router.get("/user", auth, async (req, res) => {
 
         res.json({ user: userData, success: true });
     } catch (error) {
-        console.error("Auth /user Error:", {
+        logger.error("Auth /user Error:", {
             message: error?.message || "unknown error",
             stack: error?.stack || null,
             user_id: req.user?.id || null,
@@ -1468,7 +1471,7 @@ router.get("/2fa/status", auth, async (req, res) => {
         const twoFactorRow = await getTwoFactorRow(req.user.id);
         res.json({ enabled: isTwoFactorEnabled(twoFactorRow) });
     } catch (error) {
-        console.error("2FA status error:", error);
+        logger.error("2FA status error:", error);
         res.status(500).json({ message: "Error fetching 2FA status" });
     }
 });
@@ -1484,7 +1487,7 @@ router.get("/password/status", auth, async (req, res) => {
 
         res.json({ enabled: Boolean(user.password_hash && user.email_login_key) });
     } catch (error) {
-        console.error("Password status error:", error);
+        logger.error("Password status error:", error);
         res.status(500).json({ message: "Error fetching password status" });
     }
 });
@@ -1529,7 +1532,7 @@ router.post("/password/change", auth, async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Password change error:", error);
+        logger.error("Password change error:", error);
         res.status(500).json({ code: "generic", message: "Error changing password" });
     }
 });
@@ -1559,7 +1562,7 @@ router.post("/2fa/setup", auth, async (req, res) => {
 
         res.json({ secret, otpauth });
     } catch (error) {
-        console.error("2FA setup error:", error);
+        logger.error("2FA setup error:", error);
         res.status(500).json({ message: "Error creating 2FA setup" });
     }
 });
@@ -1589,7 +1592,7 @@ router.post("/2fa/confirm", auth, async (req, res) => {
 
         res.json({ enabled: true });
     } catch (error) {
-        console.error("2FA confirm error:", error);
+        logger.error("2FA confirm error:", error);
         res.status(500).json({ message: "Error confirming 2FA" });
     }
 });
@@ -1619,7 +1622,7 @@ router.post("/2fa/disable", auth, async (req, res) => {
 
         res.json({ enabled: false });
     } catch (error) {
-        console.error("2FA disable error:", error);
+        logger.error("2FA disable error:", error);
         res.status(500).json({ message: "Error disabling 2FA" });
     }
 });
@@ -1660,7 +1663,7 @@ router.post("/2fa/verify-login", async (req, res) => {
         const authToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token: authToken, success: true });
     } catch (error) {
-        console.error("2FA login verify error:", error);
+        logger.error("2FA login verify error:", error);
         res.status(500).json({ message: "Error verifying 2FA code" });
     }
 });

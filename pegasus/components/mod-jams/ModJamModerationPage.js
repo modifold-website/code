@@ -53,7 +53,7 @@ export default function ModJamModerationPage({ authToken, initialJams = [] }) {
 
 									<div className="new-project-info">
 										<div className="new-project-header">
-											<Link className="new-project-title" href={`/jams/${jam.slug}`}>{jam.title}</Link>
+											<Link prefetch={false} className="new-project-title" href={`/jams/${jam.slug}`}>{jam.title}</Link>
 										</div>
 										<p className="new-project-description">{jam.summary}</p>
 									</div>

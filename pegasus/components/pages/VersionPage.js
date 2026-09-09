@@ -20,8 +20,9 @@ import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
+import { getAuthHeaders } from "@/utils/api/client";
 import { getVersionDownloadUrl, getVersionPrimaryFile } from "@/utils/projects/downloads";
-import { trackVersionDownload } from "@/utils/projects/downloadTracking";
+import { getVersionDownloadEndpoint } from "@/utils/projects/downloadTracking";
 
 const loaders = [
     "Vanilla",
@@ -122,7 +123,7 @@ const getDependencyKey = (dependency) => {
     return `${projectId}::${versionId || "__project_only__"}`;
 };
 
-function VersionDependencySection({ title, dependencies, t, onDependencyDownload }) {
+function VersionDependencySection({ title, dependencies, t }) {
 	if(dependencies.length === 0) {
 		return null;
 	}
@@ -135,7 +136,7 @@ function VersionDependencySection({ title, dependencies, t, onDependencyDownload
 				{dependencies.map((item) => (
 					<div key={item.id} className="version-page__required-card">
 						{item.href ? (
-							<Link href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
+							<Link prefetch={false} href={item.href} className="version-page__required-link" aria-label={`${t("versions.downloadModal.viewProject")}: ${item.title}`}>
 								<img src={item.icon} alt="" width="48" height="48" loading="lazy" className="version-page__required-icon" />
 
 								<div className="version-page__required-copy">
@@ -157,7 +158,7 @@ function VersionDependencySection({ title, dependencies, t, onDependencyDownload
 						<div className="version-page__required-actions">
 							{item.href && (
 								<Tooltip content={t("versions.downloadModal.viewProject")} delay={300}>
-									<Link href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
+									<Link prefetch={false} href={item.href} className="version-page__round-action button--active-transform" aria-label={t("versions.downloadModal.viewProject")}>
 										<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 											<path d="M15 3h6v6"/>
 											<path d="M10 14 21 3"/>
@@ -169,7 +170,7 @@ function VersionDependencySection({ title, dependencies, t, onDependencyDownload
 
 							{item.downloadHref && (
 								<Tooltip content={t("versions.downloadModal.downloadDependency")} delay={300}>
-									<a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" onClick={() => onDependencyDownload(item)} aria-label={t("versions.downloadModal.downloadDependency")}>
+									<a href={item.downloadHref} download className="version-page__round-action version-page__round-action--download button--active-transform" aria-label={t("versions.downloadModal.downloadDependency")}>
 										<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 											<path d="M12 15V3"/>
 											<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -333,11 +334,12 @@ export default function VersionPage({ project, version, authToken, gameVersions 
         return {
             id: `${dependency.project_id || dependency.project_slug || "dependency"}:${dependency.version_id || index}`,
             title: dependency.project_title || dependency.project_slug || dependency.project_id || t("versions.dependencies.unknownDependency"),
-            icon: dependency.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+            icon: dependency.project_icon_url || "/images/no-project-icon.svg",
             href: dependencyHref,
-            downloadHref: getVersionDownloadUrl(dependency) || (dependencyProjectPath ? `${dependencyProjectPath}/versions` : null),
-            projectSlug: dependency.project_slug,
-            versionId: dependency.version_id,
+            downloadHref: getVersionDownloadEndpoint({
+				project: { slug: dependency.project_slug },
+				version: { id: dependency.version_id },
+			}) || getVersionDownloadUrl(dependency) || (dependencyProjectPath ? `${dependencyProjectPath}/versions` : null),
             downloadTooltip: getFileTooltip({
                 file: {
                     file_name: dependency.file_name,
@@ -354,16 +356,6 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     const optionalContent = dependencies.filter((dependency) => dependency.dependency_type === "optional").map(buildDependencyContent);
 	const embeddedContent = dependencies.filter((dependency) => dependency.dependency_type === "embedded").map(buildDependencyContent);
 	const incompatibleContent = dependencies.filter((dependency) => dependency.dependency_type === "incompatible").map(buildDependencyContent);
-    const handleDependencyDownloadClick = (item) => {
-        trackVersionDownload({
-            project: {
-                slug: item?.projectSlug,
-            },
-            version: {
-                id: item?.versionId,
-            },
-        });
-    };
     const gameVersionList = parseList(currentVersion.game_versions);
     const loaderList = parseList(currentVersion.loaders);
     const hasChangelog = Boolean(currentVersion.changelog);
@@ -374,7 +366,10 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
     const refreshVersion = async () => {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${currentVersion.id}`, {
-            headers: { Accept: "application/json" },
+            headers: {
+                Accept: "application/json",
+                ...getAuthHeaders(authToken),
+            },
         });
 
         setCurrentVersion(res.data);
@@ -441,7 +436,10 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
         try {
             const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${versionId}`, {
-                headers: { Accept: "application/json" },
+                headers: {
+                    Accept: "application/json",
+                    ...getAuthHeaders(authToken),
+                },
             });
 
             const version = res.data;
@@ -769,7 +767,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                             </div>
                         </div>
 
-						<VersionDependencySection title={t("versions.requiredContent")} dependencies={requiredContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
+						<VersionDependencySection title={t("versions.requiredContent")} dependencies={requiredContent} t={t} />
 
                         <section className="version-page__compatibility">
                             <h2>{t("versions.compatibility")}</h2>
@@ -830,9 +828,9 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                             </div>
                         </section>
 
-						<VersionDependencySection title={t("versions.optionalDependencies")} dependencies={optionalContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
-						<VersionDependencySection title={t("versions.dependencies.types.embedded")} dependencies={embeddedContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
-						<VersionDependencySection title={t("versions.dependencies.types.incompatible")} dependencies={incompatibleContent} t={t} onDependencyDownload={handleDependencyDownloadClick} />
+						<VersionDependencySection title={t("versions.optionalDependencies")} dependencies={optionalContent} t={t} />
+						<VersionDependencySection title={t("versions.dependencies.types.embedded")} dependencies={embeddedContent} t={t} />
+						<VersionDependencySection title={t("versions.dependencies.types.incompatible")} dependencies={incompatibleContent} t={t} />
                     </div>
                 </div>
 

@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require('express');
 const router = express.Router();
 const auth = require('../../middleware/auth');
@@ -29,7 +31,7 @@ router.get('/', auth, async (req, res) => {
 
         res.json({ tokens: masked });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ error: 'Database error' });
     }
 });
@@ -68,7 +70,7 @@ router.post('/', auth, async (req, res) => {
             message: 'Token created successfully. Save it now — it will not be shown again!'
         });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ error: 'Failed to create token' });
     }
 });
@@ -94,7 +96,7 @@ router.delete('/:id', auth, async (req, res) => {
             message: 'API token has been permanently deleted' 
         });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         res.status(500).json({ error: 'Server error' });
     }
 });

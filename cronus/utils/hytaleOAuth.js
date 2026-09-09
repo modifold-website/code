@@ -103,8 +103,6 @@ const exchangeHytaleCode = async ({ code, codeVerifier }) => {
 		headers: { Authorization: `Bearer ${accessToken}` },
 	});
 
-	console.log("userinfo:", userInfoResponse.data);
-
 	const userInfo = userInfoResponse.data || {};
 	const hytaleSub = String(userInfo.sub || "").trim();
 	const hytaleProfileUuid = String(userInfo.profile?.uuid || "").trim() || null;

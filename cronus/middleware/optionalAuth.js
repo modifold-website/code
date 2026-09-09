@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const jwt = require("jsonwebtoken");
 const { db } = require("../config/db");
 
@@ -40,7 +42,7 @@ module.exports = async (req, res, next) => {
             req.user = { id: apiToken.user_id, viaApiToken: true };
             return next();
         } catch (err) {
-            console.error("Optional API token check error:", err);
+            logger.error("Optional API token check error:", err);
             return next();
         }
     }

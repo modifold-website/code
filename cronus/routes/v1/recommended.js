@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 
@@ -82,25 +84,25 @@ router.get("/", async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 custom_image_url: project.custom_image_url || null,
                 gallery: project.featured_image ? [{ url: project.featured_image, featured: 1 }] : [],
                 owner: project.organization_slug ? {
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
                     profile_url: `/organization/${project.organization_slug}`,
                 } : {
                     username: project.username,
                     slug: project.user_slug,
-                    avatar: project.user_avatar || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.user_avatar || "https://modifold.com/images/no-project-icon.svg",
                     activeProfileBadge: project.activeProfileBadge,
                     profile_url: `/user/${project.user_slug}`,
                 },
             })),
         });
     } catch (error) {
-        console.error("Error fetching recommended projects:", error);
+        logger.error("Error fetching recommended projects:", error);
         return res.status(500).json({ message: "Error fetching recommended projects" });
     }
 });

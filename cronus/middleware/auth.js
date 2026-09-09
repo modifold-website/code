@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const jwt = require("jsonwebtoken");
 const { db } = require("../config/db");
 
@@ -40,7 +42,7 @@ module.exports = async (req, res, next) => {
             req.user = { id: apiToken.user_id, viaApiToken: true };
             return next();
         } catch (err) {
-            console.error("API token check error:", err);
+            logger.error("API token check error:", err);
             return res.status(500).json({ message: "Server error during token validation" });
         }
     }

@@ -1,8 +1,11 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 
 const { db } = require("../../config/db");
 const optionalAuth = require("../../middleware/optionalAuth");
 const { ORG_PROJECT_PERMISSIONS, hasProjectPermission, resolveProjectAccess } = require("../../utils/organizations");
+const { canAccessRestrictedProject, isPrivilegedUserRole } = require("../../utils/projectVisibility");
 
 const router = express.Router();
 
@@ -13,20 +16,6 @@ const getUserRole = async (userId) => {
 
 	const [users] = await db.query("SELECT isRole FROM users WHERE id = ? LIMIT 1", [userId]);
 	return users[0]?.isRole || null;
-};
-
-const canViewPrivateVersion = async (project, userId) => {
-	if(!project || !userId) {
-		return false;
-	}
-
-	const role = await getUserRole(userId);
-	if(role === "admin" || role === "moderator") {
-		return true;
-	}
-
-	const access = await resolveProjectAccess(db, project.id, userId);
-	return Boolean(access?.isOwner || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS));
 };
 
 const parseJsonArray = (value) => {
@@ -99,7 +88,9 @@ router.get("/:versionId", optionalAuth, async (req, res) => {
 			v.moderation_status,
 			v.moderation_reason,
 			p.user_id,
-			p.slug AS project_slug
+			p.slug AS project_slug,
+			p.status AS project_status,
+			p.visibility AS project_visibility
 			FROM project_versions v
 			INNER JOIN projects p ON p.id = v.project_id
 			WHERE BINARY v.id = BINARY ?
@@ -116,8 +107,22 @@ router.get("/:versionId", optionalAuth, async (req, res) => {
 			id: version.project_id,
 			user_id: version.user_id,
 			slug: version.project_slug,
+			status: version.project_status,
+			visibility: version.project_visibility,
 		};
-		const canViewModerationFields = await canViewPrivateVersion(project, req.user?.id || null);
+		const userId = req.user?.id || null;
+		const [access, userRole] = await Promise.all([
+			userId ? resolveProjectAccess(db, project, userId) : null,
+			getUserRole(userId),
+		]);
+
+		if(!canAccessRestrictedProject({ project, userId, userRole, access })) {
+			return res.status(403).json({ message: "You do not have permission to view this project" });
+		}
+
+		const canViewModerationFields = Boolean(
+			userId && (isPrivilegedUserRole(userRole) || access?.isOwner || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS))
+		);
 
 		if(version.moderation_status !== "approved" && !canViewModerationFields) {
 			return res.status(404).json({ message: "Version not found" });
@@ -154,7 +159,7 @@ router.get("/:versionId", optionalAuth, async (req, res) => {
 
 		return res.json(response);
 	} catch(error) {
-		console.error("Error fetching v2 version:", error);
+		logger.error("Error fetching v2 version:", error);
 		return res.status(500).json({ message: "Error fetching version", error: error.message });
 	}
 });

@@ -118,7 +118,7 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
 
     return (
         <div className="media-project-card" id={project.slug}>
-            <Link className="media-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
+            <Link prefetch={false} className="media-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
             <div className={`media-project-cover ${!coverUrl ? "media-project-cover--fallback" : ""}`} style={fallbackCoverStyle}>
                 {coverUrl && (
@@ -128,13 +128,13 @@ export default function ProjectCardMedia({ project, actions = null, showFollower
 
             <div className="media-project-body">
                 <div className="media-project-header">
-                    <img className="media-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
+                    <img className="media-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "/images/no-project-icon.svg"} />
 
                     <div className="media-project-header-text">
                         <div className="media-project-title-row">
                             <span className="media-project-title">{project.title}</span>
                             <span className="media-project-author">
-                                {t("by")} <Link href={project.owner?.profile_url || `/user/${project.owner?.slug || ""}`}><UserName user={project.owner} /></Link>
+                                {t("by")} <Link prefetch={false} href={project.owner?.profile_url || `/user/${project.owner?.slug || ""}`}><UserName user={project.owner} /></Link>
                             </span>
                         </div>
 

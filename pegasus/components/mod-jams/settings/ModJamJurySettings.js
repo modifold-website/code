@@ -104,14 +104,14 @@ export default function ModJamJurySettings({ authToken, jam, initialJury = [] })
 							) : (
 								jury.map((member) => (
 									<div key={member.user_id} className="author author-card mod-jam-jury-settings-card" style={{ "--1ebedaf6": "40px", display: "flex" }}>
-										<Link className="author__avatar button--active-transform" href={`/user/${member.user?.slug}`}>
+										<Link prefetch={false} className="author__avatar button--active-transform" href={`/user/${member.user?.slug}`}>
 											<div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "40px", height: "40px", maxWidth: "none" }}>
-												<img className="magnify" alt={member.user?.username || ""} src={member.user?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} />
+												<img className="magnify" alt={member.user?.username || ""} src={member.user?.avatar || "/images/no-project-icon.svg"} />
 											</div>
 										</Link>
 
 										<div className="author__main">
-											<Link className="author__name" href={`/user/${member.user?.slug}`}>
+											<Link prefetch={false} className="author__name" href={`/user/${member.user?.slug}`}>
 												<UserName user={member.user} />
 											</Link>
 										</div>

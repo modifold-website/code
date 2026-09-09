@@ -533,7 +533,111 @@
       "noProjectType": "Please select a project type",
       "generic": "Error creating project"
     },
-    "success": "Project created!"
+    "success": "Project created!",
+    "importFromCurseForge": "Move a project from another platform"
+  },
+  "CurseForgeImportModal": {
+    "title": "Move from CurseForge",
+    "close": "Close",
+    "methodLabel": "Transfer method",
+    "methods": { "profile": "Profile", "links": "By link" },
+    "validation": {
+      "validProfile": "Link looks good",
+      "invalidProfile": "Paste a link to your CurseForge profile",
+      "validProject": "Link looks good",
+      "invalidProject": "Paste a link to a Hytale project on CurseForge"
+    },
+    "profile": {
+      "title": "Move projects from your profile",
+      "hint": "Paste your profile link and we'll find your projects.",
+      "placeholder": "https://www.curseforge.com/members/your-name"
+    },
+    "links": {
+      "title": "Move specific projects",
+      "hint": "Paste links to the projects you want to move. You can move up to {limit} projects at a time.",
+      "placeholder": "https://www.curseforge.com/hytale/mods/project-name",
+      "remove": "Remove project link",
+      "add": "Add another link"
+    },
+    "checking": "Checking…",
+    "continue": "Continue",
+    "verification": {
+      "title": "Confirm these projects are yours",
+      "hint": "To confirm your profile, add the code to one project description. We've selected one for you. The rest will appear after confirmation.",
+      "linksHint": "Add the code to the description of every selected project.",
+      "codeLabel": "Verification code",
+      "stepOne": "Open the project “<link>{project}</link>” on CurseForge and edit its description.",
+      "linksStepOne": "Open each project on CurseForge and edit its description.",
+      "stepTwo": "Paste {code} anywhere in the description and save your changes.",
+      "linksStepTwo": "Paste {code} into every project description and save your changes.",
+      "stepThree": "Return here and select “I added the code.” You can remove it after verification.",
+      "alternative": "We only use public CurseForge data. You don't need to enter your password.",
+      "copy": "Copy code",
+      "copied": "Code copied",
+      "copyError": "Could not copy the code",
+	  "expiresIn": "Valid for {minutes, plural, one {# more minute} other {# more minutes}}",
+	  "expired": "The code has expired",
+      "status": {
+        "pending": "Code has not been checked yet",
+        "verified": "Code found in the description",
+        "missing": "Code not found in the description"
+      },
+      "checking": "Checking code…",
+      "check": "I added the code"
+    },
+    "back": "Back",
+    "selection": {
+      "title": "Choose projects",
+      "hint": "You can move up to {limit} projects at a time.",
+      "clear": "Clear all",
+      "all": "Select all",
+      "firstTen": "Select 10",
+      "limitReached": "You can move up to {limit} projects at a time.",
+      "rejected": "Some links could not be opened: {count}.",
+	  "alreadyImported": "Already moved",
+	  "nameConflict": "A project with this name already exists.",
+      "import": "{count, plural, one {Move # project} other {Move # projects}}"
+    },
+    "starting": "Getting started…",
+    "progress": {
+      "title": "Moving projects",
+      "hint": "{progress}% moved. You can close this window and we'll keep working in the background.",
+	  "retry": "Retry",
+	  "retrying": "Retrying…"
+    },
+    "result": {
+      "completed": { "title": "All done", "hint": "Your projects were moved and saved as drafts." },
+      "partial": { "title": "Some projects weren't moved", "hint": "You can retry them below." },
+      "failed": { "title": "Projects couldn't be moved", "hint": "Try moving them again." }
+    },
+    "stages": {
+      "ready": "Ready to move",
+      "queued": "Starting soon",
+      "metadata": "Moving project information",
+      "icon": "Uploading icon",
+      "gallery": "Uploading images",
+      "versions": "Uploading versions",
+      "completed": "Transfer complete",
+      "failed": "Couldn't move",
+      "skipped": "Not selected"
+    },
+    "status": {
+      "pending": "Starting soon",
+      "queued": "Starting soon",
+      "processing": "Moving",
+      "completed": "Moved",
+      "warning": "Moved with a warning",
+      "failed": "Couldn't move"
+    },
+    "errors": {
+      "prepare": "Couldn't find projects on CurseForge",
+      "verify": "Couldn't confirm these projects are yours",
+      "start": "Couldn't start moving projects",
+	  "retry": "Couldn't retry moving this project",
+      "progress": "Couldn't refresh the information. We'll try again automatically."
+    },
+    "done": "Done",
+    "closeAndContinue": "Close"
   },
   "ProjectPage": {
     "previous": "Previous",
@@ -1100,6 +1204,7 @@
     "combat": "Combat",
     "cursed": "Cursed",
     "decoration": "Decoration",
+    "cosmetics": "Cosmetics",
     "economy": "Economy",
     "equipment": "Equipment",
     "exploration": "Exploration",
@@ -1440,6 +1545,8 @@
         "deleted": "Project deleted successfully"
       },
       "confirmDelete": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+      "deleteConfirmTitle": "Delete project?",
+      "deleteConfirmDescription": "All project versions, images, and files will be permanently deleted. This action cannot be undone.",
       "fields": {
         "icon": "Icon",
         "name": "Name",
@@ -2174,7 +2281,8 @@
     "metadata": {
       "title": "Access Denied — Modifold"
     },
-    "message": "Access Denied"
+    "title": "Access denied",
+    "message": "You don’t have permission to view this page."
   },
   "ShareButtons": {
     "copiedToast": "Link copied",
@@ -3113,5 +3221,26 @@
       "invalidResponse": "Invalid response from server.",
       "generic": "Failed to verify code."
     }
-  }
+  },
+	"PasswordRecovery": {
+		"title": "Reset password",
+		"description": "Enter the email you use to sign in to Modifold.",
+		"requestButton": "Send reset link",
+		"sentTitle": "Check your email",
+		"sentDescription": "If this email has a Modifold password, we’ll send a reset link. It expires in 30 minutes. Check your spam folder too.",
+		"sendAgain": "Send another link",
+		"resetTitle": "Create a new password",
+		"resetDescription": "Use at least 8 characters. Enter your new password twice.",
+		"newPassword": "New password",
+		"confirmPassword": "Confirm new password",
+		"saveButton": "Save password",
+		"success": "Your password has been changed. Sign in with your new password.",
+		"invalid_link": "This link has expired or has already been used. Request a new one.",
+		"invalid_email": "Enter a valid email address.",
+		"invalid_password": "Use at least 8 characters.",
+		"password_too_long": "This password is too long. Try a shorter one.",
+		"password_mismatch": "Passwords do not match.",
+		"rate_limited": "Too many requests. Please try again in a minute.",
+		"generic": "Something went wrong. Please try again."
+	}
 }

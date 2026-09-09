@@ -1,9 +1,11 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const crypto = require("crypto");
 const { db } = require("../../config/db");
 const { clickhouse, hasClickHouseConfig } = require("../../config/clickhouse");
 const auth = require("../../middleware/auth");
-const { getCacheJson, setCacheJson } = require("../../utils/cache");
+const { getCacheJson, setCacheJson, getCacheGeneration } = require("../../utils/cache");
 const router = express.Router();
 const multer = require("multer");
 const sharp = require("sharp");
@@ -13,6 +15,7 @@ const { sanitizePlainText, sanitizeSocialLinks } = require("../../utils/sanitize
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 const { getUnlockedProfileBadges, getVisibleProfileBadge, normalizeProfileBadgeCode } = require("../../utils/profileBadges");
 const { buildSafeObjectFilename, deleteObject, deletePrefix, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+const { buildBooleanFullTextSearch, buildCursorPage, createCanonicalCacheKey, decodeCursor, getCursorContext, normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 
 const deleteUserMediaUrl = async (url, userId) => {
 	const objectKey = getPublicObjectKeyFromUrl(url);
@@ -114,7 +117,7 @@ const getProjectPlayersInLastDaysBySlug = async ({ projectSlugs, days }) => {
 
         await setCacheJson(playersCacheKey, Object.fromEntries(countsBySlug.entries()), 60 * 5);
     } catch (error) {
-        console.warn("Failed to fetch project players for period:", error.message);
+        logger.warn("Failed to fetch project players for period:", error.message);
     }
 
     return countsBySlug;
@@ -224,12 +227,12 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
 		if(updates.avatar && currentUser.avatar !== updates.avatar) {
 			await deleteUserMediaUrl(currentUser.avatar, req.user.id).catch((error) => {
-				console.warn(`Failed to delete replaced user avatar: ${error.message}`);
+				logger.warn(`Failed to delete replaced user avatar: ${error.message}`);
 			});
 		}
 		if(updates.cover && currentUser.cover !== updates.cover) {
 			await deleteUserMediaUrl(currentUser.cover, req.user.id).catch((error) => {
-				console.warn(`Failed to delete replaced user cover: ${error.message}`);
+				logger.warn(`Failed to delete replaced user cover: ${error.message}`);
 			});
 		}
 
@@ -244,7 +247,7 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
         res.json(updatedUser[0]);
     } catch (error) {
-        console.error("Error updating user:", error);
+        logger.error("Error updating user:", error);
         res.status(500).json({ message: "Error updating user", error: error.message });
     }
 });
@@ -285,7 +288,7 @@ router.put("/me/profile-badge", auth, async (req, res) => {
 
 		return res.json(updatedUser);
 	} catch (error) {
-		console.error("Error updating profile badge:", error);
+		logger.error("Error updating profile badge:", error);
 		return res.status(500).json({ message: "Error updating profile badge", error: error.message });
 	}
 });
@@ -334,27 +337,33 @@ router.get("/slug-availability/:slug", auth, async (req, res) => {
             message: null,
         });
     } catch (error) {
-        console.error("Error checking user slug availability:", error);
+        logger.error("Error checking user slug availability:", error);
         return res.status(500).json({ message: "Error checking slug availability" });
     }
 });
 
 router.get("/me/likes", auth, async (req, res) => {
 	try {
-		const rawPage = Number(req.query.page);
-		const rawLimit = Number(req.query.limit);
-		const page = Number.isFinite(rawPage) ? Math.max(Math.trunc(rawPage), 1) : 1;
-		const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 50) : 20;
-		const offset = (page - 1) * limit;
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
 		const userId = req.user.id;
-		const cacheKey = `user_likes_${userId}_${page}_${limit}`;
+		const context = getCursorContext({ userId });
+		const cursor = decodeCursor(req.query.cursor, { sort: "liked:desc", context });
+		const [globalGeneration, userGeneration] = await Promise.all([
+			getCacheGeneration("user_likes"),
+			getCacheGeneration(`user_likes:${userId}`),
+		]);
+		const cacheKey = createCanonicalCacheKey(`user_likes_${globalGeneration}_${userGeneration}_${userId}`, {
+			page: cursor ? null : page,
+			limit,
+			cursor: cursor ? req.query.cursor : null,
+		});
 		const cachedResponse = await getCacheJson(cacheKey);
 
 		if(cachedResponse) {
 			return res.json(cachedResponse);
 		}
 
-		const [projects] = await db.query(
+		let listQuery =
 			`SELECT
 				p.id,
 				p.slug,
@@ -385,11 +394,23 @@ router.get("/me/likes", auth, async (req, res) => {
 			LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
 				WHERE pl.user_id = ?
 				AND p.status = 'approved'
-				GROUP BY p.id, pl.created_at
-			ORDER BY pl.created_at DESC
-			LIMIT ? OFFSET ?`,
-			[userId, limit, offset]
-		);
+			`;
+		const listParams = [userId];
+		if(cursor) {
+			listQuery += " AND (pl.created_at < ? OR (pl.created_at = ? AND p.id < ?))";
+			listParams.push(cursor.value, cursor.value, cursor.id);
+		}
+        
+		listQuery += " GROUP BY p.id, pl.created_at ORDER BY pl.created_at DESC, p.id DESC LIMIT ?";
+		listParams.push(limit + 1);
+		if(!cursor) {
+			listQuery += " OFFSET ?";
+			listParams.push(offset);
+		}
+
+		const [projectRows] = await db.query(listQuery, listParams);
+		const cursorPage = buildCursorPage({ rows: projectRows, limit, sort: "liked:desc", sortColumn: "liked_at", context });
+		const projects = cursorPage.items;
 
 		const projectSlugs = projects.filter((project) => Number(project.show_players_last_14d) === 1).map((project) => project.slug).filter(Boolean);
 		const playersLast14DaysBySlug = await getProjectPlayersInLastDaysBySlug({
@@ -412,7 +433,7 @@ router.get("/me/likes", auth, async (req, res) => {
 				slug: project.slug,
 				title: project.title,
 				summary: project.summary || "",
-				icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+				icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
 				downloads: Number(project.downloads || 0),
 				project_type: project.project_type,
 				tags: project.tags ? project.tags.split(",").map((tag) => tag.trim()).filter(Boolean) : [],
@@ -425,7 +446,7 @@ router.get("/me/likes", auth, async (req, res) => {
 					id: project.organization_id,
 					username: project.organization_name,
 					slug: project.organization_slug,
-					avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+					avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
 					summary: project.organization_summary || "",
 					isVerified: 0,
 					type: "organization",
@@ -442,18 +463,27 @@ router.get("/me/likes", auth, async (req, res) => {
 			})),
 			totalPages: Math.ceil(Number(total || 0) / limit),
 			currentPage: page,
+			pagination: {
+				mode: cursor ? "cursor" : "offset",
+				limit,
+				hasMore: cursorPage.hasMore,
+				nextCursor: cursorPage.nextCursor,
+			},
 		};
 
 		await setCacheJson(cacheKey, responseData, 60);
 		return res.json(responseData);
 	} catch (error) {
-		console.error("Error fetching liked projects:", error);
-		return res.status(500).json({ message: "Error fetching liked projects", error: error.message });
+		if(!error.statusCode) {
+			logger.error("Error fetching liked projects:", error);
+		}
+
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching liked projects", error: error.statusCode ? undefined : error.message });
 	}
 });
 
 router.get("/search", auth, async (req, res) => {
-	const query = String(req.query.q || "").trim().slice(0, 64);
+	const query = normalizeSearch(req.query.q, { maxLength: 64 });
 	if(query.length < 2) {
 		return res.json({ users: [] });
 	}
@@ -461,21 +491,23 @@ router.get("/search", auth, async (req, res) => {
 	try {
 		const escapedQuery = query.replace(/[\\%_]/g, "\\$&");
 		const prefixQuery = `${escapedQuery}%`;
-		const containsQuery = `%${escapedQuery}%`;
+		const fullTextQuery = buildBooleanFullTextSearch(query);
+		const searchPredicate = fullTextQuery ? "MATCH(username) AGAINST (? IN BOOLEAN MODE) OR slug LIKE ?" : "username LIKE ? OR slug LIKE ?";
 		const [users] = await db.query(
 			`SELECT id, username, slug, avatar, isVerified, active_profile_badge AS activeProfileBadge
 			FROM users
 			WHERE id <> ?
-			AND (username LIKE ? OR slug LIKE ?)
+			AND (${searchPredicate})
 			ORDER BY
 				CASE
-					WHEN LOWER(username) = LOWER(?) OR LOWER(slug) = LOWER(?) THEN 0
+					WHEN username = ? OR slug = ? THEN 0
 					WHEN username LIKE ? OR slug LIKE ? THEN 1
 					ELSE 2
 				END,
-				username ASC
+				username ASC,
+				id ASC
 			LIMIT 8`,
-			[req.user.id, containsQuery, containsQuery, query, query, prefixQuery, prefixQuery]
+			[req.user.id, fullTextQuery || prefixQuery, prefixQuery, query, query, prefixQuery, prefixQuery]
 		);
 
 		return res.json({
@@ -485,7 +517,7 @@ router.get("/search", auth, async (req, res) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Error searching users:", error);
+		logger.error("Error searching users:", error);
 		return res.status(500).json({ message: "Error searching users", error: error.message });
 	}
 });
@@ -493,23 +525,18 @@ router.get("/search", auth, async (req, res) => {
 router.get("/:username/projects", async (req, res) => {
     try {
         const { username } = req.params;
-        const { page = 1, limit = 20 } = req.query;
-        const sort = ["downloads", "recent", "updated"].includes(req.query.sort) ? req.query.sort : "downloads";
-        const orderBy = {
-            downloads: "p.downloads DESC, p.updated_at DESC",
-            recent: "p.created_at DESC",
-            updated: "p.updated_at DESC",
-        }[sort];
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: "Invalid limit" });
-        }
-
-        const offset = (page - 1) * limit;
+		const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
+		const sort = normalizeEnum(req.query.sort, ["downloads", "recent", "updated"], "downloads");
+		const order = normalizeEnum(req.query.order, ["asc", "desc"], "desc");
+		const sortConfig = {
+			downloads: { expression: "COALESCE(p.downloads, 0)", column: "downloads" },
+			recent: { expression: "p.created_at", column: "created_at" },
+			updated: { expression: "p.updated_at", column: "updated_at" },
+		}[sort];
+		const context = getCursorContext({ username, sort, order });
+		const cursor = decodeCursor(req.query.cursor, { sort: `${sort}:${order}`, context });
+		const direction = order.toUpperCase();
+		const cursorOperator = order === "asc" ? ">" : "<";
 
         let query = `
             SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.downloads, p.created_at, p.updated_at, p.project_type, p.tags,
@@ -546,8 +573,6 @@ router.get("/:username/projects", async (req, res) => {
 						AND (organization_member.project_access_mode = 'all' OR project_override.id IS NOT NULL)
 				)
             )
-            ORDER BY ${orderBy}
-            LIMIT ? OFFSET ?
         `;
 
         let statsQuery = `
@@ -582,11 +607,31 @@ router.get("/:username/projects", async (req, res) => {
             )
         `;
 
-        const params = [username, username, username, Number(limit), Number(offset)];
-        const statsParams = [username, username, username];
+		const params = [username, username, username];
+		if(cursor) {
+			query += ` AND (${sortConfig.expression} ${cursorOperator} ? OR (${sortConfig.expression} = ? AND p.id ${cursorOperator} ?))`;
+			params.push(cursor.value, cursor.value, cursor.id);
+		}
 
-        const [projects] = await db.query(query, params);
-        const [[{ total, totalDownloads }]] = await db.query(statsQuery, statsParams);
+		query += ` ORDER BY ${sortConfig.expression} ${direction}, p.id ${direction} LIMIT ?`;
+		params.push(pagination.limit + 1);
+		if(!cursor) {
+			query += " OFFSET ?";
+			params.push(pagination.offset);
+		}
+
+		const statsParams = [username, username, username];
+
+		const [projectRows] = await db.query(query, params);
+		const [[{ total, totalDownloads }]] = await db.query(statsQuery, statsParams);
+		const cursorPage = buildCursorPage({
+			rows: projectRows,
+			limit: pagination.limit,
+			sort: `${sort}:${order}`,
+			sortColumn: sortConfig.column,
+			context,
+		});
+		const projects = cursorPage.items;
 
         res.json({
             projects: projects.map((project) => ({
@@ -594,7 +639,7 @@ router.get("/:username/projects", async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 downloads: project.downloads,
                 created_at: project.created_at,
                 updated_at: project.updated_at,
@@ -605,7 +650,7 @@ router.get("/:username/projects", async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     isVerified: 0,
                     type: "organization",
@@ -620,27 +665,35 @@ router.get("/:username/projects", async (req, res) => {
                     profile_url: `/user/${project.user_slug}`,
                 },
             })),
-            totalPages: Math.ceil(total / limit),
+			totalPages: Math.ceil(total / pagination.limit),
             totalProjects: Number(total || 0),
             totalDownloads: Number(totalDownloads || 0),
-            currentPage: Number(page),
-            sort,
+			currentPage: pagination.page,
+			sort,
+			pagination: {
+				mode: cursor ? "cursor" : "offset",
+				limit: pagination.limit,
+				hasMore: cursorPage.hasMore,
+				nextCursor: cursorPage.nextCursor,
+			},
         });
     } catch (error) {
-        console.error("Error fetching user projects:", error);
-        res.status(500).json({ message: "Error fetching user projects", error: error.message });
+		if(!error.statusCode) {
+			logger.error("Error fetching user projects:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching user projects", error: error.statusCode ? undefined : error.message });
     }
 });
 
 router.get("/:username/follows", async (req, res) => {
     try {
         const { username } = req.params;
-        const type = req.query.type === "subscriptions" ? "subscriptions" : "subscribers";
-        const rawLimit = Number(req.query.limit);
-        const rawOffset = Number(req.query.offset);
-        const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 15) : 15;
-        const offset = Number.isFinite(rawOffset) ? Math.max(Math.trunc(rawOffset), 0) : 0;
-        const cacheKey = `modifold_user_follows_${Buffer.from(JSON.stringify({ username, type, limit, offset })).toString("base64")}`;
+		const type = normalizeEnum(req.query.type, ["subscriptions", "subscribers"], "subscribers");
+		const { limit, offset } = parsePagination(req.query, { defaultLimit: 15, maxLimit: 15, allowOffset: true });
+		const context = getCursorContext({ username, type });
+		const cursor = decodeCursor(req.query.cursor, { sort: "follows:desc", context });
+		const cacheKey = createCanonicalCacheKey("modifold_user_follows", { username, type, limit, offset: cursor ? null : offset, cursor: cursor ? req.query.cursor : null });
 
         const cachedResponse = await getCacheJson(cacheKey);
         if(cachedResponse) {
@@ -657,19 +710,27 @@ router.get("/:username/follows", async (req, res) => {
         const joinColumn = type === "subscribers" ? "s.author_id" : "s.userid";
         const whereColumn = type === "subscribers" ? "s.userid" : "s.author_id";
 
-        const [rows] = await db.query(
-            `SELECT u.id, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
-            FROM subs s
-            INNER JOIN users u ON u.id = ${joinColumn}
-            WHERE ${whereColumn} = ? AND s.type = 'user'
-            ORDER BY s.date DESC, s.id DESC
-            LIMIT ? OFFSET ?`,
-            [profileUserId, limit + 1, offset]
-        );
+		let listQuery = `SELECT u.id, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge, s.date AS cursor_sort, s.id AS cursor_id
+			FROM subs s
+			INNER JOIN users u ON u.id = ${joinColumn}
+			WHERE ${whereColumn} = ? AND s.type = 'user'`;
+		const listParams = [profileUserId];
+		if(cursor) {
+			listQuery += " AND (s.date < ? OR (s.date = ? AND s.id < ?))";
+			listParams.push(cursor.value, cursor.value, cursor.id);
+		}
 
-        const hasMore = rows.length > limit;
-        const items = (hasMore ? rows.slice(0, limit) : rows).map((item) => ({
-            id: item.id,
+		listQuery += " ORDER BY s.date DESC, s.id DESC LIMIT ?";
+		listParams.push(limit + 1);
+		if(!cursor) {
+			listQuery += " OFFSET ?";
+			listParams.push(offset);
+		}
+
+		const [rows] = await db.query(listQuery, listParams);
+		const cursorPage = buildCursorPage({ rows, limit, sort: "follows:desc", sortColumn: "cursor_sort", idColumn: "cursor_id", context });
+		const items = cursorPage.items.map((item) => ({
+			id: item.id,
             username: item.username,
             slug: item.slug,
             avatar: item.avatar,
@@ -684,17 +745,21 @@ router.get("/:username/follows", async (req, res) => {
                 limit,
                 offset,
                 nextOffset: offset + items.length,
-                hasMore,
-            },
+				hasMore: cursorPage.hasMore,
+				nextCursor: cursorPage.nextCursor,
+			},
         };
 
         await setCacheJson(cacheKey, responseData, 30);
 
         res.json(responseData);
-    } catch (error) {
-        console.error("Error fetching user follow list:", error);
-        res.status(500).json({ message: "Error fetching user follow list", error: error.message });
-    }
+	} catch (error) {
+		if(!error.statusCode) {
+			logger.error("Error fetching user follow list:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching user follow list", error: error.statusCode ? undefined : error.message });
+	}
 });
 
 router.get("/:username/organizations", async (req, res) => {
@@ -728,12 +793,12 @@ router.get("/:username/organizations", async (req, res) => {
                 slug: row.slug,
                 name: row.name,
                 summary: row.summary || "",
-                icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: row.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 members_count: Number(row.members_count || 0),
             })),
         });
     } catch (error) {
-        console.error("Error fetching user organizations:", error);
+        logger.error("Error fetching user organizations:", error);
         return res.status(500).json({ message: "Error fetching user organizations", error: error.message });
     }
 });
@@ -779,7 +844,7 @@ router.get("/:username/achievements", async (req, res) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Error fetching user achievements:", error);
+		logger.error("Error fetching user achievements:", error);
 		return res.status(500).json({ message: "Error fetching user achievements", error: error.message });
 	}
 });
@@ -836,9 +901,12 @@ router.delete("/me", auth, async (req, res) => {
         if(projectIds.length > 0) {
             for(const projectId of projectIds) {
                 try {
-                    await deletePrefix(`projects/${projectId}`);
+					await Promise.all([
+						deletePrefix(`projects/${projectId}`),
+						deletePrefix(`quarantine/projects/${projectId}`, "private"),
+					]);
                 } catch (err) {
-                    console.warn(`Не удалось удалить файлы проекта ${projectId}:`, err);
+                    logger.warn(`Не удалось удалить файлы проекта ${projectId}:`, err);
                 }
             }
 
@@ -859,11 +927,11 @@ router.delete("/me", auth, async (req, res) => {
         }
 
         await deletePrefix(`users/${userId}`).catch((error) => {
-			console.warn(`Не удалось удалить медиа пользователя ${userId}:`, error);
+			logger.warn(`Не удалось удалить медиа пользователя ${userId}:`, error);
 		});
 		for(const mediaUrl of [userMediaRows[0]?.avatar, userMediaRows[0]?.cover].filter(Boolean)) {
 			await deleteUserMediaUrl(mediaUrl, userId).catch((error) => {
-				console.warn(`Не удалось удалить старый медиафайл пользователя ${userId}:`, error);
+				logger.warn(`Не удалось удалить старый медиафайл пользователя ${userId}:`, error);
 			});
 		}
 
@@ -871,7 +939,7 @@ router.delete("/me", auth, async (req, res) => {
 
         res.json({ success: true, message: "Account and all related data successfully deleted" });
     } catch (error) {
-        console.error("Error deleting account:", error);
+        logger.error("Error deleting account:", error);
         res.status(500).json({
             success: false,
             message: "Failed to delete account",

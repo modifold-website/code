@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 require("dotenv").config();
 
 const express = require('express');
@@ -14,15 +16,18 @@ const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require
 const { validateSlug } = require("../../utils/slug");
 const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
 const optionalAuth = require('../../middleware/optionalAuth');
-const { getCacheJson, setCacheJson, deleteCacheByPattern } = require("../../utils/cache");
+const { getCacheJson, setCacheJson, getCacheGeneration, bumpCacheGeneration } = require("../../utils/cache");
 const { getProjectCacheVersion, bumpProjectCacheVersion, bumpProjectCacheVersionById, shouldSkipProjectCacheBump } = require("../../utils/projectCache");
 const { fanoutProjectReleaseNotifications, sendProjectModerationOwnerNotification } = require("../../utils/versionNotifications");
 const { notifyArgusAboutVersion } = require("../../utils/argus");
 const { awardFirstApprovedProjectAchievement } = require("../../utils/achievements");
-const { countProjectVersionDownload } = require("../../utils/downloadAccounting");
+const { countProjectVersionDownload, prepareProjectVersionDownloadRedirect } = require("../../utils/downloadAccounting");
 const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
+const { buildVisibleVersionWhereClause, canAccessRestrictedProject, canViewPrivateProjectVersions } = require("../../utils/projectVisibility");
+const { buildProjectOwnerDto, buildVersionsPagination, getProjectVersionPage } = require("../../utils/projectDetails");
+const { buildBooleanFullTextSearch, buildCursorPage, createCanonicalCacheKey, decodeCursor, getCursorContext, normalizeCsvFilter, normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
-const { deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
+const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const router = express.Router();
 
 const DISCLOSURE_TEXT_LIMIT = 2000;
@@ -235,7 +240,7 @@ const insertProjectEvent = async ({ projectSlug, versionId = null, eventType, ip
         table: "project_events",
         values: [{
             project_slug: projectSlug,
-            version_id: versionId,
+            version_id: versionId === null || versionId === undefined ? null : String(versionId),
             event_type: eventType,
             ip_address: ipAddress,
             country_code: countryCode,
@@ -294,7 +299,7 @@ const getProjectEventRows = async ({ projectSlugs, timeRange }) => {
             project_slug,
             toDate(created_at) AS date,
             event_type,
-            count() AS count
+			countIf(event_id IS NULL OR event_type != 'download') + uniqExactIf(event_id, event_id IS NOT NULL AND event_type = 'download') AS count
             FROM project_events
             WHERE project_slug IN (${escapedSlugs})
             AND created_at >= now() - ${intervalClause}
@@ -347,7 +352,7 @@ const getProjectEventSeries = async ({ projectSlug, eventType, days }) => {
         query: `
             SELECT
             toDate(created_at) AS date,
-            count() AS count
+			countIf(event_id IS NULL) + uniqExactIf(event_id, event_id IS NOT NULL) AS count
             FROM project_events
             WHERE project_slug = {project_slug:String}
             AND event_type = {event_type:String}
@@ -379,7 +384,7 @@ const getProjectDownloadCountries = async ({ projectSlug, days }) => {
         query: `
             SELECT
             lower(country_code) AS country_code,
-            count() AS count
+			countIf(event_id IS NULL OR event_type != 'download') + uniqExactIf(event_id, event_id IS NOT NULL AND event_type = 'download') AS count
             FROM project_events
             WHERE project_slug = {project_slug:String}
             AND event_type = 'download'
@@ -466,25 +471,50 @@ const getProjectPlayersInLastDaysBySlug = async ({ projectSlugs, days }) => {
 
         await setCacheJson(playersCacheKey, Object.fromEntries(countsBySlug.entries()), 60 * 5);
     } catch (error) {
-        console.warn("Failed to fetch project players for period:", error.message);
+        logger.warn("Failed to fetch project players for period:", error.message);
     }
 
     return countsBySlug;
 };
 
+const PROJECT_DETAIL_BASE_QUERY = `SELECT p.*,
+    u.username,
+    u.slug AS user_slug,
+    u.avatar,
+    u.isVerified,
+    u.active_profile_badge AS activeProfileBadge,
+    o.id AS organization_id,
+    o.slug AS organization_slug,
+    o.name AS organization_name,
+    o.summary AS organization_summary,
+    o.icon_url AS organization_icon_url
+    FROM projects p
+    LEFT JOIN users u ON p.user_id = u.id
+    LEFT JOIN organization_projects op
+        ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+    LEFT JOIN organizations o
+        ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
+    WHERE BINARY p.id = BINARY ? OR p.slug = ?
+    ORDER BY (BINARY p.id = BINARY ?) DESC
+    LIMIT 1`;
+
 router.param("slug", async (req, res, next, identifier) => {
 	try {
-		const [projects] = await db.query(
-			`SELECT id, slug
+		const requestPath = String(req.path || "").split("?")[0];
+		const isProjectDetailRequest = ["GET", "HEAD"].includes(String(req.method || "").toUpperCase()) && requestPath === `/${identifier}`;
+		const identifierQuery = `SELECT id, slug
 			FROM projects
 			WHERE BINARY id = BINARY ? OR slug = ?
 			ORDER BY (BINARY id = BINARY ?) DESC
-			LIMIT 1`,
+			LIMIT 1`;
+		const [projects] = await db.query(
+			isProjectDetailRequest ? PROJECT_DETAIL_BASE_QUERY : identifierQuery,
 			[identifier, identifier, identifier]
 		);
 
 		if(projects.length) {
 			req.params.slug = projects[0].slug;
+			req.project = isProjectDetailRequest ? projects[0] : null;
 			req.projectIdentifier = {
 				id: projects[0].id,
 				slug: projects[0].slug,
@@ -494,7 +524,7 @@ router.param("slug", async (req, res, next, identifier) => {
 
 		next();
 	} catch(error) {
-		console.error("Error resolving project identifier:", error);
+		logger.error("Error resolving project identifier:", error);
 		res.status(500).json({ message: "Error resolving project identifier", error: error.message });
 	}
 });
@@ -515,7 +545,7 @@ router.use("/:slug*", (req, res, next) => {
     res.on("finish", () => {
         if(res.statusCode < 400) {
             bumpProjectCacheVersion(slug).catch((error) => {
-                console.warn("Failed to bump project cache version:", slug, error.message);
+                logger.warn("Failed to bump project cache version:", slug, error.message);
             });
         }
     });
@@ -601,7 +631,7 @@ const summarizeVersionResponse = (value) => {
 	}
 
 	const response = {};
-	for(const key of ["success", "message", "error", "versionId", "moderation_status"]) {
+	for(const key of ["success", "message", "versionId", "moderation_status"]) {
 		if(value[key] !== undefined) {
 			response[key] = summarizeVersionLogValue(value[key]);
 		}
@@ -622,23 +652,24 @@ const logVersionRequest = (req, res, next) => {
 
 	res.once("finish", () => {
 		const status = res.statusCode;
-		const logMethod = status >= 400 ? console.error : console.log;
+		const logMethod = status >= 400 ? logger.error : logger.info;
 
-		logMethod("[version-request]", JSON.stringify({
+		logMethod({
+			event: "version_request",
 			method: req.method,
 			path: String(req.originalUrl || "").split("?")[0],
-			project_identifier: req.projectIdentifier?.requested || req.params?.slug || null,
-			status,
-			duration_ms: Date.now() - startedAt,
-			user_id: req.user?.id || null,
-			via_api_token: req.user?.viaApiToken === true,
-			version_number: summarizeVersionLogValue(req.body?.version_number),
-			game_versions: summarizeVersionLogValue(req.body?.game_versions),
+			projectIdentifier: req.projectIdentifier?.requested || req.params?.slug || null,
+			statusCode: status,
+			durationMs: Date.now() - startedAt,
+			userId: req.user?.id || null,
+			viaApiToken: req.user?.viaApiToken === true,
+			versionNumber: summarizeVersionLogValue(req.body?.version_number),
+			gameVersions: summarizeVersionLogValue(req.body?.game_versions),
 			loaders: summarizeVersionLogValue(req.body?.loaders),
-			has_file: Boolean(req.file),
-			file_size: req.file?.size || null,
+			hasFile: Boolean(req.file),
+			fileSize: req.file?.size || null,
 			response: responseBody,
-		}));
+		}, "Version request completed");
 	});
 
 	next();
@@ -654,14 +685,15 @@ const uploadVersionFile = (req, res, next) => {
 		const status = isFileTooLarge ? 413 : 400;
 		const message = isFileTooLarge ? "File is too large" : error.message || "Invalid file upload";
 
-		console.error("[version-upload-middleware-error]", JSON.stringify({
+		logger.error({
+			event: "version_upload_middleware_error",
 			method: req.method,
 			path: String(req.originalUrl || "").split("?")[0],
-			project_identifier: req.projectIdentifier?.requested || req.params?.slug || null,
-			status,
+			projectIdentifier: req.projectIdentifier?.requested || req.params?.slug || null,
+			statusCode: status,
 			code: error.code || null,
 			message,
-		}));
+		}, "Version upload rejected");
 
 		return res.status(status).json({ message });
 	});
@@ -725,6 +757,21 @@ const storeProjectFile = async ({ projectId, file, directory = "" }) => {
 	};
 };
 
+const storeProjectVersionFile = async ({ projectId, versionId, file }) => {
+	const objectKey = ["quarantine", "projects", String(projectId), "versions", String(versionId), file.filename].join("/");
+	await uploadFile({
+		key: objectKey,
+		filePath: file.path,
+		contentType: file.mimetype,
+		publicity: "private",
+	});
+
+	return {
+		...file,
+		objectKey,
+	};
+};
+
 const rgbToInt = (r, g, b) => ((r & 255) << 16) + ((g & 255) << 8) + (b & 255);
 
 const extractDominantColorInt = async (filePath) => {
@@ -784,41 +831,8 @@ const normalizeGalleryOrdering = async (connection, projectId) => {
 	}
 };
 
-const VISIBLE_VERSION_STATUSES = ["approved"];
-const PRIVATE_VERSION_STATUSES = ["draft", "pending", "scanning", "needs_review", "blocked", "error"];
-
-const canViewPrivateProjectVersions = async (project, userId) => {
-	if(!project || !userId) {
-		return false;
-	}
-
-	const role = await getUserRole(userId);
-	if(role === "admin" || role === "moderator") {
-		return true;
-	}
-
-	const access = await resolveProjectAccess(db, project.id, userId);
-	return Boolean(access?.isOwner || hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS));
-};
-
-const buildVisibleVersionWhereClause = async (project, userId) => {
-	if(await canViewPrivateProjectVersions(project, userId)) {
-		const statuses = [...VISIBLE_VERSION_STATUSES, ...PRIVATE_VERSION_STATUSES];
-
-		return {
-			sql: `v.moderation_status IN (${statuses.map(() => "?").join(", ")})`,
-			params: statuses,
-		};
-	}
-
-	return {
-		sql: "v.moderation_status = ?",
-		params: VISIBLE_VERSION_STATUSES,
-	};
-};
-
 const sanitizeVersionForPublicResponse = (version, { includeModeration = false } = {}) => {
-	const { argus_report, moderated_by, moderated_at, scan_requested_at, scanned_at, moderation_status, moderation_reason, ...safeVersion } = version || {};
+	const { argus_report, moderated_by, moderated_at, quarantine_key, scan_requested_at, scanned_at, moderation_status, moderation_reason, ...safeVersion } = version || {};
 
 	if(includeModeration) {
 		return {
@@ -837,14 +851,34 @@ const getVersionFileFields = (version) => ({
 	files: version?.file_url ? [{ url: version.file_url, size: version.file_size, primary: true }] : [],
 });
 
-const queueArgusScan = ({ versionId, project, fileUrl, fileName, fileSize }) => {
-	notifyArgusAboutVersion({
-		versionId,
-		projectId: project.id,
-		projectSlug: project.slug,
-		fileUrl,
-		fileName,
-		fileSize,
+const getVersionWithPrivateFileAccess = async (version, canViewPrivateFile) => {
+	if(!canViewPrivateFile || version?.file_url || !version?.quarantine_key) {
+		return version;
+	}
+
+	return {
+		...version,
+		file_url: await getPrivateObjectDownloadUrl(version.quarantine_key, { expiresInSeconds: 60 * 60 }),
+	};
+};
+
+const queueArgusScan = ({ versionId, project, quarantineKey = null, fileUrl = null, fileName, fileSize }) => {
+	Promise.resolve().then(async () => {
+		const scanFileUrl = quarantineKey ? await getPrivateObjectDownloadUrl(quarantineKey, {
+			expiresInSeconds: Number(process.env.ARGUS_FILE_URL_TTL_SECONDS) || 6 * 60 * 60,
+		}) : fileUrl;
+		if(!scanFileUrl) {
+			throw new Error("Version file is unavailable for Argus scan");
+		}
+
+		return notifyArgusAboutVersion({
+			versionId,
+			projectId: project.id,
+			projectSlug: project.slug,
+			fileUrl: scanFileUrl,
+			fileName,
+			fileSize,
+		});
 	}).then(async (result) => {
 		if(result.queued) {
 			await db.query("UPDATE project_versions SET moderation_status = 'scanning', scan_requested_at = NOW() WHERE id = ? AND moderation_status = 'pending'", [versionId]);
@@ -864,14 +898,14 @@ const queueArgusScan = ({ versionId, project, fileUrl, fileName, fileSize }) => 
 			);
 		}
 	}).catch(async (error) => {
-		console.error("Error queuing Argus scan:", error);
+		logger.error("Error queuing Argus scan:", error);
 		try {
 			await db.query(
 				"UPDATE project_versions SET moderation_status = 'needs_review', moderation_reason = ?, argus_report = JSON_OBJECT('error', ?, 'source', 'cronus_argus_dispatch') WHERE id = ? AND moderation_status IN ('pending', 'scanning')",
 				["Argus scan could not be started. Manual review is required.", error.message, versionId]
 			);
 		} catch (updateError) {
-			console.error("Error marking version for manual Argus review:", updateError);
+			logger.error("Error marking version for manual Argus review:", updateError);
 		}
 	});
 };
@@ -1270,6 +1304,7 @@ const getProjectWikiData = async ({ projectSlug, pageSlug }) => {
     if(!targetMod?.id) {
         return { error: "wiki_mod_not_found", statusCode: 404 };
     }
+    
     const pages = Array.isArray(details?.pages) ? details.pages : [];
     const allPages = flattenWikiPages(pages);
     const fallbackSlug = targetMod?.index?.slug || allPages?.[0]?.slug || targetMod?.slug || null;
@@ -1298,17 +1333,118 @@ const getProjectWikiData = async ({ projectSlug, pageSlug }) => {
     };
 };
 
-const getOrganizationOwnerForProject = async (projectId) => {
-    const [rows] = await db.query(
-        `SELECT o.id, o.slug, o.name, o.summary, o.icon_url
-        FROM organization_projects op
-        INNER JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-        WHERE op.project_id = ?
-        LIMIT 1`,
-        [projectId]
-    );
+const getProjectCreatorAggregates = async (project, viewerUserId) => {
+	if(project.organization_id) {
+		const [[aggregates = {}]] = await db.query(
+			`SELECT
+			COUNT(*) AS totalProjects,
+			COALESCE(SUM(p.downloads), 0) AS totalDownloads,
+			(SELECT COUNT(*) FROM project_likes WHERE project_id = ?) AS followersCount,
+			(SELECT 1 FROM project_likes WHERE project_id = ? AND user_id = ? LIMIT 1) AS isLiked,
+			(SELECT COUNT(*) FROM project_issues WHERE project_id = ?) AS issuesCount
+			FROM organization_projects op
+			INNER JOIN projects p
+				ON p.id COLLATE utf8mb4_unicode_ci = op.project_id COLLATE utf8mb4_unicode_ci
+			WHERE op.organization_id = ? AND p.status = 'approved'`,
+			[project.id, project.id, viewerUserId || null, project.id, project.organization_id]
+		);
 
-    return rows[0] || null;
+		return {
+			subscribers: 0,
+			totalProjects: Number(aggregates.totalProjects || 0),
+			totalDownloads: Number(aggregates.totalDownloads || 0),
+			isSubscribed: false,
+			subscriptionId: null,
+			followersCount: Number(aggregates.followersCount || 0),
+			isLiked: Boolean(aggregates.isLiked),
+			issuesCount: Number(aggregates.issuesCount || 0),
+		};
+	}
+
+	const [[aggregates = {}]] = await db.query(
+		`SELECT
+		(SELECT COUNT(*) FROM subs WHERE userid = ?) AS subscribers,
+		(SELECT id FROM subs WHERE userid = ? AND author_id = ? LIMIT 1) AS subscriptionId,
+		(SELECT COUNT(*) FROM project_likes WHERE project_id = ?) AS followersCount,
+		(SELECT 1 FROM project_likes WHERE project_id = ? AND user_id = ? LIMIT 1) AS isLiked,
+		(SELECT COUNT(*) FROM project_issues WHERE project_id = ?) AS issuesCount,
+		COUNT(DISTINCT p.id) AS totalProjects,
+		COALESCE(SUM(p.downloads), 0) AS totalDownloads
+		FROM projects p
+		WHERE p.status = 'approved'
+		AND (
+			p.user_id = ?
+			OR EXISTS (
+				SELECT 1 FROM project_members pm
+				WHERE pm.project_id = p.id
+				AND pm.user_id = ?
+				AND pm.status IN ('accept', 'accepted')
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM organization_projects member_organization_project
+				INNER JOIN organization_members organization_member
+					ON organization_member.organization_id COLLATE utf8mb4_unicode_ci = member_organization_project.organization_id COLLATE utf8mb4_unicode_ci
+				LEFT JOIN organization_member_project_overrides project_override
+					ON project_override.organization_id = organization_member.organization_id
+					AND project_override.user_id = organization_member.user_id
+					AND project_override.project_id COLLATE utf8mb4_unicode_ci = member_organization_project.project_id COLLATE utf8mb4_unicode_ci
+				WHERE member_organization_project.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+				AND organization_member.user_id = ?
+				AND organization_member.status = 'accepted'
+				AND (organization_member.project_access_mode = 'all' OR project_override.id IS NOT NULL)
+			)
+		)`,
+		[
+			project.user_id,
+			project.user_id,
+			viewerUserId || null,
+			project.id,
+			project.id,
+			viewerUserId || null,
+			project.id,
+			project.user_id,
+			project.user_id,
+			project.user_id,
+		]
+	);
+
+	return {
+		subscribers: Number(aggregates.subscribers || 0),
+		totalProjects: Number(aggregates.totalProjects || 0),
+		totalDownloads: Number(aggregates.totalDownloads || 0),
+		isSubscribed: Boolean(aggregates.subscriptionId),
+		subscriptionId: aggregates.subscriptionId || null,
+		followersCount: Number(aggregates.followersCount || 0),
+		isLiked: Boolean(aggregates.isLiked),
+		issuesCount: Number(aggregates.issuesCount || 0),
+	};
+};
+
+const getPrivateVersionKeys = async (projectId, versions, canViewPrivateVersions) => {
+	const versionIds = versions
+		.filter((version) => canViewPrivateVersions && !version.file_url && version.moderation_status !== "approved")
+		.map((version) => version.id)
+		.filter(Boolean);
+	if(versionIds.length === 0) {
+		return new Map();
+	}
+
+	try {
+		const [rows] = await db.query(
+			`SELECT id, quarantine_key
+			FROM project_versions
+			WHERE project_id = ? AND id IN (${versionIds.map(() => "?").join(", ")})`,
+			[projectId, ...versionIds]
+		);
+		return new Map(rows.map((row) => [String(row.id), row.quarantine_key || null]));
+	} catch(error) {
+		if(error?.code !== "ER_BAD_FIELD_ERROR") {
+			throw error;
+		}
+
+		return new Map();
+	}
 };
 
 const getProjectAccess = async ({ project, userId }) => {
@@ -1335,8 +1471,7 @@ router.get("/dependency-options", async (req, res) => {
 	try {
 		const search = String(req.query.search || "").trim().slice(0, 120);
 		const projectId = String(req.query.id || "").trim().slice(0, 120);
-		const requestedLimit = Number.parseInt(req.query.limit, 10);
-		const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 12) : 8;
+		const { limit } = parsePagination({ limit: req.query.limit }, { defaultLimit: 8, maxLimit: 12 });
 
 		if(!search && !projectId) {
 			return res.json({ projects: [] });
@@ -1349,8 +1484,12 @@ router.get("/dependency-options", async (req, res) => {
 			whereClause.push("p.id = ?");
 			params.push(projectId);
 		} else {
-			whereClause.push("(p.id = ? OR p.slug LIKE ? OR p.title LIKE ?)");
-			params.push(search, `%${search}%`, `%${search}%`);
+			const prefixSearch = `${search.replace(/[\\%_]/g, "\\$&")}%`;
+			const fullTextSearch = buildBooleanFullTextSearch(search);
+			whereClause.push(fullTextSearch
+				? "(p.id = ? OR p.slug LIKE ? OR MATCH(p.title, p.summary) AGAINST (? IN BOOLEAN MODE))"
+				: "(p.id = ? OR p.slug LIKE ? OR p.title LIKE ?)");
+			params.push(search, prefixSearch, fullTextSearch || prefixSearch);
 		}
 
 		const [projects] = await db.query(
@@ -1367,158 +1506,173 @@ router.get("/dependency-options", async (req, res) => {
 				id: project.id,
 				slug: project.slug,
 				title: project.title,
-				icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+				icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
 				project_type: project.project_type,
 			})),
 		});
 	} catch(error) {
-		console.error("Error fetching dependency project options:", error);
-		res.status(500).json({ message: "Error fetching dependency project options" });
+		if(!error.statusCode) {
+			logger.error("Error fetching dependency project options:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching dependency project options" });
 	}
 });
 
 router.get("/", async (req, res) => {
-    try {
-        const { type, sort = "downloads", search = "", tags, game_versions, loaders, dependency_project, dependency_type, page = 1, limit = 20 } = req.query;
-        const normalizedType = type ? normalizeProjectType(type) : null;
-		const normalizedDependencyProject = String(dependency_project || "").trim();
-		const normalizedDependencyType = String(dependency_type || "required").trim().toLowerCase();
+	try {
+		const pagination = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
+		const normalizedType = req.query.type ? normalizeProjectType(req.query.type) : null;
+		const sort = normalizeEnum(req.query.sort, ["downloads", "recent", "updated"], "downloads");
+		const order = normalizeEnum(req.query.order, ["asc", "desc"], "desc");
+		const search = normalizeSearch(req.query.search);
+		const fullTextSearch = buildBooleanFullTextSearch(search);
+		const tags = normalizeCsvFilter(req.query.tags, { name: "tags" });
+		const gameVersions = normalizeCsvFilter(req.query.game_versions, { name: "game_versions" });
+		const loaders = normalizeCsvFilter(req.query.loaders, { name: "loaders" });
+		const normalizedDependencyProject = normalizeSearch(req.query.dependency_project, { maxLength: 120 });
+		const normalizedDependencyType = normalizeEnum(req.query.dependency_type, ["required", "optional", "embedded"], "required", {
+			name: "dependency type",
+			rejectInvalid: req.query.dependency_type !== undefined,
+		});
 
-        if(type && !normalizedType) {
-            return res.status(400).json({ message: "Invalid project type" });
-        }
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: "Invalid page number" });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: "Invalid limit" });
-        }
-
-		if(dependency_type && !["required", "optional", "embedded"].includes(normalizedDependencyType)) {
-			return res.status(400).json({ message: "Invalid dependency type" });
+		if(req.query.type && !normalizedType) {
+			return res.status(400).json({ message: "Invalid project type" });
 		}
 
-        const offset = (page - 1) * limit;
+		const normalizedFilters = {
+			type: normalizedType,
+			search,
+			tags,
+			game_versions: gameVersions,
+			loaders,
+			dependency_project: normalizedDependencyProject,
+			dependency_type: normalizedDependencyProject ? normalizedDependencyType : null,
+		};
+		const cursorContext = getCursorContext(normalizedFilters);
+		const cursor = decodeCursor(req.query.cursor, { sort: `${sort}:${order}`, context: cursorContext });
+		const sortConfig = {
+			downloads: { expression: "COALESCE(p.downloads, 0)", column: "downloads" },
+			recent: { expression: "p.created_at", column: "created_at" },
+			updated: { expression: "p.updated_at", column: "updated_at" },
+		}[sort];
+		const direction = order.toUpperCase();
+		const cursorOperator = order === "asc" ? ">" : "<";
+		const canonicalQuery = {
+			...normalizedFilters,
+			sort,
+			order,
+			limit: pagination.limit,
+			page: cursor ? null : pagination.page,
+			cursor: cursor ? req.query.cursor : null,
+		};
+		const cacheable = !search && tags.length === 0 && gameVersions.length === 0 && loaders.length === 0 && !normalizedDependencyProject;
+		const cacheGeneration = cacheable ? await getCacheGeneration("projects") : null;
+		const cacheKey = cacheable ? createCanonicalCacheKey(`modifold_projects_${cacheGeneration}`, canonicalQuery) : null;
 
-        const cacheKey = `modifold_projects_${Buffer.from(JSON.stringify(req.query)).toString('base64')}`;
-        
-        const cachedResponse = await getCacheJson(cacheKey);
-        if(cachedResponse) {
-            res.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=30");
-            return res.json(cachedResponse);
-        }
+		if(cacheKey) {
+			const cachedResponse = await getCacheJson(cacheKey);
+			if(cachedResponse) {
+				res.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=30");
+				return res.json(cachedResponse);
+			}
+		}
 
-        let query = `
-            SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.color, p.downloads, p.followers, p.created_at, p.updated_at, p.project_type, p.tags, p.license_id, p.license_name, p.show_players_last_14d,
-            ANY_VALUE(u.username) AS username, ANY_VALUE(u.slug) AS user_slug, ANY_VALUE(u.avatar) AS avatar, ANY_VALUE(u.id) AS user_id, ANY_VALUE(u.isVerified) AS isVerified, ANY_VALUE(u.active_profile_badge) AS activeProfileBadge,
-            ANY_VALUE(o.id) AS organization_id, ANY_VALUE(o.slug) AS organization_slug, ANY_VALUE(o.name) AS organization_name, ANY_VALUE(o.icon_url) AS organization_icon_url, ANY_VALUE(o.summary) AS organization_summary,
-            ANY_VALUE(pv.game_versions) AS game_versions, ANY_VALUE(pv.loaders) AS loaders,
-            (SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 LIMIT 1) AS featured_image
-            FROM projects p
-            LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
-            LEFT JOIN project_versions pv ON p.id = pv.project_id AND pv.moderation_status = 'approved'
-        `;
+		let query = `
+			SELECT p.id, p.slug, p.title, p.summary, p.icon_url, p.color, COALESCE(p.downloads, 0) AS downloads, p.followers, p.created_at, p.updated_at, p.project_type, p.tags, p.license_id, p.license_name, p.show_players_last_14d,
+			u.username, u.slug AS user_slug, u.avatar, u.id AS user_id, u.isVerified, u.active_profile_badge AS activeProfileBadge,
+			o.id AS organization_id, o.slug AS organization_slug, o.name AS organization_name, o.icon_url AS organization_icon_url, o.summary AS organization_summary,
+			(SELECT display_version.game_versions FROM project_versions display_version WHERE display_version.project_id = p.id AND display_version.moderation_status = 'approved' ORDER BY display_version.created_at DESC, display_version.id DESC LIMIT 1) AS game_versions,
+			(SELECT display_version.loaders FROM project_versions display_version WHERE display_version.project_id = p.id AND display_version.moderation_status = 'approved' ORDER BY display_version.created_at DESC, display_version.id DESC LIMIT 1) AS loaders,
+			(SELECT url FROM project_gallery WHERE project_id = p.id AND featured = 1 ORDER BY id ASC LIMIT 1) AS featured_image
+			FROM projects p
+			LEFT JOIN users u ON p.user_id = u.id
+			LEFT JOIN organization_projects op ON op.project_id COLLATE utf8mb4_unicode_ci = p.id COLLATE utf8mb4_unicode_ci
+			LEFT JOIN organizations o ON o.id COLLATE utf8mb4_unicode_ci = op.organization_id COLLATE utf8mb4_unicode_ci
+		`;
+		let countQuery = "SELECT COUNT(*) AS total FROM projects p";
+		let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public'";
+		const params = [];
+		const countParams = [];
+		const addFilterParams = (...values) => {
+			params.push(...values);
+			countParams.push(...values);
+		};
 
-        let countQuery = `
-            SELECT COUNT(DISTINCT p.id) as total
-            FROM projects p
-            LEFT JOIN project_versions pv ON p.id = pv.project_id AND pv.moderation_status = 'approved'
-        `;
+		if(normalizedType) {
+			whereClause += " AND p.project_type = ?";
+			addFilterParams(normalizedType);
+		}
 
-        let whereClause = " WHERE p.status = 'approved' AND p.is_archived = 0 AND p.visibility = 'public'";
-        const params = [];
-        const countParams = [];
+		if(search) {
+			if(fullTextSearch) {
+				whereClause += " AND MATCH(p.title, p.summary) AGAINST (? IN BOOLEAN MODE)";
+				addFilterParams(fullTextSearch);
+			} else {
+				const prefixSearch = `${search.replace(/[\\%_]/g, "\\$&")}%`;
+				whereClause += " AND p.title LIKE ?";
+				addFilterParams(prefixSearch);
+			}
+		}
 
-        if(normalizedType) {
-            whereClause += " AND p.project_type = ?";
-            params.push(normalizedType);
-            countParams.push(normalizedType);
-        }
+		if(tags.length > 0) {
+			whereClause += ` AND (${tags.map(() => "FIND_IN_SET(?, p.tags)").join(" OR ")})`;
+			addFilterParams(...tags);
+		}
 
-        if(search) {
-            whereClause += " AND p.title LIKE ?";
-            params.push(`%${search}%`);
-            countParams.push(`%${search}%`);
-        }
-
-        if(tags) {
-            const tagArray = tags.split(",").map((tag) => tag.trim());
-            whereClause += " AND (";
-            tagArray.forEach((tag, index) => {
-                whereClause += `p.tags LIKE ?${index < tagArray.length - 1 ? " OR " : ""}`;
-                params.push(`%${tag}%`);
-                countParams.push(`%${tag}%`);
-            });
-            whereClause += ")";
-        }
-
-        if(game_versions) {
-            const versionArray = game_versions.split(",").map((v) => v.trim());
-            whereClause += " AND (";
-            versionArray.forEach((version, index) => {
-                whereClause += `JSON_CONTAINS(pv.game_versions, ?)${index < versionArray.length - 1 ? " OR " : ""}`;
-                params.push(JSON.stringify(version));
-                countParams.push(JSON.stringify(version));
-            });
-            whereClause += ")";
-        }
-
-        if(loaders) {
-            const loaderArray = loaders.split(",").map((l) => l.trim());
-            whereClause += " AND (";
-            loaderArray.forEach((loader, index) => {
-                whereClause += `JSON_CONTAINS(pv.loaders, ?)${index < loaderArray.length - 1 ? " OR " : ""}`;
-                params.push(JSON.stringify(loader));
-                countParams.push(JSON.stringify(loader));
-            });
-            whereClause += ")";
-        }
-
-		if(normalizedDependencyProject) {
-			const dependencyWhereClause = [
-				"source_version.project_id = p.id",
-				"source_version.moderation_status = 'approved'",
-				"d.project_id = ?",
-			];
-			const dependencyParams = [normalizedDependencyProject];
-
-			if(dependency_type) {
-				dependencyWhereClause.push("d.dependency_type = ?");
-				dependencyParams.push(normalizedDependencyType);
+		if(gameVersions.length > 0 || loaders.length > 0) {
+			const compatibilityWhere = ["compatible_version.project_id = p.id", "compatible_version.moderation_status = 'approved'"];
+			const compatibilityParams = [];
+			if(gameVersions.length > 0) {
+				compatibilityWhere.push(`(${gameVersions.map(() => "JSON_CONTAINS(compatible_version.game_versions, ?)").join(" OR ")})`);
+				compatibilityParams.push(...gameVersions.map(JSON.stringify));
 			}
 
-			whereClause += ` AND EXISTS (
-				SELECT 1
-				FROM dependencies d
-				INNER JOIN project_versions source_version ON source_version.id = d.version_id
-				WHERE ${dependencyWhereClause.join(" AND ")}
-			)`;
-			params.push(...dependencyParams);
-			countParams.push(...dependencyParams);
+			if(loaders.length > 0) {
+				compatibilityWhere.push(`(${loaders.map(() => "JSON_CONTAINS(compatible_version.loaders, ?)").join(" OR ")})`);
+				compatibilityParams.push(...loaders.map(JSON.stringify));
+			}
+
+			whereClause += ` AND EXISTS (SELECT 1 FROM project_versions compatible_version WHERE ${compatibilityWhere.join(" AND ")})`;
+			addFilterParams(...compatibilityParams);
 		}
 
-        query += whereClause;
-        countQuery += whereClause;
+		if(normalizedDependencyProject) {
+			whereClause += ` AND EXISTS (
+				SELECT 1 FROM dependencies d
+				INNER JOIN project_versions source_version ON source_version.id = d.version_id
+				WHERE source_version.project_id = p.id
+				AND source_version.moderation_status = 'approved'
+				AND d.project_id = ?
+				AND d.dependency_type = ?
+			)`;
+			addFilterParams(normalizedDependencyProject, normalizedDependencyType);
+		}
 
-        query += " GROUP BY p.id";
+		countQuery += whereClause;
+		query += whereClause;
+		if(cursor) {
+			query += ` AND (${sortConfig.expression} ${cursorOperator} ? OR (${sortConfig.expression} = ? AND p.id ${cursorOperator} ?))`;
+			params.push(cursor.value, cursor.value, cursor.id);
+		}
 
-        if(sort === "recent") {
-            query += " ORDER BY p.created_at DESC";
-        } else if(sort === "updated") {
-            query += " ORDER BY p.updated_at DESC";
-        } else {
-            query += " ORDER BY p.downloads DESC";
-        }
+		query += ` ORDER BY ${sortConfig.expression} ${direction}, p.id ${direction} LIMIT ?`;
+		params.push(pagination.limit + 1);
+		if(!cursor) {
+			query += " OFFSET ?";
+			params.push(pagination.offset);
+		}
 
-        query += " LIMIT ? OFFSET ?";
-        params.push(Number(limit), Number(offset));
-
-        const [projects] = await db.query(query, params);
-        const [[{ total }]] = await db.query(countQuery, countParams);
+		const [projectRows] = await db.query(query, params);
+		const [[{ total }]] = await db.query(countQuery, countParams);
+		const cursorPage = buildCursorPage({
+			rows: projectRows,
+			limit: pagination.limit,
+			sort: `${sort}:${order}`,
+			sortColumn: sortConfig.column,
+			context: cursorContext,
+		});
+		const projects = cursorPage.items;
 
         const projectSlugs = projects.filter((project) => Number(project.show_players_last_14d) === 1).map((project) => project.slug).filter(Boolean);
         const playersLast14DaysBySlug = await getProjectPlayersInLastDaysBySlug({
@@ -1532,7 +1686,7 @@ router.get("/", async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 color: project.color,
                 downloads: project.downloads,
                 show_players_last_14d: Number(project.show_players_last_14d) === 1,
@@ -1551,7 +1705,7 @@ router.get("/", async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     isVerified: 0,
                     type: "organization",
@@ -1566,17 +1720,28 @@ router.get("/", async (req, res) => {
                     profile_url: `/user/${project.user_slug}`,
                 },
             })),
-            totalPages: Math.ceil(total / limit),
-            currentPage: Number(page),
+			totalPages: Math.ceil(total / pagination.limit),
+			currentPage: pagination.page,
+			pagination: {
+				mode: cursor ? "cursor" : "offset",
+				limit: pagination.limit,
+				hasMore: cursorPage.hasMore,
+				nextCursor: cursorPage.nextCursor,
+			},
         };
 
-        await setCacheJson(cacheKey, responseData, 60);
+		if(cacheKey) {
+			await setCacheJson(cacheKey, responseData, 60);
+		}
 
         res.set("Cache-Control", "public, max-age=60, s-maxage=60, stale-while-revalidate=30");
         res.json(responseData);
-    } catch (error) {
-        console.error("Error fetching projects:", error);
-        res.status(500).json({ message: "Error fetching projects", error: error.message });
+	} catch (error) {
+		if(!error.statusCode) {
+			logger.error("Error fetching projects:", error);
+		}
+
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching projects", error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -1618,26 +1783,14 @@ router.put("/:slug/tags", auth, async (req, res) => {
 
         res.json({ success: true, message: "Tags updated", tags });
     } catch (error) {
-        console.error("Error updating tags:", error);
+        logger.error("Error updating tags:", error);
         res.status(500).json({ message: "Error updating tags", error: error.message });
     }
 });
 
 router.get('/user/projects', auth, async (req, res) => {
     try {
-        const { page = 1, limit = 20 } = req.query;
-
-        if(isNaN(page) || page < 1) {
-            return res.status(400).json({ message: 'Invalid page number' });
-        }
-
-        if(isNaN(limit) || limit < 1) {
-            return res.status(400).json({ message: 'Invalid limit' });
-        }
-
-        const normalizedPage = Number(page);
-        const normalizedLimit = Number(limit);
-        const offset = (normalizedPage - 1) * normalizedLimit;
+		const { page: normalizedPage, limit: normalizedLimit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 100 });
 
         const [projects] = await db.query(
             `
@@ -1701,7 +1854,7 @@ router.get('/user/projects', auth, async (req, res) => {
                 slug: project.slug,
                 title: project.title,
                 summary: project.summary,
-                icon_url: project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: project.icon_url || "https://modifold.com/images/no-project-icon.svg",
                 downloads: project.downloads,
                 created_at: project.created_at,
                 updated_at: project.updated_at,
@@ -1712,7 +1865,7 @@ router.get('/user/projects', auth, async (req, res) => {
                     id: project.organization_id,
                     username: project.organization_name,
                     slug: project.organization_slug,
-                    avatar: project.organization_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                    avatar: project.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
                     summary: project.organization_summary || "",
                     type: "organization",
                     profile_url: profileUrl,
@@ -1738,8 +1891,10 @@ router.get('/user/projects', auth, async (req, res) => {
             currentPage: normalizedPage,
         });
     } catch (error) {
-        console.error('Error fetching user projects:', error);
-        res.status(500).json({ message: 'Error fetching user projects', error: error.message });
+		if(!error.statusCode) {
+			logger.error('Error fetching user projects:', error);
+		}
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Error fetching user projects', error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -1807,7 +1962,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
         }
 
         const projectId = generateId();
-        let iconUrl = getPublicUrl("static/no-project-icon.svg");
+        let iconUrl = "https://modifold.com/images/no-project-icon.svg";
         let projectColor = null;
 
         if(req.file) {
@@ -1817,7 +1972,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
                 const storedIcon = await storeProjectFile({ projectId, file: iconFile });
                 iconUrl = storedIcon.url;
             } catch (fileError) {
-                console.error("Failed to store project icon:", fileError);
+                logger.error("Failed to store project icon:", fileError);
                 return res.status(500).json({ message: "Error storing icon file", error: fileError.message });
             }
         }
@@ -1829,7 +1984,7 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
 
 		res.json({ id: projectId, slug, title: safeTitle, summary: safeSummary, visibility, project_type: normalizedProjectType, icon_url: iconUrl, color: projectColor, success: true });
     } catch (error) {
-        console.error("Error creating project:", error);
+        logger.error("Error creating project:", error);
         res.status(500).json({ message: "Error creating project", error: error.message });
     }
 });
@@ -1895,7 +2050,7 @@ router.put('/:slug/settings', auth, async (req, res) => {
         await db.query('UPDATE projects SET ? WHERE id = ?', [updates, project.id]);
         res.json({ success: true, message: 'Project settings updated' });
     } catch (error) {
-        console.error('Error updating project:', error);
+        logger.error('Error updating project:', error);
         res.status(500).json({ message: 'Error updating project', error: error.message });
     }
 });
@@ -1922,7 +2077,7 @@ router.put('/:slug/description', auth, async (req, res) => {
         await db.query('UPDATE projects SET description = ? WHERE id = ?', [sanitizeMarkdownText(description || ""), project.id]);
         res.json({ success: true, message: 'Project description updated' });
     } catch (error) {
-        console.error('Error updating description:', error);
+        logger.error('Error updating description:', error);
         res.status(500).json({ message: 'Error updating description', error: error.message });
     }
 });
@@ -1964,7 +2119,7 @@ router.put('/:slug/license', auth, async (req, res) => {
         await db.query('UPDATE projects SET ? WHERE id = ?', [updates, project.id]);
         res.json({ success: true, message: 'Project license updated' });
     } catch (error) {
-        console.error('Error updating license:', error);
+        logger.error('Error updating license:', error);
         res.status(500).json({ message: 'Error updating license', error: error.message });
     }
 });
@@ -2045,7 +2200,7 @@ router.put('/:slug/links', auth, async (req, res) => {
         await db.query('UPDATE projects SET ? WHERE id = ?', [updates, project.id]);
         res.json({ success: true, message: 'Project links updated' });
     } catch (error) {
-        console.error('Error updating links:', error);
+        logger.error('Error updating links:', error);
         res.status(500).json({ message: 'Error updating links', error: error.message });
     }
 });
@@ -2078,17 +2233,19 @@ router.put('/:slug/icon', auth, upload.single('icon'), async (req, res) => {
         
         await db.query('UPDATE projects SET icon_url = ?, color = ? WHERE id = ?', [iconUrl, projectColor, project.id]);
 		await deletePublicUrlWithinPrefix(project.icon_url, `projects/${project.id}`).catch((error) => {
-			console.warn(`Failed to delete replaced project icon: ${error.message}`);
+			logger.warn(`Failed to delete replaced project icon: ${error.message}`);
 		});
         res.json({ success: true, icon_url: iconUrl, color: projectColor });
     } catch (error) {
-        console.error('Error uploading icon:', error);
+        logger.error('Error uploading icon:', error);
         res.status(500).json({ message: 'Error uploading icon', error: error.message });
     }
 });
 
 router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async (req, res) => {
-    const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
+	const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
+	let uploadedQuarantineKey = null;
+	let versionPersisted = false;
 
     try {
         const project = await getProjectBySlug(req.params.slug);
@@ -2121,13 +2278,13 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
         }
 
         const versionId = generateId();
-        const storedVersionFile = await storeProjectFile({
+		const storedVersionFile = await storeProjectVersionFile({
 			projectId: project.id,
+			versionId,
 			file: req.file,
-			directory: `versions/${versionId}`,
 		});
-        const fileUrl = storedVersionFile.url;
-        const moderationStatus = shouldHoldVersionForProjectModeration(project) ? "draft" : "pending";
+		uploadedQuarantineKey = storedVersionFile.objectKey;
+		const moderationStatus = shouldHoldVersionForProjectModeration(project) ? "draft" : "pending";
         const connection = await db.getConnection();
 
         try {
@@ -2135,22 +2292,23 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
 
             const resolvedDependencies = await resolveVersionDependencies({ connection, dependenciesRaw: dependencies });
 
-            await connection.query("INSERT INTO project_versions (id, project_id, version_number, changelog, release_channel, file_url, file_size, game_versions, loaders, moderation_status, scan_requested_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-                versionId,
-                project.id,
-                safeVersionNumber,
-                changelog ? sanitizeMarkdownText(changelog) : null,
-                release_channel || "release",
-                fileUrl,
-                req.file.size,
+			await connection.query("INSERT INTO project_versions (id, project_id, version_number, changelog, release_channel, file_url, quarantine_key, file_size, game_versions, loaders, moderation_status, scan_requested_at) VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)", [
+				versionId,
+				project.id,
+				safeVersionNumber,
+				changelog ? sanitizeMarkdownText(changelog) : null,
+				release_channel || "release",
+				uploadedQuarantineKey,
+				req.file.size,
                 JSON.stringify(normalizedGameVersions),
                 loaders,
                 moderationStatus,
                 moderationStatus === "pending" ? new Date() : null,
             ]);
 
-            await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
-            await connection.commit();
+			await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
+			await connection.commit();
+			versionPersisted = true;
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -2159,18 +2317,24 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
         }
 
         if(moderationStatus === "pending") {
-            queueArgusScan({
-                versionId,
-                project,
-                fileUrl,
-                fileName: req.file.originalname || req.file.filename,
+			queueArgusScan({
+				versionId,
+				project,
+				quarantineKey: uploadedQuarantineKey,
+				fileName: req.file.originalname || req.file.filename,
                 fileSize: req.file.size,
             });
         }
 
-        res.json({ success: true, versionId, fileUrl, moderation_status: moderationStatus });
-    } catch (error) {
-        console.error("Error creating version:", error);
+		res.json({ success: true, versionId, fileUrl: null, moderation_status: moderationStatus });
+	} catch (error) {
+		if(uploadedQuarantineKey && !versionPersisted) {
+			await deleteObject(uploadedQuarantineKey, "private").catch((cleanupError) => {
+				logger.warn(`Failed to delete unpersisted quarantine file: ${cleanupError.message}`);
+			});
+		}
+
+        logger.error("Error creating version:", error);
         if(error?.statusCode === 400) {
             return res.status(400).json({ message: error.message });
         }
@@ -2232,7 +2396,7 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
 			await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 			await connection.commit();
 			await bumpProjectCacheVersion(project.slug).catch((error) => {
-				console.warn(`Failed to bump project cache after adding gallery image: ${error.message}`);
+				logger.warn(`Failed to bump project cache after adding gallery image: ${error.message}`);
 			});
 
 			res.status(201).json({ success: true, id: result.insertId, url, ordering: nextOrdering });
@@ -2243,7 +2407,7 @@ router.post('/:slug/gallery', auth, upload.single('image'), async (req, res) => 
 			connection.release();
 		}
     } catch (error) {
-        console.error('Error uploading gallery image:', error);
+        logger.error('Error uploading gallery image:', error);
         res.status(500).json({ message: 'Error uploading gallery image', error: error.message });
     }
 });
@@ -2293,7 +2457,7 @@ router.post("/:slug/gallery/videos", auth, async (req, res) => {
 			await connection.commit();
 
 			await bumpProjectCacheVersion(project.slug).catch((error) => {
-				console.warn(`Failed to bump project cache after adding gallery video: ${error.message}`);
+				logger.warn(`Failed to bump project cache after adding gallery video: ${error.message}`);
 			});
 
 			return res.status(201).json({
@@ -2317,7 +2481,7 @@ router.post("/:slug/gallery/videos", auth, async (req, res) => {
 			connection.release();
 		}
 	} catch(error) {
-		console.error("Error adding gallery video:", error);
+		logger.error("Error adding gallery video:", error);
 		return res.status(500).json({ message: "Error adding gallery video", error: error.message });
 	}
 });
@@ -2369,12 +2533,12 @@ router.put("/:slug/gallery/videos/:galleryId", auth, async (req, res) => {
 		);
 		await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after updating gallery video: ${error.message}`);
+			logger.warn(`Failed to bump project cache after updating gallery video: ${error.message}`);
 		});
 
 		return res.json({ success: true, message: "Gallery video updated" });
 	} catch(error) {
-		console.error("Error updating gallery video:", error);
+		logger.error("Error updating gallery video:", error);
 		return res.status(500).json({ message: "Error updating gallery video", error: error.message });
 	}
 });
@@ -2434,12 +2598,12 @@ router.put("/:slug/gallery/order", auth, async (req, res) => {
 		}
 
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after reordering gallery: ${error.message}`);
+			logger.warn(`Failed to bump project cache after reordering gallery: ${error.message}`);
 		});
 
 		return res.json({ success: true, ordered_ids: uniqueIds });
 	} catch(error) {
-		console.error("Error reordering gallery:", error);
+		logger.error("Error reordering gallery:", error);
 		return res.status(500).json({ message: "Error reordering gallery", error: error.message });
 	}
 });
@@ -2501,19 +2665,19 @@ router.put('/:slug/gallery/:galleryId', auth, upload.single('image'), async (req
 			const replacedUrls = [...new Set([gallery[0].url, gallery[0].raw_url].filter(Boolean))];
 			for(const replacedUrl of replacedUrls) {
 				await deletePublicUrlWithinPrefix(replacedUrl, `projects/${project.id}`).catch((error) => {
-					console.warn(`Failed to delete replaced gallery image: ${error.message}`);
+					logger.warn(`Failed to delete replaced gallery image: ${error.message}`);
 				});
 			}
 		}
 
         await db.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after updating gallery image: ${error.message}`);
+			logger.warn(`Failed to bump project cache after updating gallery image: ${error.message}`);
 		});
 
         res.json({ success: true, message: 'Gallery image updated' });
     } catch (error) {
-        console.error('Error updating gallery image:', error);
+        logger.error('Error updating gallery image:', error);
         res.status(500).json({ message: 'Error updating gallery image', error: error.message });
     }
 });
@@ -2547,7 +2711,7 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
             try {
                 await deletePublicUrl(fileUrl);
             } catch (fileError) {
-                console.warn(`Failed to delete gallery image ${fileUrl}: ${fileError.message}`);
+                logger.warn(`Failed to delete gallery image ${fileUrl}: ${fileError.message}`);
             }
         }
 
@@ -2566,12 +2730,12 @@ router.delete("/:slug/gallery/:galleryId", auth, async (req, res) => {
 		}
 
 		await bumpProjectCacheVersion(project.slug).catch((error) => {
-			console.warn(`Failed to bump project cache after deleting gallery item: ${error.message}`);
+			logger.warn(`Failed to bump project cache after deleting gallery item: ${error.message}`);
 		});
 
 		res.json({ success: true, message: "Gallery item deleted successfully" });
     } catch (error) {
-        console.error("Error deleting gallery image:", error);
+        logger.error("Error deleting gallery image:", error);
         res.status(500).json({ message: "Error deleting gallery image", error: error.message });
     }
 });
@@ -2605,7 +2769,7 @@ router.get("/:slug/wiki/:pageSlug?", async (req, res) => {
             hytale_wiki_url: `https://wiki.hytalemodding.dev/mod/${wikiData.project.hytale_wiki_slug}`,
         });
     } catch (error) {
-        console.error("Error loading project wiki:", error);
+        logger.error("Error loading project wiki:", error);
         res.status(500).json({ message: "Error loading project wiki", error: error.message });
     }
 });
@@ -2614,99 +2778,123 @@ router.get('/:slug', optionalAuth, async (req, res) => {
     try {
         const { slug } = req.params;
         const userId = req.user?.id;
-        const cacheVersion = await getProjectCacheVersion(slug);
-		const cacheKey = `modifold_project_details_publicsafe_v3_${slug}_${userId || "anon"}_${cacheVersion}`;
+		const { limit: versionsLimit, offset: versionsOffset } = getProjectVersionPage(req.query);
+		const cacheVersion = await getProjectCacheVersion(slug);
+		const cacheKey = `modifold_project_details_publicsafe_v5_${slug}_${userId || "anon"}_${versionsLimit}_${versionsOffset}_${cacheVersion}`;
         const shouldUseProjectCache = !userId;
 
-        if(shouldUseProjectCache) {
-            const cachedProject = await getCacheJson(cacheKey);
-            if(cachedProject) {
-                return res.json(cachedProject);
-            }
-        }
+		const projectData = req.project;
+		if(!projectData) {
+			return res.status(404).json({ message: 'Project not found' });
+		}
 
-        const [project] = await db.query(
-            `SELECT p.*, 
-            u.username, u.slug AS user_slug, u.avatar, u.id AS user_id, u.isVerified AS isVerified, u.active_profile_badge AS activeProfileBadge,
-            (SELECT COUNT(*) FROM project_likes pl WHERE pl.project_id = p.id) AS followers_count,
-            (SELECT 1 FROM project_likes pl WHERE pl.project_id = p.id AND pl.user_id = ?) AS is_liked
-            FROM projects p
-            LEFT JOIN users u ON p.user_id = u.id
-            WHERE p.slug = ?`,
-            [userId || null, slug]
-        );
+		const [access, userRole] = await Promise.all([
+			userId ? resolveProjectAccess(db, projectData, userId) : null,
+			getUserRole(userId),
+		]);
+		if(!canAccessRestrictedProject({ project: projectData, userId, userRole, access })) {
+			return res.status(403).json({ message: "You do not have permission to view this project" });
+		}
 
-        if(!project.length) {
-            return res.status(404).json({ message: 'Project not found' });
-        }
+		if(shouldUseProjectCache) {
+			const cachedProject = await getCacheJson(cacheKey);
+			if(cachedProject) {
+				return res.json(cachedProject);
+			}
+		}
 
-        const projectData = project[0];
-        const access = userId ? await resolveProjectAccess(db, projectData.id, userId) : null;
-        const canViewModerationFields = await canViewPrivateProjectVersions(projectData, userId);
-        const versionVisibility = await buildVisibleVersionWhereClause(projectData, userId);
-		const disclosureStatePromise = getProjectDisclosureState(db, projectData.id);
-
-		const [versions] = await db.query(
-			`SELECT v.* FROM project_versions v WHERE v.project_id = ? AND ${versionVisibility.sql} ORDER BY v.created_at DESC`,
-			[projectData.id, ...versionVisibility.params]
+		const canViewModerationFields = canViewPrivateProjectVersions({
+			userId,
+			userRole,
+			access,
+			hasManageVersionsPermission: hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS),
+		});
+		const versionVisibility = buildVisibleVersionWhereClause(canViewModerationFields);
+		const versionsPromise = versionsLimit === 0 ? Promise.resolve([[]]) : db.query(
+			`SELECT
+			v.id,
+			v.project_id,
+			v.downloads,
+			v.version_number,
+			v.changelog,
+			v.release_channel,
+			v.file_url,
+			v.file_size,
+			v.created_at,
+			v.loaders,
+			v.game_versions,
+			v.moderation_status,
+			v.moderation_reason
+			FROM project_versions v
+			WHERE v.project_id = ? AND ${versionVisibility.sql}
+			ORDER BY v.created_at DESC
+			LIMIT ? OFFSET ?`,
+			[projectData.id, ...versionVisibility.params, versionsLimit + 1, versionsOffset]
 		);
-		const versionDependenciesPromise = getVersionDependenciesByVersionIds(db, versions.map((version) => version.id));
+		const modJamParticipationsPromise = db.query(
+			`SELECT mj.id, mj.slug, mj.title, mj.summary, mj.avatar_url, mj.cover_url, mj.starts_at, mj.submissions_start_at, mj.submissions_end_at, mj.voting_starts_at, mj.voting_end_at,
+			mjs.id AS submission_id, mjs.submitter_user_id,
+			(SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.submission_id = mjs.id) AS votes_count,
+			(SELECT user_vote.submission_id FROM mod_jam_votes user_vote WHERE user_vote.jam_id = mj.id AND user_vote.user_id = ? LIMIT 1) AS user_voted_submission_id
+			FROM mod_jam_submissions mjs
+			LEFT JOIN mod_jams mj ON mj.id = mjs.jam_id
+			WHERE mjs.project_id = ? AND mjs.status = 'submitted' AND mj.status = 'approved'
+			ORDER BY mj.voting_end_at DESC`,
+			[userId || null, projectData.id]
+		).then(([rows]) => rows).catch((error) => {
+			if(error?.code === "ER_NO_SUCH_TABLE") {
+				return [];
+			}
+			throw error;
+		});
+		const [creatorAggregates, versionsResult, galleryResult, membersResult, modJamParticipations, disclosureState] = await Promise.all([
+			getProjectCreatorAggregates(projectData, userId),
+			versionsPromise,
+			db.query('SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC', [projectData.id]),
+			db.query(
+				`SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
+				FROM project_members pm
+				LEFT JOIN users u ON pm.user_id = u.id
+				WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.show_as_author = 1 AND pm.status IN ('accept', 'accepted')`,
+				[projectData.id, projectData.user_id]
+			),
+			modJamParticipationsPromise,
+			getProjectDisclosureState(db, projectData.id, projectData),
+		]);
+		const rawVersions = versionsResult[0] || [];
+		const hasMoreVersions = versionsLimit > 0 && rawVersions.length > versionsLimit;
+		const versions = hasMoreVersions ? rawVersions.slice(0, versionsLimit) : rawVersions;
+		const gallery = galleryResult[0] || [];
+		const members = membersResult[0] || [];
+		const privateVersionKeys = await getPrivateVersionKeys(projectData.id, versions, canViewModerationFields);
+		const versionsWithPrivateKeys = versions.map((version) => ({
+			...version,
+			quarantine_key: privateVersionKeys.get(String(version.id)) || null,
+		}));
+		const versionDependencies = await getVersionDependenciesByVersionIds(db, versions.map((version) => version.id));
 
-        const [gallery] = await db.query(
-            'SELECT * FROM project_gallery WHERE project_id = ? ORDER BY ordering ASC, id ASC',
-            [projectData.id]
-        );
-
-        const [members] = await db.query(
-            `SELECT pm.user_id, pm.role, pm.status, u.username, u.slug, u.avatar, u.isVerified, u.active_profile_badge AS activeProfileBadge
-            FROM project_members pm 
-            LEFT JOIN users u ON pm.user_id = u.id 
-			WHERE pm.project_id = ? AND pm.user_id <> ? AND pm.show_as_author = 1 AND pm.status IN ('accept', 'accepted')`,
-			[projectData.id, projectData.user_id]
-        );
-        let modJamParticipations = [];
-        try {
-            const [rows] = await db.query(
-                `SELECT mj.id, mj.slug, mj.title, mj.summary, mj.avatar_url, mj.cover_url, mj.starts_at, mj.submissions_start_at, mj.submissions_end_at, mj.voting_starts_at, mj.voting_end_at,
-                mjs.id AS submission_id, mjs.submitter_user_id,
-                (SELECT COALESCE(SUM(COALESCE(mjv.vote_weight, 1)), 0) FROM mod_jam_votes mjv WHERE mjv.submission_id = mjs.id) AS votes_count,
-                (SELECT user_vote.submission_id FROM mod_jam_votes user_vote WHERE user_vote.jam_id = mj.id AND user_vote.user_id = ? LIMIT 1) AS user_voted_submission_id
-                FROM mod_jam_submissions mjs
-                LEFT JOIN mod_jams mj ON mj.id = mjs.jam_id
-                WHERE mjs.project_id = ? AND mjs.status = 'submitted' AND mj.status = 'approved'
-                ORDER BY mj.voting_end_at DESC`,
-                [userId || null, projectData.id]
-            );
-            modJamParticipations = rows;
-        } catch (error) {
-            if(error?.code !== "ER_NO_SUCH_TABLE") {
-                throw error;
-            }
-        }
-		const organizationOwner = await getOrganizationOwnerForProject(projectData.id);
-		const disclosureState = await disclosureStatePromise;
-		const versionDependencies = await versionDependenciesPromise;
-
-        const formattedVersions = versions.map((version) => {
-            let gameVersions, loaders;
+		const formattedVersions = await Promise.all(versionsWithPrivateKeys.map(async (version) => {
+			let gameVersions, loaders;
             
             try {
                 gameVersions = version.game_versions ? JSON.parse(version.game_versions).join(',') : '';
                 loaders = version.loaders ? JSON.parse(version.loaders).join(',') : '';
             } catch (error) {
-                console.error(`Error parsing JSON for version ${version.version_number}:`, error);
+                logger.error(`Error parsing JSON for version ${version.version_number}:`, error);
                 gameVersions = '';
                 loaders = '';
             }
 
-            return sanitizeVersionForPublicResponse({
-                ...version,
-                game_versions: gameVersions,
+			const versionWithFileAccess = await getVersionWithPrivateFileAccess(version, canViewModerationFields);
+
+			return sanitizeVersionForPublicResponse({
+				...versionWithFileAccess,
+				game_versions: gameVersions,
 				loaders: loaders,
-				...getVersionFileFields(version),
+				...getVersionFileFields(versionWithFileAccess),
 				dependencies: versionDependencies.get(String(version.id || "").trim()) || [],
 			}, { includeModeration: canViewModerationFields });
-        });
+		}));
 
         const shouldShowPlayersLast14Days = Number(projectData.show_players_last_14d) === 1;
         const playersLast14DaysBySlug = shouldShowPlayersLast14Days ? await getProjectPlayersInLastDaysBySlug({
@@ -2722,7 +2910,8 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             summary: projectData.summary,
             description: projectData.description,
             visibility: projectData.visibility,
-            issues_enabled: projectData.issues_enabled === 0 ? false : true,
+			issues_enabled: projectData.issues_enabled === 0 ? false : true,
+			issues_count: creatorAggregates.issuesCount,
             created_at: projectData.created_at,
             updated_at: projectData.updated_at,
             status: projectData.status,
@@ -2733,41 +2922,27 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             discord_url: projectData.discord_url,
             hytale_wiki_slug: projectData.hytale_wiki_slug || null,
             hytale_wiki_url: projectData.hytale_wiki_slug ? `https://wiki.hytalemodding.dev/mod/${projectData.hytale_wiki_slug}` : null,
-            icon_url: projectData.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+            icon_url: projectData.icon_url || "https://modifold.com/images/no-project-icon.svg",
             downloads: projectData.downloads,
             show_players_last_14d: shouldShowPlayersLast14Days,
             players_last_14d: playersLast14DaysBySlug.get(projectData.slug) || 0,
-            followers: projectData.followers || projectData.followers_count || 0,
+			followers: creatorAggregates.followersCount,
             color: projectData.color,
-            game_versions: projectData.game_versions ? projectData.game_versions.split(',') : [],
-            loaders: projectData.loaders ? projectData.loaders.split(',') : [],
-            versions: formattedVersions,
-            gallery,
+			game_versions: projectData.game_versions ? projectData.game_versions.split(',') : [],
+			loaders: projectData.loaders ? projectData.loaders.split(',') : [],
+			versions: formattedVersions,
+			versions_pagination: buildVersionsPagination({
+				limit: versionsLimit,
+				offset: versionsOffset,
+				returned: formattedVersions.length,
+				hasMore: hasMoreVersions,
+			}),
+			gallery,
             tags: projectData.tags,
             user_id: projectData.user_id,
             showProjectBackground: projectData.showProjectBackground,
 			show_owner_as_author: Boolean(projectData.show_owner_as_author),
-            owner: organizationOwner ? {
-                id: organizationOwner.id,
-                username: organizationOwner.name,
-                slug: organizationOwner.slug,
-                avatar: organizationOwner.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
-                summary: organizationOwner.summary || "",
-                isVerified: 0,
-                type: "organization",
-                profile_url: `/organization/${organizationOwner.slug}`,
-            } : {
-				id: projectData.user_id,
-				user_id: projectData.user_id,
-                username: projectData.username,
-                slug: projectData.user_slug,
-                avatar: projectData.avatar,
-                isVerified: projectData.isVerified,
-                activeProfileBadge: projectData.activeProfileBadge,
-				role: normalizeProjectOwnerRole(projectData.owner_role),
-                type: "user",
-                profile_url: `/user/${projectData.user_slug}`,
-            },
+			owner: buildProjectOwnerDto(projectData, creatorAggregates, normalizeProjectOwnerRole),
 			original_author: {
 				id: projectData.user_id,
 				user_id: projectData.user_id,
@@ -2780,13 +2955,13 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 				type: "user",
 				profile_url: `/user/${projectData.user_slug}`,
 			},
-            organization: organizationOwner ? {
-                id: organizationOwner.id,
-                slug: organizationOwner.slug,
-                name: organizationOwner.name,
-                summary: organizationOwner.summary || "",
-                icon_url: organizationOwner.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
-            } : null,
+			organization: projectData.organization_id ? {
+				id: projectData.organization_id,
+				slug: projectData.organization_slug,
+				name: projectData.organization_name,
+				summary: projectData.organization_summary || "",
+				icon_url: projectData.organization_icon_url || "https://modifold.com/images/no-project-icon.svg",
+			} : null,
 			disclosures: disclosureState.disclosures,
 			archive: disclosureState.archive,
             members: members.map(member => ({
@@ -2815,7 +2990,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 slug: jam.slug,
                 title: jam.title,
                 summary: jam.summary,
-                avatar_url: jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                avatar_url: jam.avatar_url || "https://modifold.com/images/no-project-icon.svg",
                 cover_url: jam.cover_url || null,
                 starts_at: jam.starts_at ? new Date(jam.starts_at).toISOString() : null,
                 submissions_start_at: (jam.submissions_start_at || jam.starts_at) ? new Date(jam.submissions_start_at || jam.starts_at).toISOString() : null,
@@ -2825,7 +3000,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
                 submission_id: jam.submission_id,
                 votes_count: Number(jam.votes_count) || 0,
             })),
-            is_liked: !!projectData.is_liked,
+			is_liked: creatorAggregates.isLiked,
             permissions: {
 				is_owner: Boolean(access?.isOwner),
 				can_manage_collaborators: hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.MANAGE_INVITES)
@@ -2851,8 +3026,10 @@ router.get('/:slug', optionalAuth, async (req, res) => {
         }
         res.json(responseData);
     } catch (error) {
-        console.error('Error fetching project:', error);
-        res.status(500).json({ message: 'Error fetching project', error: error.message });
+		if(!error.statusCode) {
+			logger.error('Error fetching project:', error);
+		}
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : 'Error fetching project', error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -2875,9 +3052,12 @@ router.delete("/:slug", auth, async (req, res) => {
 
         const projectId = project.id;
         try {
-            await deletePrefix(`projects/${projectId}`);
+			await Promise.all([
+				deletePrefix(`projects/${projectId}`),
+				deletePrefix(`quarantine/projects/${projectId}`, "private"),
+			]);
         } catch (fileError) {
-            console.warn(`Failed to delete project files for ${projectId}: ${fileError.message}`);
+            logger.warn(`Failed to delete project files for ${projectId}: ${fileError.message}`);
             return res.status(500).json({
                 message: "Project deleted, but some files could not be removed",
                 error: fileError.message,
@@ -2896,7 +3076,7 @@ router.delete("/:slug", auth, async (req, res) => {
 
         res.json({ success: true, message: "Project and associated files deleted" });
     } catch (error) {
-        console.error("Error deleting project:", error);
+        logger.error("Error deleting project:", error);
         res.status(500).json({ message: "Error deleting project", error: error.message });
     }
 });
@@ -2960,7 +3140,7 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
             }
         }
 
-        let iconUrl = projectMeta.icon_url || getPublicUrl("static/no-project-icon.svg");
+        let iconUrl = projectMeta.icon_url || "https://modifold.com/images/no-project-icon.svg";
         let projectColor = projectMeta.color;
         if(req.file) {
             const iconFile = await convertImageToWebp(req.file);
@@ -3008,7 +3188,7 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
 
 		if(req.file && projectMeta.icon_url !== iconUrl) {
 			await deletePublicUrlWithinPrefix(projectMeta.icon_url, `projects/${id}`).catch((error) => {
-				console.warn(`Failed to delete replaced project icon: ${error.message}`);
+				logger.warn(`Failed to delete replaced project icon: ${error.message}`);
 			});
 		}
 
@@ -3025,7 +3205,7 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
 
         res.json({ success: true, message: 'Project updated', slug: nextSlug });
     } catch (error) {
-        console.error('Error updating project:', error);
+        logger.error('Error updating project:', error);
         res.status(500).json({ message: 'Error updating project', error: error.message });
     }
 });
@@ -3037,47 +3217,95 @@ router.post('/:slug/versions/:versionId/download', optionalAuth, async (req, res
         const result = await countProjectVersionDownload(req, { slug, versionId });
         return res.status(result.status).json(result.body);
     } catch (error) {
-        console.error('Error counting download:', error);
+        logger.error('Error counting download:', error);
         return res.status(500).json({ message: 'Error counting download', error: error.message });
     }
 });
 
-router.get("/moderation", auth, async (req, res) => {
-    if(!req.user.isRole === 'admin') {
-        return res.status(403).json({ message: "Unauthorized" });
-    }
+router.get('/:slug/versions/:versionId/download', optionalAuth, async (req, res) => {
+	const { slug, versionId } = req.params;
+	logger.info({
+		event: "project_version_download",
+		ipAddress: getRequestIpAddress(req),
+		slug,
+		versionId,
+	}, "Project version download requested");
 
-    try {
-        const [projects] = await db.query("SELECT id, slug, title, summary, project_type, status, tags, icon FROM projects WHERE status IN ('queued', 'pending')");
-        res.json({ projects });
+	try {
+		const result = await prepareProjectVersionDownloadRedirect(req, { slug, versionId });
+		if(!result.downloadUrl) {
+			return res.status(result.status).json(result.body);
+		}
+
+		res.set("Cache-Control", "private, no-store");
+		return res.redirect(302, result.downloadUrl);
+	} catch(error) {
+		logger.error("Error preparing download redirect:", error);
+		return res.status(500).json({ message: "Error preparing download" });
+	}
+});
+
+router.get("/moderation", auth, async (req, res) => {
+	try {
+		const role = await getUserRole(req.user.id);
+		if(role !== "admin" && role !== "moderator") {
+			return res.status(403).json({ message: "Unauthorized" });
+		}
+
+		const [projects] = await db.query("SELECT id, slug, title, summary, project_type, status, tags, icon FROM projects WHERE status IN ('queued', 'pending')");
+		res.json({ projects });
     } catch (error) {
-        console.error("Error fetching projects for moderation:", error);
+        logger.error("Error fetching projects for moderation:", error);
         res.status(500).json({ message: "Error fetching projects", error: error.message });
     }
 });
 
 router.post("/:id/moderate", auth, async (req, res) => {
-    if(!req.user.isRole === 'admin') {
-        return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    const { id } = req.params;
-    const { status, moderator_message } = req.body;
+	const { id } = req.params;
+	const { status, moderator_message } = req.body;
 
     if(!["approved", "rejected"].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
-    }
+	}
 
-    try {
-		const [projectRowsBeforeUpdate] = await db.query(
-			"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1",
-			[id]
-		);
-		const projectBeforeUpdate = projectRowsBeforeUpdate[0] || null;
-		const statusChanged = projectBeforeUpdate && projectBeforeUpdate.status !== status;
+	try {
+		const role = await getUserRole(req.user.id);
+		if(role !== "admin" && role !== "moderator") {
+			return res.status(403).json({ message: "Unauthorized" });
+		}
+
 		const createdAt = Math.floor(Date.now() / 1000);
+		const connection = await db.getConnection();
+		let projectBeforeUpdate;
+		let statusChanged = false;
+		try {
+			await connection.beginTransaction();
+			const [projectRowsBeforeUpdate] = await connection.query(
+				"SELECT id, user_id, status FROM projects WHERE id = ? LIMIT 1 FOR UPDATE",
+				[id]
+			);
+			projectBeforeUpdate = projectRowsBeforeUpdate[0] || null;
+			statusChanged = Boolean(projectBeforeUpdate && projectBeforeUpdate.status !== status);
+			await connection.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
 
-        await db.query("UPDATE projects SET status = ? WHERE id = ?", [status, id]);
+			if(status === "approved" && projectBeforeUpdate && statusChanged) {
+				await fanoutProjectReleaseNotifications({
+					connection,
+					projectOwnerUserId: projectBeforeUpdate.user_id,
+					actorUserId: projectBeforeUpdate.user_id,
+					projectId: projectBeforeUpdate.id,
+					createdAt,
+				});
+			}
+
+			await connection.commit();
+		} catch(error) {
+			await connection.rollback();
+			throw error;
+		} finally {
+			connection.release();
+		}
+
         await bumpProjectCacheVersionById(db, id);
 
 		if(projectBeforeUpdate && statusChanged) {
@@ -3091,15 +3319,6 @@ router.post("/:id/moderate", auth, async (req, res) => {
 		}
 
 		if(status === "approved" && projectBeforeUpdate) {
-			if(statusChanged) {
-				await fanoutProjectReleaseNotifications({
-					projectOwnerUserId: projectBeforeUpdate.user_id,
-					actorUserId: projectBeforeUpdate.user_id,
-					projectId: projectBeforeUpdate.id,
-					createdAt,
-				});
-			}
-
 			if(projectBeforeUpdate) {
 				await awardFirstApprovedProjectAchievement(db, {
 					projectId: projectBeforeUpdate.id,
@@ -3111,7 +3330,7 @@ router.post("/:id/moderate", auth, async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
-        console.error("Error moderating project:", error);
+        logger.error("Error moderating project:", error);
         res.status(500).json({ message: "Error moderating project", error: error.message });
     }
 });
@@ -3147,7 +3366,7 @@ router.post('/:slug/submit', auth, async (req, res) => {
 
         const projectMeta = projectMetaRows[0];
 
-        const [versions] = await db.query('SELECT id, file_url, file_size, moderation_status FROM project_versions WHERE project_id = ?', [project.id]);
+		const [versions] = await db.query('SELECT id, file_url, quarantine_key, file_size, moderation_status FROM project_versions WHERE project_id = ?', [project.id]);
         if(!projectMeta.icon_url || !projectMeta.summary || !projectMeta.description || versions.length === 0) {
             return res.status(400).json({ message: 'Project missing required fields: icon, description, summary or versions' });
         }
@@ -3190,18 +3409,19 @@ router.post('/:slug/submit', auth, async (req, res) => {
         }
 
         draftVersions.forEach((version) => {
-            queueArgusScan({
-                versionId: version.id,
-                project,
-                fileUrl: version.file_url,
-                fileName: version.file_url?.split("/").pop() || version.id,
+			queueArgusScan({
+				versionId: version.id,
+				project,
+				quarantineKey: version.quarantine_key,
+				fileUrl: version.file_url,
+				fileName: (version.quarantine_key || version.file_url)?.split("/").pop() || version.id,
                 fileSize: version.file_size,
             });
         });
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Error submitting project for moderation:', error);
+        logger.error('Error submitting project for moderation:', error);
         res.status(500).json({ message: 'Error submitting project', error: error.message });
     }
 });
@@ -3210,6 +3430,8 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
     const { slug, versionId } = req.params;
     const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;
     const file = req.file;
+	let uploadedQuarantineKey = null;
+	let replacementPersisted = false;
 
     try {
         const project = await getProjectBySlug(slug);
@@ -3227,7 +3449,7 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             return;
         }
 
-        const [version] = await db.query('SELECT id, moderation_status, file_url FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
+        const [version] = await db.query('SELECT id, moderation_status, file_url, quarantine_key FROM project_versions WHERE id = ? AND project_id = ?', [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: 'Version not found' });
         }
@@ -3237,27 +3459,15 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             return res.status(400).json({ message: "Invalid game versions" });
         }
 
-        const storedVersionFile = file ? await storeProjectFile({
+        const storedVersionFile = file ? await storeProjectVersionFile({
 			projectId: project.id,
+			versionId,
 			file,
-			directory: `versions/${versionId}`,
 		}) : null;
-        const fileUrl = storedVersionFile?.url || null;
+		uploadedQuarantineKey = storedVersionFile?.objectKey || null;
         const fileSize = file ? file.size : null;
 
-        const nextModerationStatus = fileUrl
-            ? shouldHoldVersionForProjectModeration(project) && version[0].moderation_status === "draft" ? "draft" : "pending"
-            : null;
-
-        const updateData = {
-            version_number: version_number ? sanitizePlainText(version_number) : version_number,
-            changelog: changelog ? sanitizeMarkdownText(changelog) : null,
-            release_channel: release_channel || 'release',
-            file_url: fileUrl,
-            file_size: fileSize,
-            game_versions: JSON.stringify(normalizedGameVersions),
-            loaders: loaders || '[]',
-        };
+        const nextModerationStatus = uploadedQuarantineKey ? shouldHoldVersionForProjectModeration(project) && version[0].moderation_status === "draft" ? "draft" : "pending" : null;
 
         const connection = await db.getConnection();
 
@@ -3266,50 +3476,50 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
 
             const resolvedDependencies = await resolveVersionDependencies({ connection, dependenciesRaw: dependencies });
 
-            await connection.query(
-                `UPDATE project_versions
-                SET version_number = ?,
-                changelog = ?,
-                release_channel = ?,
-                file_url = COALESCE(?, file_url),
-                file_size = COALESCE(?, file_size),
-                game_versions = ?,
-                loaders = ?,
-                moderation_status = COALESCE(?, moderation_status),
-                moderation_reason = IF(? IS NULL, moderation_reason, NULL),
-                moderated_by = IF(? IS NULL, moderated_by, NULL),
-                moderated_at = IF(? IS NULL, moderated_at, NULL),
-                scan_requested_at = CASE WHEN ? IS NULL THEN scan_requested_at WHEN ? = 'draft' THEN NULL ELSE NOW() END,
-                scanned_at = IF(? IS NULL, scanned_at, NULL),
-                argus_report = IF(? IS NULL, argus_report, NULL)
-                WHERE id = ?`,
-                [
-                    updateData.version_number,
-                    updateData.changelog,
-                    updateData.release_channel,
-                    updateData.file_url,
-                    updateData.file_size,
-                    updateData.game_versions,
-                    updateData.loaders,
-                    nextModerationStatus,
-                    updateData.file_url,
-                    updateData.file_url,
-                    updateData.file_url,
-                    nextModerationStatus,
-                    nextModerationStatus,
-                    updateData.file_url,
-                    updateData.file_url,
-                    versionId,
-                ]
-            );
+            const updateFields = [
+				"version_number = ?",
+				"changelog = ?",
+				"release_channel = ?",
+				"game_versions = ?",
+				"loaders = ?",
+			];
+			const updateParams = [
+				version_number ? sanitizePlainText(version_number) : version_number,
+				changelog ? sanitizeMarkdownText(changelog) : null,
+				release_channel || "release",
+				JSON.stringify(normalizedGameVersions),
+				loaders || "[]",
+			];
+
+			if(uploadedQuarantineKey) {
+				updateFields.push(
+					"file_url = NULL",
+					"quarantine_key = ?",
+					"file_size = ?",
+					"moderation_status = ?",
+					"moderation_reason = NULL",
+					"moderated_by = NULL",
+					"moderated_at = NULL",
+					nextModerationStatus === "draft" ? "scan_requested_at = NULL" : "scan_requested_at = NOW()",
+					"scanned_at = NULL",
+					"argus_report = NULL"
+				);
+				updateParams.push(uploadedQuarantineKey, fileSize, nextModerationStatus);
+			}
+
+			await connection.query(
+				`UPDATE project_versions SET ${updateFields.join(", ")} WHERE id = ?`,
+				[...updateParams, versionId]
+			);
 
             await replaceVersionDependencies({ connection, sourceVersionId: versionId, dependencies: resolvedDependencies });
 
-            if(!fileUrl && version[0].moderation_status === "approved") {
+            if(!uploadedQuarantineKey && version[0].moderation_status === "approved") {
                 await connection.query("UPDATE projects SET updated_at = NOW() WHERE id = ?", [project.id]);
             }
 
             await connection.commit();
+			replacementPersisted = Boolean(uploadedQuarantineKey);
         } catch (error) {
             await connection.rollback();
             throw error;
@@ -3317,17 +3527,23 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             connection.release();
         }
 
-		if(fileUrl && version[0].file_url !== fileUrl) {
+		if(uploadedQuarantineKey && version[0].file_url) {
 			await deletePublicUrlWithinPrefix(version[0].file_url, `projects/${project.id}`).catch((error) => {
-				console.warn(`Failed to delete replaced version file: ${error.message}`);
+				logger.warn(`Failed to delete replaced version file: ${error.message}`);
 			});
 		}
 
-        if(fileUrl && nextModerationStatus === "pending") {
+		if(uploadedQuarantineKey && version[0].quarantine_key && version[0].quarantine_key !== uploadedQuarantineKey) {
+			await deleteObject(version[0].quarantine_key, "private").catch((error) => {
+				logger.warn(`Failed to delete replaced quarantine file: ${error.message}`);
+			});
+		}
+
+        if(uploadedQuarantineKey && nextModerationStatus === "pending") {
             queueArgusScan({
                 versionId,
                 project,
-                fileUrl,
+				quarantineKey: uploadedQuarantineKey,
                 fileName: file.originalname || file.filename,
                 fileSize,
             });
@@ -3335,7 +3551,13 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Error updating version:', error);
+		if(uploadedQuarantineKey && !replacementPersisted) {
+			await deleteObject(uploadedQuarantineKey, "private").catch((cleanupError) => {
+				logger.warn(`Failed to delete unpersisted replacement quarantine file: ${cleanupError.message}`);
+			});
+		}
+
+        logger.error('Error updating version:', error);
         if(error?.statusCode === 400) {
             return res.status(400).json({ message: error.message });
         }
@@ -3363,7 +3585,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
             return;
         }
 
-        const [version] = await db.query("SELECT id, file_url, moderation_status FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
+        const [version] = await db.query("SELECT id, file_url, quarantine_key, moderation_status FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
         if(!version.length) {
             return res.status(404).json({ message: "Version not found" });
         }
@@ -3373,9 +3595,15 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
             try {
                 await deletePublicUrl(fileUrl);
             } catch (fileError) {
-                console.warn(`Failed to delete version file ${fileUrl}: ${fileError.message}`);
+                logger.warn(`Failed to delete version file ${fileUrl}: ${fileError.message}`);
             }
         }
+
+		if(version[0].quarantine_key) {
+			await deleteObject(version[0].quarantine_key, "private").catch((fileError) => {
+				logger.warn(`Failed to delete quarantined version file: ${fileError.message}`);
+			});
+		}
 
         try {
             await db.query("DELETE FROM dependencies WHERE version_id = ? OR dependency_version_id = ?", [versionId, versionId]);
@@ -3400,7 +3628,7 @@ router.delete("/:slug/versions/:versionId", auth, async (req, res) => {
 
         res.json({ success: true, message: "Version deleted successfully" });
     } catch (error) {
-        console.error("Error deleting version:", error);
+        logger.error("Error deleting version:", error);
         res.status(500).json({ message: "Error deleting version", error: error.message });
     }
 });
@@ -3480,14 +3708,14 @@ const getProjectOrganizationSettings = async ({ projectId, userId }) => {
 		slug: row.slug,
 		name: row.name,
 		summary: row.summary || "",
-		icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+		icon_url: row.icon_url || "https://modifold.com/images/no-project-icon.svg",
 	}));
 	const currentOrganization = organizationRows[0] ? {
 		id: organizationRows[0].id,
 		slug: organizationRows[0].slug,
 		name: organizationRows[0].name,
 		summary: organizationRows[0].summary || "",
-		icon_url: organizationRows[0].icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+		icon_url: organizationRows[0].icon_url || "https://modifold.com/images/no-project-icon.svg",
 	} : null;
 
 	if(currentOrganization && !organizationOptions.some((item) => item.slug === currentOrganization.slug)) {
@@ -3608,7 +3836,7 @@ const inviteProjectCollaborator = async (req, res) => {
 			},
 		});
 	} catch (error) {
-		console.error("Error inviting project collaborator:", error);
+		logger.error("Error inviting project collaborator:", error);
 		return res.status(500).json({ message: "Error inviting project collaborator", error: error.message });
 	}
 };
@@ -3666,7 +3894,7 @@ const updateProjectCollaborator = async (req, res) => {
 		await bumpProjectCacheVersion(project.slug);
 		return res.json({ success: true, role, show_as_author: showAsAuthor, permissions });
 	} catch (error) {
-		console.error("Error updating project collaborator:", error);
+		logger.error("Error updating project collaborator:", error);
 		return res.status(500).json({ message: "Error updating project collaborator", error: error.message });
 	}
 };
@@ -3695,7 +3923,7 @@ const updateProjectOwnerAttribution = async (req, res) => {
 		await bumpProjectCacheVersion(management.project.slug);
 		return res.json({ success: true, role, show_as_author: showAsAuthor });
 	} catch (error) {
-		console.error("Error updating project owner attribution:", error);
+		logger.error("Error updating project owner attribution:", error);
 		return res.status(500).json({ message: "Error updating project owner attribution", error: error.message });
 	}
 };
@@ -3820,7 +4048,7 @@ const transferProjectOwnership = async (req, res) => {
 		try {
 			await bumpProjectCacheVersion(project.slug);
 		} catch (cacheError) {
-			console.warn("Failed to invalidate project cache after ownership transfer:", cacheError.message);
+			logger.warn("Failed to invalidate project cache after ownership transfer:", cacheError.message);
 		}
 		return res.json({
 			success: true,
@@ -3859,7 +4087,7 @@ const transferProjectOwnership = async (req, res) => {
 		});
 	} catch (error) {
 		await connection.rollback();
-		console.error("Error transferring project ownership:", error);
+		logger.error("Error transferring project ownership:", error);
 		return res.status(500).json({ code: "OWNERSHIP_TRANSFER_FAILED", message: "Error transferring project ownership" });
 	} finally {
 		connection.release();
@@ -3921,7 +4149,7 @@ const removeProjectCollaborator = async (req, res) => {
 		await bumpProjectCacheVersion(project.slug);
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error removing project collaborator:", error);
+		logger.error("Error removing project collaborator:", error);
 		return res.status(500).json({ message: "Error removing project collaborator", error: error.message });
 	}
 };
@@ -3995,7 +4223,7 @@ router.get("/:slug/collaborators", auth, async (req, res) => {
 			})),
 		});
 	} catch (error) {
-		console.error("Error fetching project collaborators:", error);
+		logger.error("Error fetching project collaborators:", error);
 		return res.status(500).json({ message: "Error fetching project collaborators", error: error.message });
 	}
 });
@@ -4057,7 +4285,7 @@ router.post("/collaborator-invitations/:inviteId/:action", auth, async (req, res
 		});
 	} catch (error) {
 		await connection.rollback();
-		console.error("Error responding to project collaboration invitation:", error);
+		logger.error("Error responding to project collaboration invitation:", error);
 		return res.status(500).json({ message: "Error responding to project collaboration invitation", error: error.message });
 	} finally {
 		connection.release();
@@ -4091,7 +4319,7 @@ router.get('/:slug/members', async (req, res) => {
 		await setCacheJson(cacheKey, members, 30);
 		return res.json(members);
 	} catch (error) {
-		console.error("Error fetching project members:", error);
+		logger.error("Error fetching project members:", error);
 		return res.status(500).json({ message: 'Error fetching members' });
 	}
 });
@@ -4106,11 +4334,9 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const status = (req.query.status || "open").toString().toLowerCase();
-        const sort = (req.query.sort || "newest").toString().toLowerCase();
-        const page = Math.max(1, Number(req.query.page) || 1);
-        const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 20));
-        const offset = (page - 1) * limit;
+		const status = normalizeEnum(req.query.status, ["open", "closed", "all"], "open");
+		const sort = normalizeEnum(req.query.sort, ["newest", "oldest"], "newest");
+		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 20, maxLimit: 50 });
 
         const statusFilter = status === "closed" ? "closed" : status === "open" ? "open" : null;
         const orderDirection = sort === "oldest" ? "ASC" : "DESC";
@@ -4223,8 +4449,10 @@ router.get("/:slug/issues", optionalAuth, async (req, res) => {
             issues: formatted,
         });
     } catch (error) {
-        console.error("Error fetching issues:", error);
-        return res.status(500).json({ message: "Error fetching issues", error: error.message });
+		if(!error.statusCode) {
+			logger.error("Error fetching issues:", error);
+		}
+		return res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching issues", error: error.statusCode ? undefined : error.message });
     }
 });
 
@@ -4267,7 +4495,7 @@ router.get("/:slug/issues/templates", optionalAuth, async (req, res) => {
 
         return res.json({ templates });
     } catch (error) {
-        console.error("Error fetching issue templates:", error);
+        logger.error("Error fetching issue templates:", error);
         return res.status(500).json({ message: "Error fetching issue templates", error: error.message });
     }
 });
@@ -4335,7 +4563,7 @@ router.post("/:slug/issues/templates", auth, async (req, res) => {
             updated_at: now,
         });
     } catch (error) {
-        console.error("Error creating issue template:", error);
+        logger.error("Error creating issue template:", error);
         return res.status(500).json({ message: "Error creating issue template", error: error.message });
     }
 });
@@ -4434,7 +4662,7 @@ router.patch("/:slug/issues/templates/:templateId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating issue template:", error);
+        logger.error("Error updating issue template:", error);
         return res.status(500).json({ message: "Error updating issue template", error: error.message });
     }
 });
@@ -4470,7 +4698,7 @@ router.delete("/:slug/issues/templates/:templateId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error deleting issue template:", error);
+        logger.error("Error deleting issue template:", error);
         return res.status(500).json({ message: "Error deleting issue template", error: error.message });
     }
 });
@@ -4511,7 +4739,7 @@ router.get("/:slug/issues/labels", optionalAuth, async (req, res) => {
 
         return res.json({ labels });
     } catch (error) {
-        console.error("Error fetching issue labels:", error);
+        logger.error("Error fetching issue labels:", error);
         return res.status(500).json({ message: "Error fetching issue labels", error: error.message });
     }
 });
@@ -4565,7 +4793,7 @@ router.post("/:slug/issues/labels", auth, async (req, res) => {
             updated_at: now,
         });
     } catch (error) {
-        console.error("Error creating issue label:", error);
+        logger.error("Error creating issue label:", error);
         return res.status(500).json({ message: "Error creating issue label", error: error.message });
     }
 });
@@ -4644,7 +4872,7 @@ router.patch("/:slug/issues/labels/:labelId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating issue label:", error);
+        logger.error("Error updating issue label:", error);
         return res.status(500).json({ message: "Error updating issue label", error: error.message });
     }
 });
@@ -4680,7 +4908,7 @@ router.delete("/:slug/issues/labels/:labelId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error deleting issue label:", error);
+        logger.error("Error deleting issue label:", error);
         return res.status(500).json({ message: "Error deleting issue label", error: error.message });
     }
 });
@@ -4828,7 +5056,7 @@ router.get("/:slug/issues/:issueId", optionalAuth, async (req, res) => {
             availableLabels,
         });
     } catch (error) {
-        console.error("Error fetching issue:", error);
+        logger.error("Error fetching issue:", error);
         return res.status(500).json({ message: "Error fetching issue", error: error.message });
     }
 });
@@ -4951,7 +5179,7 @@ router.post("/:slug/issues", auth, async (req, res) => {
             created_at: now,
         });
     } catch (error) {
-        console.error("Error creating issue:", error);
+        logger.error("Error creating issue:", error);
         return res.status(500).json({ message: "Error creating issue", error: error.message });
     }
 });
@@ -5090,7 +5318,7 @@ router.patch("/:slug/issues/:issueId", auth, async (req, res) => {
 
         return res.status(400).json({ message: "Invalid action" });
     } catch (error) {
-        console.error("Error updating issue status:", error);
+        logger.error("Error updating issue status:", error);
         return res.status(500).json({ message: "Error updating issue status", error: error.message });
     }
 });
@@ -5140,7 +5368,7 @@ router.delete("/:slug/issues/:issueId", auth, async (req, res) => {
             await connection.rollback();
         }
 
-        console.error("Error deleting issue:", error);
+        logger.error("Error deleting issue:", error);
         return res.status(500).json({ message: "Error deleting issue", error: error.message });
     } finally {
         if(connection) {
@@ -5229,7 +5457,7 @@ router.post("/:slug/issues/:issueId/labels", auth, async (req, res) => {
 
         return res.status(400).json({ message: "Invalid action" });
     } catch (error) {
-        console.error("Error updating issue labels:", error);
+        logger.error("Error updating issue labels:", error);
         return res.status(500).json({ message: "Error updating issue labels", error: error.message });
     }
 });
@@ -5326,7 +5554,7 @@ router.post("/:slug/issues/:issueId/comments", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error creating issue comment:", error);
+        logger.error("Error creating issue comment:", error);
         return res.status(500).json({ message: "Error creating issue comment", error: error.message });
     }
 });
@@ -5417,7 +5645,7 @@ router.patch("/:slug/issues/:issueId/comments/:commentId", auth, async (req, res
 
         return res.status(400).json({ message: "Invalid action" });
     } catch (error) {
-        console.error("Error moderating issue comment:", error);
+        logger.error("Error moderating issue comment:", error);
         return res.status(500).json({ message: "Error moderating issue comment", error: error.message });
     }
 });
@@ -5440,7 +5668,7 @@ router.post('/:slug/like', auth, async (req, res) => {
         }
 
         await db.query('INSERT INTO project_likes (project_id, user_id, created_at) VALUES (?, ?, ?)', [projectId, userId, Math.floor(Date.now() / 1000)]);
-        await deleteCacheByPattern(`user_likes_${userId}_*`);
+		await bumpCacheGeneration(`user_likes:${userId}`);
 
         await db.query('UPDATE projects SET followers = followers + 1 WHERE id = ?', [projectId]);
 
@@ -5458,7 +5686,7 @@ router.post('/:slug/like', auth, async (req, res) => {
 
         res.json({ success: true, message: 'Project liked', followers, is_liked: true });
     } catch (error) {
-        console.error('Error liking project:', error);
+        logger.error('Error liking project:', error);
         res.status(500).json({ message: 'Error liking project', error: error.message });
     }
 });
@@ -5481,7 +5709,7 @@ router.delete('/:slug/like', auth, async (req, res) => {
         }
 
         await db.query('DELETE FROM project_likes WHERE project_id = ? AND user_id = ?', [projectId, userId]);
-        await deleteCacheByPattern(`user_likes_${userId}_*`);
+		await bumpCacheGeneration(`user_likes:${userId}`);
 
         await db.query('UPDATE projects SET followers = followers - 1 WHERE id = ?', [projectId]);
 
@@ -5501,7 +5729,7 @@ router.delete('/:slug/like', auth, async (req, res) => {
 
         res.json({ success: true, message: 'Project unliked', followers, is_liked: false });
     } catch (error) {
-        console.error('Error unliking project:', error);
+        logger.error('Error unliking project:', error);
         res.status(500).json({ message: 'Error unliking project', error: error.message });
     }
 });
@@ -5544,7 +5772,7 @@ router.post('/:slug/view', async (req, res) => {
 
         res.json({ success: true, counted: shouldCount, windowMinutes, totalViews });
     } catch (error) {
-        console.error('Error tracking view:', error);
+        logger.error('Error tracking view:', error);
         res.status(500).json({ message: 'Error tracking view', error: error.message });
     }
 });
@@ -5603,7 +5831,7 @@ router.get('/user/projects/analytics', auth, async (req, res) => {
 
         res.json({ analytics: Object.values(projectsMap) });
     } catch (error) {
-        console.error('Error fetching project analytics:', error);
+        logger.error('Error fetching project analytics:', error);
         res.status(500).json({ message: 'Error fetching project analytics', error: error.message });
     }
 });
@@ -5664,7 +5892,7 @@ router.get("/:slug/analytics", auth, async (req, res) => {
 
         res.json(responseData);
     } catch (error) {
-        console.error("Error fetching project analytics page data:", error);
+        logger.error("Error fetching project analytics page data:", error);
         res.status(500).json({ message: "Error fetching project analytics", error: error.message });
     }
 });
@@ -5673,34 +5901,60 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
     const { slug, version_number } = req.params;
 
     try {
-        const [project] = await db.query('SELECT id, user_id, slug FROM projects WHERE slug = ?', [slug]);
+		const [project] = await db.query('SELECT id, user_id, slug, status, visibility FROM projects WHERE slug = ?', [slug]);
         if(!project.length) {
             return res.status(404).json({ message: 'Project not found' });
         }
 
-        const [version] = await db.query(
-            'SELECT id, project_id, version_number, downloads, changelog, release_channel, game_versions, loaders, file_url, file_size, created_at, moderation_status, moderation_reason FROM project_versions WHERE project_id = ? AND id = ?',
-            [project[0].id, version_number]
-        );
+		const [version] = await db.query(
+			'SELECT id, project_id, version_number, downloads, changelog, release_channel, game_versions, loaders, file_url, file_size, created_at, moderation_status, moderation_reason FROM project_versions WHERE project_id = ? AND id = ?',
+			[project[0].id, version_number]
+		);
 
-        const canViewModerationFields = await canViewPrivateProjectVersions(project[0], req.user?.id || null);
+		const versionViewerUserId = req.user?.id || null;
+		const [versionAccess, versionViewerRole] = await Promise.all([
+			versionViewerUserId ? resolveProjectAccess(db, project[0], versionViewerUserId) : null,
+			getUserRole(versionViewerUserId),
+		]);
+		if(!canAccessRestrictedProject({
+			project: project[0],
+			userId: versionViewerUserId,
+			userRole: versionViewerRole,
+			access: versionAccess,
+		})) {
+			return res.status(403).json({ message: 'You do not have permission to view this project' });
+		}
+		const canViewModerationFields = canViewPrivateProjectVersions({
+			userId: versionViewerUserId,
+			userRole: versionViewerRole,
+			access: versionAccess,
+			hasManageVersionsPermission: hasProjectPermission(versionAccess, ORG_PROJECT_PERMISSIONS.MANAGE_VERSIONS),
+		});
 
         if(!version.length || (version[0].moderation_status !== "approved" && !canViewModerationFields)) {
             return res.status(404).json({ message: 'Version not found' });
         }
 
-        const dependencies = await getVersionDependencies(db, version[0].id);
-        const safeVersion = sanitizeVersionForPublicResponse(version[0], { includeModeration: canViewModerationFields });
+		const [dependencies, privateVersionKeys] = await Promise.all([
+			getVersionDependencies(db, version[0].id),
+			getPrivateVersionKeys(project[0].id, version, canViewModerationFields),
+		]);
+		const selectedVersion = {
+			...version[0],
+			quarantine_key: privateVersionKeys.get(String(version[0].id)) || null,
+		};
+		const versionWithFileAccess = await getVersionWithPrivateFileAccess(selectedVersion, canViewModerationFields);
+		const safeVersion = sanitizeVersionForPublicResponse(versionWithFileAccess, { includeModeration: canViewModerationFields });
 
         res.json({
             ...safeVersion,
             game_versions: version[0].game_versions ? JSON.parse(version[0].game_versions) : [],
             loaders: version[0].loaders ? JSON.parse(version[0].loaders) : [],
-			...getVersionFileFields(version[0]),
+			...getVersionFileFields(versionWithFileAccess),
             dependencies,
         });
     } catch (error) {
-        console.error('Error fetching version:', error);
+        logger.error('Error fetching version:', error);
         res.status(500).json({ message: 'Error fetching version', error: error.message });
     }
 });
@@ -5774,7 +6028,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error fetching project settings:", error);
+        logger.error("Error fetching project settings:", error);
         res.status(500).json({ message: "Server error" });
     }
 });
@@ -5888,9 +6142,9 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 
 		await Promise.all([
 			bumpProjectCacheVersion(project.slug),
-			deleteCacheByPattern("modifold_projects_*"),
-			deleteCacheByPattern("modifold_discover_v2_*"),
-			deleteCacheByPattern("user_likes_*"),
+			bumpCacheGeneration("projects"),
+			bumpCacheGeneration("discover"),
+			bumpCacheGeneration("user_likes"),
 		]);
 
 		const disclosureState = await getProjectDisclosureState(db, project.id);
@@ -5900,7 +6154,7 @@ router.put("/:slug/disclosures", auth, async (req, res) => {
 			license: hasLicenseUpdate ? { id: licenseId, name: licenseName } : undefined,
 		});
 	} catch (error) {
-		console.error("Error updating project disclosures:", error);
+		logger.error("Error updating project disclosures:", error);
 		return res.status(500).json({ message: "Error updating project disclosures", error: error.message });
 	}
 });
@@ -5948,7 +6202,7 @@ router.get("/:slug/moderation-history", auth, async (req, res) => {
             history
         });
     } catch (error) {
-        console.error("Error fetching moderation history:", error);
+        logger.error("Error fetching moderation history:", error);
         res.status(500).json({ 
             message: "Failed to fetch moderation history",
             error: error.message 
@@ -5985,7 +6239,7 @@ router.get("/license/:licenseKey", async (req, res) => {
             html_url: data.html_url,
         });
     } catch (err) {
-        console.error("License fetch error:", err);
+        logger.error("License fetch error:", err);
         res.status(500).json({ message: "Failed to fetch license text" });
     }
 });
@@ -6036,12 +6290,12 @@ router.get("/:slug/organization-options", auth, async (req, res) => {
             slug: row.slug,
             name: row.name,
             summary: row.summary || "",
-            icon_url: row.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+            icon_url: row.icon_url || "https://modifold.com/images/no-project-icon.svg",
         }));
 
         return res.json({ organizations });
     } catch (error) {
-        console.error("Error fetching project organization options:", error);
+        logger.error("Error fetching project organization options:", error);
         return res.status(500).json({ message: "Error fetching organizations" });
     }
 });
@@ -6201,11 +6455,11 @@ router.put("/:slug/organization", auth, async (req, res) => {
                 slug: targetOrganization.slug,
                 name: targetOrganization.name,
                 summary: targetOrganization.summary || "",
-                icon_url: targetOrganization.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: targetOrganization.icon_url || "https://modifold.com/images/no-project-icon.svg",
             },
         });
     } catch (error) {
-        console.error("Error attaching organization to project:", error);
+        logger.error("Error attaching organization to project:", error);
         return res.status(500).json({ message: "Error updating project organization" });
     }
 });

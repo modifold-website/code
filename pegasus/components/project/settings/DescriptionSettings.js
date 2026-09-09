@@ -12,6 +12,7 @@ import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import MarkdownImageModal from "@/modal/MarkdownImageModal";
 import { prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
 import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
+import { insertMarkdownLink } from "@/utils/markdown/editor";
 
 function MarkdownToolbarButton({ label, onClick, disabled, children }) {
     return (
@@ -137,6 +138,20 @@ export default function DescriptionSettings({ project, authToken }) {
         updateTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
     };
 
+	const insertLinkAtSelection = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
+
+		const edit = insertMarkdownLink({
+			value: description,
+			selectionStart: textarea.selectionStart ?? 0,
+			selectionEnd: textarea.selectionEnd ?? 0,
+		});
+		updateTextareaValue(edit.value, edit.selectionStart, edit.selectionEnd);
+	};
+
     const formatCodeSelection = () => {
         const textarea = textareaRef.current;
         if(!textarea) {
@@ -173,6 +188,27 @@ export default function DescriptionSettings({ project, authToken }) {
         const selectionStart = start + prefix.length;
         updateTextareaValue(nextValue, selectionStart, selectionStart + selected.length);
     };
+
+	const insertCollapsibleSection = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
+
+		const start = textarea.selectionStart ?? 0;
+		const end = textarea.selectionEnd ?? 0;
+		const selected = description.slice(start, end);
+		const before = description.slice(0, start);
+		const after = description.slice(end);
+		const title = "Section title";
+		const content = selected || "Hidden content";
+		const leadingNewline = before && !before.endsWith("\n\n") ? (before.endsWith("\n") ? "\n" : "\n\n") : "";
+		const trailingNewline = after && !after.startsWith("\n\n") ? (after.startsWith("\n") ? "\n" : "\n\n") : "";
+		const block = `${leadingNewline}<details>\n<summary>${title}</summary>\n\n${content}\n\n</details>${trailingNewline}`;
+		const nextValue = `${before}${block}${after}`;
+		const titleStart = start + leadingNewline.length + "<details>\n<summary>".length;
+		updateTextareaValue(nextValue, titleStart, titleStart + title.length);
+	};
 
     const prefixLines = (prefix) => {
         const textarea = textareaRef.current;
@@ -274,13 +310,17 @@ export default function DescriptionSettings({ project, authToken }) {
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-ordered-icon lucide-list-ordered"><path d="M11 5h10"/><path d="M11 12h10"/><path d="M11 19h10"/><path d="M4 4h1v5"/><path d="M4 9h2"/><path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/></svg>
                                             </MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Link" onClick={() => insertAtSelection("[link text](https://)")} disabled={isPreviewVisible}>
+                                            <MarkdownToolbarButton label="Link" onClick={insertLinkAtSelection} disabled={isPreviewVisible}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                             </MarkdownToolbarButton>
 
                                             <MarkdownToolbarButton label="Image" onClick={openImageModal} disabled={isPreviewVisible}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
                                             </MarkdownToolbarButton>
+
+											<MarkdownToolbarButton label="Collapsible section" onClick={insertCollapsibleSection} disabled={isPreviewVisible}>
+												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 3 3 3-3"/><path d="m9 6 3-3 3 3"/><path d="M12 3v18"/><path d="M5 9h14"/><path d="M5 15h14"/></svg>
+											</MarkdownToolbarButton>
 
                                             <label className="markdown-editor__preview-toggle">
                                                 <input type="checkbox" checked={isPreviewVisible} onChange={(e) => setIsPreviewVisible(e.target.checked)} />

@@ -2,13 +2,15 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Modal from "react-modal";
+import { EmailAuthField, PasswordField } from "@/components/auth/EmailAuthFields";
+import PasswordRecoveryModal from "./PasswordRecoveryModal";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { useAuth } from "../components/providers/AuthProvider";
 import { getLastSignInProvider, setLastSignInProvider, setPendingSignInProvider } from "../utils/authSignInProvider";
 
 if(typeof window !== "undefined") {
-    Modal.setAppElement("body");
+    Modal.setAppElement("#app");
 }
 
 function getReturnPath() {
@@ -42,40 +44,6 @@ function maskEmail(email) {
     }
 
     return `${trimmedEmail.slice(0, 1)}****${trimmedEmail.slice(atIndex)}`;
-}
-
-function EmailAuthField({ children }) {
-    return (
-        <div className="field field--large">
-            <label className="field__wrapper">
-                {children}
-            </label>
-        </div>
-    );
-}
-
-function PasswordField({ autoComplete, name, placeholder, value, onChange, showPassword, onToggle, t }) {
-    return (
-        <EmailAuthField>
-            <input className="text-input" name={name} type={showPassword ? "text" : "password"} autoComplete={autoComplete} placeholder={placeholder} minLength={8} value={value} onChange={onChange} required />
-            
-            <button className="email-auth__password-toggle" type="button" onClick={onToggle} aria-label={showPassword ? t("hidePassword") : t("showPassword")}>
-                {showPassword ? (
-                    <svg className="icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
-                        <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
-                        <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
-                        <path d="m2 2 20 20" />
-                    </svg>
-                ) : (
-                    <svg className="icon" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                )}
-            </button>
-        </EmailAuthField>
-    );
 }
 
 function VerificationCodeInput({ codeSlots, inputRefs, onChange, onKeyDown, onPaste, t }) {
@@ -134,11 +102,13 @@ function VerificationCodeInput({ codeSlots, inputRefs, onChange, onKeyDown, onPa
     );
 }
 
-function EmailLoginAuth({ isOpen, onBack, onClose }) {
+export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
+	const recoveryT = useTranslations("PasswordRecovery");
+	const [recoveryOpen, setRecoveryOpen] = useState(false);
     const t = useTranslations("LoginModal.emailAuth");
     const { completeLogin } = useAuth();
     const [mode, setMode] = useState("login");
-    const [form, setForm] = useState({ email: "", password: "", username: "" });
+    const [form, setForm] = useState({ email: initialEmail, password: "", username: "" });
     const [codeSlots, setCodeSlots] = useState(createEmptyCodeSlots);
     const [captchaToken, setCaptchaToken] = useState("");
     const [statusMessage, setStatusMessage] = useState("");
@@ -474,94 +444,100 @@ function EmailLoginAuth({ isOpen, onBack, onClose }) {
     }, [isOpen, mode]);
 
     return (
-        <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={handleClose} className="modal active" overlayClassName="modal-overlay">
-            <div className="modal-window">
-                <div className="modal-window__header">
-                    <button className="icon-button modal-window__back" type="button" onClick={handleBack} aria-label={t("back")} style={{ marginLeft: "-14px", marginRight: "16px" }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: "none" }}>
-                            <path d="m15 18-6-6 6-6"></path>
-                        </svg>
-                    </button>
+        <>
+            <PasswordRecoveryModal key={form.email} isOpen={isOpen && recoveryOpen} initialEmail={form.email} onClose={() => setRecoveryOpen(false)} />
+            
+            <Modal appElement={typeof document !== "undefined" ? document.getElementById("app") : undefined} aria={{ modal: true }} closeTimeoutMS={150} isOpen={isOpen && !recoveryOpen} onRequestClose={handleClose} className="modal active" overlayClassName="modal-overlay">
+                <div className="modal-window">
+                    <div className="modal-window__header">
+                        <button className="icon-button modal-window__back" type="button" onClick={handleBack} aria-label={t("back")} style={{ marginLeft: "-14px", marginRight: "16px" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ fill: "none" }}>
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                        </button>
 
-                    <button className="icon-button modal-window__close" type="button" onClick={handleClose} aria-label={t("close")}>
-                        <svg className="icon icon--cross" height="24" width="24">
-                            <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
-                        </svg>
-                    </button>
-                </div>
+                        <button className="icon-button modal-window__close" type="button" onClick={handleClose} aria-label={t("close")}>
+                            <svg className="icon icon--cross" height="24" width="24">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M5.293 5.293a1 1 0 0 1 1.414 0L12 10.586l5.293-5.293a1 1 0 0 1 1.414 1.414L13.414 12l5.293 5.293a1 1 0 0 1-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 0 1-1.414-1.414L10.586 12 5.293 6.707a1 1 0 0 1 0-1.414Z"></path>
+                            </svg>
+                        </button>
+                    </div>
 
-                <div className="modal-window__content">
-                    <div className={`auth email-auth ${isModeTransitioning ? "email-auth--transitioning" : ""}`}>
-                        <h2 className="email-auth__title">{mode === "login" ? t("loginTitle") : mode === "register" ? t("registerTitle") : t("verifyTitle")}</h2>
+                    <div className="modal-window__content">
+                        <div className={`auth email-auth ${isModeTransitioning ? "email-auth--transitioning" : ""}`}>
+                            <h2 className="email-auth__title">{mode === "login" ? t("loginTitle") : mode === "register" ? t("registerTitle") : t("verifyTitle")}</h2>
 
-                        {mode === "login" && (
-                            <form className="email-auth__form" onSubmit={submitLogin}>
-                                <EmailAuthField>
-                                    <input className="text-input" name="email" type="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={form.email} onChange={updateField} required />
-                                </EmailAuthField>
+                            {mode === "login" && (
+                                <form className="email-auth__form" onSubmit={submitLogin}>
+                                    <EmailAuthField>
+                                        <input className="text-input" name="email" type="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={form.email} onChange={updateField} required />
+                                    </EmailAuthField>
 
-                                <PasswordField autoComplete="current-password" name="password" placeholder={t("passwordPlaceholder")} value={form.password} onChange={updateField} showPassword={showPassword} onToggle={() => setShowPassword((current) => !current)} t={t} />
+                                    <PasswordField autoComplete="current-password" name="password" placeholder={t("passwordPlaceholder")} value={form.password} onChange={updateField} showPassword={showPassword} onToggle={() => setShowPassword((current) => !current)} t={t} />
 
-                                {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
-                                
-                                <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting}>
-                                    {isSubmitting ? t("submitting") : t("loginButton")}
-                                </button>
-                            </form>
-                        )}
-
-                        {mode === "register" && (
-                            <form className="email-auth__form" onSubmit={submitRegister}>
-                                <EmailAuthField>
-                                    <input className="text-input" name="username" type="text" autoComplete="username" placeholder={t("usernamePlaceholder")} minLength={2} maxLength={100} value={form.username} onChange={updateField} required />
-                                </EmailAuthField>
-
-                                <EmailAuthField>
-                                    <input className="text-input" name="email" type="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={form.email} onChange={updateField} required />
-                                </EmailAuthField>
-
-                                <PasswordField autoComplete="new-password" name="password" placeholder={t("passwordPlaceholder")} value={form.password} onChange={updateField} showPassword={showPassword} onToggle={() => setShowPassword((current) => !current)} t={t} />
-
-                                <div className="email-auth__captcha">
-                                    {captchaSiteKey ? <div ref={captchaRef}></div> : <p className="email-auth__status">{t("captchaMissing")}</p>}
-                                </div>
-
-                                {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
-                                
-                                <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting || !captchaToken}>
-                                    {isSubmitting ? t("submitting") : t("registerButton")}
-                                </button>
-                            </form>
-                        )}
-
-                        {mode === "verify" && (
-                            <form className="email-auth__form" onSubmit={submitVerification}>
-                                <p className="email-auth__description">{t("verifyDescription", { email: maskedEmail })}</p>
-                                <VerificationCodeInput codeSlots={codeSlots} inputRefs={codeInputRefs} onChange={updateCodeSlot} onKeyDown={handleCodeKeyDown} onPaste={handleCodePaste} t={t} />
-                                
-                                {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
-                                
-                                <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting || verificationCode.length !== 6}>
-                                    {isSubmitting ? t("submitting") : t("verifyButton")}
-                                </button>
-                            </form>
-                        )}
-
-                        <div className="auth__footer">
-                            {mode === "login" ? (
-                                <button className="link-button link-button--default" type="button" onClick={openRegister}>
-                                    {t("createAccount")}
-                                </button>
-                            ) : (
-                                <button className="link-button link-button--default" type="button" onClick={openLogin}>
-                                    {t("backToLogin")}
-                                </button>
+                                    {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
+                                    
+                                    <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting}>
+                                        {isSubmitting ? t("submitting") : t("loginButton")}
+                                    </button>
+                                </form>
                             )}
+
+                            {mode === "register" && (
+                                <form className="email-auth__form" onSubmit={submitRegister}>
+                                    <EmailAuthField>
+                                        <input className="text-input" name="username" type="text" autoComplete="username" placeholder={t("usernamePlaceholder")} minLength={2} maxLength={100} value={form.username} onChange={updateField} required />
+                                    </EmailAuthField>
+
+                                    <EmailAuthField>
+                                        <input className="text-input" name="email" type="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={form.email} onChange={updateField} required />
+                                    </EmailAuthField>
+
+                                    <PasswordField autoComplete="new-password" name="password" placeholder={t("passwordPlaceholder")} value={form.password} onChange={updateField} showPassword={showPassword} onToggle={() => setShowPassword((current) => !current)} t={t} />
+
+                                    <div className="email-auth__captcha">
+                                        {captchaSiteKey ? <div ref={captchaRef}></div> : <p className="email-auth__status">{t("captchaMissing")}</p>}
+                                    </div>
+
+                                    {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
+                                    
+                                    <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting || !captchaToken}>
+                                        {isSubmitting ? t("submitting") : t("registerButton")}
+                                    </button>
+                                </form>
+                            )}
+
+                            {mode === "verify" && (
+                                <form className="email-auth__form" onSubmit={submitVerification}>
+                                    <p className="email-auth__description">{t("verifyDescription", { email: maskedEmail })}</p>
+                                    <VerificationCodeInput codeSlots={codeSlots} inputRefs={codeInputRefs} onChange={updateCodeSlot} onKeyDown={handleCodeKeyDown} onPaste={handleCodePaste} t={t} />
+                                    
+                                    {statusMessage && <p className="email-auth__status">{statusMessage}</p>}
+                                    
+                                    <button className="button button--size-xl button--type-primary button--active-transform" type="submit" disabled={isSubmitting || verificationCode.length !== 6}>
+                                        {isSubmitting ? t("submitting") : t("verifyButton")}
+                                    </button>
+                                </form>
+                            )}
+
+                            <div className="auth__footer email-auth__footer">
+                                {mode === "login" && <button className="link-button link-button--default" type="button" onClick={() => setRecoveryOpen(true)}>{recoveryT("title")}</button>}
+                                
+                                {mode === "login" ? (
+                                    <button className="link-button link-button--default" type="button" onClick={openRegister}>
+                                        {t("createAccount")}
+                                    </button>
+                                ) : (
+                                    <button className="link-button link-button--default" type="button" onClick={openLogin}>
+                                        {t("backToLogin")}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </Modal>
+            </Modal>
+		</>
     );
 }
 
@@ -652,7 +628,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
     return (
         <>
-            <Modal closeTimeoutMS={150} isOpen={isOpen && !isEmailAuthOpen && !isDataModalOpen} onRequestClose={onClose} className="modal active" overlayClassName="modal-overlay">
+            <Modal appElement={typeof document !== "undefined" ? document.getElementById("app") : undefined} aria={{ modal: true }} closeTimeoutMS={150} isOpen={isOpen && !isEmailAuthOpen && !isDataModalOpen} onRequestClose={onClose} className="modal active" overlayClassName="modal-overlay">
                 <div className="modal-window">
                     <div className="modal-window__header">
                         <button className="icon-button modal-window__close" type="button" onClick={onClose} aria-label={t("close")}>
@@ -759,7 +735,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
             <EmailLoginAuth isOpen={isOpen && isEmailAuthOpen} onBack={() => setIsEmailAuthOpen(false)} onClose={closeEmailAuth} />
 
-            <Modal closeTimeoutMS={150} isOpen={isDataModalOpen} onRequestClose={closeDataModal} className="modal active" overlayClassName="modal-overlay">
+            <Modal appElement={typeof document !== "undefined" ? document.getElementById("app") : undefined} aria={{ modal: true }} closeTimeoutMS={150} isOpen={isDataModalOpen} onRequestClose={closeDataModal} className="modal active" overlayClassName="modal-overlay">
                 <div className="modal-window">
                     <div className="modal-window__header">
                         <h2>{t("dataModal.title")}</h2>

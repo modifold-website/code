@@ -5,6 +5,11 @@ services:
     image: mysql:8.4
     container_name: modifold-mysql
     restart: unless-stopped
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: --mysql-native-password=ON
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-change-me-root-password}
@@ -23,6 +28,7 @@ services:
     image: clickhouse/clickhouse-server:24.8-alpine
     container_name: modifold-clickhouse
     restart: unless-stopped
+    logging: *default-logging
     environment:
       CLICKHOUSE_DB: ${CLICKHOUSE_DB:-modifold}
       CLICKHOUSE_USER: ${CLICKHOUSE_USER:-modifold}
@@ -42,6 +48,7 @@ services:
     image: redis:7-alpine
     container_name: modifold-redis
     restart: unless-stopped
+    logging: *default-logging
     command: sh -c 'redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"'
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis-password}
@@ -61,6 +68,7 @@ services:
       dockerfile: Dockerfile
     container_name: modifold-argus
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - path: ./.env.docker
         required: false
@@ -78,6 +86,7 @@ services:
     image: phpmyadmin:5-apache
     container_name: modifold-phpmyadmin
     restart: unless-stopped
+    logging: *default-logging
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
@@ -94,6 +103,7 @@ services:
       dockerfile: Dockerfile
     container_name: modifold-cronus
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - path: ./.env.docker
         required: false
@@ -113,11 +123,24 @@ services:
       S3_PUBLIC_URL: ${S3_PUBLIC_URL:-none}
       S3_PUBLIC_ACCESS_TOKEN: ${S3_PUBLIC_ACCESS_TOKEN:-none}
       S3_PUBLIC_SECRET: ${S3_PUBLIC_SECRET:-none}
+      S3_PRIVATE_BUCKET_NAME: ${S3_PRIVATE_BUCKET_NAME:-none}
+      S3_PRIVATE_USES_PATH_STYLE_BUCKET: ${S3_PRIVATE_USES_PATH_STYLE_BUCKET:-false}
+      S3_PRIVATE_URL: ${S3_PRIVATE_URL:-none}
+      S3_PRIVATE_ACCESS_TOKEN: ${S3_PRIVATE_ACCESS_TOKEN:-none}
+      S3_PRIVATE_SECRET: ${S3_PRIVATE_SECRET:-none}
       INTERNAL_DOWNLOADS_SECRET: ${INTERNAL_DOWNLOADS_SECRET:-}
       DOWNLOAD_PAGE_ORIGINS: ${DOWNLOAD_PAGE_ORIGINS:-https://modifold.com}
       DOWNLOAD_DEDUPE_TTL_SECONDS: ${DOWNLOAD_DEDUPE_TTL_SECONDS:-21600}
       DOWNLOAD_DEDUPE_LIMIT: ${DOWNLOAD_DEDUPE_LIMIT:-1}
       ARGUS_BASE_URL: ${ARGUS_BASE_URL:-}
+      ARGUS_FILE_URL_TTL_SECONDS: ${ARGUS_FILE_URL_TTL_SECONDS:-21600}
+      CURSEFORGE_API_KEY: ${CURSEFORGE_API_KEY:-}
+      CURSEFORGE_HYTALE_GAME_ID: ${CURSEFORGE_HYTALE_GAME_ID:-}
+      CURSEFORGE_REQUEST_INTERVAL_MS: ${CURSEFORGE_REQUEST_INTERVAL_MS:-350}
+      CURSEFORGE_REQUEST_TIMEOUT_MS: ${CURSEFORGE_REQUEST_TIMEOUT_MS:-20000}
+      CURSEFORGE_IMPORT_SKIP_OWNERSHIP_VERIFICATION: ${CURSEFORGE_IMPORT_SKIP_OWNERSHIP_VERIFICATION:-false}
+      RATE_LIMIT_IMPORTS_REQUESTS_PER_MINUTE: ${RATE_LIMIT_IMPORTS_REQUESTS_PER_MINUTE:-12}
+      RATE_LIMIT_IMPORTS_BURST_SIZE: ${RATE_LIMIT_IMPORTS_BURST_SIZE:-6}
     ports:
       - "127.0.0.1:${CRONUS_PORT:-4000}:4000"
     volumes:
@@ -135,6 +158,53 @@ services:
       timeout: 5s
       retries: 12
 
+  async-worker:
+    build:
+      context: ./cronus
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *default-logging
+    command: ["bun", "workers/asyncWorker.js"]
+    env_file:
+      - path: ./.env.docker
+        required: false
+    environment:
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-modifold}
+      DB_PASSWORD: ${DB_PASSWORD:-change-me-db-password}
+      DB_NAME: ${DB_NAME:-modifold}
+      DB_CONNECTION_LIMIT: 10
+      DB_MAX_IDLE: 5
+      DB_QUEUE_LIMIT: 200
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-modifold}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-modifold}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-change-me-clickhouse-password}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me-redis-password}@redis:6379
+      S3_PUBLIC_BUCKET_NAME: ${S3_PUBLIC_BUCKET_NAME:-none}
+      S3_PUBLIC_USES_PATH_STYLE_BUCKET: ${S3_PUBLIC_USES_PATH_STYLE_BUCKET:-false}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-none}
+      S3_PUBLIC_ACCESS_TOKEN: ${S3_PUBLIC_ACCESS_TOKEN:-none}
+      S3_PUBLIC_SECRET: ${S3_PUBLIC_SECRET:-none}
+      S3_PRIVATE_BUCKET_NAME: ${S3_PRIVATE_BUCKET_NAME:-none}
+      S3_PRIVATE_USES_PATH_STYLE_BUCKET: ${S3_PRIVATE_USES_PATH_STYLE_BUCKET:-false}
+      S3_PRIVATE_URL: ${S3_PRIVATE_URL:-none}
+      S3_PRIVATE_ACCESS_TOKEN: ${S3_PRIVATE_ACCESS_TOKEN:-none}
+      S3_PRIVATE_SECRET: ${S3_PRIVATE_SECRET:-none}
+      ARGUS_ENABLED: ${ARGUS_ENABLED:-false}
+      ARGUS_BASE_URL: ${ARGUS_BASE_URL:-}
+      ARGUS_SHARED_SECRET: ${ARGUS_SHARED_SECRET:-}
+      ARGUS_FILE_URL_TTL_SECONDS: ${ARGUS_FILE_URL_TTL_SECONDS:-21600}
+      CURSEFORGE_API_KEY: ${CURSEFORGE_API_KEY:-}
+      CURSEFORGE_HYTALE_GAME_ID: ${CURSEFORGE_HYTALE_GAME_ID:-}
+      CURSEFORGE_REQUEST_INTERVAL_MS: ${CURSEFORGE_REQUEST_INTERVAL_MS:-350}
+      CURSEFORGE_REQUEST_TIMEOUT_MS: ${CURSEFORGE_REQUEST_TIMEOUT_MS:-20000}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+
   pegasus:
     build:
       context: ./pegasus
@@ -148,6 +218,7 @@ services:
         NEXT_PUBLIC_HCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_HCAPTCHA_SITE_KEY:-}
     container_name: modifold-pegasus
     restart: unless-stopped
+    logging: *default-logging
     env_file:
       - path: ./.env.docker
         required: false
@@ -172,6 +243,7 @@ services:
       dockerfile: Dockerfile
     container_name: modifold-docs
     restart: unless-stopped
+    logging: *default-logging
     environment:
       HOSTNAME: 0.0.0.0
       PORT: 3001

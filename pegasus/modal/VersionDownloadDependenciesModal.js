@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { getProjectPath } from "@/utils/projectRoutes";
 import showOverTheTopDownloadAnimation from "@/components/ui/showOverTheTopDownloadAnimation";
 import { getVersionDownloadUrl } from "@/utils/projects/downloads";
-import { trackVersionDownload } from "@/utils/projects/downloadTracking";
+import { getVersionDownloadEndpoint } from "@/utils/projects/downloadTracking";
 
 Modal.setAppElement("body");
 
@@ -31,23 +31,18 @@ function getDependencyVersionPath(dependency) {
 }
 
 function getDependencyDownloadHref(dependency) {
-	return getVersionDownloadUrl(dependency);
+	return getVersionDownloadEndpoint({
+		project: { slug: dependency?.project_slug },
+		version: { id: dependency?.version_id },
+	}) || getVersionDownloadUrl(dependency);
 }
 
 export default function VersionDownloadDependenciesModal({ isOpen, project, version, dependencies = [], onRequestClose }) {
 	const t = useTranslations("ProjectPage.versions.downloadModal");
 	const tProject = useTranslations("ProjectPage");
-	const projectIconUrl = project?.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg";
+	const projectIconUrl = project?.icon_url || "/images/no-project-icon.svg";
 
-	const handleDependencyDownloadClick = (dependency) => {
-		trackVersionDownload({
-			project: {
-				slug: dependency?.project_slug,
-			},
-			version: {
-				id: dependency?.version_id,
-			},
-		});
+	const handleDependencyDownloadClick = () => {
 		showOverTheTopDownloadAnimation();
 	};
 
@@ -77,7 +72,7 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 						{dependencies.map((dependency, index) => {
 							const dependencyName = dependency.project_title || dependency.project_slug || dependency.project_id || tProject("versions.dependencies.unknownDependency");
 							const dependencyVersion = dependency.version_number || dependency.version_name || dependency.version_id || t("anyVersion");
-							const dependencyIconUrl = dependency.project_icon_url || "https://cdn.modifold.com/static/no-project-icon.svg";
+							const dependencyIconUrl = dependency.project_icon_url || "/images/no-project-icon.svg";
 							const dependencyHref = getDependencyVersionPath(dependency);
 							const dependencyDownloadHref = getDependencyDownloadHref(dependency);
 

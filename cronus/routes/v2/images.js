@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const crypto = require("crypto");
 const express = require("express");
 const sharp = require("sharp");
@@ -126,7 +128,7 @@ router.post("/", auth, rawImageBody, async (req, res) => {
 			return res.status(415).json({ message: "Invalid or unsupported image file" });
 		}
 
-		console.error("Error uploading project description image:", error);
+		logger.error("Error uploading project description image:", error);
 		return res.status(500).json({ message: "Error uploading image" });
 	}
 });

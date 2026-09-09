@@ -1,6 +1,9 @@
 require("dotenv").config();
 
 const Redis = require("ioredis");
+const { createLogger } = require("../packages/shared/logger");
+
+const logger = createLogger("redis");
 
 const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 const redisPrefix = process.env.REDIS_PREFIX || "modifold:";
@@ -13,8 +16,35 @@ const redis = new Redis(redisUrl, {
 	enableOfflineQueue: false,
 });
 
+const redisRetryBackoffMs = Number(process.env.REDIS_RETRY_BACKOFF_MS) || 1000;
+const redisErrorLogIntervalMs = Number(process.env.REDIS_ERROR_LOG_INTERVAL_MS) || 30000;
+const lastErrorLogs = new Map();
+let unavailableUntil = 0;
+
+const logRedisError = (operation, error) => {
+	const now = Date.now();
+	const previous = lastErrorLogs.get(operation) || { loggedAt: 0, suppressed: 0 };
+
+	if(now - previous.loggedAt < redisErrorLogIntervalMs) {
+		lastErrorLogs.set(operation, {
+			...previous,
+			suppressed: previous.suppressed + 1,
+		});
+		return;
+	}
+
+	logger.warn({
+		event: "dependency_unavailable",
+		operation,
+		suppressedCount: previous.suppressed,
+		error,
+	}, "Redis operation unavailable");
+	lastErrorLogs.set(operation, { loggedAt: now, suppressed: 0 });
+};
+
 redis.on("error", (error) => {
-	console.error("[redis] client error:", error);
+	unavailableUntil = Math.max(unavailableUntil, Date.now() + redisRetryBackoffMs);
+	logRedisError("client", error);
 });
 
 let connectPromise = null;
@@ -23,10 +53,13 @@ const ensureConnected = async () => {
 		return;
 	}
 
+	if(Date.now() < unavailableUntil) {
+		throw new Error("Redis is temporarily unavailable");
+	}
+
 	if(!connectPromise) {
 		connectPromise = redis.connect().catch((error) => {
 			connectPromise = null;
-			console.error("[redis] connect failed:", error);
 			throw error;
 		});
 	}
@@ -36,9 +69,12 @@ const ensureConnected = async () => {
 
 const runRedisOperation = async (operation, callback) => {
 	try {
-		return await callback();
+		const result = await callback();
+		unavailableUntil = 0;
+		return result;
 	} catch(error) {
-		console.error(`[redis] ${operation} failed:`, error);
+		unavailableUntil = Math.max(unavailableUntil, Date.now() + redisRetryBackoffMs);
+		logRedisError(operation, error);
 		throw error;
 	}
 };
@@ -54,14 +90,40 @@ const cacheClient = {
 	set: async (key, value, options = {}) => {
 		return runRedisOperation("set", async () => {
 			await ensureConnected();
-			const expires = Number(options.expires) || Number(process.env.REDIS_DEFAULT_TTL_SECONDS) || 60;
-			await redis.set(key, value, "EX", expires);
+			const commandArguments = [key, value];
+			if(options.expiresMilliseconds) {
+				commandArguments.push("PX", Math.max(1, Number(options.expiresMilliseconds)));
+			} else {
+				const expires = Number(options.expires) || Number(process.env.REDIS_DEFAULT_TTL_SECONDS) || 60;
+				commandArguments.push("EX", Math.max(1, expires));
+			}
+			if(options.onlyIfAbsent) {
+				commandArguments.push("NX");
+			}
+
+			return redis.set(...commandArguments);
 		});
 	},
 	eval: async (script, keys = [], args = []) => {
 		return runRedisOperation("eval", async () => {
 			await ensureConnected();
 			return redis.eval(script, keys.length, ...keys, ...args);
+		});
+	},
+	scan: async (cursor, pattern, count) => {
+		return runRedisOperation("scan", async () => {
+			await ensureConnected();
+			return redis.scan(cursor, "MATCH", pattern, "COUNT", count);
+		});
+	},
+	unlink: async (keys) => {
+		if(!Array.isArray(keys) || keys.length === 0) {
+			return 0;
+		}
+
+		return runRedisOperation("unlink", async () => {
+			await ensureConnected();
+			return redis.unlink(...keys);
 		});
 	},
 	quit: async () => {

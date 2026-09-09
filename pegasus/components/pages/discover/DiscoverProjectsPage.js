@@ -54,7 +54,7 @@ export default function DiscoverProjectsPage({ data }) {
 					<p>{t("communityText")}</p>
 				</div>
 
-				<Link href="/jams" className="button button--size-m button--type-primary button--active-transform button--with-icon">
+				<Link prefetch={false} href="/jams" className="button button--size-m button--type-primary button--active-transform button--with-icon">
 					<svg className="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 						<path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"/>
 						<path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"/>

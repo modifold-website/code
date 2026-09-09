@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -59,7 +60,7 @@ export default async function DashboardAnalyticsRoute({ searchParams }) {
 			params.set("project_ids", projectIdsParam);
 		}
 
-		const response = await fetch(`${serverApiBase}/analytics/user?${params.toString()}`, {
+		const response = await serverApiFetch(`${serverApiBase}/analytics/user?${params.toString()}`, {
 			headers: {
 				Accept: "application/json",
 				Authorization: `Bearer ${authToken}`,

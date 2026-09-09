@@ -229,7 +229,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                                     <span className="issues-filter-link__count">{initialIssues.openCount}</span>
                                 </div>
                             ) : (
-                                <Link href={buildUrl({ status: "open", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
+                                <Link prefetch={false} href={buildUrl({ status: "open", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
                                     <span className="issues-filter-link__left">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="12" cy="12" r="10"/>
@@ -257,7 +257,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                                     <span className="issues-filter-link__count">{initialIssues.closedCount}</span>
                                 </div>
                             ) : (
-                                <Link href={buildUrl({ status: "closed", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
+                                <Link prefetch={false} href={buildUrl({ status: "closed", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
                                     <span className="issues-filter-link__left">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="12" cy="12" r="10"/>
@@ -292,7 +292,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                                     </span>
                                 </div>
                             ) : (
-                                <Link href={buildUrl({ sort: "newest", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
+                                <Link prefetch={false} href={buildUrl({ sort: "newest", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
                                     <span className="issues-filter-link__left">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="m3 16 4 4 4-4"/>
@@ -322,7 +322,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                                     </span>
                                 </div>
                             ) : (
-                                <Link href={buildUrl({ sort: "oldest", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
+                                <Link prefetch={false} href={buildUrl({ sort: "oldest", page: "1" })} scroll={false} className="issues-filter-link" data-ripple>
                                     <span className="issues-filter-link__left">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="m3 8 4-4 4 4"/>
@@ -360,7 +360,7 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                         ) : (
                             issueItems.map((issue) => (
                                 <div key={issue.id} className="issue-card">
-                                    <Link className="issue-card__overlay" href={`${basePath}/${project.slug}/issues/${issue.id}`} aria-label={issue.title} />
+                                    <Link prefetch={false} className="issue-card__overlay" href={`${basePath}/${project.slug}/issues/${issue.id}`} aria-label={issue.title} />
 
                                     <div className="issue-card__main">
                                         <svg className={`issue-badge--${issue.status === "closed" ? "closed" : "open"}`} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" color="currentColor">
@@ -437,17 +437,17 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
 
                     {pagination.totalPages > 1 && (
                         <div className="pagination-controls">
-                            <Link href={buildUrl({ page: String(Math.max(1, pagination.currentPage - 1)) })} className="button button--size-m button--type-secondary">
+                            <Link prefetch={false} href={buildUrl({ page: String(Math.max(1, pagination.currentPage - 1)) })} className="button button--size-m button--type-secondary">
                                 {t("pagination.prev")}
                             </Link>
 
                             {pagination.buttons.map((page) => (
-                                <Link key={page} href={buildUrl({ page: String(page) })} className={`button button--size-m pagination-button ${pagination.currentPage === page ? "button--type-primary" : "button--type-secondary"}`}>
+                                <Link prefetch={false} key={page} href={buildUrl({ page: String(page) })} className={`button button--size-m pagination-button ${pagination.currentPage === page ? "button--type-primary" : "button--type-secondary"}`}>
                                     {page}
                                 </Link>
                             ))}
 
-                            <Link href={buildUrl({ page: String(Math.min(pagination.totalPages, pagination.currentPage + 1)) })} className="button button--size-m button--type-secondary">
+                            <Link prefetch={false} href={buildUrl({ page: String(Math.min(pagination.totalPages, pagination.currentPage + 1)) })} className="button button--size-m button--type-secondary">
                                 {t("pagination.next")}
                             </Link>
                         </div>

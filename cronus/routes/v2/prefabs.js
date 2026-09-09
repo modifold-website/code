@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const { execFile, spawn } = require("child_process");
 const { promisify } = require("util");
 const { createGzip } = require("zlib");
@@ -220,7 +222,7 @@ router.get("/:slug/preview", async (req, res) => {
 			url: `/v2/prefabs/${encodeURIComponent(prefab.project_slug)}/preview/file`,
 		});
 	} catch(error) {
-		console.error("Error finding prefab preview:", error);
+		logger.error("Error finding prefab preview:", error);
 		return res.status(500).json({ message: "Error finding prefab preview" });
 	}
 });
@@ -285,7 +287,7 @@ router.get("/:slug/preview/file", async (req, res) => {
 			}
 		});
 	} catch(error) {
-		console.error("Error streaming prefab preview:", error);
+		logger.error("Error streaming prefab preview:", error);
 		return res.status(500).json({ message: "Error streaming prefab preview" });
 	}
 });

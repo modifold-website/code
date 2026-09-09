@@ -1,5 +1,6 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import OrganizationsDashboardPage from "@/components/organizations/OrganizationsDashboardPage";
 
@@ -19,12 +20,12 @@ export default async function OrganizationsDashboardRoute() {
     const authToken = cookieStore.get("authToken")?.value;
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
     let organizations = [];
     try {
-        const response = await fetch(`${serverApiBase}/organizations/dashboard/organizations`, {
+        const response = await serverApiFetch(`${serverApiBase}/organizations/dashboard/organizations`, {
             headers: {
                 Authorization: `Bearer ${authToken}`,
                 Accept: "application/json",

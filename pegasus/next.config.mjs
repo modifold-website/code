@@ -8,6 +8,9 @@ const nextConfig = {
     allowedDevOrigins: ['staging.modifold.com'],
     output: 'standalone',
     devIndicators: false,
+	experimental: {
+		authInterrupts: true,
+	},
     async redirects() {
         return [
             {

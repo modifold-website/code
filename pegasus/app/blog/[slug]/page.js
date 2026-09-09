@@ -1,6 +1,7 @@
+import { serverApiFetch } from "@/utils/api/server";
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
 
-﻿import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -98,7 +99,7 @@ export default async function NewsArticle({ params }) {
             const results = await Promise.all(
                 authorSlugs.map(async (authorSlug) => {
                     try {
-						const res = await fetch(`${serverApiBase}/users/${authorSlug}`, {
+						const res = await serverApiFetch(`${serverApiBase}/users/${authorSlug}`, {
 							cache: "no-store",
 						});
 
@@ -130,7 +131,7 @@ export default async function NewsArticle({ params }) {
         return (
             <div className="layout">
                 <section className="news">
-                    <Link href="/blog">
+                    <Link prefetch={false} href="/blog">
                         <h2 className="news-title news-title--hover" style={{ borderColor: "var(--theme-sidebar-separator-color-background)", borderStyle: "solid", borderBottomWidth: "1px", paddingBottom: "20px" }}>
                             {t("title")}
                         </h2>
@@ -152,7 +153,7 @@ export default async function NewsArticle({ params }) {
                                         <span key={author.id} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                                             {index === authorCount - 1 && authorCount > 1 && <span>{t("byline.and")} </span>}
 
-                                            <Link href={`/user/${author.slug}`} className="news-page--author button--active-transform">
+                                            <Link prefetch={false} href={`/user/${author.slug}`} className="news-page--author button--active-transform">
                                                 <div style={{ position: "relative", width: "24px", height: "24px", borderRadius: "50%", overflow: "hidden" }}>
                                                     <Image src={author.avatar} alt={author.username} fill style={{ objectFit: "cover" }} unoptimized />
                                                 </div>

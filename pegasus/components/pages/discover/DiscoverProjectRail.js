@@ -35,7 +35,7 @@ function ProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" })
 	const hiddenTagCount = Math.max(0, (project.tags || []).length - visibleTags.length);
 	const projectImage = getProjectImage(project);
 	const projectIcon = getProjectIcon(project);
-	const ownerAvatar = project.owner?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg";
+	const ownerAvatar = project.owner?.avatar || "/images/no-project-icon.svg";
 
 	const formatRelativeDate = (dateString) => {
 		const date = new Date(dateString);
@@ -102,7 +102,7 @@ function ProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" })
 
 	return (
 		<>
-			<Link className="discover-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
+			<Link prefetch={false} className="discover-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
 			<div className="discover-project-card__head card-head">
 				<img key={`cover:${projectImage}`} className="discover-project-card__cover resource-cover" src={projectImage} alt="" loading={imageLoading} />
@@ -111,10 +111,10 @@ function ProjectCardContent({ project, tCategoryLabels, imageLoading = "lazy" })
 			</div>
 
 			<div className="discover-project-card__body">
-				<Link href={getProjectPath(project)} className="discover-project-card__title">{project.title}</Link>
+				<Link prefetch={false} href={getProjectPath(project)} className="discover-project-card__title">{project.title}</Link>
 				
 				<span className="discover-project-card__author">
-					<Link href={getOwnerHref(project)}>
+					<Link prefetch={false} href={getOwnerHref(project)}>
 						<img key={`owner:${ownerAvatar}`} className="discover-author__avatar" src={ownerAvatar} alt="" loading={imageLoading} />
 						
 						<UserName user={project.owner} className="discover-author__name" />
@@ -353,7 +353,7 @@ export default function DiscoverProjectRail({ title, titleIcon = null, projects,
 				</h2>
 
 				{viewAllHref && (
-					<Link href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
+					<Link prefetch={false} href={viewAllHref} className="button button--size-m button--type-secondary button--active-transform">
 						{t("viewAll")}
 					</Link>
 				)}

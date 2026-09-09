@@ -1,7 +1,7 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, forbidden, unstable_rethrow } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import axios from "axios";
 import TechnicalReviewPage from "@/components/pages/TechnicalReviewPage";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
@@ -17,20 +17,25 @@ export async function generateMetadata() {
 
 async function fetchVersions(authToken) {
 	try {
-		const response = await axios.get(`${serverApiBase}/moderation/technical-review`, {
-			headers: { Authorization: `Bearer ${authToken}` },
-			params: {
-				page: 1,
-				limit: 20,
-				status: "needs_review",
-				sort: "oldest",
-				search: "",
-			},
+		const query = new URLSearchParams({
+			page: "1",
+			limit: "20",
+			status: "needs_review",
+			sort: "oldest",
+			search: "",
 		});
+		const response = await serverApiFetch(`${serverApiBase}/moderation/technical-review?${query}`, {
+			headers: { Authorization: `Bearer ${authToken}` },
+			cache: "no-store",
+		});
+		if(!response.ok) {
+			throw new Error(`Technical review API returned ${response.status}`);
+		}
+		const data = await response.json();
 
 		return {
-			versions: response.data.versions || [],
-			totalPages: response.data.totalPages || 1,
+			versions: data.versions || [],
+			totalPages: data.totalPages || 1,
 		};
 	} catch (error) {
 		console.error("Error fetching versions for technical review:", error);
@@ -43,11 +48,11 @@ export default async function TechnicalReviewServer() {
 	const authToken = cookieStore.get("authToken")?.value;
 
 	if(!authToken) {
-		redirect("/403");
+		forbidden();
 	}
 
 	try {
-		const response = await fetch(`${serverApiBase}/auth/user`, {
+		const response = await serverApiFetch(`${serverApiBase}/auth/user`, {
 			headers: { Authorization: `Bearer ${authToken}` },
 			cache: "no-store",
 		});
@@ -60,9 +65,10 @@ export default async function TechnicalReviewServer() {
 		const role = data?.user?.isRole;
 
 		if(role !== "admin" && role !== "moderator") {
-			redirect("/403");
+			forbidden();
 		}
 	} catch (error) {
+		unstable_rethrow(error);
 		console.error("Error checking technical review access:", error);
 		redirect("/");
 	}

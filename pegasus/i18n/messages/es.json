@@ -533,7 +533,25 @@
       "noProjectType": "Por favor, selecciona un tipo de proyecto",
       "generic": "Error al crear el proyecto"
     },
-    "success": "¡Proyecto creado!"
+    "success": "¡Proyecto creado!",
+    "importFromCurseForge": "Transferir un proyecto desde otra plataforma"
+  },
+  "CurseForgeImportModal": {
+    "title": "Transferir desde CurseForge", "close": "Cerrar", "methodLabel": "Forma de transferencia",
+    "methods": { "profile": "Perfil", "links": "Por enlace" },
+    "validation": { "validProfile": "El enlace es válido", "invalidProfile": "Pega un enlace a tu perfil de CurseForge", "validProject": "El enlace es válido", "invalidProject": "Pega un enlace a un proyecto de Hytale en CurseForge" },
+    "profile": { "title": "Transferir proyectos desde tu perfil", "hint": "Pega el enlace de tu perfil y encontraremos tus proyectos.", "placeholder": "https://www.curseforge.com/members/tu-nombre" },
+    "links": { "title": "Transferir proyectos específicos", "hint": "Pega enlaces a los proyectos que quieras transferir. Puedes transferir hasta {limit} proyectos a la vez.", "placeholder": "https://www.curseforge.com/hytale/mods/project-name", "remove": "Eliminar enlace", "add": "Añadir otro enlace" },
+    "checking": "Comprobando…", "continue": "Continuar",
+    "verification": { "title": "Confirma que los proyectos son tuyos", "hint": "Para confirmar tu perfil, añade el código a la descripción de un proyecto. Ya hemos elegido uno para comprobarlo. Los demás aparecerán después de la confirmación.", "linksHint": "Añade el código a la descripción de cada proyecto seleccionado.", "codeLabel": "Código de verificación", "stepOne": "Abre el proyecto «<link>{project}</link>» en CurseForge y edita su descripción.", "linksStepOne": "Abre cada proyecto en CurseForge y edita su descripción.", "stepTwo": "Pega {code} en cualquier parte de la descripción y guarda los cambios.", "linksStepTwo": "Pega {code} en la descripción de cada proyecto y guarda los cambios.", "stepThree": "Vuelve aquí y pulsa «He añadido el código». Podrás eliminarlo después de la verificación.", "alternative": "Solo usamos datos públicos de CurseForge. No necesitas introducir tu contraseña.", "copy": "Copiar código", "copied": "Código copiado", "copyError": "No se pudo copiar el código", "expiresIn": "Válido durante {minutes, plural, one {# minuto más} other {# minutos más}}", "expired": "El código ha caducado", "status": { "pending": "El código aún no se ha comprobado", "verified": "Código encontrado en la descripción", "missing": "Código no encontrado en la descripción" }, "checking": "Comprobando…", "check": "He añadido el código" },
+    "back": "Atrás",
+    "selection": { "title": "Elige proyectos", "hint": "Puedes transferir hasta {limit} proyectos a la vez.", "clear": "Desmarcar todos", "all": "Seleccionar todos", "firstTen": "Seleccionar 10", "limitReached": "Puedes transferir hasta {limit} proyectos a la vez.", "rejected": "No se pudieron abrir algunos enlaces: {count}.", "alreadyImported": "Ya transferido", "nameConflict": "Ya existe un proyecto con este nombre.", "import": "{count, plural, one {Transferir # proyecto} other {Transferir # proyectos}}" },
+    "starting": "Preparando…", "progress": { "title": "Transfiriendo proyectos", "hint": "{progress}% transferido. Puedes cerrar esta ventana y continuaremos en segundo plano.", "retry": "Reintentar", "retrying": "Reintentando…" },
+    "result": { "completed": { "title": "Todo listo", "hint": "Los proyectos se transfirieron y guardaron como borradores." }, "partial": { "title": "Algunos proyectos no se transfirieron", "hint": "Puedes volver a intentarlo a continuación." }, "failed": { "title": "No se pudieron transferir los proyectos", "hint": "Intenta transferirlos de nuevo." } },
+    "stages": { "ready": "Listo para transferir", "queued": "Empezaremos pronto", "metadata": "Transfiriendo información del proyecto", "icon": "Subiendo icono", "gallery": "Subiendo imágenes", "versions": "Subiendo versiones", "completed": "Transferencia completada", "failed": "No se pudo transferir", "skipped": "No seleccionado" },
+    "status": { "pending": "Empezaremos pronto", "queued": "Empezaremos pronto", "processing": "Transfiriendo", "completed": "Transferido", "warning": "Transferido con una advertencia", "failed": "No se pudo transferir" },
+    "errors": { "prepare": "No se encontraron proyectos en CurseForge", "verify": "No se pudo confirmar que los proyectos son tuyos", "start": "No se pudo iniciar la transferencia", "retry": "No se pudo volver a transferir el proyecto", "progress": "No se pudo actualizar la información. Lo intentaremos de nuevo automáticamente." },
+    "done": "Listo", "closeAndContinue": "Cerrar"
   },
   "ProjectPage": {
     "previous": "Anterior",
@@ -1100,6 +1118,7 @@
     "combat": "Combate",
     "cursed": "Maldito",
     "decoration": "Decoración",
+    "cosmetics": "Cosméticos",
     "economy": "Economía",
     "equipment": "Equipamiento",
     "exploration": "Exploración",
@@ -1349,6 +1368,8 @@
         "deleted": "Proyecto eliminado correctamente"
       },
       "confirmDelete": "¿Seguro que quieres eliminar \"{title}\"? Esta acción no se puede deshacer.",
+      "deleteConfirmTitle": "¿Eliminar proyecto?",
+      "deleteConfirmDescription": "Todas las versiones, imágenes y archivos del proyecto se eliminarán permanentemente. Esta acción no se puede deshacer.",
       "fields": {
         "icon": "Icono",
         "name": "Nombre",
@@ -2079,7 +2100,8 @@
     "metadata": {
       "title": "Acceso denegado — Modifold"
     },
-    "message": "Acceso denegado"
+    "title": "Acceso denegado",
+    "message": "No tienes permiso para ver esta página."
   },
   "ShareButtons": {
     "copiedToast": "Enlace copiado",
@@ -3018,5 +3040,26 @@
       "invalidResponse": "Respuesta inválida del servidor.",
       "generic": "No se pudo verificar el código."
     }
-  }
+  },
+	"PasswordRecovery": {
+		"title": "Restablecer contraseña",
+		"description": "Introduce el correo que usas para iniciar sesión en Modifold.",
+		"requestButton": "Enviar enlace",
+		"sentTitle": "Revisa tu correo",
+		"sentDescription": "Si este correo tiene una contraseña de Modifold, enviaremos un enlace de restablecimiento. Caduca en 30 minutos. Revisa también la carpeta de spam.",
+		"sendAgain": "Enviar otro enlace",
+		"resetTitle": "Crea una nueva contraseña",
+		"resetDescription": "Usa al menos 8 caracteres. Introduce tu nueva contraseña dos veces.",
+		"newPassword": "Nueva contraseña",
+		"confirmPassword": "Confirmar nueva contraseña",
+		"saveButton": "Guardar contraseña",
+		"success": "Tu contraseña ha cambiado. Inicia sesión con la nueva contraseña.",
+		"invalid_link": "Este enlace ha caducado o ya se ha utilizado. Solicita uno nuevo.",
+		"invalid_email": "Introduce un correo electrónico válido.",
+		"invalid_password": "Usa al menos 8 caracteres.",
+		"password_too_long": "Esta contraseña es demasiado larga. Prueba una más corta.",
+		"password_mismatch": "Las contraseñas no coinciden.",
+		"rate_limited": "Demasiadas solicitudes. Inténtalo en un minuto.",
+		"generic": "Algo salió mal. Inténtalo de nuevo."
+	}
 }

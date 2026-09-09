@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
@@ -45,7 +47,7 @@ const buildOrganizationSummary = (org) => ({
     slug: org.slug,
     name: org.name,
     summary: org.summary || "",
-    icon_url: org.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg",
+    icon_url: org.icon_url || "https://modifold.com/images/no-project-icon.svg",
     discord_url: org.discord_url || null,
     website_url: org.website_url || null,
     twitter_url: org.twitter_url || null,
@@ -185,7 +187,7 @@ router.get("/dashboard/organizations", auth, async (req, res) => {
 
         return res.json({ organizations });
     } catch (error) {
-        console.error("Error fetching organizations dashboard:", error);
+        logger.error("Error fetching organizations dashboard:", error);
         return res.status(500).json({ message: "Error fetching organizations" });
     }
 });
@@ -224,7 +226,7 @@ router.post("/", auth, async (req, res) => {
                 slugValidation.normalized,
                 rawName,
                 rawSummary,
-                iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg",
+                iconUrl || "https://modifold.com/images/no-project-icon.svg",
                 req.user.id,
                 now,
                 now,
@@ -261,11 +263,11 @@ router.post("/", auth, async (req, res) => {
                 slug: slugValidation.normalized,
                 name: rawName,
                 summary: rawSummary,
-                icon_url: iconUrl || "https://cdn.modifold.com/static/no-project-icon.svg",
+                icon_url: iconUrl || "https://modifold.com/images/no-project-icon.svg",
             },
         });
     } catch (error) {
-        console.error("Error creating organization:", error);
+        logger.error("Error creating organization:", error);
         return res.status(500).json({ message: "Error creating organization" });
     }
 });
@@ -312,7 +314,7 @@ router.get("/slug-availability/:slug", auth, async (req, res) => {
             message: null,
         });
     } catch (error) {
-        console.error("Error checking organization slug availability:", error);
+        logger.error("Error checking organization slug availability:", error);
         return res.status(500).json({ message: "Error checking slug availability" });
     }
 });
@@ -376,7 +378,7 @@ router.get("/:slug", async (req, res) => {
             } : null,
         });
     } catch (error) {
-        console.error("Error fetching organization:", error);
+        logger.error("Error fetching organization:", error);
         return res.status(500).json({ message: "Error fetching organization" });
     }
 });
@@ -572,7 +574,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
             },
         });
     } catch (error) {
-        console.error("Error fetching organization settings:", error);
+        logger.error("Error fetching organization settings:", error);
         return res.status(500).json({ message: "Error fetching organization settings" });
     }
 });
@@ -608,7 +610,7 @@ router.put("/:slug/settings", auth, async (req, res) => {
         }
 
         if(req.body?.icon_url !== undefined) {
-            updates.icon_url = sanitizePlainText(req.body.icon_url || "") || "https://cdn.modifold.com/static/no-project-icon.svg";
+            updates.icon_url = sanitizePlainText(req.body.icon_url || "") || "https://modifold.com/images/no-project-icon.svg";
         }
 
         if(req.body?.slug !== undefined) {
@@ -648,7 +650,7 @@ router.put("/:slug/settings", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating organization settings:", error);
+        logger.error("Error updating organization settings:", error);
         return res.status(500).json({ message: "Error updating organization" });
     }
 });
@@ -734,7 +736,7 @@ router.put("/:slug/links", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating organization links:", error);
+        logger.error("Error updating organization links:", error);
         return res.status(500).json({ message: "Error updating organization links" });
     }
 });
@@ -787,12 +789,12 @@ router.put("/:slug/icon", auth, upload.single("icon"), async (req, res) => {
         });
 
 		await deletePublicUrlWithinPrefix(organization.icon_url, `organizations/${organization.id}`).catch((error) => {
-			console.warn(`Failed to delete replaced organization icon: ${error.message}`);
+			logger.warn(`Failed to delete replaced organization icon: ${error.message}`);
 		});
 
         return res.json({ success: true, icon_url: iconUrl });
     } catch (error) {
-        console.error("Error uploading organization icon:", error);
+        logger.error("Error uploading organization icon:", error);
         return res.status(500).json({ message: "Error uploading icon" });
     }
 });
@@ -890,7 +892,7 @@ router.post("/:slug/invites", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error inviting organization member:", error);
+        logger.error("Error inviting organization member:", error);
         return res.status(500).json({ message: "Error inviting member" });
     }
 });
@@ -941,7 +943,7 @@ router.delete("/:slug/invites/:userId", auth, async (req, res) => {
 
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error cancelling organization invitation:", error);
+		logger.error("Error cancelling organization invitation:", error);
 		return res.status(500).json({ message: "Error cancelling invitation" });
 	}
 });
@@ -1077,7 +1079,7 @@ router.put("/:slug/members/:userId/project-access", auth, async (req, res) => {
 		});
 	} catch (error) {
 		await connection.rollback();
-		console.error("Error updating organization member project access:", error);
+		logger.error("Error updating organization member project access:", error);
 		return res.status(500).json({ code: "PROJECT_ACCESS_UPDATE_FAILED", message: "Error updating project access" });
 	} finally {
 		connection.release();
@@ -1254,7 +1256,7 @@ router.post("/:slug/transfer-ownership", auth, async (req, res) => {
         });
     } catch (error) {
         await connection.rollback();
-        console.error("Error transferring organization ownership:", error);
+        logger.error("Error transferring organization ownership:", error);
         return res.status(500).json({ code: "OWNERSHIP_TRANSFER_FAILED", message: "Error transferring organization ownership" });
     } finally {
         connection.release();
@@ -1333,7 +1335,7 @@ router.put("/:slug/members/:userId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error updating organization member:", error);
+        logger.error("Error updating organization member:", error);
         return res.status(500).json({ message: "Error updating member" });
     }
 });
@@ -1389,7 +1391,7 @@ router.delete("/:slug/members/:userId", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error removing organization member:", error);
+        logger.error("Error removing organization member:", error);
         return res.status(500).json({ message: "Error removing member" });
     }
 });
@@ -1489,7 +1491,7 @@ router.post("/invites/:inviteId/accept", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error accepting organization invite:", error);
+        logger.error("Error accepting organization invite:", error);
         return res.status(500).json({ message: "Error accepting invitation" });
     }
 });
@@ -1532,7 +1534,7 @@ router.post("/invites/:inviteId/decline", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error declining organization invite:", error);
+        logger.error("Error declining organization invite:", error);
         return res.status(500).json({ message: "Error declining invitation" });
     }
 });
@@ -1562,7 +1564,7 @@ router.delete("/:slug", auth, async (req, res) => {
 
         return res.json({ success: true });
     } catch (error) {
-        console.error("Error deleting organization:", error);
+        logger.error("Error deleting organization:", error);
         return res.status(500).json({ message: "Error deleting organization" });
     }
 });

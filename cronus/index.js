@@ -4,10 +4,12 @@ const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 
+const { logger } = require("./packages/shared/logger");
 const { db } = require("./config/db");
 const { clickhouse } = require("./config/clickhouse");
 const { cacheClient } = require("./config/cache");
 const { createRateLimiter } = require("./middleware/rateLimit");
+const { errorHandler, requestObservability } = require("./middleware/requestObservability");
 const { validateStorageConfiguration } = require("./utils/fileHosting");
 const authRoutes = require("./routes/v1/auth");
 const usersRoutes = require("./routes/v1/users");
@@ -32,13 +34,16 @@ const internalDownloadsRoutes = require("./routes/internal/downloads");
 const SERVER_PORT = Number(process.env.SERVER_PORT) || 4000;
 const recommendedRoutes = require("./routes/v1/recommended");
 const modJamsRoutes = require("./routes/v1/mod-jams");
+const importsRoutesV2 = require("./routes/v2/imports");
 
-const startServer = () => {
+const startServer = async () => {
 	validateStorageConfiguration();
+	await discoverRoutesV2.initializeDiscover();
 	const app = express();
 
 	app.disable("x-powered-by");
 	app.set("trust proxy", true);
+	app.use(requestObservability);
 
 	app.use(cors({
 		origin: true,
@@ -52,35 +57,15 @@ const startServer = () => {
 			"Content-Type",
 			"Range",
 			"Authorization",
+			"X-Request-ID",
 		],
-		exposedHeaders: ["Content-Length", "Content-Range"],
+		exposedHeaders: ["Content-Length", "Content-Range", "X-Request-ID"],
 		credentials: true,
 	}));
 
 	const bodyLimit = process.env.EXPRESS_BODY_LIMIT || "2mb";
 	app.use(express.json({ limit: bodyLimit }));
 	app.use(express.urlencoded({ limit: bodyLimit, extended: true }));
-
-	app.use((req, res, next) => {
-		const startedAt = Date.now();
-
-		res.once("finish", () => {
-			if(res.statusCode < 400) {
-				return;
-			}
-
-			console.error("[http-error]", JSON.stringify({
-				method: req.method,
-				path: String(req.originalUrl || "").split("?")[0],
-				status: res.statusCode,
-				duration_ms: Date.now() - startedAt,
-				user_id: req.user?.id || null,
-				user_agent: req.headers["user-agent"] || null,
-			}));
-		});
-
-		next();
-	});
 
 	const tokenCache = new Map();
 	const tokenCacheSizeLimit = Number(process.env.TOKEN_CACHE_MAX_SIZE) || 2000;
@@ -134,8 +119,8 @@ const startServer = () => {
 				}
 
 				tokenCache.set(token, { user: decoded, expiresAt: cacheExp });
-			} catch (err) {
-				console.error("Invalid token:", err.message);
+			} catch (error) {
+				// invalid bearer tokens are expected client input and are intentionally not logged
 			}
 		}
 
@@ -157,6 +142,12 @@ const startServer = () => {
 		burstSize: Number(process.env.RATE_LIMIT_PROJECTS_BURST_SIZE) || 40,
 		expirySeconds: Number(process.env.RATE_LIMIT_EXPIRY_SECONDS) || 300,
 	});
+	const importsRateLimiter = createRateLimiter({
+		namespace: "imports",
+		requestsPerMinute: Number(process.env.RATE_LIMIT_IMPORTS_REQUESTS_PER_MINUTE) || 12,
+		burstSize: Number(process.env.RATE_LIMIT_IMPORTS_BURST_SIZE) || 6,
+		expirySeconds: Number(process.env.RATE_LIMIT_EXPIRY_SECONDS) || 300,
+	});
 
 	if(rateLimitEnabled) {
 		app.use(globalRateLimiter);
@@ -164,22 +155,6 @@ const startServer = () => {
 
 	app.get("/health", (req, res) => {
 		res.status(200).json({ status: "OK", uptime: process.uptime() });
-	});
-
-	app.get("/debug/ip", (req, res) => {
-		const safeHeaders = { ...req.headers };
-		for(const headerName of ["authorization", "cookie", "set-cookie"]) {
-			delete safeHeaders[headerName];
-		}
-
-		return res.json({
-			reqIp: req.ip,
-			remoteAddress: req.socket.remoteAddress,
-			cfConnectingIp: req.headers["cf-connecting-ip"] || null,
-			xForwardedFor: req.headers["x-forwarded-for"] || null,
-			xRealIp: req.headers["x-real-ip"] || null,
-			headers: safeHeaders,
-		});
 	});
 
 	app.use("/internal/downloads", internalDownloadsRoutes);
@@ -217,9 +192,11 @@ const startServer = () => {
 	mountV1Route("/analytics", analyticsRoutes);
 	mountV1Route("/recommended", recommendedRoutes);
 	mountV1Route("/mod-jams", modJamsRoutes);
+	app.use("/v2/imports", rateLimitEnabled ? importsRateLimiter : (req, res, next) => next(), importsRoutesV2);
+	app.use(errorHandler);
 
 	const server = app.listen(SERVER_PORT, () => {
-		console.log(`Server running on http://localhost:${SERVER_PORT}`);
+		logger.info({ event: "server_started", port: SERVER_PORT }, "Server started");
 	});
 
 	server.setTimeout(600000);
@@ -230,7 +207,7 @@ const startServer = () => {
 	}
 
 	const shutdown = async (signal) => {
-		console.log(`Received ${signal}, closing resources...`);
+		logger.info({ event: "server_shutdown", signal }, "Closing resources");
 		clearInterval(tokenCachePruneInterval);
 		tokenCache.clear();
 
@@ -238,13 +215,13 @@ const startServer = () => {
 			try {
 				await db.end();
 			} catch (error) {
-				console.warn("Failed to close DB pool:", error.message);
+				logger.warn({ event: "db_close_failed", error }, "Failed to close DB pool");
 			}
 
 			try {
 				cacheClient.quit();
 			} catch (error) {
-				console.warn("Failed to close cache client:", error.message);
+				logger.warn({ event: "redis_close_failed", error }, "Failed to close cache client");
 			}
 
 			try {
@@ -252,7 +229,7 @@ const startServer = () => {
 					await clickhouse.close();
 				}
 			} catch (error) {
-				console.warn("Failed to close ClickHouse client:", error.message);
+				logger.warn({ event: "clickhouse_close_failed", error }, "Failed to close ClickHouse client");
 			}
 
 			process.exit(0);
@@ -267,4 +244,7 @@ const startServer = () => {
 	});
 };
 
-startServer();
+startServer().catch((error) => {
+	logger.error({ event: "server_start_failed", error }, "Server failed to start");
+	process.exit(1);
+});

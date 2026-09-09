@@ -9,6 +9,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { insertMarkdownLink } from "@/utils/markdown/editor";
 
 function prepareBasicMarkdown(value) {
 	return prepareProjectDescriptionMarkdown(value || "")
@@ -100,6 +101,21 @@ export default function ModJamMarkdownSettings({ authToken, jam, field, title, h
 		const nextValue = `${value.slice(0, start)}${text}${value.slice(end)}`;
 		const caret = start + text.length;
 		updateTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
+	};
+
+	const insertLinkAtSelection = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
+
+		const edit = insertMarkdownLink({
+			value,
+			selectionStart: textarea.selectionStart ?? 0,
+			selectionEnd: textarea.selectionEnd ?? 0,
+			template: t("settings.markdown.linkTemplate"),
+		});
+		updateTextareaValue(edit.value, edit.selectionStart, edit.selectionEnd);
 	};
 
 	const prefixLines = (prefix) => {
@@ -231,7 +247,7 @@ export default function ModJamMarkdownSettings({ authToken, jam, field, title, h
 
 											{!isBasicFormatting && (
 												<>
-													<button type="button" className="markdown-editor__tool" onClick={() => insertAtSelection(t("settings.markdown.linkTemplate"))} aria-label={t("settings.markdown.link")} title={t("settings.markdown.link")} disabled={isPreviewVisible}>
+											<button type="button" className="markdown-editor__tool" onClick={insertLinkAtSelection} aria-label={t("settings.markdown.link")} title={t("settings.markdown.link")} disabled={isPreviewVisible}>
 														<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
 													</button>
 

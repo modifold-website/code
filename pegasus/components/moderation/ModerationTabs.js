@@ -43,27 +43,27 @@ export default function ModerationTabs() {
 
     return (
         <nav className="pagination moderation-tabs" ref={tabsRef} aria-label="Moderation sections">
-            <Link href="/moderation/statistics" data-ripple className="pagination__button" aria-current={pathname === "/moderation/statistics" ? "page" : undefined}>
+            <Link prefetch={false} href="/moderation/statistics" data-ripple className="pagination__button" aria-current={pathname === "/moderation/statistics" ? "page" : undefined}>
                 {t("tabs.statistics")}
             </Link>
             
-            <Link href="/moderation" data-ripple className="pagination__button" aria-current={pathname === "/moderation" ? "page" : undefined}>
+            <Link prefetch={false} href="/moderation" data-ripple className="pagination__button" aria-current={pathname === "/moderation" ? "page" : undefined}>
                 {t("tabs.projects")}
             </Link>
 
-            <Link href="/moderation/reports" data-ripple className="pagination__button" aria-current={pathname === "/moderation/reports" ? "page" : undefined}>
+            <Link prefetch={false} href="/moderation/reports" data-ripple className="pagination__button" aria-current={pathname === "/moderation/reports" ? "page" : undefined}>
                 {t("tabs.reports")}
             </Link>
 
-            <Link href="/moderation/technical-review" data-ripple className="pagination__button" aria-current={pathname === "/moderation/technical-review" ? "page" : undefined}>
+            <Link prefetch={false} href="/moderation/technical-review" data-ripple className="pagination__button" aria-current={pathname === "/moderation/technical-review" ? "page" : undefined}>
                 {t("tabs.technicalReview")}
             </Link>
 
-            <Link href="/moderation/users" data-ripple className="pagination__button" aria-current={pathname === "/moderation/users" ? "page" : undefined}>
+            <Link prefetch={false} href="/moderation/users" data-ripple className="pagination__button" aria-current={pathname === "/moderation/users" ? "page" : undefined}>
                 {t("tabs.users")}
             </Link>
 
-            <Link href="/moderation/mod-jams" data-ripple className="pagination__button" aria-current={pathname === "/moderation/mod-jams" ? "page" : undefined}>
+            <Link prefetch={false} href="/moderation/mod-jams" data-ripple className="pagination__button" aria-current={pathname === "/moderation/mod-jams" ? "page" : undefined}>
                 Mod jams
             </Link>
 

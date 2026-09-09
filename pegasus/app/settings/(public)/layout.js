@@ -1,3 +1,4 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import UserSettingsSidebar from "@/components/ui/UserSettingsSidebar";
@@ -18,7 +19,7 @@ export default async function Layout({ children }) {
 
     if(authToken) {
         try {
-            const response = await fetch(`${serverApiBase}/auth/user`, {
+            const response = await serverApiFetch(`${serverApiBase}/auth/user`, {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
                     Accept: "application/json",

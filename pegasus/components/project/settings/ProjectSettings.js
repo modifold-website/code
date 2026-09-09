@@ -52,9 +52,7 @@ export default function ProjectSettings({ project }) {
     const playersCountMenuRef = useRef(null);
 
     useEffect(() => {
-        if(!isLoggedIn) {
-            router.push("/403");
-        } else if(project) {
+        if(project) {
             const initialData = getInitialFormData(project);
             const initialPreview = project.icon_url || "";
             setFormData(initialData);
@@ -62,7 +60,7 @@ export default function ProjectSettings({ project }) {
             setPreviewIcon(initialPreview);
             setSavedPreviewIcon(initialPreview);
         }
-    }, [isLoggedIn, project, router]);
+    }, [project]);
 
     const isDirty = (
         formData.title !== savedFormData.title ||
@@ -390,19 +388,21 @@ export default function ProjectSettings({ project }) {
                 resetLabel={t("unsavedBar.reset")}
                 message={t("unsavedBar.message")}
             />
-            <ConfirmModal
-                isOpen={isDeleteConfirmOpen}
-                title={t("general.confirmDelete", { title: project.title })}
-                confirmLabel={t("general.actions.delete")}
-                cancelLabel={tProject("cancel")}
-                isLoading={isDeletingProject}
-                onConfirm={handleDelete}
-                onRequestClose={() => {
-                    if(!isDeletingProject) {
-                        setIsDeleteConfirmOpen(false);
-                    }
-                }}
-            />
+			<ConfirmModal
+				isOpen={isDeleteConfirmOpen}
+				title={t("general.deleteConfirmTitle")}
+				messageTitle={project.title}
+				description={t("general.deleteConfirmDescription")}
+				confirmLabel={t("general.actions.delete")}
+				cancelLabel={tProject("cancel")}
+				isLoading={isDeletingProject}
+				onConfirm={handleDelete}
+				onRequestClose={() => {
+					if(!isDeletingProject) {
+						setIsDeleteConfirmOpen(false);
+					}
+				}}
+			/>
         </>
     );
 }

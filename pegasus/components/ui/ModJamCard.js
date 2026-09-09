@@ -24,7 +24,7 @@ export default function ModJamCard({ jam }) {
 
 	return (
 		<div className="media-project-card">
-			<Link className="media-project-card__overlay" href={`/jams/${jam.slug}`}></Link>
+			<Link prefetch={false} className="media-project-card__overlay" href={`/jams/${jam.slug}`}></Link>
 			
 			<div className="media-project-cover">
 				{jam.cover_url ? <img src={jam.cover_url} loading="lazy" alt="" /> : null}
@@ -32,7 +32,7 @@ export default function ModJamCard({ jam }) {
 
 			<div className="media-project-body">
 				<div className="media-project-header" style={{ marginBottom: "24px" }}>
-					<img className="media-project-icon" src={jam.avatar_url || "https://cdn.modifold.com/static/no-project-icon.svg"} alt="" />
+					<img className="media-project-icon" src={jam.avatar_url || "/images/no-project-icon.svg"} alt="" />
 					
 					<div className="media-project-header-text">
 						<div className="media-project-title-row">

@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
@@ -49,7 +51,7 @@ router.get("/me", auth, async (req, res) => {
 			eligibility,
 		});
 	} catch (error) {
-		console.error("Error fetching verification status:", error);
+		logger.error("Error fetching verification status:", error);
 		res.status(500).json({ message: "Error fetching verification status", error: error.message });
 	}
 });
@@ -73,7 +75,7 @@ router.post("/request", auth, async (req, res) => {
 		await db.query("UPDATE users SET isVerified = 1 WHERE id = ?", [req.user.id]);
 		return res.json({ success: true });
 	} catch (error) {
-		console.error("Error granting verification:", error);
+		logger.error("Error granting verification:", error);
 		return res.status(500).json({ message: "Error granting verification", error: error.message });
 	}
 });

@@ -1,8 +1,10 @@
 import { cache } from "react";
 import { after } from "next/server";
-import { notFound } from "next/navigation";
+import { forbidden, notFound } from "next/navigation";
+import { cookies } from "next/headers";
+import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
 
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
+const serverApiBase = getServerApiBase();
 
 const getAuthorizedFetchOptions = (authToken, cacheOptions) => authToken ? {
     headers: {
@@ -29,136 +31,84 @@ export const getApplicationCategory = (projectType) => ({
 	prefab: "Game Asset",
 })[projectType] || String(projectType || "project").replace("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
-export const getProjectBySlug = cache(async (slug, authToken = "") => {
-    let response;
-    try {
-        response = await fetch(`${serverApiBase}/projects/${slug}`, getAuthorizedFetchOptions(authToken, {
-            next: { revalidate: 60, tags: [`project:${slug}`] },
-        }));
-    } catch {
-        notFound();
-    }
+export const getProjectBySlug = cache(async (slug, authToken = "", versionsLimit = 100, versionsOffset = 0) => {
+	let response;
+	const query = new URLSearchParams({
+		versions_limit: String(versionsLimit),
+		versions_offset: String(versionsOffset),
+	});
 
-    if(!response.ok) {
-        notFound();
-    }
+	try {
+		response = await serverApiFetch(`${serverApiBase}/projects/${slug}?${query}`, getAuthorizedFetchOptions(authToken, {
+			next: { revalidate: 60, tags: [`project:${slug}`] },
+		}));
+	} catch (error) {
+		throw new Error(`Could not load project ${slug}`, { cause: error });
+	}
 
-    const project = await response.json();
+	if(response.status === 403) {
+		forbidden();
+	}
 
-    const [owner, originalAuthor] = await Promise.all([
-        enrichProjectCreator(project.owner, authToken),
-        project.original_author ? enrichProjectCreator(project.original_author, authToken) : null,
-    ]);
+	if(response.status === 404) {
+		notFound();
+	}
 
-    return {
-        ...project,
-        owner,
-        original_author: originalAuthor,
-    };
+	if(!response.ok) {
+		throw new Error(`Could not load project ${slug}: API returned ${response.status}`);
+	}
+
+	return response.json();
 });
 
-export const getProjectMembersBySlug = cache(async (slug, authToken = "") => {
-    try {
-        const response = await fetch(`${serverApiBase}/projects/${slug}/members`, getAuthorizedFetchOptions(authToken, {
-            next: { revalidate: 60, tags: [`project:${slug}:members`] },
-        }));
+export const getProjectSettingsForRequest = cache(async (slug) => {
+	const cookieStore = await cookies();
+	const authToken = cookieStore.get("authToken")?.value || "";
 
-        if(response.ok) {
-            const members = await response.json();
-            return Promise.all((members || []).map((member) => enrichProjectCreator(member, authToken)));
-        }
-    } catch {}
+	if(!authToken) {
+		return { project: null, authToken, status: 401 };
+	}
 
-    return [];
+	let response;
+	try {
+		response = await serverApiFetch(`${serverApiBase}/projects/${slug}/settings`, {
+			headers: { Authorization: `Bearer ${authToken}` },
+			cache: "no-store",
+		});
+	} catch (error) {
+		throw new Error(`Could not load project settings for ${slug}`, { cause: error });
+	}
+
+	if(response.status === 404) {
+		notFound();
+	}
+
+	if(response.status === 401 || response.status === 403) {
+		return { project: null, authToken, status: response.status };
+	}
+
+	if(!response.ok) {
+		throw new Error(`Could not load project settings for ${slug}: API returned ${response.status}`);
+	}
+
+	return {
+		project: await response.json(),
+		authToken,
+		status: response.status,
+	};
 });
 
-const fetchProjectCreatorJson = async (url, options) => {
-    try {
-        const response = await fetch(url, options);
-        if(response.ok) {
-            return response.json();
-        }
-    } catch {}
+export const getProjectForRequest = cache(async (slug, versionsLimit = 0, versionsOffset = 0) => {
+	const cookieStore = await cookies();
+	const authToken = cookieStore.get("authToken")?.value || "";
+	const project = await getProjectBySlug(slug, authToken, versionsLimit, versionsOffset);
 
-    return null;
-};
-
-const getOrganizationDownloadsTotal = (projects = []) => projects.reduce((total, project) => total + Math.max(0, Number(project?.downloads) || 0), 0);
-
-const enrichProjectCreator = async (creator, authToken = "") => {
-    if(!creator || !creator.slug) {
-        return creator;
-    }
-
-    if(creator.type === "organization") {
-        const organizationData = await fetchProjectCreatorJson(`${serverApiBase}/organizations/${creator.slug}`, {
-            headers: { Accept: "application/json" },
-            next: { revalidate: 60, tags: [`organization:${creator.slug}`] },
-        });
-        const organization = organizationData?.organization || {};
-        const projects = Array.isArray(organizationData?.projects) ? organizationData.projects : [];
-        const slug = organization.slug || creator.slug;
-        const totalProjects = organizationData ? projects.length : Number(creator.totalProjects || 0);
-        const totalDownloads = organizationData ? getOrganizationDownloadsTotal(projects) : Number(creator.totalDownloads || 0);
-
-        return {
-            ...creator,
-            id: organization.id || creator.id,
-            username: organization.name || creator.username,
-            slug,
-            avatar: organization.icon_url || organization.avatar || creator.avatar,
-            type: "organization",
-            profile_url: `/organization/${slug}`,
-            totalProjects,
-            totalDownloads,
-        };
-    }
-
-    const [userData, projectsData] = await Promise.all([
-        fetchProjectCreatorJson(`${serverApiBase}/users/${creator.slug}`, {
-            headers: { Accept: "application/json" },
-            next: { revalidate: 60, tags: [`user:${creator.slug}`] },
-        }),
-        fetchProjectCreatorJson(`${serverApiBase}/users/${creator.slug}/projects?page=1&limit=1&sort=downloads`, {
-            headers: { Accept: "application/json" },
-            next: { revalidate: 60, tags: [`user:${creator.slug}:projects`] },
-        }),
-    ]);
-
-    const userId = userData?.id || creator.id || creator.user_id || null;
-    let subscriptionData = null;
-
-    if(authToken && userId) {
-        subscriptionData = await fetchProjectCreatorJson(`${serverApiBase}/subscriptions/${userId}`, {
-            headers: {
-                Accept: "application/json",
-                Authorization: `Bearer ${authToken}`,
-            },
-            cache: "no-store",
-        });
-    }
-
-    return {
-        ...creator,
-        id: userId,
-        username: userData?.username || creator.username,
-        slug: userData?.slug || creator.slug,
-        avatar: userData?.avatar || creator.avatar,
-        isVerified: userData?.isVerified ?? creator.isVerified,
-        activeProfileBadge: userData?.activeProfileBadge ?? creator.activeProfileBadge,
-        type: "user",
-        profile_url: `/user/${userData?.slug || creator.slug}`,
-        subscribers: Number(userData?.subscribers || 0),
-        totalProjects: Number(projectsData?.totalProjects || 0),
-        totalDownloads: Number(projectsData?.totalDownloads || 0),
-        isSubscribed: Boolean(subscriptionData?.isSubscribed),
-        subscriptionId: subscriptionData?.subscriptionId || null,
-    };
-};
+	return { project, authToken };
+});
 
 export const recordProjectView = (slug, clientIp) => {
     after(() => {
-        fetch(`${serverApiBase}/projects/${slug}/view`, {
+        serverApiFetch(`${serverApiBase}/projects/${slug}/view`, {
             method: "POST",
             headers: {
                 ...(clientIp ? { "x-forwarded-for": clientIp } : {}),

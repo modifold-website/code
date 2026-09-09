@@ -1,3 +1,5 @@
+const { logger } = require("../../packages/shared/logger");
+
 const express = require("express");
 const { db } = require("../../config/db");
 
@@ -111,7 +113,7 @@ router.get("/game-versions", async (req, res) => {
             versions: gameVersions.map((row) => row.version),
         });
     } catch (error) {
-        console.error("Error fetching game versions:", error);
+        logger.error("Error fetching game versions:", error);
         return res.status(500).json({ message: "Error fetching game versions" });
     }
 });
@@ -141,7 +143,7 @@ router.get("/:projectType", async (req, res) => {
 
         return res.json({ tags });
     } catch (error) {
-        console.error("Error fetching tags:", error);
+        logger.error("Error fetching tags:", error);
         return res.status(500).json({ message: "Error fetching tags" });
     }
 });

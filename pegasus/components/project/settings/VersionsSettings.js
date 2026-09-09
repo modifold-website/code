@@ -1012,7 +1012,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
 									) : null}
                                 </div>
 
-                                <Link href={`${getProjectPath(project)}/version/${version.id}`}>
+                                <Link prefetch={false} href={`${getProjectPath(project)}/version/${version.id}`}>
                                     <span className="version__title">
                                         {version.version_number}
 

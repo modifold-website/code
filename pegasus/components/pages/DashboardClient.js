@@ -111,10 +111,10 @@ export default function DashboardClient({ initialProjects, initialTotalPages, in
 
                                 return (
                                     <div key={project.slug} id={project.slug} className="new-project-card dashboard-project-card">
-                                        <Link className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
+                                        <Link prefetch={false} className="new-project-card__overlay" href={getProjectPath(project)} aria-label={project.title} />
 
                                         <div className={`dashboard-project-card__content ${hasTags ? "dashboard-project-card__content--with-tags" : ""}`}>
-                                            <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "https://cdn.modifold.com/static/no-project-icon.svg"} />
+                                            <img className="new-project-icon" alt={t("projectIconAlt", { title: project.title })} src={project.icon_url || "/images/no-project-icon.svg"} />
 
                                             <div className="new-project-info">
                                                 <div className="new-project-header">
@@ -143,7 +143,7 @@ export default function DashboardClient({ initialProjects, initialTotalPages, in
 
                                         {project.permissions?.can_edit && (
 											<div className="dashboard-project-card__actions">
-												<Link href={`${getProjectPath(project)}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
+												<Link prefetch={false} href={`${getProjectPath(project)}/settings`} className="button button--size-m button--type-minimal dashboard-project-settings-button" onClick={(event) => event.stopPropagation()} onMouseDown={(event) => event.stopPropagation()}>
 													<svg style={{ fill: "none", marginRight: "4px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon--settings"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>
 
 													{t("edit")}

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "../providers/AuthProvider";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
@@ -10,7 +9,6 @@ import { useTranslations } from "next-intl";
 export default function SettingsVerificationPage({ initialUser = null, initialVerification = null }) {
 	const t = useTranslations("SettingsVerificationPage");
 	const { isLoggedIn, user } = useAuth();
-	const router = useRouter();
 	const effectiveUser = user || initialUser;
 
 	const [verificationStatus, setVerificationStatus] = useState(() => ({
@@ -38,15 +36,10 @@ export default function SettingsVerificationPage({ initialUser = null, initialVe
 	};
 
 	useEffect(() => {
-		if(!isLoggedIn && !initialUser) {
-			router.push("/403");
-			return;
-		}
-
 		if(!initialVerification) {
 			fetchVerificationStatus();
 		}
-	}, [isLoggedIn, initialUser, initialVerification, router]);
+	}, [initialVerification]);
 
 	if(!isLoggedIn && !initialUser) {
 		return null;
@@ -105,7 +98,7 @@ export default function SettingsVerificationPage({ initialUser = null, initialVe
 							<div className="author__avatar">
 								<div className="andropov-media andropov-media--rounded andropov-media--bordered andropov-media--loaded andropov-media--has-preview andropov-image" style={{ aspectRatio: "1.77778 / 1", width: "30px", height: "30px", maxWidth: "none" }}>
 									<picture>
-										<img alt={t("promoCard.avatarAlt")} src={effectiveUser?.avatar || "https://cdn.modifold.com/static/no-project-icon.svg"} />
+										<img alt={t("promoCard.avatarAlt")} src={effectiveUser?.avatar || "/images/no-project-icon.svg"} />
 									</picture>
 								</div>
 							</div>

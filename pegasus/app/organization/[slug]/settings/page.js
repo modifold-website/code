@@ -1,5 +1,6 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect, notFound } from "next/navigation";
+import { notFound, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import OrganizationOverviewSettingsPage from "@/components/organizations/settings/OrganizationOverviewSettingsPage";
 
@@ -11,7 +12,7 @@ export async function generateMetadata({ params }) {
     const t = await getTranslations({ locale, namespace: "Organizations" });
 
     try {
-        const response = await fetch(`${serverApiBase}/organizations/${slug}`, {
+        const response = await serverApiFetch(`${serverApiBase}/organizations/${slug}`, {
             headers: { Accept: "application/json" },
             next: { revalidate: 60, tags: [`organization:${slug}`] },
         });
@@ -37,10 +38,10 @@ export default async function OrganizationSettingsRoute({ params }) {
     const authToken = cookieStore.get("authToken")?.value;
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
-    const response = await fetch(`${serverApiBase}/organizations/${slug}/settings`, {
+    const response = await serverApiFetch(`${serverApiBase}/organizations/${slug}/settings`, {
         headers: {
             Authorization: `Bearer ${authToken}`,
             Accept: "application/json",
@@ -49,7 +50,7 @@ export default async function OrganizationSettingsRoute({ params }) {
     });
 
     if(response.status === 401 || response.status === 403) {
-        redirect("/403");
+        forbidden();
     }
 
     if(!response.ok) {

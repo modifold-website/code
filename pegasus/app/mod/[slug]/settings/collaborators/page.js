@@ -1,16 +1,19 @@
 import { cookies } from "next/headers";
-import { notFound, redirect } from "next/navigation";
+import { notFound, forbidden } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import ProjectCollaboratorsSettings from "@/components/project/settings/ProjectCollaboratorsSettings";
+import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
+import { getProjectForRequest } from "@/utils/projects/server";
 
-const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
+const serverApiBase = getServerApiBase();
 
 export async function generateMetadata({ params }) {
 	const { slug } = await params;
 	const locale = await getLocale();
 	const t = await getTranslations({ locale, namespace: "ProjectCollaborators" });
+	const { project } = await getProjectForRequest(slug);
 
-	return { title: `${t("title")} — ${slug} — Modifold` };
+	return { title: `${t("title")} — ${project.title} — Modifold` };
 }
 
 export default async function ProjectCollaboratorsRoute({ params }) {
@@ -19,10 +22,10 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 	const authToken = cookieStore.get("authToken")?.value;
 
 	if(!authToken) {
-		redirect("/403");
+		forbidden();
 	}
 
-	const response = await fetch(`${serverApiBase}/projects/${slug}/collaborators`, {
+	const response = await serverApiFetch(`${serverApiBase}/projects/${slug}/collaborators`, {
 		headers: {
 			Accept: "application/json",
 			Authorization: `Bearer ${authToken}`,
@@ -31,7 +34,7 @@ export default async function ProjectCollaboratorsRoute({ params }) {
 	});
 
 	if(response.status === 401 || response.status === 403) {
-		redirect("/403");
+		forbidden();
 	}
 	
 	if(response.status === 404) {

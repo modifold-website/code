@@ -1,7 +1,7 @@
+import { serverApiFetch } from "@/utils/api/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { redirect, forbidden, unstable_rethrow } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import axios from "axios";
 import ReportsModerationPage from "@/components/pages/ReportsModerationPage";
 
 const serverApiBase = process.env.API_BASE || process.env.NEXT_PUBLIC_API_BASE;
@@ -17,21 +17,26 @@ export async function generateMetadata() {
 
 async function fetchReports(authToken) {
     try {
-        const response = await axios.get(`${serverApiBase}/moderation/reports`, {
+        const query = new URLSearchParams({
+			page: "1",
+			limit: "20",
+			status: "open",
+			reason: "all",
+			sort: "newest",
+			search: "",
+		});
+        const response = await serverApiFetch(`${serverApiBase}/moderation/reports?${query}`, {
             headers: { Authorization: `Bearer ${authToken}` },
-            params: {
-                page: 1,
-                limit: 20,
-                status: "open",
-                reason: "all",
-                sort: "newest",
-                search: "",
-            },
+            cache: "no-store",
         });
+		if(!response.ok) {
+			throw new Error(`Moderation reports API returned ${response.status}`);
+		}
+		const data = await response.json();
 
         return {
-            reports: response.data.reports || [],
-            totalPages: response.data.totalPages || 1,
+            reports: data.reports || [],
+            totalPages: data.totalPages || 1,
         };
     } catch (error) {
         console.error("Error fetching reports for moderation:", error);
@@ -44,11 +49,11 @@ export default async function ReportsModerationServer() {
     const authToken = cookieStore.get("authToken")?.value;
 
     if(!authToken) {
-        redirect("/403");
+        forbidden();
     }
 
     try {
-        const response = await fetch(`${serverApiBase}/auth/user`, {
+        const response = await serverApiFetch(`${serverApiBase}/auth/user`, {
             headers: { Authorization: `Bearer ${authToken}` },
             cache: "no-store",
         });
@@ -61,9 +66,10 @@ export default async function ReportsModerationServer() {
         const role = data?.user?.isRole;
 
         if(role !== "admin" && role !== "moderator") {
-            redirect("/403");
+            forbidden();
         }
     } catch (error) {
+		unstable_rethrow(error);
         console.error("Error checking moderation access:", error);
         redirect("/");
     }

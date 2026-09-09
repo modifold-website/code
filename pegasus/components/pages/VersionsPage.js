@@ -377,7 +377,7 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                                         )}
                                     </span>
 
-                                    <Link href={versionHref} className="version-table__name">
+                                    <Link prefetch={false} href={versionHref} className="version-table__name">
                                         <span className="version__title">
                                             {version.version_number}
                                         </span>

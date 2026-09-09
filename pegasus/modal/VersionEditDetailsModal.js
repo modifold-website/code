@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc } from "@/utils/projectDescriptionContent";
+import { insertMarkdownLink } from "@/utils/markdown/editor";
 import VersionDependenciesEditor from "./VersionDependenciesEditor";
 
 if(typeof window !== "undefined") {
@@ -93,6 +94,14 @@ export default function VersionEditDetailsModal({ isOpen, onRequestClose, editLo
         });
     };
 
+	const insertLinkAtSelection = () => {
+		withSelection((value, start, end) => insertMarkdownLink({
+			value,
+			selectionStart: start,
+			selectionEnd: end,
+		}));
+	};
+
     return (
         <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active" overlayClassName="modal-overlay modal-overlay--version-details-wide">
             <div className="modal-window version-upload-modal version-edit-details-modal">
@@ -172,7 +181,7 @@ export default function VersionEditDetailsModal({ isOpen, onRequestClose, editLo
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-ordered-icon lucide-list-ordered"><path d="M11 5h10"/><path d="M11 12h10"/><path d="M11 19h10"/><path d="M4 4h1v5"/><path d="M4 9h2"/><path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/></svg>
                                     </button>
 
-                                    <button type="button" className="markdown-editor__tool" onClick={() => insertAtSelection("[link text](https://)")} aria-label="Link" title="Link" disabled={isPreviewVisible}>
+                                    <button type="button" className="markdown-editor__tool" onClick={insertLinkAtSelection} aria-label="Link" title="Link" disabled={isPreviewVisible}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                     </button>
 

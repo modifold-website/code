@@ -1,3 +1,5 @@
+const { logger } = require("../packages/shared/logger");
+
 const { cacheClient } = require("../config/cache");
 
 const RATE_LIMIT_SCRIPT = `
@@ -64,6 +66,9 @@ const createRateLimiter = ({ namespace, requestsPerMinute, burstSize, expirySeco
 	const safeRpm = Math.max(1, Number(requestsPerMinute) || 60);
 	const safeBurst = Math.max(1, Number(burstSize) || safeRpm);
 	const emissionIntervalMs = Math.max(1, Math.floor(60000 / safeRpm));
+	const degradedLogIntervalMs = Number(process.env.REDIS_ERROR_LOG_INTERVAL_MS) || 30000;
+	let lastDegradedLogAt = 0;
+	let suppressedDegradedLogs = 0;
 
 	return async (req, res, next) => {
 		const ignoreKey = process.env.RATE_LIMIT_IGNORE_KEY;
@@ -102,8 +107,15 @@ const createRateLimiter = ({ namespace, requestsPerMinute, burstSize, expirySeco
 
 			return next();
 		} catch (error) {
-			// Fail-open: do not take API down when Redis is degraded.
-			console.warn("Rate limiter degraded (fail-open):", error.message);
+			// fail-open: do not take API down when Redis is degraded
+			if(nowMs - lastDegradedLogAt >= degradedLogIntervalMs) {
+				const suppressedMessage = suppressedDegradedLogs > 0 ? ` (${suppressedDegradedLogs} similar errors suppressed)` : "";
+				logger.warn(`Rate limiter ${namespace} degraded (fail-open)${suppressedMessage}:`, error.message);
+				lastDegradedLogAt = nowMs;
+				suppressedDegradedLogs = 0;
+			} else {
+				suppressedDegradedLogs += 1;
+			}
 			res.setHeader("x-ratelimit-limit", String(safeBurst));
 			res.setHeader("x-ratelimit-remaining", "1");
 			res.setHeader("x-ratelimit-reset", "60");
