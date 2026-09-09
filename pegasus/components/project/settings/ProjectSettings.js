@@ -183,7 +183,7 @@ export default function ProjectSettings({ project }) {
 
             toast.success(t("general.success.deleted"));
             setIsDeleteConfirmOpen(false);
-            router.push("/");
+            router.push("/dashboard");
         } catch (err) {
             toast.error(err.response?.data?.message || t("general.errors.delete"));
         } finally {
