@@ -253,7 +253,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 
 	const toggleProject = (projectId) => {
 		if(!selectedIds.has(projectId) && selectedIds.size >= MAX_PROJECTS_PER_IMPORT) {
-			toast.info(t("selection.limitReached", { limit: MAX_PROJECTS_PER_IMPORT }));
+			toast.error(t("selection.limitReached", { limit: MAX_PROJECTS_PER_IMPORT }));
 			return;
 		}
 
