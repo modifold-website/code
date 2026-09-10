@@ -340,17 +340,13 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.curseforge-import__notice,
-.curseforge-import__error {
+.curseforge-import__notice {
 	color: var(--theme-color-text-secondary);
     background: var(--theme-color-background);
     border-radius: 21px;
     margin: 0;
     padding: 16px 20px;
-    line-height: 1.4;
-}
-.curseforge-import__error {
-	color: var(--theme-color-signal-negative-default);
+	line-height: 1.4;
 }
 .curseforge-import__notice--warning {
 	display: flex;
@@ -543,6 +539,23 @@
 .curseforge-import__progress-heading--finished {
 	animation: curseforge-import-heading-in 220ms cubic-bezier(.23, 1, .32, 1) both;
 }
+.curseforge-import__progress-description {
+	color: var(--theme-color-text-secondary);
+}
+.curseforge-import__progress-description--reconnecting {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.curseforge-import__connection-spinner {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	border: 2px solid color-mix(in srgb, var(--theme-color-signal-active-default) 22%, transparent);
+	border-top-color: var(--theme-color-signal-active-default);
+	border-radius: 50%;
+	animation: spin 700ms linear infinite;
+}
 @keyframes curseforge-import-heading-in {
 	from {
 		opacity: 0;
@@ -685,5 +698,8 @@
 	}
 	.curseforge-import__progress-heading--finished {
 		animation: none;
+	}
+	.curseforge-import__connection-spinner {
+		animation-duration: 1400ms;
 	}
 }

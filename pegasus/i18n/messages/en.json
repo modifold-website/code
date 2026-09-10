@@ -602,6 +602,7 @@
     "progress": {
       "title": "Moving projects",
       "hint": "{progress}% moved. You can close this window and we'll keep working in the background.",
+	  "reconnecting": "Connection interrupted. Reconnecting…",
 	  "retry": "Retry",
 	  "retrying": "Retrying…"
     },

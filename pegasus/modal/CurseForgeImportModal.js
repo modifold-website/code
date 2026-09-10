@@ -104,7 +104,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		queryKey: ["curseforge-import", session?.id],
 		queryFn: () => getCurseForgeImport({ authToken, importId: session.id }),
 		enabled: Boolean(isOpen && session?.id && phase === "progress"),
-		refetchInterval: (query) => TERMINAL_STATUSES.has(query.state.data?.status) ? false : 1000,
+		refetchInterval: (query) => TERMINAL_STATUSES.has(query.state.data?.status) ? false : 5000,
 		refetchIntervalInBackground: false,
 	});
 	const currentSession = progressQuery.data || session;
@@ -649,8 +649,13 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		<div ref={progressFlowRef} className="curseforge-import__flow">
 			<div className={`curseforge-import__progress-heading${showFinishedState ? " curseforge-import__progress-heading--finished" : ""}`} key={showFinishedState ? `result-${currentSession.status}` : "progress"} data-layout-key="heading">
 				<p className="blog-settings__field-title">{showFinishedState ? t(`result.${currentSession.status}.title`) : t("progress.title")}</p>
-				<p style={{ color: "var(--theme-color-text-secondary)" }} aria-live="polite" aria-label={showFinishedState ? t(`result.${currentSession.status}.hint`) : t("progress.hint", { progress: overallProgress })}>
-					{showFinishedState ? t(`result.${currentSession.status}.hint`) : renderProgressHint()}
+				<p className={`curseforge-import__progress-description${progressQuery.isError && !showFinishedState ? " curseforge-import__progress-description--reconnecting" : ""}`} aria-live="polite" aria-label={showFinishedState ? t(`result.${currentSession.status}.hint`) : progressQuery.isError ? t("progress.reconnecting") : t("progress.hint", { progress: overallProgress })}>
+					{showFinishedState ? t(`result.${currentSession.status}.hint`) : progressQuery.isError ? (
+						<>
+							<span className="curseforge-import__connection-spinner" aria-hidden="true" />
+							<span>{t("progress.reconnecting")}</span>
+						</>
+					) : renderProgressHint()}
 				</p>
 			</div>
 
@@ -711,8 +716,6 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 					);
 				})}
 			</div>
-
-			{progressQuery.isError ? <p className="curseforge-import__error" data-layout-key="error">{t("errors.progress")}</p> : null}
 
 			<div className="curseforge-import__actions" data-layout-key="actions">
 				<button className="button button--size-m button--type-primary" type="button" onClick={handleProgressClose}>
