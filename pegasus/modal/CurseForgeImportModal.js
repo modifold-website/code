@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Modal from "react-modal";
-import NumberFlow from "@number-flow/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -18,6 +17,44 @@ const TERMINAL_STATUSES = new Set(["completed", "partial", "failed"]);
 const MAX_PROJECTS_PER_IMPORT = 10;
 
 const getErrorMessage = (error, fallback) => error?.response?.data?.message || fallback;
+
+const useAnimatedProgress = (target) => {
+	const normalizedTarget = Math.min(100, Math.max(0, Math.round(Number(target) || 0)));
+	const [displayedProgress, setDisplayedProgress] = useState(normalizedTarget);
+	const displayedProgressRef = useRef(normalizedTarget);
+
+	useEffect(() => {
+		let animationFrame;
+
+		if(normalizedTarget <= displayedProgressRef.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			displayedProgressRef.current = normalizedTarget;
+			setDisplayedProgress(normalizedTarget);
+			return undefined;
+		}
+
+		let previousTimestamp;
+		const animate = (timestamp) => {
+			if(previousTimestamp === undefined || timestamp - previousTimestamp >= 30) {
+				const nextProgress = Math.min(normalizedTarget, displayedProgressRef.current + 1);
+				displayedProgressRef.current = nextProgress;
+				setDisplayedProgress(nextProgress);
+				previousTimestamp = timestamp;
+			}
+
+			if(displayedProgressRef.current < normalizedTarget) animationFrame = window.requestAnimationFrame(animate);
+		};
+
+		animationFrame = window.requestAnimationFrame(animate);
+		return () => window.cancelAnimationFrame(animationFrame);
+	}, [normalizedTarget]);
+
+	return displayedProgress;
+};
+
+const AnimatedProgressNumber = ({ value }) => {
+	const displayedProgress = useAnimatedProgress(value);
+	return <>{displayedProgress}%</>;
+};
 
 const getCurseForgeUrlStatus = (value, expectedType) => {
 	if(!value.trim()) return "empty";
@@ -67,7 +104,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		queryKey: ["curseforge-import", session?.id],
 		queryFn: () => getCurseForgeImport({ authToken, importId: session.id }),
 		enabled: Boolean(isOpen && session?.id && phase === "progress"),
-		refetchInterval: (query) => TERMINAL_STATUSES.has(query.state.data?.status) ? false : 5000,
+		refetchInterval: (query) => TERMINAL_STATUSES.has(query.state.data?.status) ? false : 1000,
 		refetchIntervalInBackground: false,
 	});
 	const currentSession = progressQuery.data || session;
@@ -89,6 +126,8 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		if(!items.length) return 0;
 		return Math.round(items.reduce((total, item) => total + Number(item.progress || 0), 0) / items.length);
 	}, [currentSession]);
+	const displayedOverallProgress = useAnimatedProgress(overallProgress);
+	const showFinishedState = isFinished && displayedOverallProgress >= overallProgress;
 	const updateListFade = useCallback((list) => {
 		if(!list) return;
 
@@ -148,7 +187,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		}
 
 		progressLayoutRectsRef.current = nextRects;
-	}, [currentSession, isFinished, isOpen, phase]);
+	}, [currentSession, isOpen, phase, showFinishedState]);
 
 	const selectAll = (items) => setSelectedIds(new Set(items
 		.filter((item) => !item.alreadyImported)
@@ -600,7 +639,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 		return (
 			<span aria-hidden="true">
 				{prefix}
-				<NumberFlow value={overallProgress} transformTiming={{ duration: 260, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} opacityTiming={{ duration: 180, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} respectMotionPreference willChange />
+				{displayedOverallProgress}
 				{suffix}
 			</span>
 		);
@@ -608,15 +647,15 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 
 	const renderProgress = () => (
 		<div ref={progressFlowRef} className="curseforge-import__flow">
-			<div className={`curseforge-import__progress-heading${isFinished ? " curseforge-import__progress-heading--finished" : ""}`} key={isFinished ? `result-${currentSession.status}` : "progress"} data-layout-key="heading">
-				<p className="blog-settings__field-title">{isFinished ? t(`result.${currentSession.status}.title`) : t("progress.title")}</p>
-				<p style={{ color: "var(--theme-color-text-secondary)" }} aria-live="polite" aria-label={isFinished ? t(`result.${currentSession.status}.hint`) : t("progress.hint", { progress: overallProgress })}>
-					{isFinished ? t(`result.${currentSession.status}.hint`) : renderProgressHint()}
+			<div className={`curseforge-import__progress-heading${showFinishedState ? " curseforge-import__progress-heading--finished" : ""}`} key={showFinishedState ? `result-${currentSession.status}` : "progress"} data-layout-key="heading">
+				<p className="blog-settings__field-title">{showFinishedState ? t(`result.${currentSession.status}.title`) : t("progress.title")}</p>
+				<p style={{ color: "var(--theme-color-text-secondary)" }} aria-live="polite" aria-label={showFinishedState ? t(`result.${currentSession.status}.hint`) : t("progress.hint", { progress: overallProgress })}>
+					{showFinishedState ? t(`result.${currentSession.status}.hint`) : renderProgressHint()}
 				</p>
 			</div>
 
 			<div className="curseforge-import__overall" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={overallProgress} data-layout-key="overall">
-				<span style={{ transform: `scaleX(${overallProgress / 100})` }} />
+				<span style={{ transform: `scaleX(${displayedOverallProgress / 100})` }} />
 			</div>
 
 			<div className="curseforge-import__projects curseforge-import__projects--progress" data-layout-key="projects">
@@ -665,7 +704,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 								</button>
 							) : (
 								<strong>
-									<NumberFlow value={Number(item.progress) || 0} suffix="%" transformTiming={{ duration: 260, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} opacityTiming={{ duration: 180, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }} respectMotionPreference willChange />
+									<AnimatedProgressNumber value={item.progress} />
 								</strong>
 							)}
 						</div>
@@ -677,7 +716,7 @@ export default function CurseForgeImportModal({ isOpen, authToken, onBack, onReq
 
 			<div className="curseforge-import__actions" data-layout-key="actions">
 				<button className="button button--size-m button--type-primary" type="button" onClick={handleProgressClose}>
-					{isFinished ? t("done") : t("closeAndContinue")}
+					{showFinishedState ? t("done") : t("closeAndContinue")}
 				</button>
 			</div>
 		</div>

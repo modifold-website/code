@@ -560,7 +560,7 @@
 	transform-origin: left center;
 	border-radius: inherit;
 	background: var(--theme-color-signal-active-default);
-	transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+	transition: transform 60ms linear;
 }
 .curseforge-import__projects--progress {
 	gap: 8px;
