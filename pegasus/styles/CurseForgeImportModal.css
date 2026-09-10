@@ -87,7 +87,7 @@
 	visibility: hidden;
 	transform: translateX(16px);
 	filter: blur(2px);
-	transition: opacity 180ms cubic-bezier(.23, 1, .32, 1), transform 260ms cubic-bezier(.23, 1, .32, 1), filter 260ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 260ms;
+	transition: opacity 240ms cubic-bezier(.23, 1, .32, 1), transform 260ms cubic-bezier(.23, 1, .32, 1), filter 260ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 260ms;
 	will-change: opacity, transform, filter;
 }
 .curseforge-import__pages[data-page="verification"] .curseforge-import__page[data-page-id="source"],
