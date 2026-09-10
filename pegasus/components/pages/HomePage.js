@@ -164,11 +164,6 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 
 					<div className="home-player-tools__grid">
 						<article className="home-player-tool">
-							<span className="home-api-showcase__marker home-api-showcase__marker--top-left" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--bottom-left" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--top-right" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--bottom-right" aria-hidden="true"/>
-							
 							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 								<path d="M12 3v12"/>
 								<path d="m8 11 4 4 4-4"/>
@@ -181,11 +176,6 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 						</article>
 
 						<article className="home-player-tool">
-							<span className="home-api-showcase__marker home-api-showcase__marker--top-left" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--bottom-left" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--top-right" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--bottom-right" aria-hidden="true"/>
-							
 							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 								<path d="M4 21v-7"/>
 								<path d="M4 10V3"/>
@@ -204,11 +194,6 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 						</article>
 
 						<article className="home-player-tool">
-							<span className="home-api-showcase__marker home-api-showcase__marker--top-left" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--bottom-left" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--top-right" aria-hidden="true"/>
-							<span className="home-api-showcase__marker home-api-showcase__marker--bottom-right" aria-hidden="true"/>
-							
 							<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 								<path d="M10.268 21a2 2 0 0 0 3.464 0"/>
 								<path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>
@@ -223,11 +208,6 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 
 				<section className="home-safety-section">
 					<div className="home-safety-upload-demo" role="img" aria-label={t("safety.animationLabel")}>
-						<span className="home-api-showcase__marker home-api-showcase__marker--top-left" aria-hidden="true"/>
-						<span className="home-api-showcase__marker home-api-showcase__marker--bottom-left" aria-hidden="true"/>
-						<span className="home-api-showcase__marker home-api-showcase__marker--top-right" aria-hidden="true"/>
-						<span className="home-api-showcase__marker home-api-showcase__marker--bottom-right" aria-hidden="true"/>
-						
 						<svg className="home-safety-upload-demo__animation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 310" fill="none" aria-hidden="true">
 							<g className="home-safety-upload-demo__target" transform="translate(280 110)">
 								<g className="home-safety-upload-demo__upload-target">
@@ -344,11 +324,6 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 
 				<section className="home-open-source-section">
 					<div className="home-api-showcase" role="region" aria-label={t("openSource.codeLabel")}>
-						<span className="home-api-showcase__marker home-api-showcase__marker--top-left" aria-hidden="true"/>
-						<span className="home-api-showcase__marker home-api-showcase__marker--bottom-left" aria-hidden="true"/>
-						<span className="home-api-showcase__marker home-api-showcase__marker--top-right" aria-hidden="true"/>
-						<span className="home-api-showcase__marker home-api-showcase__marker--bottom-right" aria-hidden="true"/>
-
 						<div className="home-api-code">
 							<div className="home-api-code__header">
 								<div className="home-api-code__traffic-lights" aria-hidden="true">
