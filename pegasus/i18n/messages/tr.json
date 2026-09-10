@@ -412,7 +412,6 @@
       "badge": "Güvenliğinizi koruyoruz",
       "title": "Her dosya moderasyondan geçer",
       "lead": "Sistemlerimiz yüklenen her dosyayı inceler. Gerçek bir moderatör sonuçları değerlendirir ve yayınlama ya da reddetme kararını verir.",
-		"cta": "İçerik kurallarımızı okuyun",
 		"queuedTitle": "Sürüm moderasyona gönderildi",
 		"reviewingTitle": "Bir moderatör sürümü inceliyor",
 		"publishedTitle": "Sürüm yayınlandı",

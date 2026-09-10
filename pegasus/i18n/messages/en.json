@@ -412,7 +412,6 @@
       "badge": "Keeping you safe",
       "title": "Every file goes through moderation",
       "lead": "Our systems inspect every uploaded file. A real moderator reviews the results and makes the final publish or reject decision.",
-		"cta": "Read our content rules",
 		"queuedTitle": "Version sent for moderation",
 		"reviewingTitle": "A moderator is reviewing the version",
 		"publishedTitle": "Version published",

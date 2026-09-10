@@ -412,7 +412,6 @@
       "badge": "Cuidando da sua segurança",
       "title": "Cada arquivo passa por moderação",
       "lead": "Nossos sistemas inspecionam cada arquivo enviado. Um moderador real revisa os resultados e toma a decisão final de publicar ou rejeitar.",
-		"cta": "Ler nossas regras de conteúdo",
 		"queuedTitle": "Versão enviada para moderação",
 		"reviewingTitle": "Um moderador está revisando a versão",
 		"publishedTitle": "Versão publicada",
