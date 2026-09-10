@@ -364,12 +364,14 @@
 	color: #307df0 !important;
 }
 .technical-review-tabs-bar__actions,
-.technical-review-file-row__actions,
-.technical-review-thread__actions {
+.technical-review-file-row__actions {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	flex-shrink: 0;
+}
+.technical-review-tabs-bar__actions {
+	margin-left: auto;
 }
 .technical-review-tabs-bar__actions .button--with-icon,
 .technical-review-file-row__actions .button--with-icon {
@@ -435,60 +437,6 @@
 .technical-review-passed svg {
     fill: none;
 }
-.technical-review-thread-region {
-	position: relative;
-	overflow: hidden;
-}
-.technical-review-thread-region__content {
-	display: grid;
-	grid-template-rows: 0fr;
-	transition: grid-template-rows 0.3s linear;
-}
-.technical-review-thread-region__content > div {
-	min-height: 128px;
-	overflow: hidden;
-	transition: min-height 0.3s linear;
-}
-.technical-review-thread-region--open .technical-review-thread-region__content {
-	grid-template-rows: 1fr;
-}
-.technical-review-thread-region--open .technical-review-thread-region__content > div {
-	min-height: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-	.technical-review-thread-region__content,
-	.technical-review-thread-region__content > div {
-		transition: none;
-	}
-}
-.technical-review-thread-region__gradient {
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	background: linear-gradient(to bottom, transparent 20%, var(--theme-color-background) 92%);
-}
-.technical-review-thread-region__toggle {
-	position: absolute;
-	left: 50%;
-	bottom: 16px;
-	z-index: 2;
-	padding: 7px 12px;
-	border: 0;
-	border-radius: 999px;
-	background: var(--theme-color-background-active);
-	color: var(--theme-color-text-primary);
-	font-size: 12px;
-	font-weight: 600;
-	cursor: pointer;
-	transform: translateX(-50%) !important;
-}
-.technical-review-thread-region__toggle:hover {
-	filter: brightness(0.97);
-}
-.technical-review-thread-region__toggle:focus-visible {
-	outline: 2px solid #307df0;
-	outline-offset: 2px;
-}
 .technical-review-thread,
 .technical-review-files {
 	margin: 0;
@@ -496,17 +444,29 @@
 .technical-review-thread {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 16px 16px 64px;
-	background: var(--theme-color-background);
+	padding: 16px;
+	background: var(--theme-color-background-content);
 	font-size: 16px;
 	line-height: 1.45;
 }
 .technical-review-thread__message {
+	display: flex;
+	align-items: center;
+	gap: 6px;
 	padding: 14px 16px;
-	border: 1px solid var(--theme-color-border);
 	border-radius: 12px;
-	background: var(--theme-color-background-content);
+	background: var(--theme-color-background);
+}
+.technical-review-thread__argus {
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+	gap: 4px;
+	color: #d96e00;
+	font-weight: 500;
+}
+.technical-review-thread__argus svg {
+	fill: none;
 }
 .technical-review-file-row {
 	display: flex;
@@ -896,6 +856,20 @@
     .technical-review-card__actions .button {
         flex: 1 1 auto;
     }
+	.technical-review-tabs-bar {
+		align-items: stretch;
+		flex-wrap: wrap;
+	}
+	.technical-review-tabs {
+		flex: 1 1 100%;
+	}
+	.technical-review-tabs-bar__actions {
+		width: 100%;
+		margin-left: 0;
+	}
+	.technical-review-tabs-bar__actions .button:not(.button--with-icon) {
+		flex: 1 1 0;
+	}
     .technical-review-file-row {
         align-items: stretch;
         flex-direction: column;

@@ -2416,7 +2416,6 @@
       "reason": "Reason",
       "argusReasons": "Argus signals",
       "noFlags": "No suspicious flags for this file.",
-      "argusNotice": "Argus noticed: {message}",
       "noArgusSummary": "no additional details"
     },
     "tabs": {

@@ -2416,7 +2416,6 @@
       "reason": "Причина",
       "argusReasons": "Сигналы Argus",
       "noFlags": "Для этого файла нет подозрительных флагов.",
-      "argusNotice": "Аргус заметил: {message}",
       "noArgusSummary": "нет дополнительных деталей"
     },
     "tabs": {

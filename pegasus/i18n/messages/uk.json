@@ -2235,7 +2235,6 @@
       "reason": "Причина",
       "argusReasons": "Сигнали Argus",
       "noFlags": "Для цього файлу немає підозрілих flags.",
-      "argusNotice": "Argus noticed: {message}",
       "noArgusSummary": "no additional details"
     },
     "tabs": {
