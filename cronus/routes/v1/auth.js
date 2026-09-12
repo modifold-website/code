@@ -14,9 +14,11 @@ const auth = require("../../middleware/auth");
 const { getVisibleProfileBadge } = require("../../utils/profileBadges");
 const { ACHIEVEMENT_CODES, awardAchievementToUser } = require("../../utils/achievements");
 const { consumeHytaleOAuthState, createHytaleAuthorizationUrl, exchangeHytaleCode } = require("../../utils/hytaleOAuth");
+const { importSocialAvatar } = require("../../utils/socialAvatar");
 const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;
+const DEFAULT_AVATAR_URL = "https://modifold.com/images/user/default_ava.png";
 
 const AUTH_PROVIDERS = {
 	discord: {
@@ -43,6 +45,32 @@ const getFrontendBase = () => trimTrailingSlash(process.env.FRONTEND_BASE || "ht
 const getProviderRedirectUri = (provider) => `${getPublicApiBase()}/auth/${provider}-callback`;
 
 const issueTwoFactorToken = (userId) => jwt.sign({ id: userId, type: "2fa" }, process.env.JWT_SECRET, { expiresIn: "10m" });
+
+const persistSocialAvatar = async ({ userId, provider, sourceUrl }) => {
+	if(!sourceUrl) {
+		return DEFAULT_AVATAR_URL;
+	}
+
+	try {
+		const avatarUrl = await importSocialAvatar({ userId, provider, sourceUrl });
+		if(avatarUrl) {
+			await db.query("UPDATE users SET avatar = ? WHERE id = ?", [avatarUrl, userId]);
+			return avatarUrl;
+		}
+	} catch(error) {
+		logger.warn({
+			event: "social_avatar_import_failed",
+			provider,
+			userId,
+			error: {
+				message: error?.message || "unknown error",
+				code: error?.code || null,
+			},
+		}, "Unable to import social avatar; using default avatar");
+	}
+
+	return DEFAULT_AVATAR_URL;
+};
 
 function normalizeReturnPath(nextPath) {
     if(typeof nextPath !== "string") {
@@ -819,12 +847,13 @@ router.post("/discord-login", async (req, res) => {
         }
 
         const createdAt = Date.now();
-        const avatarUrl = avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png` : "https://modifold.com/images/user/default_ava.png";
+        const socialAvatarUrl = avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png` : null;
 
 		const [result] = await db.query(
 			"INSERT INTO users (username, slug, discord_id, discord_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)",
-			[displayName, slug, discordId, createdAt, email, createdAt, avatarUrl]
+			[displayName, slug, discordId, createdAt, email, createdAt, DEFAULT_AVATAR_URL]
 		);
+		await persistSocialAvatar({ userId: result.insertId, provider: "discord", sourceUrl: socialAvatarUrl });
 
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: displayName, slug }, success: true });
@@ -928,12 +957,13 @@ router.get("/discord-callback", async (req, res) => {
             }
 
             const createdAt = Date.now();
-            const avatarUrl = avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png` : "https://modifold.com/images/user/default_ava.png";
+            const socialAvatarUrl = avatar ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png` : null;
 
 			const [result] = await db.query(
 				"INSERT INTO users (username, slug, discord_id, discord_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)",
-				[displayName, slug, discordId, createdAt, email, createdAt, avatarUrl]
+				[displayName, slug, discordId, createdAt, email, createdAt, DEFAULT_AVATAR_URL]
 			);
+			await persistSocialAvatar({ userId: result.insertId, provider: "discord", sourceUrl: socialAvatarUrl });
 
 			user = { id: result.insertId, username: displayName, slug };
 		} else {
@@ -1032,9 +1062,8 @@ router.get("/telegram-callback", async (req, res) => {
             }
 
             const createdAt = Date.now();
-            const avatar = photo_url || "https://modifold.com/images/user/default_ava.png";
-
-			const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, telegram_linked_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, createdAt, avatar]);
+            const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, telegram_linked_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, createdAt, DEFAULT_AVATAR_URL]);
+			await persistSocialAvatar({ userId: result.insertId, provider: "telegram", sourceUrl: photo_url });
             user = { id: result.insertId, username, slug };
 		} else {
 			await db.query("UPDATE users SET telegram_linked_at = COALESCE(telegram_linked_at, ?) WHERE id = ?", [Date.now(), user.id]);
@@ -1121,9 +1150,8 @@ router.post("/telegram-login", async (req, res) => {
         }
 
         const createdAt = Date.now();
-        const avatar = photo_url || "https://modifold.com/images/user/default_ava.png";
-
-		const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, telegram_linked_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, createdAt, avatar]);
+        const [result] = await db.query("INSERT INTO users (username, slug, telegram_id, telegram_linked_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?)", [username, slug, telegramId, createdAt, createdAt, DEFAULT_AVATAR_URL]);
+		await persistSocialAvatar({ userId: result.insertId, provider: "telegram", sourceUrl: photo_url });
 
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username, slug }, success: true });
@@ -1219,9 +1247,8 @@ router.post("/github-login", async (req, res) => {
         }
 
         const createdAt = Date.now();
-        const avatar = avatar_url || "https://modifold.com/images/user/default_ava.png";
-
-		const [result] = await db.query("INSERT INTO users (username, slug, github_id, github_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)", [displayName, slug, githubId, createdAt, email, createdAt, avatar]);
+        const [result] = await db.query("INSERT INTO users (username, slug, github_id, github_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)", [displayName, slug, githubId, createdAt, email, createdAt, DEFAULT_AVATAR_URL]);
+		await persistSocialAvatar({ userId: result.insertId, provider: "github", sourceUrl: avatar_url });
 
         const token = jwt.sign({ id: result.insertId }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.json({ token, user: { id: result.insertId, username: displayName, slug }, success: true });
@@ -1327,12 +1354,11 @@ router.get("/github-callback", async (req, res) => {
             }
 
             const createdAt = Date.now();
-            const avatar = avatar_url || "https://modifold.com/images/user/default_ava.png";
-
 			const [result] = await db.query(
 				"INSERT INTO users (username, slug, github_id, github_linked_at, email, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)",
-				[displayName, slug, githubId, createdAt, email, createdAt, avatar]
+				[displayName, slug, githubId, createdAt, email, createdAt, DEFAULT_AVATAR_URL]
 			);
+			await persistSocialAvatar({ userId: result.insertId, provider: "github", sourceUrl: avatar_url });
 
 			user = { id: result.insertId, username: displayName, slug };
 		} else {

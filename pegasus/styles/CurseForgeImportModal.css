@@ -87,7 +87,7 @@
 	visibility: hidden;
 	transform: translateX(16px);
 	filter: blur(2px);
-	transition: opacity 180ms cubic-bezier(.23, 1, .32, 1), transform 260ms cubic-bezier(.23, 1, .32, 1), filter 260ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 260ms;
+	transition: opacity 240ms cubic-bezier(.23, 1, .32, 1), transform 260ms cubic-bezier(.23, 1, .32, 1), filter 260ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 260ms;
 	will-change: opacity, transform, filter;
 }
 .curseforge-import__pages[data-page="verification"] .curseforge-import__page[data-page-id="source"],
@@ -340,17 +340,13 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-.curseforge-import__notice,
-.curseforge-import__error {
+.curseforge-import__notice {
 	color: var(--theme-color-text-secondary);
     background: var(--theme-color-background);
     border-radius: 21px;
     margin: 0;
     padding: 16px 20px;
-    line-height: 1.4;
-}
-.curseforge-import__error {
-	color: var(--theme-color-signal-negative-default);
+	line-height: 1.4;
 }
 .curseforge-import__notice--warning {
 	display: flex;
@@ -543,6 +539,23 @@
 .curseforge-import__progress-heading--finished {
 	animation: curseforge-import-heading-in 220ms cubic-bezier(.23, 1, .32, 1) both;
 }
+.curseforge-import__progress-description {
+	color: var(--theme-color-text-secondary);
+}
+.curseforge-import__progress-description--reconnecting {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.curseforge-import__connection-spinner {
+	width: 18px;
+	height: 18px;
+	flex: 0 0 auto;
+	border: 2px solid color-mix(in srgb, var(--theme-color-signal-active-default) 22%, transparent);
+	border-top-color: var(--theme-color-signal-active-default);
+	border-radius: 50%;
+	animation: spin 700ms linear infinite;
+}
 @keyframes curseforge-import-heading-in {
 	from {
 		opacity: 0;
@@ -560,7 +573,7 @@
 	transform-origin: left center;
 	border-radius: inherit;
 	background: var(--theme-color-signal-active-default);
-	transition: transform 220ms cubic-bezier(.22, 1, .36, 1);
+	transition: transform 60ms linear;
 }
 .curseforge-import__projects--progress {
 	gap: 8px;
@@ -685,5 +698,8 @@
 	}
 	.curseforge-import__progress-heading--finished {
 		animation: none;
+	}
+	.curseforge-import__connection-spinner {
+		animation-duration: 1400ms;
 	}
 }

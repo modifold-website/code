@@ -412,7 +412,6 @@
       "badge": "Keeping you safe",
       "title": "Every file goes through moderation",
       "lead": "Our systems inspect every uploaded file. A real moderator reviews the results and makes the final publish or reject decision.",
-		"cta": "Read our content rules",
 		"queuedTitle": "Version sent for moderation",
 		"reviewingTitle": "A moderator is reviewing the version",
 		"publishedTitle": "Version published",
@@ -602,6 +601,7 @@
     "progress": {
       "title": "Moving projects",
       "hint": "{progress}% moved. You can close this window and we'll keep working in the background.",
+	  "reconnecting": "Connection interrupted. Reconnecting…",
 	  "retry": "Retry",
 	  "retrying": "Retrying…"
     },
@@ -2415,7 +2415,6 @@
       "reason": "Reason",
       "argusReasons": "Argus signals",
       "noFlags": "No suspicious flags for this file.",
-      "argusNotice": "Argus noticed: {message}",
       "noArgusSummary": "no additional details"
     },
     "tabs": {

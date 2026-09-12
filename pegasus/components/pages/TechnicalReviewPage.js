@@ -181,7 +181,6 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 	const [isSortPopoverOpen, setIsSortPopoverOpen] = useState(false);
 	const [reviewTabs, setReviewTabs] = useState({});
 	const [selectedReviewFiles, setSelectedReviewFiles] = useState({});
-	const [expandedThreads, setExpandedThreads] = useState({});
 	const statusPopoverRef = useRef(null);
 	const sortPopoverRef = useRef(null);
 
@@ -262,13 +261,6 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 			...current,
 			[versionId]: tab,
 		}));
-
-		if(tab === "thread") {
-			setExpandedThreads((current) => ({
-				...current,
-				[versionId]: true,
-			}));
-		}
 	};
 
 	const selectReviewFile = (versionId) => {
@@ -277,13 +269,6 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 			[versionId]: true,
 		}));
 		setReviewTab(versionId, "file");
-	};
-
-	const toggleThread = (versionId) => {
-		setExpandedThreads((current) => ({
-			...current,
-			[versionId]: !current[versionId],
-		}));
 	};
 
 	const submitDecision = async (version, decision, reason = "") => {
@@ -403,7 +388,6 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 						const fileName = report.file_name || getFileNameFromUrl(version.file_url) || version.version_number;
 						const activeReviewTab = getReviewTab(version.id);
 						const hasSelectedFile = Boolean(selectedReviewFiles[version.id]);
-						const isThreadExpanded = Boolean(expandedThreads[version.id]);
 						const argusThreadMessage = getArgusThreadMessage(version, argusSignals);
 						const relativeDate = formatRelativeTime(version.created_at, locale);
 
@@ -489,54 +473,58 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 										)}
 									</div>
 
-									{hasSelectedFile && (
-										<div className="technical-review-tabs-bar__actions">
-											<a className="button button--size-m button--type-minimal button--with-icon" href={version.file_url} target="_blank" rel="noreferrer" download={fileName} aria-label={t("actions.download")} title={t("actions.download")}>
-												<svg viewBox="0 0 24 24" aria-hidden="true">
-													<path d="M12 3v12"></path>
-													<path d="m7 10 5 5 5-5"></path>
-													<path d="M5 21h14"></path>
-												</svg>
-											</a>
+									<div className="technical-review-tabs-bar__actions">
+										<button className="button button--size-m button--type-positive" type="button" onClick={() => submitDecision(version, "approved")} disabled={isSubmitting}>
+											{t("actions.approve")}
+										</button>
 
-											<a className="button button--size-m button--type-minimal button--with-icon" href={version.file_url} target="_blank" rel="noreferrer">
-												<svg viewBox="0 0 24 24" aria-hidden="true">
-													<path d="M15 3h6v6"></path>
-													<path d="M10 14 21 3"></path>
-													<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-												</svg>
-												Open
-											</a>
-										</div>
-									)}
+										<button className="button button--size-m button--type-negative" type="button" onClick={() => openBlockModal(version)} disabled={isSubmitting}>
+											{t("actions.block")}
+										</button>
+
+										{hasSelectedFile && (
+											<>
+												<a className="button button--size-m button--type-minimal button--with-icon" href={version.file_url} target="_blank" rel="noreferrer" download={fileName} aria-label={t("actions.download")} title={t("actions.download")}>
+													<svg viewBox="0 0 24 24" aria-hidden="true">
+														<path d="M12 3v12"></path>
+														<path d="m7 10 5 5 5-5"></path>
+														<path d="M5 21h14"></path>
+													</svg>
+												</a>
+
+												<a className="button button--size-m button--type-minimal button--with-icon" href={version.file_url} target="_blank" rel="noreferrer">
+													<svg viewBox="0 0 24 24" aria-hidden="true">
+														<path d="M15 3h6v6"></path>
+														<path d="M10 14 21 3"></path>
+														<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+													</svg>
+
+													Open
+												</a>
+											</>
+										)}
+									</div>
 								</div>
 
 								<div className="technical-review-card__body">
 									{activeReviewTab === "thread" && (
-										<div className={`technical-review-thread-region ${isThreadExpanded ? "technical-review-thread-region--open" : ""}`}>
-											<div className="technical-review-thread-region__content">
-												<div className="technical-review-thread">
-													<div className="technical-review-thread__message">
-														{t("fields.argusNotice", { message: argusThreadMessage || t("fields.noArgusSummary") })}
-													</div>
+										<div className="technical-review-thread">
+											<div className="technical-review-thread__message">
+												<span className="technical-review-thread__argus">
+													<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+														<path d="M12 8V4H8"></path>
+														<rect width="16" height="12" x="4" y="8" rx="2"></rect>
+														<path d="M2 14h2"></path>
+														<path d="M20 14h2"></path>
+														<path d="M15 13v2"></path>
+														<path d="M9 13v2"></path>
+													</svg>
 
-													<div className="technical-review-thread__actions">
-														<button className="button button--size-m button--type-positive" type="button" onClick={() => submitDecision(version, "approved")} disabled={isSubmitting}>
-															{t("actions.approve")}
-														</button>
+													<span>argus:</span>
+												</span>
 
-														<button className="button button--size-m button--type-negative" type="button" onClick={() => openBlockModal(version)} disabled={isSubmitting}>
-															{t("actions.block")}
-														</button>
-													</div>
-												</div>
+												<span>{argusThreadMessage || t("fields.noArgusSummary")}</span>
 											</div>
-
-											{!isThreadExpanded && <div className="technical-review-thread-region__gradient" aria-hidden="true"></div>}
-
-											<button className="technical-review-thread-region__toggle" type="button" onClick={() => toggleThread(version.id)}>
-												{isThreadExpanded ? "Collapse thread" : "Expand"}
-											</button>
 										</div>
 									)}
 
@@ -555,6 +543,7 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 															<span className={`technical-review-badge technical-review-badge--severity-${highestSeverity}`}>
 																{t(`severity.${highestSeverity}`)}
 															</span>
+
 															<span className="technical-review-badge technical-review-badge--flags-open">0/{argusSignals.filter((signal) => !signal.isPassed).length} flags</span>
 														</>
 													) : (
@@ -581,6 +570,7 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 															<path d="M10 14 21 3"></path>
 															<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
 														</svg>
+
 														Open
 													</a>
 												</div>
@@ -603,9 +593,11 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 															</span>
 
 															<code className="technical-review-class__path">{group.source}</code>
+															
 															<span className={`technical-review-badge technical-review-badge--severity-${getHighestSeverity(group.flags)}`}>
 																{t(`severity.${getHighestSeverity(group.flags)}`)}
 															</span>
+
 															<span className="technical-review-badge technical-review-badge--flags-open">0/{group.flags.length} flags</span>
 														</summary>
 
@@ -614,12 +606,13 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 																<div key={`${group.source}-${flag.type}-${flag.message}`} className="technical-review-finding">
 																	<div className="technical-review-finding__header">
 																		<div>
-																	<div className="technical-review-finding__title">
-																		{formatFindingType(flag.type)}
-																		<span className={`technical-review-badge technical-review-badge--severity-${getSeverity(flag.severity)}`}>
-																			{t(`severity.${getSeverity(flag.severity)}`)}
-																		</span>
-																	</div>
+																			<div className="technical-review-finding__title">
+																				{formatFindingType(flag.type)}
+																				
+																				<span className={`technical-review-badge technical-review-badge--severity-${getSeverity(flag.severity)}`}>
+																					{t(`severity.${getSeverity(flag.severity)}`)}
+																				</span>
+																			</div>
 
 																			<div className="technical-review-finding__reason">
 																				{flag.message}
@@ -630,7 +623,9 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 																	{flag.excerpt && (
 																		<div className="technical-review-code">
 																			<div className="technical-review-code__line">1</div>
+																			
 																			<pre><code>{flag.excerpt}</code></pre>
+																			
 																			<button className="technical-review-code__copy" type="button" onClick={() => navigator.clipboard?.writeText(flag.excerpt)} aria-label={t("actions.copyCode")}>
 																				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 																					<rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
@@ -672,6 +667,7 @@ export default function TechnicalReviewPage({ authToken, initialVersions, initia
 				<div className="modal-window">
 					<div className="modal-window__header">
 						<span style={{ fontSize: "18px", fontWeight: "500" }}>{t("modal.title")}</span>
+						
 						<button className="icon-button modal-window__close" type="button" onClick={() => setBlockingVersion(null)} disabled={isSubmitting} aria-label={t("modal.close")}>
 							<svg className="icon icon--x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
 								<path d="M18 6 6 18"></path>
