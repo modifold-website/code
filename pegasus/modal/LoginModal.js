@@ -9,10 +9,6 @@ import { toast } from "react-toastify";
 import { useAuth } from "../components/providers/AuthProvider";
 import { getLastSignInProvider, setLastSignInProvider, setPendingSignInProvider } from "../utils/authSignInProvider";
 
-if(typeof window !== "undefined") {
-    Modal.setAppElement("#app");
-}
-
 function getReturnPath() {
     if(typeof window === "undefined") {
         return "/";
@@ -543,6 +539,11 @@ export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
 
 export default function LoginModal({ isOpen, onClose }) {
     const t = useTranslations("LoginModal");
+
+    useEffect(() => {
+        Modal.setAppElement("#app");
+    }, []);
+
     const [isDataModalOpen, setIsDataModalOpen] = useState(false);
     const [isEmailAuthOpen, setIsEmailAuthOpen] = useState(false);
     const [lastSignInProvider, setLastSignInProviderState] = useState("");
