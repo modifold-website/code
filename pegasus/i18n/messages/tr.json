@@ -593,6 +593,10 @@
         "title": "Proje inceleniyor",
         "description": "Projeniz moderasyon kuyruğunda. Hâlâ düzenleyebilirsiniz; değişiklikler sıradaki konumunu etkilemez.",
         "action": "Moderasyon durumunu görüntüle"
+      },
+      "approved": {
+        "title": "Proje onaylandı",
+        "description": "Proje moderasyondan geçti ve yayımlandı. Yeni sürümler ayrı olarak incelenecektir."
       }
     },
     "tabs": {
@@ -1739,6 +1743,9 @@
       },
       "title": "Projeyi moderasyona gönder",
       "description": "İncelemeye göndermeden önce tüm zorunlu alanların doldurulduğundan emin olun",
+      "readiness": {
+        "title": "Gönderim adımları"
+      },
       "cards": {
         "icon": {
           "title": "Proje simgesi",

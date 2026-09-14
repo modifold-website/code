@@ -350,6 +350,11 @@
 .project-status-banner__link {
     margin-top: 10px;
 }
+.project-status-banner--approved {
+	border-color: var(--banner-positive-border-color);
+	background: var(--banner-positive-bg);
+	color: var(--banner-positive-color);
+}
 .project-inline-gallery {
 	margin-bottom: 15px;
 }

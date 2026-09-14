@@ -680,6 +680,10 @@
         "title": "Project under review",
         "description": "Your project is in the moderation queue. You can still edit it; changes will not affect its position.",
         "action": "View moderation status"
+      },
+      "approved": {
+        "title": "Project approved",
+        "description": "The project passed moderation and is now published. New versions will be reviewed separately."
       }
     },
     "tabs": {
@@ -1917,6 +1921,9 @@
       },
       "title": "Submit Project for Moderation",
       "description": "Please make sure all required fields are filled in before sending your project for review",
+      "readiness": {
+        "title": "Submission steps"
+      },
       "cards": {
         "icon": {
           "title": "Project Icon",

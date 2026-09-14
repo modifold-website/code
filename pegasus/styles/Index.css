@@ -418,6 +418,9 @@ svg {
     --banner-warning-bg: #ffedd5;
     --banner-warning-color: #713f12;
     --banner-warning-border-color: #ffdcad;
+    --banner-positive-bg: #deecde;
+    --banner-positive-color: #30b03d;
+    --banner-positive-border-color: #c4e3c3;
 }
 body.dark {
     color-scheme: dark;
@@ -425,6 +428,9 @@ body.dark {
     --banner-warning-bg: #453425;
     --banner-warning-color: #e4d9ca;
     --banner-warning-border-color: #63452b;
+    --banner-positive-bg: #1f311f;
+    --banner-positive-color: #33a03e;
+    --banner-positive-border-color: #224023;
 
     --project_card-box-shadow: rgba(0,0,0,.25) 0px 2px 4px 0px;
 

@@ -593,6 +593,10 @@
         "title": "Proyecto en revisión",
         "description": "Tu proyecto está en la cola de moderación. Aún puedes editarlo; los cambios no afectarán su posición.",
         "action": "Ver estado de moderación"
+      },
+      "approved": {
+        "title": "Proyecto aprobado",
+        "description": "El proyecto superó la moderación y ya está publicado. Las nuevas versiones se revisarán por separado."
       }
     },
     "tabs": {
@@ -1739,6 +1743,9 @@
       },
       "title": "Moderación",
       "description": "Asegúrate de que todos los campos obligatorios estén completos antes de enviar el proyecto para revisión",
+      "readiness": {
+        "title": "Pasos para el envío"
+      },
       "cards": {
         "icon": {
           "title": "Icono del proyecto",
