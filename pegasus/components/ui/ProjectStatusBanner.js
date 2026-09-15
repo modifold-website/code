@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-export default function ProjectStatusBanner({ type, settingsHref }) {
+export default function ProjectStatusBanner({ type, settingsHref, showAction = true }) {
     const t = useTranslations("ProjectPage.statusBanner");
 
     return (
@@ -19,14 +19,16 @@ export default function ProjectStatusBanner({ type, settingsHref }) {
 
                 <p className="project-status-banner__text">{t(`${type}.description`)}</p>
                 
-                <Link prefetch={false} href={settingsHref} className="button button--size-m button--type-secondary button--active-transform button--with-icon project-status-banner__link">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-arrow-up-right-icon lucide-arrow-up-right">
-                        <path d="M7 7h10v10"/>
-                        <path d="M7 17 17 7"/>
-                    </svg>
-                    
-                    {t(`${type}.action`)}
-                </Link>
+                {showAction && settingsHref ? (
+                    <Link prefetch={false} href={settingsHref} className="button button--size-m button--type-secondary button--active-transform button--with-icon project-status-banner__link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-arrow-up-right-icon lucide-arrow-up-right">
+                            <path d="M7 7h10v10"/>
+                            <path d="M7 17 17 7"/>
+                        </svg>
+
+                        {t(`${type}.action`)}
+                    </Link>
+                ) : null}
             </div>
         </div>
     );

@@ -593,6 +593,10 @@
         "title": "Proyecto en revisión",
         "description": "Tu proyecto está en la cola de moderación. Aún puedes editarlo; los cambios no afectarán su posición.",
         "action": "Ver estado de moderación"
+      },
+      "approved": {
+        "title": "Proyecto aprobado",
+        "description": "El proyecto superó la moderación y ya está publicado. Las nuevas versiones se revisarán por separado."
       }
     },
     "tabs": {
@@ -660,6 +664,16 @@
     "featuredVersionsTitle": "Versiones destacadas",
     "showAllVersions": "Ver todo",
     "downloadVersionAria": "Descargar versión {version}",
+    "quickDownload": {
+      "title": "Elige tu versión del juego",
+      "description": "Elige tu versión del juego y encontraremos el archivo adecuado y todo lo que necesitas.",
+      "placeholder": "Selecciona una versión",
+      "loading": "Cargando versiones…",
+      "error": "No se pudieron cargar las versiones. Reintentar",
+      "empty": "No hay versiones disponibles para descargar",
+      "optionAria": "Seleccionar Hytale {gameVersion}",
+      "dependenciesTitle": "Dependencias obligatorias"
+    },
     "changesTitle": "Cambios",
     "noChanges": "Sin cambios",
     "filesTitle": "Archivos",
@@ -1739,6 +1753,9 @@
       },
       "title": "Moderación",
       "description": "Asegúrate de que todos los campos obligatorios estén completos antes de enviar el proyecto para revisión",
+      "readiness": {
+        "title": "Pasos para el envío"
+      },
       "cards": {
         "icon": {
           "title": "Icono del proyecto",

@@ -593,6 +593,10 @@
         "title": "Proje inceleniyor",
         "description": "Projeniz moderasyon kuyruğunda. Hâlâ düzenleyebilirsiniz; değişiklikler sıradaki konumunu etkilemez.",
         "action": "Moderasyon durumunu görüntüle"
+      },
+      "approved": {
+        "title": "Proje onaylandı",
+        "description": "Proje moderasyondan geçti ve yayımlandı. Yeni sürümler ayrı olarak incelenecektir."
       }
     },
     "tabs": {
@@ -660,6 +664,16 @@
     "featuredVersionsTitle": "Öne çıkan sürümler",
     "showAllVersions": "Tümü",
     "downloadVersionAria": "{version} sürümünü indir",
+    "quickDownload": {
+      "title": "Oyun sürümünü seç",
+      "description": "Oyun sürümünü seç, sana uygun dosyayı ve ihtiyacın olan her şeyi bulalım.",
+      "placeholder": "Bir sürüm seç",
+      "loading": "Sürümler yükleniyor…",
+      "error": "Sürümler yüklenemedi. Tekrar dene",
+      "empty": "İndirilebilir sürüm yok",
+      "optionAria": "Hytale {gameVersion} sürümünü seç",
+      "dependenciesTitle": "Gerekli bağımlılıklar"
+    },
     "changesTitle": "Değişiklikler",
     "noChanges": "Değişiklik yok",
     "filesTitle": "Dosyalar",
@@ -1739,6 +1753,9 @@
       },
       "title": "Projeyi moderasyona gönder",
       "description": "İncelemeye göndermeden önce tüm zorunlu alanların doldurulduğundan emin olun",
+      "readiness": {
+        "title": "Gönderim adımları"
+      },
       "cards": {
         "icon": {
           "title": "Proje simgesi",
