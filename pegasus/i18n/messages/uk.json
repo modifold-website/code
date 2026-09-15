@@ -661,6 +661,16 @@
     "featuredVersionsTitle": "Обрані версії",
     "showAllVersions": "Усі",
     "downloadVersionAria": "Завантажити версію {version}",
+    "quickDownload": {
+      "title": "Виберіть версію гри",
+      "description": "Виберіть свою версію гри, і ми підберемо відповідний файл та все необхідне.",
+      "placeholder": "Виберіть версію",
+      "loading": "Завантажуємо версії…",
+      "error": "Не вдалося завантажити версії. Спробувати ще раз",
+      "empty": "Немає доступних для завантаження версій",
+      "optionAria": "Вибрати Hytale {gameVersion}",
+      "dependenciesTitle": "Обов’язкові залежності"
+    },
     "changesTitle": "Зміни",
     "noChanges": "Немає змін",
     "filesTitle": "Файли",

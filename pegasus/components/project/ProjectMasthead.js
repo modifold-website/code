@@ -10,6 +10,7 @@ import { useLocale, useTranslations } from "next-intl";
 import ProjectTags from "../ui/ProjectTags";
 import Tooltip from "../ui/Tooltip";
 import DownloadCount from "../ui/DownloadCount";
+import ProjectQuickDownloadButton from "./ProjectQuickDownloadButton";
 import ProjectReportModal from "@/modal/ProjectReportModal";
 import { getProjectPath, isBuildContentProjectType } from "@/utils/projectRoutes";
 
@@ -307,6 +308,8 @@ export default function ProjectMasthead({ project, authToken }) {
                     </div>
 
 					<div className="masthead-buttons project-page-card__actions">
+						{projectStatus === "approved" ? <ProjectQuickDownloadButton project={project} authToken={authToken} /> : null}
+
 						{user && (isProjectAuthor || project.permissions?.can_edit_details || project.permissions?.can_edit_body || project.permissions?.can_edit_gallery || project.permissions?.can_manage_versions || project.permissions?.can_manage_collaborators || project.permissions?.can_view_analytics || project.permissions?.can_delete_project) && (
 							<Link prefetch={false} className="button button--size-l button--with-icon button--type-primary" href={getProjectPath(project, "/settings")}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-settings-icon lucide-settings">

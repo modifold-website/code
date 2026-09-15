@@ -751,6 +751,16 @@
     "featuredVersionsTitle": "Избранные версии",
     "showAllVersions": "Все",
     "downloadVersionAria": "Скачать версию {version}",
+    "quickDownload": {
+      "title": "Выберите версию игры",
+      "description": "Выберите свою версию игры, и мы подберём подходящий файл и всё необходимое.",
+      "placeholder": "Выберите версию",
+      "loading": "Загружаем версии…",
+      "error": "Не удалось загрузить версии. Попробовать снова",
+      "empty": "Нет доступных для скачивания версий",
+      "optionAria": "Выбрать Hytale {gameVersion}",
+      "dependenciesTitle": "Обязательные зависимости"
+    },
     "changesTitle": "Изменения",
     "noChanges": "Нет изменений",
     "filesTitle": "Файлы",
