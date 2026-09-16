@@ -166,6 +166,10 @@ export function getAssetBase() {
 export function assetUrl(assetPath) {
 	const base = getAssetBase();
 	let p = String(assetPath || "").replace(/\\/g, "/").replace(/^\/+/, "");
+	if(/^(?:blob:|data:|https?:\/\/)/i.test(String(assetPath || ""))) {
+		return String(assetPath);
+	}
+
 	if(p.startsWith("BlockTextures/")) {
 		return `${base}/Common/${p}`;
 	}

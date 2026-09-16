@@ -5,7 +5,7 @@ export const BLOCK_MODEL_UNITS = 32;
 export const CHARACTER_MODEL_UNITS = 64;
 
 export function isCharacterDensityModel(modelPath) {
-	const p = String(modelPath || "").replace(/\\/g, "/");
+	const p = String(modelPath || "").replace(/\\/g, "/").replace(/^.*?\/(?:Common\/)?(?=(?:Characters|Items|NPC)\/)/i, "");
 	if(!p) {
 		return false;
 	}
@@ -573,9 +573,9 @@ function accumulateNode(node, parent, texture, denomW, denomH, tintHex) {
 	}
 }
 
-export async function loadBlockyModel(modelPath, texturePath = null, tintHex = null) {
+export async function loadBlockyModel(modelPath, texturePath = null, tintHex = null, sourcePath = modelPath) {
 	const tintKey = tintHex ? String(tintHex).toLowerCase() : "";
-	const key = `${modelPath}|${texturePath || ""}|${tintKey}`;
+	const key = `${modelPath}|${texturePath || ""}|${tintKey}|${sourcePath || ""}`;
 	if(modelCache.has(key)) {
 		const cached = await modelCache.get(key);
 		return cached ? cached.clone(true) : null;
@@ -660,7 +660,7 @@ export async function loadBlockyModel(modelPath, texturePath = null, tintHex = n
 			accumulateNode(node, root, texture, texW, texH, tintHex);
 		}
 
-		root.scale.setScalar(modelRootScale(modelPath));
+		root.scale.setScalar(modelRootScale(sourcePath));
 		return root;
 	})();
 
