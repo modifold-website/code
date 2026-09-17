@@ -139,7 +139,7 @@ const renderStaticThumbnail = async (asset, size) => {
 	const distance = radius / Math.sin((camera.fov * Math.PI) / 360) * 0.9;
 	const target = new THREE.Vector3(0, center.y * 0.92, 0);
 
-	camera.position.set(distance * 0.82, center.y + distance * 0.48, distance * 0.92);
+	camera.position.set(distance * -0.82, center.y + distance * 0.48, distance * 0.92);
 	camera.lookAt(target);
 	camera.near = Math.max(0.01, distance / 100);
 	camera.far = Math.max(100, distance * 10);
@@ -389,7 +389,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 
 			const distance = radius / Math.sin((camera.fov * Math.PI) / 360) * 0.779;
 			const target = new THREE.Vector3(0, center.y * 0.92, 0);
-			camera.position.set(distance * 0.82, center.y + distance * 0.48, distance * 0.92);
+			camera.position.set(distance * -0.82, center.y + distance * 0.48, distance * 0.92);
 			camera.near = Math.max(0.01, distance / 100);
 			camera.far = Math.max(10, distance * 4);
 			camera.updateProjectionMatrix();
