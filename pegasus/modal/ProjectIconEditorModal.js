@@ -306,7 +306,6 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 	const [customBackground, setCustomBackground] = useState(DEFAULT_CUSTOM_BACKGROUND);
 	const [cameraSettings, setCameraSettings] = useState(DEFAULT_CAMERA_SETTINGS);
 	const [sceneSettings, setSceneSettings] = useState(DEFAULT_SCENE_SETTINGS);
-	const [snapshot, setSnapshot] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [previewStatus, setPreviewStatus] = useState("loading");
@@ -543,18 +542,14 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 				<div className="modal-window__content project-icon-editor__body">
 					<aside className="project-icon-editor__preview-column">
 						<div className="project-icon-editor__preview" style={{ "--icon-background": `linear-gradient(135deg, ${background.from}, ${background.to})` }}>
-							{selectedSource ? <ProjectIconCanvas ref={canvasRef} asset={selectedSource} background={background} cameraSettings={cameraSettings} sceneSettings={sceneSettings} onSnapshot={setSnapshot} onStatusChange={setPreviewStatus} /> : null}
+							{selectedSource ? <ProjectIconCanvas ref={canvasRef} asset={selectedSource} background={background} cameraSettings={cameraSettings} sceneSettings={sceneSettings} onStatusChange={setPreviewStatus} /> : null}
 							
 							{previewStatus === "loading" ? <span className="project-icon-editor__preview-status">{t("loadingPreview")}</span> : null}
 							
 							{previewStatus === "error" ? <span className="project-icon-editor__preview-status">{t("previewError")}</span> : null}
 						</div>
 
-						<div className="project-icon-editor__sizes" aria-hidden="true">
-							{[48, 36, 24].map((size) => <span key={size} style={{ width: size, height: size, background: `linear-gradient(135deg, ${background.from}, ${background.to})` }}>{snapshot ? <img src={snapshot} alt="" /> : null}</span>)}
-						</div>
-
-						<div className="project-icon-editor__preview-actions">
+					<div className="project-icon-editor__preview-actions">
 							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={resetView} disabled={previewStatus !== "ready"}>
 								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 									<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>

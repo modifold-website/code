@@ -310,7 +310,7 @@ export const renderProjectIconThumbnail = (asset, size = 160) => {
 	return request;
 };
 
-const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, background, cameraSettings, sceneSettings, onSnapshot, onStatusChange }, forwardedRef) {
+const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, background, cameraSettings, sceneSettings, onStatusChange }, forwardedRef) {
 	const containerRef = useRef(null);
 	const rendererRef = useRef(null);
 	const composerRef = useRef(null);
@@ -406,7 +406,6 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		}
 
 		let disposed = false;
-		let snapshotFrame = 0;
 		let releaseAmbientOcclusionMaterials = null;
 		const container = containerRef.current;
 		const renderer = getPreviewRenderer();
@@ -472,29 +471,12 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		rimLight.position.set(-5, 3, -4);
 		scene.add(rimLight);
 
-		const publishSnapshot = () => {
-			if(!onSnapshot || disposed || snapshotFrame) {
-				return;
-			}
-
-			snapshotFrame = window.requestAnimationFrame(() => {
-				snapshotFrame = 0;
-
-				try {
-					const preview = compositePreview(renderer.domElement, backgroundRef.current, 160);
-					onSnapshot(preview.toDataURL("image/png"));
-				} catch {}
-			});
-		};
-
 		function render() {
 			if(disposed) {
 				return;
 			}
 
 			composer.render();
-
-			publishSnapshot();
 		}
 
 		rendererRef.current = renderer;
@@ -624,10 +606,6 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 
 		return () => {
 			disposed = true;
-			if(snapshotFrame) {
-				window.cancelAnimationFrame(snapshotFrame);
-			}
-
 			resizeObserver.disconnect();
 			controls.removeEventListener("change", render);
 			controls.dispose();
@@ -652,7 +630,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			applyCameraSettingsRef.current = null;
 			applySceneSettingsRef.current = null;
 		};
-	}, [asset, onSnapshot, onStatusChange]);
+	}, [asset, onStatusChange]);
 
 	return <div ref={containerRef} className={`project-icon-canvas project-icon-canvas--${status}`} />;
 });
