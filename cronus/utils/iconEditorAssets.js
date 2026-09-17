@@ -158,6 +158,11 @@ const normalizeReferencedAsset = (value) => {
 	return /^Common\//i.test(entry) ? entry : `Common/${entry}`;
 };
 
+const isPrimaryTexturePath = (entry) => {
+	const fileName = path.posix.basename(String(entry || "")).toLowerCase();
+	return fileName !== "empty.png" && !/^eyes?[_-]/.test(fileName);
+};
+
 const collectModelTextureReferences = (value, entries, references, depth = 0) => {
 	if(!value || typeof value !== "object" || depth > 12) {
 		return;
@@ -168,7 +173,7 @@ const collectModelTextureReferences = (value, entries, references, depth = 0) =>
 		const textureValue = value.Texture || value.texture || value.CustomModelTexture || value.customModelTexture || value.ItemTexture || value.itemTexture;
 		const modelPath = typeof modelValue === "string" ? normalizeReferencedAsset(modelValue) : null;
 		const texturePath = typeof textureValue === "string" ? normalizeReferencedAsset(textureValue) : null;
-		if(modelPath?.toLowerCase().endsWith(".blockymodel") && texturePath?.toLowerCase().endsWith(".png") && entries.has(modelPath) && entries.has(texturePath) && !references.has(modelPath)) {
+		if(modelPath?.toLowerCase().endsWith(".blockymodel") && texturePath?.toLowerCase().endsWith(".png") && isPrimaryTexturePath(texturePath) && entries.has(modelPath) && entries.has(texturePath) && !references.has(modelPath)) {
 			references.set(modelPath, texturePath);
 		}
 	}
@@ -210,9 +215,9 @@ const inspectIconArchive = async (archivePath) => {
 		isRenderableAssetPath(entry) &&
 		(!/^Common\/(?:Characters|NPC)\//i.test(entry) || referencedTextures.has(entry))
 	));
-	const textures = entries.filter((entry) => entry.toLowerCase().endsWith(".png") && isRenderableAssetPath(entry));
+	const textures = entries.filter((entry) => entry.toLowerCase().endsWith(".png") && isRenderableAssetPath(entry) && isPrimaryTexturePath(entry));
 	const generatedIcons = entries.filter((entry) => /\/Icons\/(?:Items|Models)Generated\/.+\.png$/i.test(entry));
-	const assets = models.slice(0, MAX_ICON_ASSETS).map((modelPath) => {
+	const assets = models.map((modelPath) => {
 		const thumbnailPath = findBestEntry(modelPath, generatedIcons, thumbnailScore, 132);
 		const texturePath = referencedTextures.get(modelPath)
 			|| findBestEntry(modelPath, textures, textureScore, 92)
@@ -225,7 +230,7 @@ const inspectIconArchive = async (archivePath) => {
 			texture_path: texturePath,
 			thumbnail_path: thumbnailPath,
 		};
-	});
+	}).filter((asset) => asset.texture_path).slice(0, MAX_ICON_ASSETS);
 	const usedTextures = new Set(assets.map((asset) => asset.texture_path).filter(Boolean));
 	const textureOverrides = textures
 		.filter((texturePath) => !usedTextures.has(texturePath))
