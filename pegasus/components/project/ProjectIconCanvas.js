@@ -15,7 +15,8 @@ const RENDERER_REGISTRY_KEY = Symbol.for("modifold.project-icon-renderers");
 const rendererRegistry = globalThis[RENDERER_REGISTRY_KEY] || { preview: null, thumbnail: null };
 globalThis[RENDERER_REGISTRY_KEY] = rendererRegistry;
 let thumbnailRenderQueue = Promise.resolve();
-const thumbnailCache = new Map();
+const thumbnailCache = rendererRegistry.thumbnailCache || new Map();
+rendererRegistry.thumbnailCache = thumbnailCache;
 
 const hasUsableContext = (renderer) => {
 	try {
@@ -282,15 +283,25 @@ const renderStaticThumbnail = async (asset, size, allowContextRetry = true) => {
 	}
 };
 
+const getThumbnailCacheKey = (asset, size) => `${asset.cacheKey || `${asset.kind}:${asset.modelUrl || "cube"}:${asset.textureUrl || ""}:${asset.sourcePath || ""}`}:${size}`;
+
+export const getCachedProjectIconThumbnail = (cacheKey, size = 160) => thumbnailCache.get(`${cacheKey}:${size}`)?.result || "";
+
 export const renderProjectIconThumbnail = (asset, size = 160) => {
-	const cacheKey = `${asset.kind}:${asset.modelUrl || "cube"}:${asset.textureUrl || ""}:${asset.sourcePath || ""}:${size}`;
-	if(thumbnailCache.has(cacheKey)) {
-		return thumbnailCache.get(cacheKey);
+	const cacheKey = getThumbnailCacheKey(asset, size);
+	const cached = thumbnailCache.get(cacheKey);
+	if(cached) {
+		return cached.result ? Promise.resolve(cached.result) : cached.request;
 	}
 
-	const request = thumbnailRenderQueue.catch(() => undefined).then(() => renderStaticThumbnail(asset, size));
+	const entry = { request: null, result: "" };
+	const request = thumbnailRenderQueue.catch(() => undefined).then(() => renderStaticThumbnail(asset, size)).then((result) => {
+		entry.result = result;
+		return result;
+	});
+	entry.request = request;
 	thumbnailRenderQueue = request;
-	thumbnailCache.set(cacheKey, request);
+	thumbnailCache.set(cacheKey, entry);
 	if(thumbnailCache.size > THUMBNAIL_CACHE_LIMIT) {
 		thumbnailCache.delete(thumbnailCache.keys().next().value);
 	}

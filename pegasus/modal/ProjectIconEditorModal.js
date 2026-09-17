@@ -5,7 +5,7 @@ import Modal from "react-modal";
 import axios from "axios";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
-import ProjectIconCanvas, { renderProjectIconThumbnail } from "@/components/project/ProjectIconCanvas";
+import ProjectIconCanvas, { getCachedProjectIconThumbnail, renderProjectIconThumbnail } from "@/components/project/ProjectIconCanvas";
 import Checkbox from "@/components/ui/Checkbox";
 import { loadCatalogs } from "@/utils/prefabViewer/BlockCatalog";
 
@@ -208,10 +208,15 @@ const resolveVanillaOverrides = (textureOverrides, blocks) => {
 	return resolved;
 };
 
-function AssetThumbnail({ asset, getEntryUrl, alt }) {
+function AssetThumbnail({ asset, getEntryUrl, versionId, alt }) {
 	const rootRef = useRef(null);
-	const [source, setSource] = useState("");
+	const cacheKey = `${versionId}:${asset.kind}:${asset.model_path || asset.official_model_path || "cube"}:${asset.texture_path || ""}`;
+	const [source, setSource] = useState(() => getCachedProjectIconThumbnail(cacheKey));
 	const [visible, setVisible] = useState(false);
+
+	useEffect(() => {
+		setSource(getCachedProjectIconThumbnail(cacheKey));
+	}, [cacheKey]);
 
 	useEffect(() => {
 		if(!rootRef.current || typeof IntersectionObserver === "undefined") {
@@ -236,6 +241,12 @@ function AssetThumbnail({ asset, getEntryUrl, alt }) {
 			return undefined;
 		}
 
+		const cachedSource = getCachedProjectIconThumbnail(cacheKey);
+		if(cachedSource) {
+			setSource(cachedSource);
+			return undefined;
+		}
+
 		const modelRequest = asset.kind === "cube"
 			? Promise.resolve(null)
 			: asset.official_model_path
@@ -249,6 +260,7 @@ function AssetThumbnail({ asset, getEntryUrl, alt }) {
 				modelUrl,
 				textureUrl,
 				sourcePath: asset.model_path || asset.official_model_path || "",
+				cacheKey,
 			});
 		}).then((url) => {
 			if(active) {
@@ -259,7 +271,7 @@ function AssetThumbnail({ asset, getEntryUrl, alt }) {
 		return () => {
 			active = false;
 		};
-	}, [asset, getEntryUrl, visible]);
+	}, [asset, cacheKey, getEntryUrl, visible]);
 
 	if(!source) {
 		return (
@@ -628,7 +640,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 								<div className="project-icon-editor__asset-grid">
 									{assets.map((asset) => (
 										<button key={asset.id} type="button" className={asset.id === selectedAssetId ? "is-selected" : ""} onClick={() => selectAsset(asset.id)} aria-label={asset.name} aria-pressed={asset.id === selectedAssetId} title={asset.name}>
-											<AssetThumbnail asset={asset} getEntryUrl={getEntryUrl} alt="" />
+											<AssetThumbnail asset={asset} getEntryUrl={getEntryUrl} versionId={manifest.version.id} alt="" />
 											
 											{asset.id === selectedAssetId ? <i aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 4 4L19 6"></path></svg></i> : null}
 										</button>
