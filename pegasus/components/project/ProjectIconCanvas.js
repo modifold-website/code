@@ -97,6 +97,53 @@ const prepareIconModel = (model) => {
 	};
 };
 
+const configureAlphaAwareAmbientOcclusion = (root, ambientOcclusionPass) => {
+	const opaqueMap = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1, THREE.RGBAFormat);
+	opaqueMap.needsUpdate = true;
+	opaqueMap.magFilter = THREE.NearestFilter;
+	opaqueMap.minFilter = THREE.NearestFilter;
+	opaqueMap.generateMipmaps = false;
+	const normalMaterial = ambientOcclusionPass.normalMaterial;
+	normalMaterial.map = opaqueMap;
+	normalMaterial.alphaTest = 0.05;
+	normalMaterial.side = THREE.DoubleSide;
+	normalMaterial.onBeforeCompile = (shader) => {
+		shader.fragmentShader = shader.fragmentShader
+			.replace("#include <uv_pars_fragment>", "#include <uv_pars_fragment>\n#include <map_pars_fragment>\n#include <alphatest_pars_fragment>")
+			.replace("vec4 diffuseColor = vec4( 0.0, 0.0, 0.0, opacity );", "vec4 diffuseColor = vec4( 0.0, 0.0, 0.0, opacity );\n#include <map_fragment>\n#include <alphatest_fragment>");
+	};
+	normalMaterial.needsUpdate = true;
+
+	const originalCallbacks = [];
+	root.traverse((object) => {
+		if(!object.isMesh) {
+			return;
+		}
+
+		const originalOnBeforeRender = object.onBeforeRender;
+		originalCallbacks.push([object, originalOnBeforeRender]);
+		object.onBeforeRender = function onBeforeAmbientOcclusionRender(renderer, scene, camera, geometry, material, group) {
+			if(material === normalMaterial) {
+				const sourceMaterial = Array.isArray(this.material)
+					? this.material[group?.materialIndex || 0]
+					: this.material;
+				normalMaterial.map = sourceMaterial?.map || opaqueMap;
+				normalMaterial.alphaTest = Math.max(0.05, Number(sourceMaterial?.alphaTest) || 0);
+			}
+
+			originalOnBeforeRender.call(this, renderer, scene, camera, geometry, material, group);
+		};
+	});
+
+	return () => {
+		for(const [object, originalOnBeforeRender] of originalCallbacks) {
+			object.onBeforeRender = originalOnBeforeRender;
+		}
+
+		opaqueMap.dispose();
+	};
+};
+
 const disposeIconModel = (model) => {
 	model.traverse((child) => {
 		if(!child.isMesh) {
@@ -304,6 +351,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 
 		let disposed = false;
 		let snapshotFrame = 0;
+		let releaseAmbientOcclusionMaterials = null;
 		const container = containerRef.current;
 		const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
 		const scene = new THREE.Scene();
@@ -334,14 +382,14 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		composer = new EffectComposer(renderer);
 		const renderPass = new RenderPass(scene, camera);
 		const ambientOcclusionPass = new GTAOPass(scene, camera, 1, 1);
-		ambientOcclusionPass.blendIntensity = 0.72;
+		ambientOcclusionPass.blendIntensity = 0.6;
 		ambientOcclusionPass.updatePdMaterial({
-			lumaPhi: 8,
-			depthPhi: 2,
-			normalPhi: 4,
-			radius: 8,
-			rings: 2,
-			samples: 16,
+			lumaPhi: 12,
+			depthPhi: 1,
+			normalPhi: 8,
+			radius: 6,
+			rings: 3,
+			samples: 32,
 		});
 		const outputPass = new OutputPass();
 		composer.addPass(renderPass);
@@ -422,7 +470,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 				thickness: Math.max(0.08, radius * 0.5),
 				distanceFallOff: 1,
 				scale: 0.9,
-				samples: 16,
+				samples: 32,
 			});
 
 			const distance = radius / Math.sin((camera.fov * Math.PI) / 360) * 0.779;
@@ -502,6 +550,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			keyLight.shadow.camera.far = radius * 15;
 			keyLight.shadow.normalBias = Math.max(0.001, radius * 0.002);
 			keyLight.shadow.camera.updateProjectionMatrix();
+			releaseAmbientOcclusionMaterials = configureAlphaAwareAmbientOcclusion(scene, ambientOcclusionPass);
 			applyCameraSettingsRef.current();
 			applySceneSettingsRef.current();
 
@@ -526,6 +575,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			resizeObserver.disconnect();
 			controls.removeEventListener("change", render);
 			controls.dispose();
+			releaseAmbientOcclusionMaterials?.();
 			ambientOcclusionPass.dispose();
 			outputPass.dispose();
 			composer.dispose();

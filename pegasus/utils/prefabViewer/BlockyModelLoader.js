@@ -372,7 +372,7 @@ function makeFaceMaterial(texture, shape, tintHex = null) {
 		color: tintHex ? new THREE.Color(tintHex) : 0xffffff,
 		transparent: false,
 		alphaTest: 0.05,
-		alphaToCoverage: true,
+		alphaToCoverage: false,
 		depthTest: true,
 		depthWrite: true,
 		side: THREE.DoubleSide,
