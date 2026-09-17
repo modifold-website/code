@@ -306,10 +306,10 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 	const [customBackground, setCustomBackground] = useState(DEFAULT_CUSTOM_BACKGROUND);
 	const [cameraSettings, setCameraSettings] = useState(DEFAULT_CAMERA_SETTINGS);
 	const [sceneSettings, setSceneSettings] = useState(DEFAULT_SCENE_SETTINGS);
-	const [snapshot, setSnapshot] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [previewStatus, setPreviewStatus] = useState("loading");
+	const [contentScrolled, setContentScrolled] = useState(false);
 	const apiBase = String(process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
 	const selectedAsset = useMemo(() => assets.find((asset) => asset.id === selectedAssetId) || null, [assets, selectedAssetId]);
 	const background = useMemo(() => backgroundId === CUSTOM_BACKGROUND_ID
@@ -397,8 +397,8 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 		setCustomBackground(DEFAULT_CUSTOM_BACKGROUND);
 		setCameraSettings(DEFAULT_CAMERA_SETTINGS);
 		setSceneSettings(DEFAULT_SCENE_SETTINGS);
-		setSnapshot("");
 		setPreviewStatus("loading");
+		setContentScrolled(false);
 
 		const authToken = localStorage.getItem("authToken");
 		Promise.all([
@@ -447,7 +447,6 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 
 		let active = true;
 		setSelectedSource(null);
-		setSnapshot("");
 		setPreviewStatus("loading");
 		const modelRequest = selectedAsset.kind === "cube"
 			? Promise.resolve(null)
@@ -498,6 +497,10 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 		canvasRef.current?.resetView(DEFAULT_CAMERA_SETTINGS);
 	};
 
+	const handleContentScroll = (event) => {
+		setContentScrolled(event.currentTarget.scrollTop > 1);
+	};
+
 	const saveIcon = async () => {
 		if(saving || previewStatus !== "ready") {
 			return;
@@ -540,45 +543,16 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 					</button>
 				</header>
 
-				<div className="modal-window__content project-icon-editor__body">
+				<div className={`modal-window__content project-icon-editor__body${contentScrolled ? " project-icon-editor__body--scrolled" : ""}`} onScroll={handleContentScroll}>
 					<aside className="project-icon-editor__preview-column">
 						<div className="project-icon-editor__preview" style={{ "--icon-background": `linear-gradient(135deg, ${background.from}, ${background.to})` }}>
-							{selectedSource ? <ProjectIconCanvas ref={canvasRef} asset={selectedSource} background={background} cameraSettings={cameraSettings} sceneSettings={sceneSettings} onSnapshot={setSnapshot} onStatusChange={setPreviewStatus} /> : null}
+							{selectedSource ? <ProjectIconCanvas ref={canvasRef} asset={selectedSource} background={background} cameraSettings={cameraSettings} sceneSettings={sceneSettings} onStatusChange={setPreviewStatus} /> : null}
 							
 							{previewStatus === "loading" ? <span className="project-icon-editor__preview-status">{t("loadingPreview")}</span> : null}
 							
 							{previewStatus === "error" ? <span className="project-icon-editor__preview-status">{t("previewError")}</span> : null}
 						</div>
 
-						<div className="project-icon-editor__sizes" aria-hidden="true">
-							{[48, 36, 24].map((size) => <span key={size} style={{ width: size, height: size, background: `linear-gradient(135deg, ${background.from}, ${background.to})` }}>{snapshot ? <img src={snapshot} alt="" /> : null}</span>)}
-						</div>
-
-						<div className="project-icon-editor__preview-actions">
-							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={resetView} disabled={previewStatus !== "ready"}>
-								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-									<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
-									<path d="M3 3v5h5"></path>
-								</svg>
-								
-								{t("resetView")}
-							</button>
-
-							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={randomize} disabled={!assets.length}>
-								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-									<path d="m18 14 4 4-4 4"></path>
-									<path d="m18 2 4 4-4 4"></path>
-									<path d="M2 18h1.5a5 5 0 0 0 4-2l5-8a5 5 0 0 1 4-2H22"></path>
-									<path d="M2 6h1.5a5 5 0 0 1 4 2l1 1.5"></path>
-									<path d="M14.5 15.5a5 5 0 0 0 2 2.5H22"></path>
-								</svg>
-								
-								{t("randomize")}
-							</button>
-						</div>
-					</aside>
-
-					<main className="project-icon-editor__controls">
 						<section className="project-icon-editor__section">
 							<h3>{t("background")}</h3>
 
@@ -624,7 +598,9 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 								</div>
 							) : null}
 						</section>
+					</aside>
 
+					<main className="project-icon-editor__controls">
 						<section className="project-icon-editor__section project-icon-editor__symbols">
 							<div className="project-icon-editor__section-heading">
 								<h3>{t("symbols")}</h3>
@@ -674,27 +650,35 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 				</div>
 
 				<footer className="project-icon-editor__footer">
-					<p>
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-							<circle cx="12" cy="12" r="10"></circle>
-							<path d="M12 16v-4"></path>
-							<path d="M12 8h.01"></path>
-						</svg>
-						
-						{t("footerHint")}
-					</p>
+					<div>
+						<button type="button" className="button button--size-m button--type-minimal button--with-icon button--active-transform" onClick={resetView} disabled={previewStatus !== "ready"}>
+							<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+								<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+								<path d="M3 3v5h5"></path>
+							</svg>
+							
+							{t("resetView")}
+						</button>
+
+						<button type="button" className="button button--size-m button--type-minimal button--with-icon button--active-transform" onClick={randomize} disabled={!assets.length}>
+							<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+								<path d="m18 14 4 4-4 4"></path>
+								<path d="m18 2 4 4-4 4"></path>
+								<path d="M2 18h1.5a5 5 0 0 0 4-2l5-8a5 5 0 0 1 4-2H22"></path>
+								<path d="M2 6h1.5a5 5 0 0 1 4 2l1 1.5"></path>
+								<path d="M14.5 15.5a5 5 0 0 0 2 2.5H22"></path>
+							</svg>
+							
+							{t("randomize")}
+						</button>
+					</div>
 					
 					<div>
 						<button type="button" className="button button--size-m button--type-minimal" onClick={onRequestClose} disabled={saving}>
 							{t("cancel")}
 						</button>
 						
-						<button type="button" className="button button--size-m button--type-primary button--with-icon" onClick={saveIcon} disabled={saving || previewStatus !== "ready"}>
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-								<path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8L15.2 3Z"></path><path d="M17 21v-8H7v8"></path>
-								<path d="M7 3v5h8"></path>
-							</svg>
-							
+						<button type="button" className="button button--size-m button--type-primary" onClick={saveIcon} disabled={saving || previewStatus !== "ready"}>
 							{saving ? t("saving") : t("save")}
 						</button>
 					</div>
