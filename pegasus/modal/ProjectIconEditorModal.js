@@ -547,28 +547,6 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 							{previewStatus === "error" ? <span className="project-icon-editor__preview-status">{t("previewError")}</span> : null}
 						</div>
 
-					<div className="project-icon-editor__preview-actions">
-							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={resetView} disabled={previewStatus !== "ready"}>
-								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-									<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
-									<path d="M3 3v5h5"></path>
-								</svg>
-								
-								{t("resetView")}
-							</button>
-
-							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={randomize} disabled={!assets.length}>
-								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-									<path d="m18 14 4 4-4 4"></path>
-									<path d="m18 2 4 4-4 4"></path>
-									<path d="M2 18h1.5a5 5 0 0 0 4-2l5-8a5 5 0 0 1 4-2H22"></path>
-									<path d="M2 6h1.5a5 5 0 0 1 4 2l1 1.5"></path>
-									<path d="M14.5 15.5a5 5 0 0 0 2 2.5H22"></path>
-								</svg>
-								
-								{t("randomize")}
-							</button>
-						</div>
 					</aside>
 
 					<main className="project-icon-editor__controls">
@@ -667,15 +645,28 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 				</div>
 
 				<footer className="project-icon-editor__footer">
-					<p>
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-							<circle cx="12" cy="12" r="10"></circle>
-							<path d="M12 16v-4"></path>
-							<path d="M12 8h.01"></path>
-						</svg>
-						
-						{t("footerHint")}
-					</p>
+					<div>
+						<button type="button" className="button button--size-m button--type-minimal button--with-icon button--active-transform" onClick={resetView} disabled={previewStatus !== "ready"}>
+							<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+								<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+								<path d="M3 3v5h5"></path>
+							</svg>
+							
+							{t("resetView")}
+						</button>
+
+						<button type="button" className="button button--size-m button--type-minimal button--with-icon button--active-transform" onClick={randomize} disabled={!assets.length}>
+							<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+								<path d="m18 14 4 4-4 4"></path>
+								<path d="m18 2 4 4-4 4"></path>
+								<path d="M2 18h1.5a5 5 0 0 0 4-2l5-8a5 5 0 0 1 4-2H22"></path>
+								<path d="M2 6h1.5a5 5 0 0 1 4 2l1 1.5"></path>
+								<path d="M14.5 15.5a5 5 0 0 0 2 2.5H22"></path>
+							</svg>
+							
+							{t("randomize")}
+						</button>
+					</div>
 					
 					<div>
 						<button type="button" className="button button--size-m button--type-minimal" onClick={onRequestClose} disabled={saving}>

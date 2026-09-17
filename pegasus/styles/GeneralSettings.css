@@ -147,15 +147,6 @@
     font-weight: 500;
     margin: 0 auto;
 }
-.project-icon-editor__preview-actions {
-	display: grid;
-	grid-template-columns: 1fr;
-	gap: 8px;
-	margin-top: 16px;
-}
-.project-icon-editor__preview-actions .button {
-	width: 100%;
-}
 .project-icon-editor__section h3 {
     font-size: 16px;
     font-weight: 500;
@@ -501,9 +492,6 @@
 	.project-icon-editor__preview {
 		border-radius: 20px;
 	}
-	.project-icon-editor__preview-actions {
-		margin-top: 0;
-	}
 	.project-icon-editor__controls {
 		overflow: visible;
 	}
@@ -542,10 +530,8 @@
 	}
 	.project-icon-editor__footer {
 		align-items: stretch;
+		flex-direction: column;
 		padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
-	}
-	.project-icon-editor__footer p {
-		display: none;
 	}
 	.project-icon-editor__footer > div {
 		width: 100%;
