@@ -309,6 +309,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 	const [loading, setLoading] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [previewStatus, setPreviewStatus] = useState("loading");
+	const [contentScrolled, setContentScrolled] = useState(false);
 	const apiBase = String(process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
 	const selectedAsset = useMemo(() => assets.find((asset) => asset.id === selectedAssetId) || null, [assets, selectedAssetId]);
 	const background = useMemo(() => backgroundId === CUSTOM_BACKGROUND_ID
@@ -397,6 +398,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 		setCameraSettings(DEFAULT_CAMERA_SETTINGS);
 		setSceneSettings(DEFAULT_SCENE_SETTINGS);
 		setPreviewStatus("loading");
+		setContentScrolled(false);
 
 		const authToken = localStorage.getItem("authToken");
 		Promise.all([
@@ -495,6 +497,10 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 		canvasRef.current?.resetView(DEFAULT_CAMERA_SETTINGS);
 	};
 
+	const handleContentScroll = (event) => {
+		setContentScrolled(event.currentTarget.scrollTop > 1);
+	};
+
 	const saveIcon = async () => {
 		if(saving || previewStatus !== "ready") {
 			return;
@@ -537,7 +543,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 					</button>
 				</header>
 
-				<div className="modal-window__content project-icon-editor__body">
+				<div className={`modal-window__content project-icon-editor__body${contentScrolled ? " project-icon-editor__body--scrolled" : ""}`} onScroll={handleContentScroll}>
 					<aside className="project-icon-editor__preview-column">
 						<div className="project-icon-editor__preview" style={{ "--icon-background": `linear-gradient(135deg, ${background.from}, ${background.to})` }}>
 							{selectedSource ? <ProjectIconCanvas ref={canvasRef} asset={selectedSource} background={background} cameraSettings={cameraSettings} sceneSettings={sceneSettings} onStatusChange={setPreviewStatus} /> : null}
@@ -547,9 +553,6 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 							{previewStatus === "error" ? <span className="project-icon-editor__preview-status">{t("previewError")}</span> : null}
 						</div>
 
-					</aside>
-
-					<main className="project-icon-editor__controls">
 						<section className="project-icon-editor__section">
 							<h3>{t("background")}</h3>
 
@@ -595,7 +598,9 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 								</div>
 							) : null}
 						</section>
+					</aside>
 
+					<main className="project-icon-editor__controls">
 						<section className="project-icon-editor__section project-icon-editor__symbols">
 							<div className="project-icon-editor__section-heading">
 								<h3>{t("symbols")}</h3>
