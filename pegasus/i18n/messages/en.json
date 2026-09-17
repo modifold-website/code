@@ -1561,6 +1561,7 @@
         "focus": "Focus height",
         "light": "Light",
         "lightAngle": "Light direction",
+        "ambientOcclusion": "Ambient occlusion",
         "softShadows": "Soft shadows",
         "symbols": "Models from the project",
         "loadingAssets": "Finding models and textures in the latest version…",

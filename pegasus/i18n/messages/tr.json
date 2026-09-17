@@ -1383,6 +1383,7 @@
         "focus": "Odak yüksekliği",
         "light": "Işık",
         "lightAngle": "Işık yönü",
+        "ambientOcclusion": "Ortam perdeleme",
         "softShadows": "Yumuşak gölgeler",
         "symbols": "Projedeki modeller",
         "loadingAssets": "Son sürümdeki modeller ve dokular aranıyor…",

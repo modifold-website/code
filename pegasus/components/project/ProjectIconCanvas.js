@@ -3,6 +3,10 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { loadBlockyModel } from "@/utils/prefabViewer/BlockyModelLoader";
 
 const EXPORT_SIZE = 512;
@@ -206,6 +210,7 @@ export const renderProjectIconThumbnail = (asset, size = 160) => {
 const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, background, cameraSettings, sceneSettings, onSnapshot, onStatusChange }, forwardedRef) {
 	const containerRef = useRef(null);
 	const rendererRef = useRef(null);
+	const composerRef = useRef(null);
 	const cameraRef = useRef(null);
 	const controlsRef = useRef(null);
 	const sceneRef = useRef(null);
@@ -250,6 +255,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 	useImperativeHandle(forwardedRef, () => ({
 		capture: async () => {
 			const renderer = rendererRef.current;
+			const composer = composerRef.current;
 			const scene = sceneRef.current;
 			const camera = cameraRef.current;
 			if(!renderer || !scene || !camera || status !== "ready") {
@@ -260,6 +266,8 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			const pixelRatio = renderer.getPixelRatio();
 			renderer.setPixelRatio(1);
 			renderer.setSize(EXPORT_SIZE, EXPORT_SIZE, false);
+			composer?.setPixelRatio(1);
+			composer?.setSize(EXPORT_SIZE, EXPORT_SIZE);
 			camera.aspect = 1;
 			camera.updateProjectionMatrix();
 			renderRef.current?.();
@@ -267,6 +275,8 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			const blob = await canvasToBlob(output);
 			renderer.setPixelRatio(pixelRatio);
 			renderer.setSize(size.x, size.y, false);
+			composer?.setPixelRatio(pixelRatio);
+			composer?.setSize(size.x, size.y);
 			camera.aspect = size.x / Math.max(1, size.y);
 			camera.updateProjectionMatrix();
 			renderRef.current?.();
@@ -301,12 +311,14 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		scene.background = sceneBackground;
 		const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 500);
 		const controls = new OrbitControls(camera, renderer.domElement);
+		let composer = null;
 		const resizeObserver = new ResizeObserver(() => {
 			const width = Math.max(1, container.clientWidth);
 			const height = Math.max(1, container.clientHeight);
 			camera.aspect = width / height;
 			camera.updateProjectionMatrix();
 			renderer.setSize(width, height, false);
+			composer?.setSize(width, height);
 			render();
 		});
 
@@ -318,6 +330,23 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		renderer.outputColorSpace = THREE.SRGBColorSpace;
 		renderer.domElement.setAttribute("aria-hidden", "true");
 		container.replaceChildren(renderer.domElement);
+
+		composer = new EffectComposer(renderer);
+		const renderPass = new RenderPass(scene, camera);
+		const ambientOcclusionPass = new GTAOPass(scene, camera, 1, 1);
+		ambientOcclusionPass.blendIntensity = 0.72;
+		ambientOcclusionPass.updatePdMaterial({
+			lumaPhi: 8,
+			depthPhi: 2,
+			normalPhi: 4,
+			radius: 8,
+			rings: 2,
+			samples: 16,
+		});
+		const outputPass = new OutputPass();
+		composer.addPass(renderPass);
+		composer.addPass(ambientOcclusionPass);
+		composer.addPass(outputPass);
 
 		controls.enableDamping = false;
 		controls.enablePan = true;
@@ -359,12 +388,13 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 				return;
 			}
 
-			renderer.render(scene, camera);
+			composer.render();
 
 			publishSnapshot();
 		}
 
 		rendererRef.current = renderer;
+		composerRef.current = composer;
 		cameraRef.current = camera;
 		controlsRef.current = controls;
 		sceneRef.current = scene;
@@ -386,6 +416,14 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 
 			const { size, center, radius } = prepareIconModel(model);
 			scene.add(model);
+			ambientOcclusionPass.updateGtaoMaterial({
+				radius: Math.max(0.08, radius * 0.22),
+				distanceExponent: 1.5,
+				thickness: Math.max(0.08, radius * 0.5),
+				distanceFallOff: 1,
+				scale: 0.9,
+				samples: 16,
+			});
 
 			const distance = radius / Math.sin((camera.fov * Math.PI) / 360) * 0.779;
 			const target = new THREE.Vector3(0, center.y * 0.92, 0);
@@ -440,6 +478,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 				const softShadows = settings.softShadows !== false;
 				keyLight.castShadow = softShadows;
 				shadow.visible = softShadows;
+				ambientOcclusionPass.enabled = settings.ambientOcclusion !== false;
 				render();
 			};
 
@@ -487,10 +526,14 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			resizeObserver.disconnect();
 			controls.removeEventListener("change", render);
 			controls.dispose();
+			ambientOcclusionPass.dispose();
+			outputPass.dispose();
+			composer.dispose();
 			sceneBackgroundRef.current?.dispose();
 			renderer.dispose();
 			container.replaceChildren();
 			rendererRef.current = null;
+			composerRef.current = null;
 			cameraRef.current = null;
 			controlsRef.current = null;
 			sceneRef.current = null;

@@ -33,7 +33,7 @@ const BACKGROUNDS = [
 const CUSTOM_BACKGROUND_ID = "custom";
 const DEFAULT_CUSTOM_BACKGROUND = { from: "#e5f0ff", to: "#c9dffc" };
 const DEFAULT_CAMERA_SETTINGS = { zoom: 0.8, focus: 0 };
-const DEFAULT_SCENE_SETTINGS = { lightIntensity: 1, lightAngle: 35, softShadows: true };
+const DEFAULT_SCENE_SETTINGS = { lightIntensity: 1, lightAngle: 35, ambientOcclusion: true, softShadows: true };
 const FILE_REQUEST_INTERVAL_MS = 250;
 const FILE_REQUEST_MAX_RETRIES = 3;
 
@@ -648,6 +648,10 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 								<RangeSlider label={t("light")} value={sceneSettings.lightIntensity} min={0.4} max={1.6} step={0.05} formatValue={(value) => `${Math.round(value * 100)}%`} onChange={(value) => setSceneSettings((current) => ({ ...current, lightIntensity: value }))} />
 
 								<RangeSlider label={t("lightAngle")} value={sceneSettings.lightAngle} min={-180} max={180} step={5} formatValue={(value) => `${Math.round(value)}°`} onChange={(value) => setSceneSettings((current) => ({ ...current, lightAngle: value }))} />
+
+								<Checkbox checked={sceneSettings.ambientOcclusion} onChange={(checked) => setSceneSettings((current) => ({ ...current, ambientOcclusion: checked }))} ariaLabel={t("ambientOcclusion")} className="project-icon-editor__toggle">
+									{t("ambientOcclusion")}
+								</Checkbox>
 
 								<Checkbox checked={sceneSettings.softShadows} onChange={(checked) => setSceneSettings((current) => ({ ...current, softShadows: checked }))} ariaLabel={t("softShadows")} className="project-icon-editor__toggle">
 									{t("softShadows")}

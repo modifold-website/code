@@ -1383,6 +1383,7 @@
         "focus": "Altura do foco",
         "light": "Luz",
         "lightAngle": "Direção da luz",
+        "ambientOcclusion": "Oclusão de ambiente",
         "softShadows": "Sombras suaves",
         "symbols": "Modelos do projeto",
         "loadingAssets": "Procurando modelos e texturas na versão mais recente…",

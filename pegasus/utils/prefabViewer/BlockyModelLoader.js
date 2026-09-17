@@ -287,12 +287,20 @@ function faceUvsThree(layout, faceW, faceH, denomW, denomH) {
 	}
 
 	const [x0, y0, x1, y1] = result;
+	const insetRange = (start, end) => {
+		const delta = end - start;
+		const inset = Math.min(0.5, Math.abs(delta) * 0.5);
+		const direction = Math.sign(delta) || 1;
+		return [start + inset * direction, end - inset * direction];
+	};
+	const [safeX0, safeX1] = insetRange(x0, x1);
+	const [safeY0, safeY1] = insetRange(y0, y1);
 	const toUv = (x, y) => [x / denomW, 1 - y / denomH];
 	if(transposeCorners) {
-		return [toUv(x0, y0), toUv(x0, y1), toUv(x1, y0), toUv(x1, y1)];
+		return [toUv(safeX0, safeY0), toUv(safeX0, safeY1), toUv(safeX1, safeY0), toUv(safeX1, safeY1)];
 	}
 
-	return [toUv(x0, y0), toUv(x1, y0), toUv(x0, y1), toUv(x1, y1)];
+	return [toUv(safeX0, safeY0), toUv(safeX1, safeY0), toUv(safeX0, safeY1), toUv(safeX1, safeY1)];
 }
 
 function measureUvLayout(nodes) {
