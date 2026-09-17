@@ -34,6 +34,25 @@ const CUSTOM_BACKGROUND_ID = "custom";
 const DEFAULT_CUSTOM_BACKGROUND = { from: "#e5f0ff", to: "#c9dffc" };
 const DEFAULT_CAMERA_SETTINGS = { zoom: 0.8, focus: 0 };
 const DEFAULT_SCENE_SETTINGS = { lightIntensity: 1, lightAngle: 35, softShadows: true };
+const FILE_REQUEST_INTERVAL_MS = 250;
+const FILE_REQUEST_MAX_RETRIES = 3;
+
+const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
+
+const getRetryDelay = (response, attempt) => {
+	const retryAfter = response.headers.get("retry-after");
+	const retryAfterSeconds = Number(retryAfter);
+	if(Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+		return retryAfterSeconds * 1000;
+	}
+
+	const retryAt = Date.parse(retryAfter || "");
+	if(Number.isFinite(retryAt)) {
+		return Math.max(0, retryAt - Date.now());
+	}
+
+	return 1000 * (2 ** attempt);
+};
 
 const normalizeCatalogPath = (value) => String(value || "")
 	.replace(/^https?:\/\/[^/]+\/hytale-assets\//i, "")
@@ -266,6 +285,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 	const canvasRef = useRef(null);
 	const objectUrlsRef = useRef(new Map());
 	const requestCacheRef = useRef(new Map());
+	const nextFileRequestAtRef = useRef(0);
 	const [manifest, setManifest] = useState(null);
 	const [assets, setAssets] = useState([]);
 	const [selectedAssetId, setSelectedAssetId] = useState("");
@@ -283,6 +303,26 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 	const background = useMemo(() => backgroundId === CUSTOM_BACKGROUND_ID
 		? { id: CUSTOM_BACKGROUND_ID, ...customBackground }
 		: BACKGROUNDS.find((preset) => preset.id === backgroundId) || BACKGROUNDS[0], [backgroundId, customBackground]);
+	const fetchEntryFile = useCallback(async (url, options) => {
+		const fetchAttempt = async (attempt) => {
+			const now = Date.now();
+			const requestAt = Math.max(now, nextFileRequestAtRef.current);
+			nextFileRequestAtRef.current = requestAt + FILE_REQUEST_INTERVAL_MS;
+			if(requestAt > now) {
+				await wait(requestAt - now);
+			}
+
+			const response = await fetch(url, options);
+			if(response.status !== 429 || attempt >= FILE_REQUEST_MAX_RETRIES) {
+				return response;
+			}
+
+			await wait(getRetryDelay(response, attempt));
+			return fetchAttempt(attempt + 1);
+		};
+
+		return fetchAttempt(0);
+	}, []);
 
 	const getEntryUrl = useCallback((entryPath) => {
 		if(!entryPath || !manifest?.version?.id) {
@@ -294,7 +334,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 			return requestCacheRef.current.get(key);
 		}
 
-		const request = fetch(`${apiBase}/v2/icon-editor/${encodeURIComponent(project.slug)}/file?version=${encodeURIComponent(manifest.version.id)}&path=${encodeURIComponent(entryPath)}`, {
+		const request = fetchEntryFile(`${apiBase}/v2/icon-editor/${encodeURIComponent(project.slug)}/file?version=${encodeURIComponent(manifest.version.id)}&path=${encodeURIComponent(entryPath)}`, {
 			headers: { Authorization: `Bearer ${localStorage.getItem("authToken")}` },
 		}).then(async (response) => {
 			if(!response.ok) {
@@ -311,7 +351,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 
 		requestCacheRef.current.set(key, request);
 		return request;
-	}, [apiBase, manifest?.version?.id, project.slug]);
+	}, [apiBase, fetchEntryFile, manifest?.version?.id, project.slug]);
 
 	useEffect(() => () => {
 		for(const url of objectUrlsRef.current.values()) {
@@ -320,6 +360,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 
 		objectUrlsRef.current.clear();
 		requestCacheRef.current.clear();
+		nextFileRequestAtRef.current = 0;
 	}, []);
 
 	useEffect(() => {
@@ -334,6 +375,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 
 		objectUrlsRef.current.clear();
 		requestCacheRef.current.clear();
+		nextFileRequestAtRef.current = 0;
 		setLoading(true);
 		setManifest(null);
 		setAssets([]);
@@ -501,7 +543,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 						</div>
 
 						<div className="project-icon-editor__preview-actions">
-							<button type="button" className="button button--size-l button--type-minimal button--with-icon" onClick={resetView} disabled={previewStatus !== "ready"}>
+							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={resetView} disabled={previewStatus !== "ready"}>
 								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 									<path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
 									<path d="M3 3v5h5"></path>
@@ -510,7 +552,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 								{t("resetView")}
 							</button>
 
-							<button type="button" className="button button--size-l button--type-minimal button--with-icon" onClick={randomize} disabled={!assets.length}>
+							<button type="button" className="button button--size-l button--type-minimal button--with-icon button--active-transform" onClick={randomize} disabled={!assets.length}>
 								<svg style={{ width: "20px", height: "20px" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
 									<path d="m18 14 4 4-4 4"></path>
 									<path d="m18 2 4 4-4 4"></path>

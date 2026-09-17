@@ -37,6 +37,11 @@ const recommendedRoutes = require("./routes/v1/recommended");
 const modJamsRoutes = require("./routes/v1/mod-jams");
 const importsRoutesV2 = require("./routes/v2/imports");
 
+const isIconEditorFileRequest = (req) => (
+	req.method === "GET" &&
+	/^\/v2\/icon-editor\/[^/?]+\/file(?:[/?]|$)/.test(req.originalUrl || req.url || "")
+);
+
 const startServer = async () => {
 	validateStorageConfiguration();
 	await discoverRoutesV2.initializeDiscover();
@@ -60,7 +65,7 @@ const startServer = async () => {
 			"Authorization",
 			"X-Request-ID",
 		],
-		exposedHeaders: ["Content-Length", "Content-Range", "X-Request-ID"],
+		exposedHeaders: ["Content-Length", "Content-Range", "Retry-After", "X-Request-ID"],
 		credentials: true,
 	}));
 
@@ -149,9 +154,14 @@ const startServer = async () => {
 		burstSize: Number(process.env.RATE_LIMIT_IMPORTS_BURST_SIZE) || 6,
 		expirySeconds: Number(process.env.RATE_LIMIT_EXPIRY_SECONDS) || 300,
 	});
-
 	if(rateLimitEnabled) {
-		app.use(globalRateLimiter);
+		app.use((req, res, next) => {
+			if(isIconEditorFileRequest(req)) {
+				return next();
+			}
+
+			return globalRateLimiter(req, res, next);
+		});
 	}
 
 	app.get("/health", (req, res) => {
@@ -178,7 +188,13 @@ const startServer = async () => {
 
 		return projectsLimiterMiddleware(req, res, next);
 	}, prefabRoutesV2);
-	app.use("/v2/icon-editor", projectsLimiterMiddleware, iconEditorRoutesV2);
+	app.use("/v2/icon-editor", (req, res, next) => {
+		if(isIconEditorFileRequest(req)) {
+			return next();
+		}
+
+		return projectsLimiterMiddleware(req, res, next);
+	}, iconEditorRoutesV2);
 	mountV1Route("/auth", authRoutes);
 	mountV1Route("/users", usersRoutes);
 	mountV1Route("/subscriptions", subscriptionRoutes);
