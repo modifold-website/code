@@ -11,9 +11,47 @@ import { loadBlockyModel } from "@/utils/prefabViewer/BlockyModelLoader";
 
 const EXPORT_SIZE = 512;
 const THUMBNAIL_CACHE_LIMIT = 160;
-let thumbnailRenderer = null;
+const RENDERER_REGISTRY_KEY = Symbol.for("modifold.project-icon-renderers");
+const rendererRegistry = globalThis[RENDERER_REGISTRY_KEY] || { preview: null, thumbnail: null };
+globalThis[RENDERER_REGISTRY_KEY] = rendererRegistry;
 let thumbnailRenderQueue = Promise.resolve();
 const thumbnailCache = new Map();
+
+const hasUsableContext = (renderer) => {
+	try {
+		return Boolean(renderer && !renderer.getContext().isContextLost());
+	} catch {
+		return false;
+	}
+};
+
+const getThumbnailRenderer = () => {
+	if(hasUsableContext(rendererRegistry.thumbnail)) {
+		return rendererRegistry.thumbnail;
+	}
+
+	const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+	renderer.setPixelRatio(1);
+	renderer.setClearColor(0x000000, 0);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFShadowMap;
+	renderer.outputColorSpace = THREE.SRGBColorSpace;
+	rendererRegistry.thumbnail = renderer;
+	return renderer;
+};
+
+const getPreviewRenderer = () => {
+	if(hasUsableContext(rendererRegistry.preview)) {
+		return rendererRegistry.preview;
+	}
+
+	const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFShadowMap;
+	renderer.outputColorSpace = THREE.SRGBColorSpace;
+	rendererRegistry.preview = renderer;
+	return renderer;
+};
 
 const fillBackground = (context, background, size) => {
 	const gradient = context.createLinearGradient(0, 0, size, size);
@@ -168,17 +206,8 @@ const disposeIconModel = (model) => {
 	});
 };
 
-const renderStaticThumbnail = async (asset, size) => {
-	if(!thumbnailRenderer) {
-		thumbnailRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
-		thumbnailRenderer.setPixelRatio(1);
-		thumbnailRenderer.setClearColor(0x000000, 0);
-		thumbnailRenderer.shadowMap.enabled = true;
-		thumbnailRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
-		thumbnailRenderer.outputColorSpace = THREE.SRGBColorSpace;
-	}
-
-	const renderer = thumbnailRenderer;
+const renderStaticThumbnail = async (asset, size, allowContextRetry = true) => {
+	const renderer = getThumbnailRenderer();
 	const scene = new THREE.Scene();
 	const camera = new THREE.PerspectiveCamera(34, 1, 0.01, 500);
 	const model = await loadIconModel(asset);
@@ -227,14 +256,30 @@ const renderStaticThumbnail = async (asset, size) => {
 	keyLight.shadow.camera.far = radius * 15;
 	keyLight.shadow.camera.updateProjectionMatrix();
 
-	renderer.setSize(size, size, false);
-	renderer.render(scene, camera);
-	const result = renderer.domElement.toDataURL("image/png");
-	disposeIconModel(model);
-	shadow.geometry.dispose();
-	shadow.material.dispose();
-	scene.clear();
-	return result;
+	try {
+		renderer.setSize(size, size, false);
+		renderer.render(scene, camera);
+		if(!hasUsableContext(renderer)) {
+			throw new Error("thumbnail_context_lost");
+		}
+
+		return renderer.domElement.toDataURL("image/png");
+	} catch(error) {
+		if(rendererRegistry.thumbnail === renderer) {
+			rendererRegistry.thumbnail = null;
+		}
+
+		if(allowContextRetry) {
+			return renderStaticThumbnail(asset, size, false);
+		}
+
+		throw error;
+	} finally {
+		disposeIconModel(model);
+		shadow.geometry.dispose();
+		shadow.material.dispose();
+		scene.clear();
+	}
 };
 
 export const renderProjectIconThumbnail = (asset, size = 160) => {
@@ -353,7 +398,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		let snapshotFrame = 0;
 		let releaseAmbientOcclusionMaterials = null;
 		const container = containerRef.current;
-		const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+		const renderer = getPreviewRenderer();
 		const scene = new THREE.Scene();
 		const sceneBackground = createSceneBackground(backgroundRef.current);
 		scene.background = sceneBackground;
@@ -374,7 +419,7 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 		renderer.setPixelRatio(pixelRatio);
 		renderer.setClearColor(0x000000, 1);
 		renderer.shadowMap.enabled = true;
-		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+		renderer.shadowMap.type = THREE.PCFShadowMap;
 		renderer.outputColorSpace = THREE.SRGBColorSpace;
 		renderer.domElement.setAttribute("aria-hidden", "true");
 		container.replaceChildren(renderer.domElement);
@@ -580,7 +625,8 @@ const ProjectIconCanvas = forwardRef(function ProjectIconCanvas({ asset, backgro
 			outputPass.dispose();
 			composer.dispose();
 			sceneBackgroundRef.current?.dispose();
-			renderer.dispose();
+			renderer.setRenderTarget(null);
+			renderer.renderLists.dispose();
 			container.replaceChildren();
 			rendererRef.current = null;
 			composerRef.current = null;
