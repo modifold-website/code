@@ -673,12 +673,7 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 							{t("cancel")}
 						</button>
 						
-						<button type="button" className="button button--size-m button--type-primary button--with-icon" onClick={saveIcon} disabled={saving || previewStatus !== "ready"}>
-							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-								<path d="M15.2 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8.8L15.2 3Z"></path><path d="M17 21v-8H7v8"></path>
-								<path d="M7 3v5h8"></path>
-							</svg>
-							
+						<button type="button" className="button button--size-m button--type-primary" onClick={saveIcon} disabled={saving || previewStatus !== "ready"}>
 							{saving ? t("saving") : t("save")}
 						</button>
 					</div>
