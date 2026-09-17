@@ -3,7 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import ProjectSettings from "@/components/project/settings/ProjectSettings";
 import { getServerApiBase, serverApiFetch } from "@/utils/api/server";
 import { getProjectBasePath, isBuildContentProjectType } from "@/utils/projectRoutes";
-import { getProjectSettingsForRequest } from "@/utils/projects/server";
+import { getProjectBySlug, getProjectSettingsForRequest } from "@/utils/projects/server";
 
 const serverApiBase = getServerApiBase();
 
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }) {
 
 export default async function Page({ params }) {
     const { slug } = await params;
-    const { project: settingsData, status } = await getProjectSettingsForRequest(slug);
+    const { project: settingsData, authToken, status } = await getProjectSettingsForRequest(slug);
 
     if(status === 401) {
         redirect("/");
@@ -64,10 +64,17 @@ export default async function Page({ params }) {
 			redirect(`${baseProjectPath}/settings/description`);
 		}
 	}
+
+	let versionsCount = settingsData?.versions_count;
+	if(versionsCount === undefined || versionsCount === null) {
+		const projectWithVersions = await getProjectBySlug(slug, authToken, 1);
+		versionsCount = Array.isArray(projectWithVersions?.versions) ? projectWithVersions.versions.length : 0;
+	}
     
 	const project = {
         ...settingsData,
         organization: settingsData?.organization || null,
+		versions_count: versionsCount,
     };
 	const analyticsConnected = !isBuildContentProjectType(project.project_type) && await hasModifoldAnalytics(project.slug);
 

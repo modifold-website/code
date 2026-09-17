@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "../../providers/AuthProvider";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -11,6 +12,8 @@ import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import ConfirmModal from "@/modal/ConfirmModal";
 import { validateSlug } from "@/utils/slug";
 import { getProjectPathByType, isBuildContentProjectType } from "@/utils/projectRoutes";
+
+const ProjectIconEditorModal = dynamic(() => import("@/modal/ProjectIconEditorModal"), { ssr: false });
 
 const getInitialFormData = (project) => ({
     title: project?.title || "",
@@ -33,15 +36,20 @@ export default function ProjectSettings({ project, analyticsConnected = false })
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isDeletingProject, setIsDeletingProject] = useState(false);
+	const [isIconEditorOpen, setIsIconEditorOpen] = useState(false);
+	const [isIconMenuOpen, setIsIconMenuOpen] = useState(false);
 
     const [previewIcon, setPreviewIcon] = useState("");
     const [savedPreviewIcon, setSavedPreviewIcon] = useState(project?.icon_url || "");
     const iconInputRef = useRef(null);
+	const iconMenuRef = useRef(null);
+	const iconMenuTriggerRef = useRef(null);
     const [isIssuesMenuOpen, setIsIssuesMenuOpen] = useState(false);
     const [isVisibilityMenuOpen, setIsVisibilityMenuOpen] = useState(false);
     const [isPlayersCountMenuOpen, setIsPlayersCountMenuOpen] = useState(false);
 	const projectType = project?.project_type || project?.projectType || project?.type;
 	const canEditDetails = Boolean(project?.permissions?.can_edit_details);
+	const hasUploadedVersion = Number(project?.versions_count) > 0 || project?.versions?.length > 0;
 	const canDeleteProject = Boolean(project?.permissions?.can_delete_project);
 	const showPlayersCountSetting = !isBuildContentProjectType(projectType) && analyticsConnected;
     const issuesButtonRef = useRef(null);
@@ -89,9 +97,56 @@ export default function ProjectSettings({ project, analyticsConnected = false })
         setPreviewIcon(file ? URL.createObjectURL(file) : project.icon_url || "");
     };
 
-    const handleIconOverlayClick = () => {
-        iconInputRef.current.click();
-    };
+	const handleIconMenuToggle = () => {
+		setIsIconMenuOpen((current) => !current);
+	};
+
+	const handleIconUploadClick = () => {
+		setIsIconMenuOpen(false);
+		iconMenuTriggerRef.current?.focus();
+		iconInputRef.current?.click();
+	};
+
+	const handleIconCreatorClick = () => {
+		setIsIconMenuOpen(false);
+		iconMenuTriggerRef.current?.focus();
+		setIsIconEditorOpen(true);
+	};
+
+	const handleIconMenuKeyDown = (event) => {
+		const items = [...event.currentTarget.querySelectorAll('[role="menuitem"]')];
+		const currentIndex = items.indexOf(document.activeElement);
+
+		if(event.key === "Escape") {
+			event.preventDefault();
+			setIsIconMenuOpen(false);
+			iconMenuTriggerRef.current?.focus();
+			return;
+		}
+
+		if(event.key === "Tab") {
+			setIsIconMenuOpen(false);
+			return;
+		}
+
+		if(event.key === "ArrowDown" || event.key === "ArrowUp") {
+			event.preventDefault();
+			const direction = event.key === "ArrowDown" ? 1 : -1;
+			items[(currentIndex + direction + items.length) % items.length]?.focus();
+		}
+
+		if(event.key === "Home" || event.key === "End") {
+			event.preventDefault();
+			items[event.key === "Home" ? 0 : items.length - 1]?.focus();
+		}
+	};
+
+	const handleEditorIconSaved = (iconUrl) => {
+		setPreviewIcon(iconUrl);
+		setSavedPreviewIcon(iconUrl);
+		setFormData((current) => ({ ...current, icon: null }));
+		setSavedFormData((current) => ({ ...current, icon: null }));
+	};
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -106,11 +161,22 @@ export default function ProjectSettings({ project, analyticsConnected = false })
             if(isPlayersCountMenuOpen && !playersCountMenuRef.current?.contains(event.target) && !playersCountButtonRef.current?.contains(event.target)) {
                 setIsPlayersCountMenuOpen(false);
             }
+
+			if(isIconMenuOpen && !iconMenuRef.current?.contains(event.target)) {
+				setIsIconMenuOpen(false);
+			}
         };
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isIssuesMenuOpen, isPlayersCountMenuOpen, isVisibilityMenuOpen]);
+	}, [isIconMenuOpen, isIssuesMenuOpen, isPlayersCountMenuOpen, isVisibilityMenuOpen]);
+
+	useEffect(() => {
+		if(!isIconMenuOpen) return;
+		window.requestAnimationFrame(() => {
+			iconMenuRef.current?.querySelector('[role="menuitem"]')?.focus();
+		});
+	}, [isIconMenuOpen]);
 
 	const handleSubmit = async (e) => {
         if(e) {
@@ -207,24 +273,60 @@ export default function ProjectSettings({ project, analyticsConnected = false })
                                         {t("general.fields.icon")}
                                     </p>
 
-                                    <div className="blog-settings__avatar">
+                                    <div ref={iconMenuRef} className="blog-settings__avatar project-icon-settings">
                                         <div className="avatar avatar--size-l">
                                             <div className="avatar__wrapper" style={{ "--background-color": "var(--theme-color-background)" }}>
                                                 {previewIcon && (
                                                     <img src={previewIcon} alt={t("general.iconAlt")} className="avatar__image" />
                                                 )}
 
-                                                <div className="avatar__overlay" onClick={handleIconOverlayClick}>
-                                                    <svg className="icon icon--image" width="40" height="40" viewBox="0 0 24 24">
+                                                <button ref={iconMenuTriggerRef} type="button" className="avatar__overlay" onClick={handleIconMenuToggle} aria-label={t("general.iconEditor.changeIcon")} aria-haspopup="menu" aria-expanded={isIconMenuOpen} aria-controls="popover-overlay">
+                                                    <svg className="icon icon--image" width="40" height="40" viewBox="0 0 24 24" aria-hidden="true">
                                                         <path d="M8 9.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z"></path>
                                                         <path fillRule="evenodd" clipRule="evenodd" d="M7 3a4 4 0 0 0-4 4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7a4 4 0 0 0-4-4H7ZM5 7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5.252l-1.478-1.477a2 2 0 0 0-3.014.214L8.5 19H7a2 2 0 0 1-2-2V7Zm11.108 5.19L19 15.08V17a2 2 0 0 1-2 2h-6l5.108-6.81Z"></path>
                                                     </svg>
-                                                </div>
+                                                </button>
                                             </div>
                                         </div>
+
+										{isIconMenuOpen ? (
+											<div id="popover-overlay" className="popover-overlay version-actions__overlay project-icon-settings__popover-overlay">
+								                <div className="popover" tabIndex={0} role="menu" onKeyDown={handleIconMenuKeyDown} style={{ "--width": "max-content", "--top": "calc(100% + 8px)", "--position": "absolute", "--left": "0", "--right": "auto", "--bottom": "auto", "--distance": "8px" }}>
+													<div className="popover__scrollable" style={{ "--max-height": "auto" }}>
+														<button type="button" className="context-list-option context-list-option--with-art" style={{ width: "100%" }} role="menuitem" onClick={handleIconUploadClick}>
+															<div className="context-list-option__art context-list-option__art--icon">
+                                                                <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-upload">
+                                                                    <path d="M12 3v12"/>
+                                                                    <path d="m17 8-5-5-5 5"/>
+                                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                                </svg>
+                                                            </div>
+
+															<div className="context-list-option__label">{t("general.iconEditor.uploadIcon")}</div>
+														</button>
+
+														{hasUploadedVersion ? (
+															<button type="button" className="context-list-option context-list-option--with-art" style={{ width: "100%" }} role="menuitem" onClick={handleIconCreatorClick}>
+																<div className="context-list-option__art context-list-option__art--icon">
+                                                                    <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon lucide lucide-file-box">
+                                                                        <path d="M14 2v5a1 1 0 001 1h5"/>
+                                                                        <path d="M14.692 22H18a2 2 0 002-2V8a2.4 2.4 0 00-.706-1.706l-3.588-3.588A2.4 2.4 0 0014 2H6a2 2 0 00-2 2v3.804"/>
+                                                                        <path d="M2.264 13.752 7 16.5l4.737-2.748"/>
+                                                                        <path d="M2.995 13.014A2 2 0 002 14.744v3.516a2 2 0 00.996 1.73l3 1.74a2 2 0 002.008 0l3-1.74A2 2 0 0012 18.26v-3.517a2 2 0 00-.995-1.73l-3-1.742a2 2 0 00-1.892-.064z"/>
+                                                                        <path d="M7 16.5V22"/>
+                                                                    </svg>
+                                                                </div>
+
+																<div className="context-list-option__label">{t("general.iconEditor.open")}</div>
+															</button>
+														) : null}
+													</div>
+												</div>
+											</div>
+										) : null}
                                     </div>
 
-                                    <input type="file" id="icon" name="icon" accept="image/jpeg,image/png,image/gif" onChange={handleFileChange} ref={iconInputRef} style={{ display: "none" }} />
+                                    <input type="file" id="icon" name="icon" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleFileChange} ref={iconInputRef} style={{ display: "none" }} />
 
                                     <p style={{ marginTop: "12px" }} className="blog-settings__field-title">
                                         {t("general.fields.name")}
@@ -369,6 +471,13 @@ export default function ProjectSettings({ project, analyticsConnected = false })
                     </form>
                 </div>
             </div>
+
+			<ProjectIconEditorModal
+				isOpen={isIconEditorOpen}
+				onRequestClose={() => setIsIconEditorOpen(false)}
+				project={project}
+				onSaved={handleEditorIconSaved}
+			/>
 
             <UnsavedChangesBar
 				isDirty={canEditDetails && isDirty}

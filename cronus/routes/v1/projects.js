@@ -5991,7 +5991,7 @@ router.get("/:slug/settings", auth, async (req, res) => {
             });
         }
 
-        const [rows] = await db.query("SELECT * FROM projects WHERE id = ? LIMIT 1", [project.id]);
+        const [rows] = await db.query("SELECT *, (SELECT COUNT(*) FROM project_versions WHERE project_id = projects.id) AS versions_count FROM projects WHERE id = ? LIMIT 1", [project.id]);
         const projectRow = rows[0];
 
 		const organizationSettings = await getProjectOrganizationSettings({

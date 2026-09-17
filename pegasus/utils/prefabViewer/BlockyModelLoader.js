@@ -5,7 +5,7 @@ export const BLOCK_MODEL_UNITS = 32;
 export const CHARACTER_MODEL_UNITS = 64;
 
 export function isCharacterDensityModel(modelPath) {
-	const p = String(modelPath || "").replace(/\\/g, "/");
+	const p = String(modelPath || "").replace(/\\/g, "/").replace(/^.*?\/(?:Common\/)?(?=(?:Characters|Items|NPC)\/)/i, "");
 	if(!p) {
 		return false;
 	}
@@ -287,12 +287,20 @@ function faceUvsThree(layout, faceW, faceH, denomW, denomH) {
 	}
 
 	const [x0, y0, x1, y1] = result;
+	const insetRange = (start, end) => {
+		const delta = end - start;
+		const inset = Math.min(0.5, Math.abs(delta) * 0.5);
+		const direction = Math.sign(delta) || 1;
+		return [start + inset * direction, end - inset * direction];
+	};
+	const [safeX0, safeX1] = insetRange(x0, x1);
+	const [safeY0, safeY1] = insetRange(y0, y1);
 	const toUv = (x, y) => [x / denomW, 1 - y / denomH];
 	if(transposeCorners) {
-		return [toUv(x0, y0), toUv(x0, y1), toUv(x1, y0), toUv(x1, y1)];
+		return [toUv(safeX0, safeY0), toUv(safeX0, safeY1), toUv(safeX1, safeY0), toUv(safeX1, safeY1)];
 	}
 
-	return [toUv(x0, y0), toUv(x1, y0), toUv(x0, y1), toUv(x1, y1)];
+	return [toUv(safeX0, safeY0), toUv(safeX1, safeY0), toUv(safeX0, safeY1), toUv(safeX1, safeY1)];
 }
 
 function measureUvLayout(nodes) {
@@ -364,7 +372,7 @@ function makeFaceMaterial(texture, shape, tintHex = null) {
 		color: tintHex ? new THREE.Color(tintHex) : 0xffffff,
 		transparent: false,
 		alphaTest: 0.05,
-		alphaToCoverage: true,
+		alphaToCoverage: false,
 		depthTest: true,
 		depthWrite: true,
 		side: THREE.DoubleSide,
@@ -573,9 +581,9 @@ function accumulateNode(node, parent, texture, denomW, denomH, tintHex) {
 	}
 }
 
-export async function loadBlockyModel(modelPath, texturePath = null, tintHex = null) {
+export async function loadBlockyModel(modelPath, texturePath = null, tintHex = null, sourcePath = modelPath) {
 	const tintKey = tintHex ? String(tintHex).toLowerCase() : "";
-	const key = `${modelPath}|${texturePath || ""}|${tintKey}`;
+	const key = `${modelPath}|${texturePath || ""}|${tintKey}|${sourcePath || ""}`;
 	if(modelCache.has(key)) {
 		const cached = await modelCache.get(key);
 		return cached ? cached.clone(true) : null;
@@ -660,7 +668,7 @@ export async function loadBlockyModel(modelPath, texturePath = null, tintHex = n
 			accumulateNode(node, root, texture, texW, texH, tintHex);
 		}
 
-		root.scale.setScalar(modelRootScale(modelPath));
+		root.scale.setScalar(modelRootScale(sourcePath));
 		return root;
 	})();
 
