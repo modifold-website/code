@@ -396,7 +396,6 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 		setCustomBackground(DEFAULT_CUSTOM_BACKGROUND);
 		setCameraSettings(DEFAULT_CAMERA_SETTINGS);
 		setSceneSettings(DEFAULT_SCENE_SETTINGS);
-		setSnapshot("");
 		setPreviewStatus("loading");
 
 		const authToken = localStorage.getItem("authToken");
@@ -446,7 +445,6 @@ export default function ProjectIconEditorModal({ isOpen, onRequestClose, project
 
 		let active = true;
 		setSelectedSource(null);
-		setSnapshot("");
 		setPreviewStatus("loading");
 		const modelRequest = selectedAsset.kind === "cube"
 			? Promise.resolve(null)
