@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getProjectPath } from "@/utils/projectRoutes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import VersionDisplay from "../VersionDisplay";
+import GameVersionPopover from "../GameVersionPopover";
 import { useTranslations, useLocale } from "next-intl";
 import ProjectSidebar from "../project/ProjectSidebar";
 import VersionDownloadButton from "../project/VersionDownloadButton";
@@ -286,15 +287,12 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                             </button>
 
                             {isFilterGameVersionsPopoverOpen && (
-                                <div className="popover" style={{ "--top": "calc(100% + 10px)" }}>
-                                    <div className="context-list" style={{ maxHeight: "200px" }}>
-                                        {availableGameVersions.map((version) => (
-											<button key={version} type="button" className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)} aria-pressed={filterGameVersions.includes(version)}>
-												<span className="context-list-option__label">{getGameVersionLabel(version, gameVersions)}</span>
-											</button>
-                                        ))}
-                                    </div>
-                                </div>
+								<GameVersionPopover
+									gameVersions={availableGameVersions.map((version) => ({ version, label: getGameVersionLabel(version, gameVersions) }))}
+									selectedVersions={filterGameVersions}
+									onToggleVersion={handleToggleFilterGameVersion}
+									style={{ "--top": "calc(100% + 10px)" }}
+								/>
                             )}
                         </div>
 

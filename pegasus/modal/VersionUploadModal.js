@@ -2,7 +2,7 @@
 
 import Modal from "react-modal";
 import VersionDependenciesEditor from "./VersionDependenciesEditor";
-import GameVersionPopoverList from "@/components/GameVersionPopoverList";
+import GameVersionPopover from "@/components/GameVersionPopover";
 
 if(typeof window !== "undefined") {
     Modal.setAppElement("body");
@@ -23,7 +23,7 @@ export default function VersionUploadModal({ isOpen, onRequestClose, uploadLoadi
     };
 
     return (
-        <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active" overlayClassName="modal-overlay">
+        <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active version-game-versions-modal" overlayClassName="modal-overlay">
             <div className="modal-window version-upload-modal">
                 <div className="modal-window__header">
                     <div className="version-upload-steps" aria-label="Upload steps">
@@ -180,19 +180,17 @@ export default function VersionUploadModal({ isOpen, onRequestClose, uploadLoadi
                                         </div>
                                     </label>
 
-                                    {isGameVersionsPopoverOpen && !uploadLoading && (
-                                        <div className="popover">
-                                            <div className="context-list" data-scrollable style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                                <GameVersionPopoverList
-                                                    gameVersions={gameVersions}
-                                                    selectedVersions={formData.game_versions}
-                                                    onToggleVersion={handleToggleGameVersion}
-                                                    releaseLabel={t("versions.gameVersionGroups.releases")}
-                                                    preReleaseLabel={t("versions.gameVersionGroups.preReleases")}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
+									{isGameVersionsPopoverOpen && !uploadLoading && (
+										<GameVersionPopover
+											floating
+											anchorRef={gameVersionsRef}
+											gameVersions={gameVersions}
+											selectedVersions={formData.game_versions}
+											onToggleVersion={handleToggleGameVersion}
+											releaseLabel={t("versions.gameVersionGroups.releases")}
+											preReleaseLabel={t("versions.gameVersionGroups.preReleases")}
+										/>
+									)}
                                 </div>
 
                                 <p className="blog-settings__field-title">{t("versions.fields.loaders")}</p>

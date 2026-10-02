@@ -3083,6 +3083,17 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .version-upload-modal .field .popover {
     z-index: 40;
 }
+.version-game-versions-modal {
+	position: relative;
+}
+.floating-game-version-popover {
+	--position: absolute;
+	z-index: 2;
+	max-width: calc(100vw - 24px);
+}
+.game-version-popover .context-list {
+	max-height: var(--game-version-popover-max-height, 200px);
+}
 .license-modal .modal-window {
     max-height: min(80dvh, 900px);
     overflow: hidden;

@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import axios from "axios";
 import VersionDisplay from "../../VersionDisplay";
+import GameVersionPopover from "../../GameVersionPopover";
 import VersionUploadModal from "../../../modal/VersionUploadModal";
 import VersionEditMetadataModal from "../../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../../modal/VersionEditDetailsModal";
@@ -121,7 +122,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if(gameVersionsRef.current && !gameVersionsRef.current.contains(event.target)) {
+            if(gameVersionsRef.current && !gameVersionsRef.current.contains(event.target) && !event.target.closest?.(".floating-game-version-popover")) {
                 setIsGameVersionsPopoverOpen(false);
             }
 
@@ -129,7 +130,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                 setIsLoadersPopoverOpen(false);
             }
 
-            if(editGameVersionsRef.current && !editGameVersionsRef.current.contains(event.target)) {
+            if(editGameVersionsRef.current && !editGameVersionsRef.current.contains(event.target) && !event.target.closest?.(".floating-game-version-popover")) {
                 setIsEditGameVersionsPopoverOpen(false);
             }
 
@@ -852,15 +853,11 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                             </button>
 
                             {isFilterGameVersionsPopoverOpen && (
-                                <div className="popover">
-                                    <div className="context-list" style={{ maxHeight: "200px" }}>
-                                        {availableGameVersions.map((version) => (
-											<button key={version} type="button" className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)} aria-pressed={filterGameVersions.includes(version)}>
-												<span className="context-list-option__label">{getGameVersionLabel(version, gameVersionItems)}</span>
-											</button>
-                                        ))}
-                                    </div>
-                                </div>
+								<GameVersionPopover
+									gameVersions={availableGameVersions.map((version) => ({ version, label: getGameVersionLabel(version, gameVersionItems) }))}
+									selectedVersions={filterGameVersions}
+									onToggleVersion={handleToggleFilterGameVersion}
+								/>
                             )}
                         </div>
 
