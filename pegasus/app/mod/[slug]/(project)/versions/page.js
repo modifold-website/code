@@ -1,6 +1,6 @@
 import VersionsPage from "@/components/pages/VersionsPage";
 import { getProjectBasePath } from "@/utils/projectRoutes";
-import { fetchGameVersions } from "@/utils/gameVersions/server";
+import { fetchGameVersionItems } from "@/utils/gameVersions/server";
 import { getProjectForRequest } from "@/utils/projects/server";
 import { getProjectMetadata } from "@/utils/projects/metadata";
 
@@ -16,7 +16,7 @@ export default async function Page({ params }) {
     const { slug } = await params;
 	const { project, authToken } = await getProjectForRequest(slug, 100);
 
-    const gameVersions = await fetchGameVersions();
+    const gameVersions = await fetchGameVersionItems();
 
 	return <VersionsPage project={project} authToken={authToken} gameVersions={gameVersions} />;
 }

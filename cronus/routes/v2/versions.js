@@ -3,6 +3,7 @@ const { logger } = require("../../packages/shared/logger");
 const express = require("express");
 
 const { db } = require("../../config/db");
+const { normalizeGameVersionBranches } = require("../../utils/gameVersionBranches");
 const optionalAuth = require("../../middleware/optionalAuth");
 const { ORG_PROJECT_PERMISSIONS, hasProjectPermission, resolveProjectAccess } = require("../../utils/organizations");
 const { canAccessRestrictedProject, isPrivilegedUserRole } = require("../../utils/projectVisibility");
@@ -136,7 +137,7 @@ router.get("/:versionId", optionalAuth, async (req, res) => {
 			downloads: version.downloads,
 			changelog: version.changelog,
 			release_channel: version.release_channel,
-			game_versions: parseJsonArray(version.game_versions),
+			game_versions: normalizeGameVersionBranches(parseJsonArray(version.game_versions)),
 			loaders: parseJsonArray(version.loaders),
 			file_url: version.file_url,
 			download_url: version.file_url || null,

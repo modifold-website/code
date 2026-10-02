@@ -13,7 +13,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { apiClient } from "@/utils/api/client";
 import { projectQueryKeys } from "@/utils/projects/queryKeys";
 import { getCategoryLabel } from "@/utils/categoryLabels";
-import { getEffectiveBrowseGameVersions } from "@/utils/gameVersions";
+import { getEffectiveBrowseGameVersions, normalizeGameVersionBranches } from "@/utils/gameVersions";
 
 const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -21,7 +21,7 @@ function parseQueryString(queryString) {
     const params = new URLSearchParams(queryString || "");
     const rawSort = params.get("sort");
     const rawPage = Number.parseInt(params.get("page"), 10);
-    const gameVersions = params.getAll("v");
+    const gameVersions = normalizeGameVersionBranches(params.getAll("v"));
 
     return {
         tags: params.getAll("c"),
@@ -65,7 +65,7 @@ function buildQueryString({ sort, search, selectedTags, selectedGameVersions, us
 }
 
 function normalizeInitialState(initialState) {
-    const gameVersions = Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : [];
+    const gameVersions = normalizeGameVersionBranches(Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : []);
 
     return {
         tags: Array.isArray(initialState?.tags) ? initialState.tags : [],

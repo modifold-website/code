@@ -10,7 +10,7 @@ import ProjectSidebar from "../project/ProjectSidebar";
 import VersionDownloadButton from "../project/VersionDownloadButton";
 import Tooltip from "../ui/Tooltip";
 import DownloadCount from "../ui/DownloadCount";
-import { DEFAULT_GAME_VERSIONS, sortByKnownGameVersions } from "@/utils/gameVersions";
+import { DEFAULT_GAME_VERSIONS, getGameVersionLabel, normalizeGameVersionBranches, sortByKnownGameVersions } from "@/utils/gameVersions";
 import { getVersionDownloadUrl } from "@/utils/projects/downloads";
 
 const releaseChannels = ["release", "beta", "alpha"];
@@ -64,12 +64,14 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
     const filterChannelsRef = useRef(null);
     const filterLoadersRef = useRef(null);
 
-    const availableGameVersions = sortByKnownGameVersions([...new Set(project.versions.flatMap((version) => (version.game_versions ? version.game_versions.split(",").map((v) => v.trim()) : [])))], gameVersions);
+    const gameVersionNames = gameVersions.map((item) => item.version);
+    const availableGameVersions = sortByKnownGameVersions(normalizeGameVersionBranches(project.versions.flatMap((version) => parseVersionList(version.game_versions))), gameVersionNames);
     const availableChannels = [...new Set(project.versions.map((version) => version.release_channel))].filter((channel) => releaseChannels.includes(channel));
 
     const filteredVersions = useMemo(() => {
         return project.versions.filter((version) => {
-            const gameVersionsMatch = filterGameVersions.length === 0 || (version.game_versions && filterGameVersions.some((filterVersion) => version.game_versions.split(",").map((v) => v.trim()).includes(filterVersion)));
+            const versionBranches = normalizeGameVersionBranches(parseVersionList(version.game_versions));
+			const gameVersionsMatch = filterGameVersions.length === 0 || filterGameVersions.some((filterVersion) => versionBranches.includes(filterVersion));
             const channelMatch = filterChannels.length === 0 || filterChannels.includes(version.release_channel);
             const loadersMatch = filterLoaders.length === 0 || (version.loaders && filterLoaders.some(filterLoader => version.loaders.toLowerCase().split(",").map(l => l.trim()).includes(filterLoader)));
 
@@ -287,9 +289,9 @@ export default function VersionsPage({ project, authToken, gameVersions = DEFAUL
                                 <div className="popover" style={{ "--top": "calc(100% + 10px)" }}>
                                     <div className="context-list" style={{ maxHeight: "200px" }}>
                                         {availableGameVersions.map((version) => (
-                                            <div key={version} className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)}>
-                                                <div className="context-list-option__label">{version}</div>
-                                            </div>
+											<button key={version} type="button" className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)} aria-pressed={filterGameVersions.includes(version)}>
+												<span className="context-list-option__label">{getGameVersionLabel(version, gameVersions)}</span>
+											</button>
                                         ))}
                                     </div>
                                 </div>

@@ -14,7 +14,7 @@ import VersionEditDetailsModal from "../../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
 import DownloadCount from "@/components/ui/DownloadCount";
-import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload, sortByKnownGameVersions } from "@/utils/gameVersions";
+import { DEFAULT_GAME_VERSIONS, getGameVersionLabel, normalizeGameVersionBranches, normalizeGameVersionItemsPayload, sortByKnownGameVersions } from "@/utils/gameVersions";
 import { getAuthHeaders } from "@/utils/api/client";
 
 const loaders = [
@@ -382,7 +382,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
 
     const openEditModal = async (versionId, modalType) => {
         const selectedVersion = versions.find((version) => version.id === versionId);
-        const initialGameVersions = parseVersionList(selectedVersion?.game_versions);
+        const initialGameVersions = normalizeGameVersionBranches(parseVersionList(selectedVersion?.game_versions));
         const initialLoaders = parseVersionList(selectedVersion?.loaders);
         const initialDependencies = parseDependencies(selectedVersion?.dependencies);
 
@@ -413,7 +413,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
             });
 
             const version = res.data;
-            const nextGameVersions = parseVersionList(version.game_versions);
+            const nextGameVersions = normalizeGameVersionBranches(parseVersionList(version.game_versions));
             const nextLoaders = parseVersionList(version.loaders);
             const nextDependencies = parseDependencies(version.dependencies);
             setEditFormData({
@@ -776,7 +776,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
             return String(version.game_versions).split(",").map((v) => v.trim()).filter(Boolean);
         });
 
-        return sortByKnownGameVersions([...new Set(items)], gameVersionNames);
+        return sortByKnownGameVersions(normalizeGameVersionBranches(items), gameVersionNames);
     }, [versions, gameVersionNames]);
 
     const availableChannels = useMemo(() => {
@@ -806,7 +806,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
             const gameVersionsMatch = filterGameVersions.length === 0 || (version?.game_versions && filterGameVersions.some((filterVersion) => {
                 const list = Array.isArray(version.game_versions) ? version.game_versions.map((v) => String(v).trim()) : String(version.game_versions).split(",").map((v) => v.trim());
 
-                return list.includes(filterVersion);
+                return normalizeGameVersionBranches(list).includes(filterVersion);
             }));
 
             const channelMatch = filterChannels.length === 0 || filterChannels.includes(version?.release_channel);
@@ -855,9 +855,9 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                                 <div className="popover">
                                     <div className="context-list" style={{ maxHeight: "200px" }}>
                                         {availableGameVersions.map((version) => (
-                                            <div key={version} className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)}>
-                                                <div className="context-list-option__label">{version}</div>
-                                            </div>
+											<button key={version} type="button" className={`context-list-option ${filterGameVersions.includes(version) ? "context-list-option--selected" : ""}`} onClick={() => handleToggleFilterGameVersion(version)} aria-pressed={filterGameVersions.includes(version)}>
+												<span className="context-list-option__label">{getGameVersionLabel(version, gameVersionItems)}</span>
+											</button>
                                         ))}
                                     </div>
                                 </div>
@@ -1026,7 +1026,7 @@ export default function VersionsSettings({ project, authToken, gameVersions = DE
                                             <span className="version__game-platform">{tProject("versions.notSpecified")}</span>
                                         )}
 
-                                        <VersionDisplay gameVersions={version.game_versions ? version.game_versions.split(",").map((v) => v.trim()).filter(Boolean) : []} allGameVersions={gameVersionNames} />
+                                        <VersionDisplay gameVersions={version.game_versions ? version.game_versions.split(",").map((v) => v.trim()).filter(Boolean) : []} allGameVersions={gameVersionItems} />
                                     </span>
 
                                     <div className="version__metadata">

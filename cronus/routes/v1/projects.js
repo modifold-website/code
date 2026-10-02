@@ -26,6 +26,7 @@ const { getProjectDisclosureState } = require("../../utils/projectDisclosures");
 const { buildVisibleVersionWhereClause, canAccessRestrictedProject, canViewPrivateProjectVersions } = require("../../utils/projectVisibility");
 const { buildProjectOwnerDto, buildVersionsPagination, getProjectVersionPage } = require("../../utils/projectDetails");
 const { buildBooleanFullTextSearch, buildCursorPage, createCanonicalCacheKey, decodeCursor, getCursorContext, normalizeCsvFilter, normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
+const { getGameVersionBranch, normalizeGameVersionBranches } = require("../../utils/gameVersionBranches");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
 const { deleteObject, deletePrefix, deletePublicUrl, deletePublicUrlWithinPrefix, getPrivateObjectDownloadUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const router = express.Router();
@@ -163,12 +164,9 @@ const validateGameVersions = async (versions) => {
         return false;
     }
 
-    const [rows] = await db.query(
-        "SELECT version FROM game_versions WHERE is_active = 1 AND version IN (?)",
-        [versions]
-    );
+    const [rows] = await db.query("SELECT version FROM game_versions WHERE is_active = 1");
 
-    const validVersions = new Set(rows.map((row) => row.version));
+    const validVersions = new Set(rows.flatMap((row) => [row.version, getGameVersionBranch(row.version)]));
     return versions.every((version) => validVersions.has(version));
 };
 
@@ -1528,7 +1526,7 @@ router.get("/", async (req, res) => {
 		const search = normalizeSearch(req.query.search);
 		const fullTextSearch = buildBooleanFullTextSearch(search);
 		const tags = normalizeCsvFilter(req.query.tags, { name: "tags" });
-		const gameVersions = normalizeCsvFilter(req.query.game_versions, { name: "game_versions", maxItems: 128 });
+		const gameVersions = normalizeGameVersionBranches(normalizeCsvFilter(req.query.game_versions, { name: "game_versions", maxItems: 128 }));
 		const loaders = normalizeCsvFilter(req.query.loaders, { name: "loaders" });
 		const normalizedDependencyProject = normalizeSearch(req.query.dependency_project, { maxLength: 120 });
 		const normalizedDependencyType = normalizeEnum(req.query.dependency_type, ["required", "optional", "embedded"], "required", {
@@ -1624,8 +1622,14 @@ router.get("/", async (req, res) => {
 			const compatibilityWhere = ["compatible_version.project_id = p.id", "compatible_version.moderation_status = 'approved'"];
 			const compatibilityParams = [];
 			if(gameVersions.length > 0) {
-				compatibilityWhere.push(`(${gameVersions.map(() => "JSON_CONTAINS(compatible_version.game_versions, ?)").join(" OR ")})`);
-				compatibilityParams.push(...gameVersions.map(JSON.stringify));
+				const [knownVersions] = await db.query("SELECT version FROM game_versions");
+				const compatibleValues = [...new Set(gameVersions.flatMap((version) => (
+					version.endsWith(".x")
+						? [version, version.slice(0, -2), ...knownVersions.map((row) => row.version).filter((known) => getGameVersionBranch(known) === version)]
+						: [version]
+				)))];
+				compatibilityWhere.push(`(${compatibleValues.map(() => "JSON_CONTAINS(compatible_version.game_versions, ?)").join(" OR ")})`);
+				compatibilityParams.push(...compatibleValues.map(JSON.stringify));
 			}
 
 			if(loaders.length > 0) {
@@ -1698,7 +1702,7 @@ router.get("/", async (req, res) => {
                 project_type: project.project_type,
                 license: { id: project.license_id, name: project.license_name },
                 tags: project.tags ? project.tags.split(",").map((tag) => tag.trim()) : [],
-                game_versions: project.game_versions ? JSON.parse(project.game_versions) : [],
+                game_versions: project.game_versions ? normalizeGameVersionBranches(JSON.parse(project.game_versions)) : [],
                 loaders: project.loaders ? JSON.parse(project.loaders) : [],
                 gallery: project.featured_image ? [{ url: project.featured_image, featured: 1 }] : [],
                 owner: project.organization_slug ? {
@@ -2272,10 +2276,11 @@ router.post("/:slug/versions", logVersionRequest, auth, uploadVersionFile, async
             return res.status(400).json({ message: "Invalid version number" });
         }
 
-        const normalizedGameVersions = normalizeVersionArray(game_versions);
-        if(!(await validateGameVersions(normalizedGameVersions))) {
+        const requestedGameVersions = normalizeVersionArray(game_versions);
+        if(!(await validateGameVersions(requestedGameVersions))) {
             return res.status(400).json({ message: "Invalid game versions" });
         }
+		const normalizedGameVersions = normalizeGameVersionBranches(requestedGameVersions);
 
         const versionId = generateId();
 		const storedVersionFile = await storeProjectVersionFile({
@@ -2877,7 +2882,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
 			let gameVersions, loaders;
             
             try {
-                gameVersions = version.game_versions ? JSON.parse(version.game_versions).join(',') : '';
+                gameVersions = version.game_versions ? normalizeGameVersionBranches(JSON.parse(version.game_versions)).join(',') : '';
                 loaders = version.loaders ? JSON.parse(version.loaders).join(',') : '';
             } catch (error) {
                 logger.error(`Error parsing JSON for version ${version.version_number}:`, error);
@@ -2928,7 +2933,7 @@ router.get('/:slug', optionalAuth, async (req, res) => {
             players_last_14d: playersLast14DaysBySlug.get(projectData.slug) || 0,
 			followers: creatorAggregates.followersCount,
             color: projectData.color,
-			game_versions: projectData.game_versions ? projectData.game_versions.split(',') : [],
+			game_versions: projectData.game_versions ? normalizeGameVersionBranches(projectData.game_versions.split(',')) : [],
 			loaders: projectData.loaders ? projectData.loaders.split(',') : [],
 			versions: formattedVersions,
 			versions_pagination: buildVersionsPagination({
@@ -3454,10 +3459,11 @@ router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionF
             return res.status(404).json({ message: 'Version not found' });
         }
 
-        const normalizedGameVersions = normalizeVersionArray(game_versions);
-        if(!(await validateGameVersions(normalizedGameVersions))) {
+        const requestedGameVersions = normalizeVersionArray(game_versions);
+        if(!(await validateGameVersions(requestedGameVersions))) {
             return res.status(400).json({ message: "Invalid game versions" });
         }
+		const normalizedGameVersions = normalizeGameVersionBranches(requestedGameVersions);
 
         const storedVersionFile = file ? await storeProjectVersionFile({
 			projectId: project.id,
@@ -5948,7 +5954,7 @@ router.get('/:slug/version/:version_number', optionalAuth, async (req, res) => {
 
         res.json({
             ...safeVersion,
-            game_versions: version[0].game_versions ? JSON.parse(version[0].game_versions) : [],
+            game_versions: version[0].game_versions ? normalizeGameVersionBranches(JSON.parse(version[0].game_versions)) : [],
             loaders: version[0].loaders ? JSON.parse(version[0].loaders) : [],
 			...getVersionFileFields(versionWithFileAccess),
             dependencies,

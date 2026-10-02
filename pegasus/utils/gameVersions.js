@@ -1,5 +1,20 @@
 export const DEFAULT_GAME_VERSIONS = [];
 
+export function getGameVersionBranch(value) {
+	const version = String(value || "").trim();
+	const match = version.match(/^(\d+\.\d+)(?:\.\d+|\.x)?$/);
+	return match ? `${match[1]}.x` : version;
+}
+
+export function normalizeGameVersionBranches(versions) {
+	return [...new Set(versions.map(getGameVersionBranch).filter(Boolean))];
+}
+
+export function getGameVersionLabel(version, gameVersions = []) {
+	const branch = getGameVersionBranch(version);
+	return gameVersions.find((item) => item && typeof item === "object" && item.version === branch)?.label || branch;
+}
+
 function normalizeBoolean(value) {
 	return value === true || value === 1 || value === "1";
 }
@@ -40,6 +55,7 @@ export function normalizeGameVersionItemsPayload(data) {
             return version ? {
                 id: item.id,
                 version,
+				label: typeof item.label === "string" && item.label.trim() ? item.label.trim() : version,
                 version_type: item.version_type || "release",
 				browse_group_key: typeof item.browse_group_key === "string" ? item.browse_group_key.trim() : "",
 				browse_group_label: typeof item.browse_group_label === "string" ? item.browse_group_label.trim() : "",
@@ -69,6 +85,7 @@ export function normalizeGameVersionsPayload(data) {
 
 export function getBrowseGameVersionGroups(gameVersions = []) {
 	const normalizedItems = normalizeGameVersionItemsPayload({ game_versions: gameVersions });
+	const labels = new Map(normalizedItems.map((item) => [item.version, item.label || item.version]));
 	const groupedByKey = new Map();
 
 	normalizedItems.forEach((item) => {
@@ -98,7 +115,7 @@ export function getBrowseGameVersionGroups(gameVersions = []) {
 	const groups = Array.from(groupedByKey.values()).map((group) => ({
 		...group,
 		versions: [...new Set(group.versions)].sort((a, b) => compareGameVersionLabels(b, a)),
-		range_label: createVersionRangeLabel(group.versions),
+		range_label: createVersionRangeLabel(group.versions.map((version) => labels.get(version) || version)),
 	}));
 
 	return groups.filter((group) => group.versions.length > 0).sort((a, b) => {
@@ -117,7 +134,7 @@ export function getDefaultBrowseGameVersions(gameVersions = []) {
 
 export function getEffectiveBrowseGameVersions(selectedGameVersions = [], gameVersions = [], options = {}) {
 	if(selectedGameVersions.length > 0) {
-		return selectedGameVersions;
+		return normalizeGameVersionBranches(selectedGameVersions);
 	}
 
 	return options.useDefault ? getDefaultBrowseGameVersions(gameVersions) : [];

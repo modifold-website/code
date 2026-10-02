@@ -3583,6 +3583,15 @@ input[type="file"]::-webkit-file-upload-button:hover {
     grid-gap: 0 var(--option-inner-gap);
     gap: 0 var(--option-inner-gap);
 }
+button.context-list-option {
+	width: 100%;
+	font: inherit;
+	text-align: left;
+}
+.context-list-option:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -2px;
+}
 @media (hover: hover) {
     .context-list-option:hover {
         background-color: var(--option-color-hover);

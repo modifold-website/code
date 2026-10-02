@@ -10,6 +10,7 @@ const { awardFirstApprovedProjectAchievement } = require("../../utils/achievemen
 const { bumpProjectCacheVersion } = require("../../utils/projectCache");
 const { deleteObject, getPrivateObjectDownloadUrl, normalizeObjectKey, promotePrivateObject } = require("../../utils/fileHosting");
 const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
+const { normalizeGameVersionBranches } = require("../../utils/gameVersionBranches");
 const router = express.Router();
 const PROJECT_TYPE_PATH_SEGMENTS = {
 	mod: "mod",
@@ -249,7 +250,7 @@ const mapVersionReview = (version) => ({
 	file_size: Number(version.file_size || 0),
 	downloads: Number(version.downloads || 0),
 	created_at: version.created_at,
-	game_versions: parseMaybeJsonArray(version.game_versions),
+	game_versions: normalizeGameVersionBranches(parseMaybeJsonArray(version.game_versions)),
 	loaders: parseMaybeJsonArray(version.loaders),
 	moderation_status: version.moderation_status,
 	moderation_reason: version.moderation_reason,

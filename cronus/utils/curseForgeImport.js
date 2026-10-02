@@ -13,6 +13,7 @@ const { enqueueJob } = require("./asyncJobs");
 const { getFileDownloadUrl, getMod, getModDescription, getModFiles } = require("./curseForge");
 const { deleteObject, getPublicUrl, getUploadTempRoot, uploadFile } = require("./fileHosting");
 const { sanitizeMarkdownText, sanitizePlainText } = require("./sanitize");
+const { normalizeGameVersionBranches } = require("./gameVersionBranches");
 
 const IMPORT_JOB_TYPE = "project.import.curseforge";
 const MAX_PROJECTS_PER_IMPORT = 10;
@@ -602,13 +603,13 @@ const getReleaseChannel = (releaseType) => ({ 1: "release", 2: "beta", 3: "alpha
 const mapCurseForgeGameVersions = (sourceVersions, activeVersions) => {
 	const normalizedSourceVersions = [...new Set((sourceVersions || []).map((version) => String(version || "").trim()).filter(Boolean))];
 	if(normalizedSourceVersions.some((version) => version.toLowerCase() === "early access")) {
-		return activeVersions;
+		return normalizeGameVersionBranches(activeVersions);
 	}
 
-	return activeVersions.filter((activeVersion) => normalizedSourceVersions.some((sourceVersion) => (
+	return normalizeGameVersionBranches(activeVersions.filter((activeVersion) => normalizedSourceVersions.some((sourceVersion) => (
 		activeVersion === sourceVersion
 		|| (/^\d+(?:\.\d+)?$/.test(sourceVersion) && (activeVersion.startsWith(`${sourceVersion}.`) || activeVersion.startsWith(`${sourceVersion}-`)))
-	)));
+	))));
 };
 
 const importVersions = async ({ project, mod, onProgress }) => {

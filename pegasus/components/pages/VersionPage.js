@@ -19,7 +19,7 @@ import VersionEditMetadataModal from "../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
-import { DEFAULT_GAME_VERSIONS, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
+import { DEFAULT_GAME_VERSIONS, normalizeGameVersionBranches, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 import { getAuthHeaders } from "@/utils/api/client";
 import { getVersionDownloadUrl, getVersionPrimaryFile } from "@/utils/projects/downloads";
 import { getVersionDownloadEndpoint } from "@/utils/projects/downloadTracking";
@@ -214,7 +214,6 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     const editLoadersRef = useRef(null);
 
     const gameVersionItems = useMemo(() => normalizeGameVersionItemsPayload({ game_versions: gameVersions }), [gameVersions]);
-    const gameVersionNames = useMemo(() => gameVersionItems.map((item) => item.version), [gameVersionItems]);
 
     useEffect(() => {
         setCurrentVersion(version);
@@ -356,7 +355,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     const optionalContent = dependencies.filter((dependency) => dependency.dependency_type === "optional").map(buildDependencyContent);
 	const embeddedContent = dependencies.filter((dependency) => dependency.dependency_type === "embedded").map(buildDependencyContent);
 	const incompatibleContent = dependencies.filter((dependency) => dependency.dependency_type === "incompatible").map(buildDependencyContent);
-    const gameVersionList = parseList(currentVersion.game_versions);
+    const gameVersionList = normalizeGameVersionBranches(parseList(currentVersion.game_versions));
     const loaderList = parseList(currentVersion.loaders);
     const hasChangelog = Boolean(currentVersion.changelog);
 	const legacyCanManageVersion = Boolean(project.permissions?.can_manage_versions || project.permissions?.can_edit || project.permissions?.can_edit_details);
@@ -412,7 +411,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     };
 
     const openEditModal = async (versionId, modalType) => {
-        const initialGameVersions = parseList(currentVersion.game_versions);
+        const initialGameVersions = normalizeGameVersionBranches(parseList(currentVersion.game_versions));
         const initialLoaders = parseList(currentVersion.loaders);
         const initialDependencies = parseDependencies(currentVersion.dependencies);
 
@@ -448,7 +447,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                 version_number: version.version_number || "",
                 changelog: version.changelog || "",
                 release_channel: version.release_channel || "release",
-                game_versions: parseList(version.game_versions),
+                game_versions: normalizeGameVersionBranches(parseList(version.game_versions)),
                 loaders: parseList(version.loaders),
                 dependencies: parseDependencies(version.dependencies),
             });
@@ -777,7 +776,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                                     <h3>{t("versions.metadata.hytaleVersions")}</h3>
                                     <div className="version-page__pills">
                                         {gameVersionList.length > 0 ? (
-                                            <VersionDisplay gameVersions={gameVersionList} allGameVersions={gameVersionNames} />
+                                            <VersionDisplay gameVersions={gameVersionList} allGameVersions={gameVersionItems} />
                                         ) : (
                                             <span className="version-page__pill">{t("versions.notSpecified")}</span>
                                         )}

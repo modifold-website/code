@@ -216,7 +216,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
             return visibleVersions;
         }
 
-        return visibleVersions.filter((item) => item.version.toLowerCase().includes(query));
+		return visibleVersions.filter((item) => item.version.toLowerCase().includes(query) || item.label.toLowerCase().includes(query));
     }, [groupedVersionSet, normalizedGameVersions, showAllVersions, versionSearch]);
     const updateVersionListFade = useCallback(() => {
         const list = versionListRef.current;
@@ -284,7 +284,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
                     return (
                         <li key={item.version} className="category-list__item">
                             <button className={`category-option browse-version-option ${isSelected ? "category-option--active" : ""}`} type="button" onClick={() => onToggleGameVersion(item.version)} aria-pressed={isSelected}>
-                                <span className="category-option__label">{item.version}</span>
+                                <span className="category-option__label">{item.label}</span>
 
                                 {isSelected && (
                                     <svg className="category-option__check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

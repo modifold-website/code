@@ -195,8 +195,8 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 		<div ref={versionPopoverRef} id="quick-download-game-version-options" className="popover version-download-modal__version-popover" style={versionPopoverStyle || undefined}>
 			<div className="context-list" data-scrollable>
 				{quickDownloadOptions.map((option) => (
-					<button key={option.gameVersion} type="button" className={`context-list-option version-download-modal__version-option ${selectedGameVersion === option.gameVersion ? "context-list-option--selected" : ""}`} onClick={() => { setSelectedGameVersion(option.gameVersion); setIsVersionPopoverOpen(false); }} aria-label={tProject("quickDownload.optionAria", { gameVersion: option.gameVersion })}>
-						<span className="context-list-option__label">{option.gameVersion}</span>
+					<button key={option.gameVersion} type="button" className={`context-list-option version-download-modal__version-option ${selectedGameVersion === option.gameVersion ? "context-list-option--selected" : ""}`} onClick={() => { setSelectedGameVersion(option.gameVersion); setIsVersionPopoverOpen(false); }} aria-label={tProject("quickDownload.optionAria", { gameVersion: option.gameVersionLabel })}>
+						<span className="context-list-option__label">{option.gameVersionLabel}</span>
 					</button>
 				))}
 			</div>
@@ -239,7 +239,7 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 									<label id="quick-download-game-version-label">{tProject("quickDownload.title")}</label>
 
 									<button ref={versionTriggerRef} type="button" className="button button--size-l button--type-minimal version-download-modal__version-trigger" onClick={() => setIsVersionPopoverOpen((current) => !current)} aria-expanded={isVersionPopoverOpen} aria-controls="quick-download-game-version-options" aria-labelledby="quick-download-game-version-label quick-download-game-version-value">
-										<span id="quick-download-game-version-value">{selectedGameVersion || tProject("quickDownload.placeholder")}</span>
+										<span id="quick-download-game-version-value">{selectedOption?.gameVersionLabel || tProject("quickDownload.placeholder")}</span>
 
 										<svg className={`icon icon--chevron_down ${isVersionPopoverOpen ? "rotate" : ""}`} width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
 											<path fillRule="evenodd" clipRule="evenodd" d="M17.707 8.793a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L12 13.086l4.293-4.293a1 1 0 0 1 1.414 0Z" fill="currentColor" />
@@ -268,7 +268,7 @@ export default function VersionDownloadDependenciesModal({ isOpen, project, vers
 										<path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z" />
 									</svg>
 
-									{selectedGameVersion}
+									{selectedOption?.gameVersionLabel}
 								</span>
 							</div>
 

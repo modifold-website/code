@@ -5,6 +5,7 @@ function normalizeGameVersionOption(item) {
         const version = item.trim();
         return version ? {
             version,
+			label: version,
             version_type: version.includes("-pre") ? "pre-release" : "release",
         } : null;
     }
@@ -13,6 +14,7 @@ function normalizeGameVersionOption(item) {
         const version = item.version.trim();
         return version ? {
             version,
+			label: item.label || version,
             version_type: item.version_type || (version.includes("-pre") ? "pre-release" : "release"),
         } : null;
     }
@@ -28,7 +30,7 @@ export default function GameVersionPopoverList({ gameVersions, selectedVersions,
         }
 
         const group = normalized.version_type === "pre-release" ? "preReleases" : "releases";
-        acc[group].push(normalized.version);
+		acc[group].push(normalized);
         return acc;
     }, {
         releases: [],
@@ -39,10 +41,10 @@ export default function GameVersionPopoverList({ gameVersions, selectedVersions,
         <div className="context-list-group" key={label}>
             <div className="context-list-group__title">{label}</div>
 
-            {versions.map((version) => (
-                <div key={version} className={`context-list-option ${selectedVersions.includes(version) ? "context-list-option--selected" : ""}`} style={{ "--press-duration": "140ms" }} onClick={() => onToggleVersion(version)}>
-                    <div className="context-list-option__label">{version}</div>
-                </div>
+            {versions.map((item) => (
+				<button key={item.version} type="button" className={`context-list-option ${selectedVersions.includes(item.version) ? "context-list-option--selected" : ""}`} style={{ "--press-duration": "140ms" }} onClick={() => onToggleVersion(item.version)} aria-pressed={selectedVersions.includes(item.version)}>
+					<span className="context-list-option__label">{item.label}</span>
+				</button>
             ))}
         </div>
     ) : null;
