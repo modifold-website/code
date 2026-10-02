@@ -2028,6 +2028,7 @@
   },
   "NewsPage": {
     "title": "Blog",
+		"rssFeed": "RSS akışı",
     "featuredArticle": {
       "label": "Öne çıkan makale"
     },

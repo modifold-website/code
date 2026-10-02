@@ -2028,6 +2028,7 @@
   },
   "NewsPage": {
     "title": "Blog",
+		"rssFeed": "Feed RSS",
     "featuredArticle": {
       "label": "Artículo destacado"
     },

@@ -2210,6 +2210,7 @@
   },
   "NewsPage": {
     "title": "Блог",
+		"rssFeed": "RSS лента",
     "featuredArticle": {
       "label": "Главная статья"
     },

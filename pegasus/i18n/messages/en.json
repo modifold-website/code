@@ -2210,6 +2210,7 @@
   },
   "NewsPage": {
     "title": "Blog",
+		"rssFeed": "RSS feed",
     "featuredArticle": {
       "label": "Featured article"
     },

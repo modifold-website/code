@@ -2022,6 +2022,7 @@
   },
   "NewsPage": {
     "title": "Блог",
+		"rssFeed": "RSS-стрічка",
     "featuredArticle": {
       "label": "Рекомендована стаття"
     },
