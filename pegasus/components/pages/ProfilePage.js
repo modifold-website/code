@@ -267,7 +267,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
     const availableProfileBadges = useMemo(() => {
         const availableCodes = new Set();
 
-        if(Number(profileUser?.isVerified || 0) === 1) {
+        if(Number(profileUser?.isVerified || 0) === 1 || achievementCodes.has("creator_badge")) {
             availableCodes.add("creator_badge");
         }
 

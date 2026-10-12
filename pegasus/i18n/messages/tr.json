@@ -1212,6 +1212,10 @@
       "customTitle": "Benzersiz başarım",
       "customDescription": "Yaratıcıya özel bir başarım.",
       "items": {
+        "creator_badge": {
+          "title": "Creator",
+					"description": "3 proje yayımlamak ve yayımlanan projelerde toplam 500 indirmeye ulaşmak için."
+        },
         "staff": {
           "title": "Modifold Ekibi",
           "description": "Modifold moderatörleri ve yöneticileri için."
@@ -2553,10 +2557,10 @@
       "list2": "Öne çıkanlar ve ana sayfa bloklarında görünme şansının artması.",
       "list3": "Üretici destek kampanyalarında ve programlarında öncelik."
     },
-    "requirementsTitle": "Rozet gereksinimleri",
+		"requirementsTitle": "Rozeti almak için her iki koşulu da tamamlamalısın",
     "requirementsList": {
-      "projects": "{required} proje yayınla",
-      "downloads": "{required} indirmeye ulaş"
+			"projects": "En az {required} proje yayımla",
+			"downloads": "Yayımlanan tüm projelerinde toplam en az {required} indirmeye ulaş"
     },
     "claim": "Creator Rozetini Al",
     "claiming": "Uygulanıyor...",

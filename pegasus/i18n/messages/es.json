@@ -1212,6 +1212,10 @@
       "customTitle": "Logro único",
       "customDescription": "Un logro único del creador.",
       "items": {
+        "creator_badge": {
+          "title": "Creator",
+					"description": "Por publicar 3 proyectos y alcanzar 500 descargas totales en tus proyectos publicados."
+        },
         "staff": {
           "title": "Equipo de Modifold",
           "description": "Para moderadores y administradores de Modifold."
@@ -2553,10 +2557,10 @@
       "list2": "Más posibilidades de aparecer en selecciones y bloques de portada.",
       "list3": "Prioridad en campañas y programas de apoyo a creadores."
     },
-    "requirementsTitle": "Requisitos de la insignia",
+		"requirementsTitle": "Para obtener la insignia debes cumplir ambos requisitos",
     "requirementsList": {
-      "projects": "Publicar {required} proyectos",
-      "downloads": "Alcanzar {required} descargas"
+			"projects": "Publicar al menos {required} proyectos",
+			"downloads": "Alcanzar al menos {required} descargas en total entre todos tus proyectos publicados"
     },
     "claim": "Obtener Insignia de Creador",
     "claiming": "Aplicando...",

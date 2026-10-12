@@ -1212,6 +1212,10 @@
       "customTitle": "Conquista única",
       "customDescription": "Uma conquista única do criador.",
       "items": {
+        "creator_badge": {
+          "title": "Creator",
+					"description": "Por publicar 3 projetos e alcançar 500 downloads totais nos seus projetos publicados."
+        },
         "staff": {
           "title": "Equipe Modifold",
           "description": "Para moderadores e administradores da Modifold."
@@ -2553,10 +2557,10 @@
       "list2": "Mais chance de aparecer em seleções e blocos da página inicial.",
       "list3": "Prioridade em campanhas e programas de suporte a criadores."
     },
-    "requirementsTitle": "Requisitos do selo",
+		"requirementsTitle": "Para obter o selo, é necessário cumprir ambos os requisitos",
     "requirementsList": {
-      "projects": "Publicar {required} projetos",
-      "downloads": "Alcançar {required} downloads"
+			"projects": "Publicar pelo menos {required} projetos",
+			"downloads": "Alcançar pelo menos {required} downloads no total entre todos os seus projetos publicados"
     },
     "claim": "Obter Selo de Criador",
     "claiming": "Aplicando...",

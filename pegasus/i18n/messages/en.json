@@ -1299,6 +1299,10 @@
       "customTitle": "Unique achievement",
       "customDescription": "A unique creator achievement.",
       "items": {
+        "creator_badge": {
+          "title": "Creator",
+					"description": "For publishing 3 projects and reaching 500 total downloads across your published projects."
+        },
         "staff": {
           "title": "Modifold Staff",
           "description": "For Modifold moderators and administrators."
@@ -2735,10 +2739,10 @@
       "list2": "Higher chance to be featured in picks and homepage blocks.",
       "list3": "Priority for creator support initiatives and campaigns."
     },
-    "requirementsTitle": "Badge requirements",
+		"requirementsTitle": "To get the badge, you must meet both requirements",
     "requirementsList": {
-      "projects": "Publish {required} projects",
-      "downloads": "Reach {required} downloads"
+			"projects": "Publish at least {required} projects",
+			"downloads": "Reach at least {required} total downloads across all your published projects"
     },
     "claim": "Get Creator Badge",
     "claiming": "Applying...",
