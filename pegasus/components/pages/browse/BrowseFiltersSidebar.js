@@ -94,7 +94,13 @@ function DependencyFilter({ t, selectedProjectId, dependencyType, onSelectProjec
 	const selectedDependencyType = DEPENDENCY_TYPES.includes(dependencyType) ? dependencyType : "required";
 
 	return (
-		<div className="content content--padding browse-dependency-filter" style={{ padding: "14px 20px 20px 20px" }}>
+		<div className="content content--padding browse-dependency-filter" style={{ padding: "14px 20px 20px 20px" }} onKeyDown={(event) => {
+			if(event.key === "Escape" && (isProjectPopoverOpen || isDependencyTypePopoverOpen)) {
+				event.stopPropagation();
+				setIsProjectPopoverOpen(false);
+				setIsDependencyTypePopoverOpen(false);
+			}
+		}}>
 			<h2 className="browse-dependency-filter__title">{t("dependencies.title")}</h2>
 
 			{selectedProjectId ? (
@@ -180,7 +186,7 @@ function DependencyFilter({ t, selectedProjectId, dependencyType, onSelectProjec
 	);
 }
 
-export default function BrowseFiltersSidebar({ t, projectType, tags = [], selectedTags = [], onToggleTag, gameVersions = [], selectedGameVersions = [], useDefaultGameVersions = false, onToggleGameVersion, onSelectGameVersionGroup, selectedDependencyProjectId = "", dependencyType = "required", onSelectDependencyProject, onSelectDependencyType, onClearDependency, onClearFilters, getCategoryLabel = (label) => label }) {
+export default function BrowseFiltersSidebar({ t, projectType, tags = [], selectedTags = [], onToggleTag, gameVersions = [], selectedGameVersions = [], useDefaultGameVersions = false, onToggleGameVersion, onSelectGameVersionGroup, selectedDependencyProjectId = "", dependencyType = "required", onSelectDependencyProject, onSelectDependencyType, onClearDependency, onClearFilters, hideClearButton = false, getCategoryLabel = (label) => label }) {
     const normalizedTags = normalizeTags(tags);
     const normalizedGameVersions = useMemo(() => normalizeGameVersionItemsPayload({ game_versions: gameVersions }), [gameVersions]);
 	const gameVersionGroups = useMemo(() => getBrowseGameVersionGroups(normalizedGameVersions), [normalizedGameVersions]);
@@ -216,7 +222,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
             return visibleVersions;
         }
 
-        return visibleVersions.filter((item) => item.version.toLowerCase().includes(query));
+		return visibleVersions.filter((item) => item.version.toLowerCase().includes(query) || item.label.toLowerCase().includes(query));
     }, [groupedVersionSet, normalizedGameVersions, showAllVersions, versionSearch]);
     const updateVersionListFade = useCallback(() => {
         const list = versionListRef.current;
@@ -284,7 +290,7 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
                     return (
                         <li key={item.version} className="category-list__item">
                             <button className={`category-option browse-version-option ${isSelected ? "category-option--active" : ""}`} type="button" onClick={() => onToggleGameVersion(item.version)} aria-pressed={isSelected}>
-                                <span className="category-option__label">{item.version}</span>
+                                <span className="category-option__label">{item.label}</span>
 
                                 {isSelected && (
                                     <svg className="category-option__check" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -333,14 +339,14 @@ export default function BrowseFiltersSidebar({ t, projectType, tags = [], select
                 ))}
             </ul>
 
-            <button className={`button button--size-m button--type-minimal button--with-icon ${!hasSelectedFilters ? "disabled" : ""}`} onClick={onClearFilters} style={{ width: "100%", marginTop: "12px", pointerEvents: "auto" }} disabled={!hasSelectedFilters}>
+            {!hideClearButton && <button className={`button button--size-m button--type-minimal button--with-icon ${!hasSelectedFilters ? "disabled" : ""}`} onClick={onClearFilters} style={{ width: "100%", marginTop: "12px", pointerEvents: "auto" }} disabled={!hasSelectedFilters}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ margin: "0 6px 0 0" }}>
                     <path d="M18 6 6 18"/>
                     <path d="m6 6 12 12"/>
                 </svg>
 
                 {t("clearFilters")}
-            </button>
+            </button>}
         </div>
     );
 

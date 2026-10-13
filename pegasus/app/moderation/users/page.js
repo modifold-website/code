@@ -27,19 +27,17 @@ async function fetchUsers(authToken) {
 		}
 		const data = await response.json();
 
-        return {
-            users: data.users,
-            totalPages: data.totalPages,
-        };
+        return data;
     } catch (err) {
         console.error("Error fetching users for moderation:", err);
-        return { users: [], totalPages: 1 };
+        return null;
     }
 }
 
 export default async function UsersModerationServer() {
     const cookieStore = await cookies();
     const authToken = cookieStore.get("authToken")?.value;
+    let canEdit = false;
 
     if(!authToken) {
         forbidden();
@@ -57,6 +55,7 @@ export default async function UsersModerationServer() {
 
         const data = await response.json().catch(() => ({}));
         const role = data?.user?.isRole;
+        canEdit = role === "admin";
 
         if(role !== "admin" && role !== "moderator") {
             forbidden();
@@ -67,7 +66,7 @@ export default async function UsersModerationServer() {
         redirect("/");
     }
 
-    const { users, totalPages } = await fetchUsers(authToken);
+    const initialData = await fetchUsers(authToken);
 
-    return <UsersModerationPage authToken={authToken} initialUsers={users} initialTotalPages={totalPages} />;
+    return <UsersModerationPage authToken={authToken} initialData={initialData} canEdit={canEdit} />;
 }

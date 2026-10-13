@@ -1,4 +1,5 @@
 const ACHIEVEMENT_CODES = {
+	CREATOR: "creator_badge",
 	FIRST_PROJECT: "first_project",
 	DOWNLOADS_100: "downloads_100",
 	DOWNLOADS_500: "downloads_500",

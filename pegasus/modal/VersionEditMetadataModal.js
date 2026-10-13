@@ -1,7 +1,7 @@
 "use client";
 
 import Modal from "react-modal";
-import GameVersionPopoverList from "@/components/GameVersionPopoverList";
+import GameVersionPopover from "@/components/GameVersionPopover";
 
 if(typeof window !== "undefined") {
     Modal.setAppElement("body");
@@ -9,7 +9,7 @@ if(typeof window !== "undefined") {
 
 export default function VersionEditMetadataModal({ isOpen, onRequestClose, editLoading, onSubmit, t, tProject, editFormData, editGameVersionsRef, toggleEditGameVersionsPopover, isEditGameVersionsPopoverOpen, gameVersions, handleEditToggleGameVersion, editGameVersionsLabel, editLoadersRef, toggleEditLoadersPopover, isEditLoadersPopoverOpen, loaders, handleEditToggleLoader, editLoadersLabel }) {
     return (
-        <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active" overlayClassName="modal-overlay">
+        <Modal closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className="modal active version-game-versions-modal" overlayClassName="modal-overlay">
             <div className="modal-window version-upload-modal">
                 <div className="modal-window__header">
                     <p className="modal-window__title">{t("versions.modal.editMetadataTitle")}</p>
@@ -33,19 +33,17 @@ export default function VersionEditMetadataModal({ isOpen, onRequestClose, editL
                                 </div>
                             </label>
 
-                            {isEditGameVersionsPopoverOpen && !editLoading && (
-                                <div className="popover">
-                                    <div className="context-list" data-scrollable style={{ maxHeight: "200px", overflowY: "auto" }}>
-                                        <GameVersionPopoverList
-                                            gameVersions={gameVersions}
-                                            selectedVersions={editFormData.game_versions}
-                                            onToggleVersion={handleEditToggleGameVersion}
-                                            releaseLabel={t("versions.gameVersionGroups.releases")}
-                                            preReleaseLabel={t("versions.gameVersionGroups.preReleases")}
-                                        />
-                                    </div>
-                                </div>
-                            )}
+							{isEditGameVersionsPopoverOpen && !editLoading && (
+								<GameVersionPopover
+									floating
+									anchorRef={editGameVersionsRef}
+									gameVersions={gameVersions}
+									selectedVersions={editFormData.game_versions}
+									onToggleVersion={handleEditToggleGameVersion}
+									releaseLabel={t("versions.gameVersionGroups.releases")}
+									preReleaseLabel={t("versions.gameVersionGroups.preReleases")}
+								/>
+							)}
                         </div>
 
                         <p className="blog-settings__field-title">{t("versions.fields.loaders")}</p>

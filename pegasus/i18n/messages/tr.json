@@ -1053,6 +1053,14 @@
     "clearFilters": "Filtreleri temizle",
     "clearAllFilters": "Tüm filtreleri temizle",
     "clearSearch": "Aramayı temizle",
+	"mobileFilters": {
+		"title": "Filtreler",
+		"reset": "Sıfırla",
+		"apply": "Uygula",
+		"close": "Filtreleri kapat",
+		"selected": "Seçili filtreler",
+		"remove": "Filtreyi kaldır: {label}"
+	},
 	"dependencies": {
 		"title": "Bağımlı olduğu proje",
 		"placeholder": "Proje ara...",
@@ -1212,6 +1220,10 @@
       "customTitle": "Benzersiz başarım",
       "customDescription": "Yaratıcıya özel bir başarım.",
       "items": {
+        "creator_badge": {
+          "title": "Creator",
+					"description": "3 proje yayımlamak ve yayımlanan projelerde toplam 500 indirmeye ulaşmak için."
+        },
         "staff": {
           "title": "Modifold Ekibi",
           "description": "Modifold moderatörleri ve yöneticileri için."
@@ -2028,6 +2040,7 @@
   },
   "NewsPage": {
     "title": "Blog",
+		"rssFeed": "RSS akışı",
     "featuredArticle": {
       "label": "Öne çıkan makale"
     },
@@ -2204,9 +2217,25 @@
       "reports": "Reports",
       "technicalReview": "Technical review"
     },
-    "charts": {
-      "approvedProjects": "Onaylanan proje grafiği",
-      "userRegistrations": "Kullanıcı kayıt grafiği",
+		"statistics": {
+			"activity": "Dönem etkinliği",
+			"period": "Dönem",
+			"days": "{count} gün",
+			"users": "Yeni kullanıcılar",
+			"projects": "Yeni yayımlanan projeler",
+			"versions": "Yayımlanan sürümler",
+			"downloads": "İndirmeler",
+			"change": "Önceki döneme göre {count}",
+			"total": "Tüm zamanlar: {count}",
+			"loading": "İstatistikler yükleniyor…",
+			"unavailable": "Veriler kullanılamıyor",
+			"empty": "Bu dönem için veri yok",
+			"error": "İstatistikler yüklenemedi.",
+			"retry": "Yeniden dene"
+		},
+		"charts": {
+			"approvedProjects": "Yeni yayımlanan projeler",
+			"userRegistrations": "Yeni kullanıcılar",
       "projects": "Projeler",
       "registrations": "Kayıtlar",
       "date": "Tarih: {date}"
@@ -2345,64 +2374,106 @@
     },
     "empty": "No versions in this technical review queue."
   },
-  "UsersModerationPage": {
-    "metadata": {
-      "title": "Kullanıcı moderasyonu - Modifold"
-    },
-    "tabs": {
-      "projects": "Projeler",
-      "users": "Kullanıcılar",
-      "verification": "Doğrulama",
-      "statistics": "Istatistikler",
-      "reports": "Reports"
-    },
-    "errors": {
-      "fetch": "Kullanıcılar alınamadı",
-      "updateRole": "Rol güncellenemedi",
-      "fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB",
-      "updateUser": "Kullanıcı güncellenemedi"
-    },
-    "success": {
-      "roleUpdated": "Kullanıcı rolü güncellendi",
-      "userUpdated": "Kullanıcı güncellendi"
-    },
-    "roles": {
-      "admin": "Yönetici",
-      "moderator": "Moderatör",
-      "user": "Kullanıcı"
-    },
-    "actions": {
-      "editAria": "Rolü değiştir veya kullanıcıyı düzenle",
-      "edit": "Düzenle",
-      "save": "Kaydet",
-      "cancel": "İptal",
-      "close": "Kapat"
-    },
-    "pagination": {
-      "previous": "Önceki",
-      "next": "Sonraki",
-      "pageOf": "{totalPages} içinde {page}. sayfa"
-    },
-    "empty": "Gösterilecek kullanıcı yok.",
-    "modal": {
-      "title": "{username} kullanıcısını düzenle"
-    },
-    "fields": {
-      "avatar": "Avatar",
-      "avatarAlt": "Avatar önizlemesi",
-      "username": "Kullanıcı adı",
-      "email": "E-posta",
-      "slug": "URL",
-      "description": "Açıklama",
-      "role": "Rol"
-    },
-    "placeholders": {
-      "username": "Kullanıcı adını girin",
-      "email": "E-posta girin",
-      "slug": "Slug girin",
-      "description": "Açıklama girin"
-    }
-  },
+	"UsersModerationPage": {
+		"metadata": {
+			"title": "Kullanıcı moderasyonu - Modifold"
+		},
+		"tabs": {
+			"projects": "Projeler",
+			"users": "Kullanıcılar",
+			"verification": "Doğrulama",
+			"statistics": "Istatistikler",
+			"reports": "Reports"
+		},
+		"errors": {
+			"fetch": "Kullanıcılar alınamadı",
+			"updateRole": "Rol güncellenemedi",
+			"fileTooLarge": "Dosya çok büyük. Maksimum boyut 20 MB",
+			"updateUser": "Kullanıcı güncellenemedi",
+			"invalidUsername": "En fazla 100 karakterlik bir ad gir.",
+			"invalidEmail": "Geçerli bir e-posta adresi gir.",
+			"invalidSlug": "Harf, rakam ve tire içeren geçerli bir slug kullan.",
+			"slugShort": "Slug en az 4 karakter olmalıdır.",
+			"slugTaken": "Bu slug zaten kullanılıyor.",
+			"invalidDescription": "Açıklama 5000 karakteri aşmamalıdır.",
+			"invalidRole": "Geçerli bir rol seç.",
+			"ownRole": "Kendi yönetici rolünü değiştiremezsin.",
+			"forbidden": "Bu işlem için yetkin yok.",
+			"userNotFound": "Bu kullanıcı artık mevcut değil.",
+			"achievement": "Başarım güncellenemedi. Tekrar dene.",
+			"achievementsFetch": "Başarımlar yüklenemedi."
+		},
+		"success": {
+			"roleUpdated": "Kullanıcı rolü güncellendi",
+			"userUpdated": "Kullanıcı güncellendi",
+			"achievementGranted": "Başarım verildi",
+			"achievementRevoked": "Başarım geri alındı"
+		},
+		"roles": {
+			"admin": "Yönetici",
+			"moderator": "Moderatör",
+			"user": "Kullanıcı"
+		},
+		"actions": {
+			"editAria": "Rolü değiştir veya kullanıcıyı düzenle",
+			"edit": "Düzenle",
+			"save": "Kaydet",
+			"cancel": "İptal",
+			"close": "Kapat",
+			"manageNamed": "{username} kullanıcısını yönet",
+			"achievements": "Başarımlar",
+			"changeAvatar": "Avatarı değiştir",
+			"saving": "Kaydediliyor…"
+		},
+		"pagination": {
+			"previous": "Önceki",
+			"next": "Sonraki",
+			"pageOf": "{totalPages} içinde {page}. sayfa"
+		},
+		"empty": "Gösterilecek kullanıcı yok.",
+		"modal": {
+			"title": "{username} kullanıcısını düzenle"
+		},
+		"fields": {
+			"avatar": "Avatar",
+			"avatarAlt": "Avatar önizlemesi",
+			"username": "Kullanıcı adı",
+			"email": "E-posta",
+			"slug": "URL",
+			"description": "Açıklama",
+			"role": "Rol"
+		},
+		"placeholders": {
+			"username": "Kullanıcı adını girin",
+			"email": "E-posta girin",
+			"slug": "Slug girin",
+			"description": "Açıklama girin"
+		},
+		"listLabel": "Kullanıcı yönetimi",
+		"loading": "Yükleniyor…",
+		"retry": "Tekrar dene",
+		"count": "Bulunan kullanıcılar: {count}",
+		"emailHint": "Yalnızca iletişim e-postasıdır. Değiştirmek giriş e-postasını değiştirmez.",
+		"search": {
+			"label": "Kullanıcıları ada veya slug'a göre ara",
+			"placeholder": "Ada veya slug'a göre ara",
+			"empty": "Kullanıcı bulunamadı.",
+			"clear": "Aramayı temizle"
+		},
+		"achievements": {
+			"title": "{username} kullanıcısının başarımları",
+			"note": "Elle verilen başarımlar koşulların karşılanmasını gerektirmez. Roller ve bağlı hesaplar değiştirilmez.",
+			"empty": "Kullanılabilir başarım yok.",
+			"earned": "Kazanıldı",
+			"grant": "Ver",
+			"revoke": "Geri al",
+			"grantNamed": "{name} başarımını ver",
+			"revokeNamed": "{name} başarımını geri al",
+			"confirmTitle": "“{name}” geri alınsın mı?",
+			"confirmDescription": "Bu başarım {username} kullanıcısından kaldırılacak. Adının yanındaki rozet olarak seçilmişse rozet de kaldırılacak.",
+			"reearn": "Otomatik başarımlar, koşulları karşılandığında yeniden kazanılabilir."
+		}
+	},
   "NotificationsPage": {
     "title": "Bildirimler",
     "loading": "Bildirimler yükleniyor...",
@@ -2552,10 +2623,10 @@
       "list2": "Öne çıkanlar ve ana sayfa bloklarında görünme şansının artması.",
       "list3": "Üretici destek kampanyalarında ve programlarında öncelik."
     },
-    "requirementsTitle": "Rozet gereksinimleri",
+		"requirementsTitle": "Rozeti almak için her iki koşulu da tamamlamalısın",
     "requirementsList": {
-      "projects": "{required} proje yayınla",
-      "downloads": "{required} indirmeye ulaş"
+			"projects": "En az {required} proje yayımla",
+			"downloads": "Yayımlanan tüm projelerinde toplam en az {required} indirmeye ulaş"
     },
     "claim": "Creator Rozetini Al",
     "claiming": "Uygulanıyor...",

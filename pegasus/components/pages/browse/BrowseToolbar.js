@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearSearch, cardView, onToggleCardView, sort, onSortSelect, paginationControls = null }) {
+export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearSearch, cardView, onToggleCardView, sort, onSortSelect, paginationControls = null, onOpenFilters, filterCount = 0, isFiltersOpen = false }) {
     const [isSortOpen, setIsSortOpen] = useState(false);
     const sortRef = useRef(null);
     const sortOptions = [
@@ -37,7 +37,7 @@ export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearS
                             <circle cx="11" cy="11" r="8" />
                         </svg>
 
-                        <input type="text" placeholder={t("placeholders.search")} value={searchInput} onChange={onSearchChange} className="text-input" />
+                        <input type="text" placeholder={t("placeholders.search")} aria-label={t("placeholders.search")} value={searchInput} onChange={onSearchChange} className="text-input" />
 
                         {searchInput && (
                             <button className="field__clear-button" type="button" aria-label={t("clearSearch")} onMouseDown={(event) => event.preventDefault()} onClick={onClearSearch}>
@@ -52,9 +52,23 @@ export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearS
             </div>
 
             <div className="sort-controls__actions">
+				<button type="button" className="button button--size-m button--type-secondary browse-mobile-filters" onClick={onOpenFilters} aria-haspopup="dialog" aria-expanded={isFiltersOpen}>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+						<path d="M4 7h16M4 17h16M9 4v6M15 14v6" />
+					</svg>
+
+					{t("mobileFilters.title")}
+
+					{filterCount > 0 && <span className="browse-mobile-filters__count">{filterCount}</span>}
+				</button>
+
                 <div className="sort-wrapper button button--size-m button--type-secondary" ref={sortRef}>
                     <div className="dropdown">
-                        <button className="dropdown__label" onClick={() => setIsSortOpen((prev) => !prev)} aria-expanded={isSortOpen}>
+                        <button className="dropdown__label" type="button" onClick={() => setIsSortOpen((prev) => !prev)} aria-expanded={isSortOpen} onKeyDown={(event) => {
+							if(event.key === "Escape") {
+								setIsSortOpen(false);
+							}
+						}}>
                             {sortOptions.find((option) => option.value === sort)?.label || t("sort.downloads")}
 
                             <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" className={`icon icon--chevron_up ${isSortOpen ? "open" : ""}`} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -64,12 +78,17 @@ export default function BrowseToolbar({ t, searchInput, onSearchChange, onClearS
                     </div>
 
                     {isSortOpen && (
-                        <div className="popover popover--sort">
+                        <div className="popover popover--sort" onKeyDown={(event) => {
+							if(event.key === "Escape") {
+								setIsSortOpen(false);
+								sortRef.current?.querySelector("button")?.focus();
+							}
+						}}>
                             <div className="context-list" data-scrollable="" style={{ maxHeight: "none" }}>
                                 {sortOptions.map((option) => (
-                                    <div key={option.value} className={`context-list-option ${sort === option.value ? "context-list-option--selected" : ""}`} onClick={() => handleSortOptionClick(option.value)}>
+                                    <button key={option.value} type="button" className={`context-list-option ${sort === option.value ? "context-list-option--selected" : ""}`} aria-pressed={sort === option.value} onClick={() => handleSortOptionClick(option.value)}>
                                         <div className="context-list-option__label">{option.label}</div>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </div>

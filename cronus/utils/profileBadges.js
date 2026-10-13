@@ -13,6 +13,8 @@ const PROFILE_BADGE_CODES = {
 
 const PROFILE_BADGE_CODE_SET = new Set(Object.values(PROFILE_BADGE_CODES));
 const ACHIEVEMENT_PROFILE_BADGES = [
+	PROFILE_BADGE_CODES.STAFF,
+	PROFILE_BADGE_CODES.CREATOR,
 	PROFILE_BADGE_CODES.HYPIXEL_STAFF,
 	PROFILE_BADGE_CODES.FIRST_PROJECT,
 	PROFILE_BADGE_CODES.MOD_JAM,
@@ -66,7 +68,7 @@ const getUnlockedProfileBadges = async (db, user) => {
 		}
 	}
 
-	return unlocked;
+	return [...new Set(unlocked)];
 };
 
 const getVisibleProfileBadge = async (db, user) => {

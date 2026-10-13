@@ -1416,26 +1416,6 @@ body.prefab-preview-fullscreen-open .header-mobile {
     border-radius: 999px;
     color: var(--theme-color-text-secondary);
 }
-.version__game-versions-range {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
-    max-width: 100%;
-    min-width: 0;
-}
-.version__game-versions-range-end {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 0;
-}
-.version__game-versions-separator {
-    color: var(--theme-color-text-secondary);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1;
-}
 .version__game-platform {
     background: var(--theme-color-background);
     font-size: 14px;

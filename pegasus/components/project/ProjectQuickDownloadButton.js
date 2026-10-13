@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import VersionDownloadDependenciesModal from "@/modal/VersionDownloadDependenciesModal";
+import { getGameVersionLabel, normalizeGameVersionBranches } from "@/utils/gameVersions";
 
 function parseGameVersions(value) {
 	if(Array.isArray(value)) {
@@ -16,7 +17,7 @@ function parseGameVersions(value) {
 	return String(value).split(",").map((version) => version.trim()).filter(Boolean);
 }
 
-function getLatestVersionsByGameVersion(versions) {
+function getLatestVersionsByGameVersion(versions, gameVersionItems = []) {
 	const latestVersions = new Map();
 	const sortedVersions = [...versions].filter((version) => !version?.moderation_status || version.moderation_status === "approved").sort((left, right) => {
 		const dateDifference = new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
@@ -24,14 +25,14 @@ function getLatestVersionsByGameVersion(versions) {
 	});
 
 	sortedVersions.forEach((version) => {
-		parseGameVersions(version.game_versions).forEach((gameVersion) => {
+		normalizeGameVersionBranches(parseGameVersions(version.game_versions)).forEach((gameVersion) => {
 			if(!latestVersions.has(gameVersion)) {
 				latestVersions.set(gameVersion, version);
 			}
 		});
 	});
 
-	return Array.from(latestVersions, ([gameVersion, version]) => ({ gameVersion, version })).sort((left, right) => right.gameVersion.localeCompare(left.gameVersion, undefined, { numeric: true, sensitivity: "base" }));
+	return Array.from(latestVersions, ([gameVersion, version]) => ({ gameVersion, gameVersionLabel: getGameVersionLabel(gameVersion, gameVersionItems), version })).sort((left, right) => right.gameVersion.localeCompare(left.gameVersion, undefined, { numeric: true, sensitivity: "base" }));
 }
 
 export default function ProjectQuickDownloadButton({ project, authToken }) {
@@ -56,6 +57,9 @@ export default function ProjectQuickDownloadButton({ project, authToken }) {
 		setLoadError(false);
 
 		try {
+			const gameVersionsRequest = fetch(`${process.env.NEXT_PUBLIC_API_BASE}/tags/game-versions`, { signal: controller.signal })
+				.then((response) => response.ok ? response.json() : null)
+				.catch(() => null);
 			const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${encodeURIComponent(project.slug)}?versions_limit=100`, {
 				headers: {
 					Accept: "application/json",
@@ -69,7 +73,8 @@ export default function ProjectQuickDownloadButton({ project, authToken }) {
 			}
 
 			const data = await response.json();
-			setDownloadOptions(getLatestVersionsByGameVersion(Array.isArray(data?.versions) ? data.versions : []));
+			const gameVersions = await gameVersionsRequest;
+			setDownloadOptions(getLatestVersionsByGameVersion(Array.isArray(data?.versions) ? data.versions : [], Array.isArray(gameVersions?.game_versions) ? gameVersions.game_versions : []));
 		} catch(error) {
 			if(error.name !== "AbortError") {
 				setLoadError(true);

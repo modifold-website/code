@@ -11,7 +11,52 @@ const path = require("path");
 const { sanitizePlainText } = require("../../utils/sanitize");
 const { validateSlug } = require("../../utils/slug");
 const { buildSafeObjectFilename, deleteObject, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
-const { parsePagination } = require("../../utils/queryPagination");
+const { parsePagination, normalizeSearch } = require("../../utils/queryPagination");
+const { ACHIEVEMENT_CODES, awardAchievementToUser } = require("../../utils/achievements");
+const { getVisibleProfileBadge } = require("../../utils/profileBadges");
+
+const requireRole = (roles) => async (req, res, next) => {
+	try {
+		const [users] = await db.query("SELECT isRole FROM users WHERE id = ?", [req.user.id]);
+		if(!users[0] || !roles.includes(users[0].isRole)) {
+			return res.status(403).json({ code: "forbidden", message: "Unauthorized" });
+		}
+
+		next();
+	} catch(error) {
+		logger.error("Error checking user moderation access:", error);
+		res.status(500).json({ code: "accessCheckFailed", message: "Error checking access" });
+	}
+};
+const requireAdmin = requireRole(["admin"]);
+const requireModerator = requireRole(["admin", "moderator"]);
+const userFields = "id, username, slug, avatar, email, description, created_at, isRole, isVerified, active_profile_badge";
+const userIdFrom = (value) => {
+	const id = Number(value);
+	if(!/^\d+$/.test(String(value)) || !Number.isSafeInteger(id) || id < 1 || id > 2147483647) {
+		throw Object.assign(new Error("Invalid user ID"), { statusCode: 400, errorCode: "invalidUserId" });
+	}
+
+	return id;
+};
+const validationError = (code, message, field) => Object.assign(new Error(message), {
+	statusCode: 400,
+	errorCode: code,
+	field,
+});
+
+const respondWithError = (res, error, message, code) => {
+	if(!error.statusCode && error.code !== "ER_DUP_ENTRY") {
+		logger.error(message, error);
+	}
+
+	const duplicate = error.code === "ER_DUP_ENTRY";
+	return res.status(error.statusCode || (duplicate ? 409 : 500)).json({
+		code: duplicate ? "slugTaken" : error.errorCode || code,
+		message: duplicate ? "Slug is already taken" : error.statusCode ? error.message : message,
+		field: duplicate ? "slug" : error.field,
+	});
+};
 
 const deleteUserAvatarUrl = async (url, userId) => {
 	const objectKey = getPublicObjectKeyFromUrl(url);
@@ -79,132 +124,221 @@ const convertImageToWebp = async (file) => {
     };
 };
 
-router.get("/", auth, async (req, res) => {
-    const [user] = await db.query("SELECT isRole FROM users WHERE id = ?", [req.user.id]);
-
-    if(user[0].isRole !== "admin" && user[0].isRole !== "moderator") {
-        return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    try {
+router.get("/", auth, requireModerator, async (req, res) => {
+	try {
 		const { page, limit, offset } = parsePagination(req.query, { defaultLimit: 15, maxLimit: 50 });
+		const search = normalizeSearch(req.query.search, { maxLength: 100 });
+		const like = "%" + search.replace(/[!%_]/g, "!$&") + "%";
+		const where = search ? " WHERE (username LIKE ? ESCAPE '!' OR slug LIKE ? ESCAPE '!')" : "";
+		const filters = search ? [like, like] : [];
+		const [users] = await db.query(
+			"SELECT " + userFields + " FROM users" + where + " ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
+			[...filters, limit, offset]
+		);
 
-        const query = `
-            SELECT id, username, slug, avatar, email, description, created_at, isRole
-            FROM users
-            ORDER BY created_at DESC
-            LIMIT ? OFFSET ?
-        `;
-
-        const countQuery = `
-            SELECT COUNT(*) as total
-            FROM users
-        `;
-
-        const params = [Number(limit), Number(offset)];
-
-        const [users] = await db.query(query, params);
-        const [[{ total }]] = await db.query(countQuery);
-
-        res.json({
-            users,
-            totalPages: Math.ceil(total / limit),
-            currentPage: Number(page),
-            totalUsers: total,
-        });
-    } catch (error) {
-		if(!error.statusCode) {
-			logger.error("Error fetching users:", error);
-		}
-        
-		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching users", error: error.statusCode ? undefined : error.message });
-    }
+		const [[{ total }]] = await db.query("SELECT COUNT(*) AS total FROM users" + where, filters);
+		res.json({
+			users: users.map(({ active_profile_badge, ...user }) => ({ ...user, activeProfileBadge: active_profile_badge })),
+			totalPages: Math.max(1, Math.ceil(total / limit)),
+			currentPage: page,
+			totalUsers: Number(total),
+		});
+	} catch(error) {
+		respondWithError(res, error, "Error fetching users", "fetch");
+	}
 });
 
-router.put("/:id", auth, upload.single("avatar"), async (req, res) => {
-    const [user] = await db.query("SELECT isRole FROM users WHERE id = ?", [req.user.id]);
+router.get("/:id/achievements", auth, requireAdmin, async (req, res) => {
+	try {
+		const id = userIdFrom(req.params.id);
+		const [users] = await db.query("SELECT id, isVerified FROM users WHERE id = ?", [id]);
+		if(!users.length) {
+			return res.status(404).json({ code: "userNotFound", message: "User not found" });
+		}
 
-    if(user[0].isRole !== "admin") {
-        return res.status(403).json({ message: "Only an admin can edit users" });
-    }
+		const [rows] = await db.query(
+			"SELECT a.code, a.name, a.description, a.icon_url, a.is_manual_only, ua.id AS award_id, ua.awarded_at, issuer.username AS awarded_by " +
+			"FROM achievements a LEFT JOIN user_achievements ua ON ua.achievement_id = a.id AND ua.user_id = ? " +
+			"LEFT JOIN users issuer ON issuer.id = ua.awarded_by_user_id WHERE a.is_active = 1 ORDER BY a.id",
+			[id]
+		);
 
-    const { id } = req.params;
-    const { username, email, slug, description, isRole } = req.body;
-    let avatarFile = req.file;
+		res.json({ achievements: rows.map(({ award_id, ...item }) => ({
+			...item,
+			earned: Boolean(award_id) || (item.code === ACHIEVEMENT_CODES.CREATOR && Number(users[0].isVerified) === 1),
+			awarded_at: award_id ? Number(item.awarded_at) : null,
+		})) });
+	} catch(error) {
+		respondWithError(res, error, "Error fetching achievements", "achievementsFetch");
+	}
+});
 
-    try {
-		const [targetUserRows] = await db.query("SELECT avatar FROM users WHERE id = ? LIMIT 1", [id]);
-		const targetUser = targetUserRows[0];
+router.put("/:id/achievements/:code", auth, requireAdmin, async (req, res) => {
+	let connection;
+	try {
+		const id = userIdFrom(req.params.id);
+		const code = String(req.params.code);
+		const earned = req.body?.earned;
+		if(typeof earned !== "boolean" || !/^[a-z0-9_]{1,80}$/.test(code)) {
+			throw validationError("invalidAchievementUpdate", "Invalid achievement update");
+		}
+
+		connection = await db.getConnection();
+		await connection.beginTransaction();
+		const [users] = await connection.query("SELECT id, active_profile_badge FROM users WHERE id = ? FOR UPDATE", [id]);
+		if(!users.length) {
+			throw Object.assign(new Error("User not found"), { statusCode: 404, errorCode: "userNotFound" });
+		}
+
+		const [achievements] = await connection.query("SELECT id FROM achievements WHERE code = ? AND is_active = 1", [code]);
+		if(!achievements.length) {
+			throw Object.assign(new Error("Achievement not found"), { statusCode: 404, errorCode: "achievementNotFound" });
+		}
+
+		if(earned) {
+			await awardAchievementToUser(connection, { userId: id, code, awardedByUserId: req.user.id, contextType: "moderation" });
+		} else {
+			await connection.query("DELETE FROM user_achievements WHERE user_id = ? AND achievement_id = ?", [id, achievements[0].id]);
+			await connection.query("UPDATE users SET active_profile_badge = NULL WHERE id = ? AND active_profile_badge = ?", [id, code]);
+		}
+
+		if(code === ACHIEVEMENT_CODES.CREATOR) {
+			await connection.query("UPDATE users SET isVerified = ? WHERE id = ?", [earned ? 1 : 0, id]);
+		}
+
+		await connection.commit();
+		logger.info("User achievement updated", { actorId: req.user.id, userId: id, code, earned });
+		return res.json({ success: true });
+	} catch(error) {
+		if(connection) {
+			await connection.rollback();
+		}
+		return respondWithError(res, error, "Error updating achievement", "achievement");
+	} finally {
+		connection?.release();
+	}
+});
+
+router.put("/:id", auth, requireAdmin, upload.single("avatar"), async (req, res) => {
+	let connection;
+	let avatarFile = req.file;
+	try {
+		const id = userIdFrom(req.params.id);
+		const { username, email, slug, description, isRole } = req.body;
+		connection = await db.getConnection();
+		await connection.beginTransaction();
+		const [targetRows] = await connection.query("SELECT " + userFields + " FROM users WHERE id = ? FOR UPDATE", [id]);
+		const targetUser = targetRows[0];
 		if(!targetUser) {
-			return res.status(404).json({ message: "User not found" });
+			throw Object.assign(new Error("User not found"), { statusCode: 404, errorCode: "userNotFound" });
 		}
 
-        if(avatarFile) {
-            avatarFile = await convertImageToWebp(avatarFile);
-        }
+		const updates = {};
+		if(username !== undefined) {
+			if(typeof username !== "string" || !username.trim() || username.length > 100) {
+				throw validationError("invalidUsername", "Invalid username", "username");
+			}
 
-        const updates = {};
+			updates.username = sanitizePlainText(username.trim());
+			if(!updates.username) {
+				throw validationError("invalidUsername", "Invalid username", "username");
+			}
+		}
 
-        if(username) {
-            updates.username = sanitizePlainText(username);
-        }
+		if(email !== undefined) {
+			if(typeof email !== "string" || email.length > 255 || (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))) {
+				throw validationError("invalidEmail", "Invalid email", "email");
+			}
 
-        if(email) {
-            updates.email = sanitizePlainText(email);
-        }
+			updates.email = email.trim().toLowerCase() || null;
+		}
 
-        if(slug) {
-            const [currentUserRows] = await db.query("SELECT slug FROM users WHERE id = ? LIMIT 1", [id]);
-            const currentSlug = String(currentUserRows[0]?.slug || "").toLowerCase();
-            const validation = validateSlug(slug, { allowLegacy: slug === currentSlug });
-            if(!validation.valid) {
-                return res.status(400).json({ message: validation.reason === "too_short" ? "Slug must be at least 4 characters" : "Invalid slug" });
-            }
+		if(slug !== undefined) {
+			if(typeof slug !== "string") {
+				throw validationError("invalidSlug", "Invalid slug", "slug");
+			}
 
-            const [existingSlug] = await db.query("SELECT id FROM users WHERE slug = ? AND id != ?", [validation.normalized, id]);
-            if(existingSlug.length > 0) {
-                return res.status(400).json({ message: "Slug is already taken" });
-            }
+			const validation = validateSlug(slug, { allowLegacy: slug === targetUser.slug });
+			if(!validation.valid || validation.normalized !== slug.toLowerCase()) {
+				throw validationError(
+					validation.reason === "too_short" ? "slugShort" : "invalidSlug",
+					validation.reason === "too_short" ? "Slug must be at least 4 characters" : "Invalid slug",
+					"slug"
+				);
+			}
 
-            updates.slug = validation.normalized;
-        }
+			const [existing] = await connection.query("SELECT id FROM users WHERE slug = ? AND id != ?", [validation.normalized, id]);
+			if(existing.length) {
+				throw validationError("slugTaken", "Slug is already taken", "slug");
+			}
 
-        if(description !== undefined) {
-            updates.description = description ? sanitizePlainText(description, { preserveNewlines: true }) : "";
-        }
+			updates.slug = validation.normalized;
+		}
 
-        if(avatarFile) {
-            const objectKey = `users/${id}/avatar/${avatarFile.filename}`;
-            await uploadFile({ key: objectKey, filePath: avatarFile.path, contentType: avatarFile.mimetype });
-            updates.avatar = getPublicUrl(objectKey);
-        }
+		if(description !== undefined) {
+			if(typeof description !== "string" || description.length > 5000) {
+				throw validationError("invalidDescription", "Invalid description", "description");
+			}
 
-        if(isRole && ["admin", "moderator", "user"].includes(isRole)) {
-            updates.isRole = isRole;
-        }
+			updates.description = sanitizePlainText(description, { preserveNewlines: true });
+		}
 
-        if(!Object.keys(updates).length) {
-            return res.status(400).json({ message: "No data provided for update" });
-        }
+		if(isRole !== undefined && isRole !== targetUser.isRole) {
+			if(!["admin", "moderator", "user"].includes(isRole)) {
+				throw validationError("invalidRole", "Invalid role", "isRole");
+			}
 
-        await db.query("UPDATE users SET ? WHERE id = ?", [updates, id]);
+			if(id === Number(req.user.id) && isRole !== "admin") {
+				throw validationError("ownRole", "Cannot change your own admin role", "isRole");
+			}
 
+			const [admins] = await connection.query("SELECT id FROM users WHERE isRole = 'admin' FOR UPDATE");
+			if(!admins.some((admin) => Number(admin.id) === Number(req.user.id))) {
+				throw Object.assign(new Error("Unauthorized"), { statusCode: 403, errorCode: "forbidden" });
+			}
+
+			updates.isRole = isRole;
+			if(isRole === "user" && targetUser.active_profile_badge === "staff") {
+				const [staffAwards] = await connection.query(
+					"SELECT ua.id FROM user_achievements ua JOIN achievements a ON a.id = ua.achievement_id WHERE ua.user_id = ? AND a.code = 'staff' AND a.is_active = 1",
+					[id]
+				);
+
+				if(!staffAwards.length) {
+					updates.active_profile_badge = null;
+				}
+			}
+		}
+
+		if(!Object.keys(updates).length && !avatarFile) {
+			throw validationError("emptyUpdate", "No data provided for update");
+		}
+
+		if(avatarFile) {
+			avatarFile = await convertImageToWebp(avatarFile);
+			const objectKey = "users/" + id + "/avatar/" + avatarFile.filename;
+			await uploadFile({ key: objectKey, filePath: avatarFile.path, contentType: avatarFile.mimetype });
+			updates.avatar = getPublicUrl(objectKey);
+		}
+
+		await connection.query("UPDATE users SET ? WHERE id = ?", [updates, id]);
+		await connection.commit();
 		if(updates.avatar && targetUser.avatar !== updates.avatar) {
-			await deleteUserAvatarUrl(targetUser.avatar, id).catch((error) => {
-				logger.warn(`Failed to delete replaced user avatar: ${error.message}`);
-			});
+			await deleteUserAvatarUrl(targetUser.avatar, id).catch((error) => logger.warn("Failed to delete replaced user avatar:", error));
 		}
 
-        const [updatedUser] = await db.query(
-            "SELECT id, username, slug, avatar, email, description, created_at, isRole FROM users WHERE id = ?",
-            [id]
-        );
-
-        res.json(updatedUser[0]);
-    } catch (error) {
-        logger.error("Error updating user:", error);
-        res.status(500).json({ message: "Error updating user", error: error.message });
-    }
+		const [updated] = await db.query("SELECT " + userFields + " FROM users WHERE id = ?", [id]);
+		updated[0].activeProfileBadge = await getVisibleProfileBadge(db, updated[0]);
+		delete updated[0].active_profile_badge;
+		return res.json(updated[0]);
+	} catch(error) {
+		if(connection) {
+			await connection.rollback();
+		}
+		return respondWithError(res, error, "Error updating user", "updateUser");
+	} finally {
+		connection?.release();
+	}
 });
 
 module.exports = router;

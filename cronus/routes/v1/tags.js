@@ -2,6 +2,7 @@ const { logger } = require("../../packages/shared/logger");
 
 const express = require("express");
 const { db } = require("../../config/db");
+const { getGameVersionBranch } = require("../../utils/gameVersionBranches");
 
 const router = express.Router();
 
@@ -93,18 +94,37 @@ router.get("/game-versions", async (req, res) => {
             ORDER BY id DESC`
         );
 
-        const gameVersions = rows.map((row) => {
-            const group = groupsByVersion.get(row.version);
+        const branchRows = new Map();
+		const branchGroups = new Map();
+		rows.forEach((row) => {
+			const branch = row.version_type === "pre-release" ? row.version : getGameVersionBranch(row.version);
+			const existing = branchRows.get(branch);
+			if(!existing) {
+				branchRows.set(branch, { ...row, version: branch, hasHotfix: false });
+			}
+
+			if(groupsByVersion.has(row.version) && !branchGroups.has(branch)) {
+				branchGroups.set(branch, groupsByVersion.get(row.version));
+			}
+            
+			if(branch !== row.version && /\.\d+$/.test(row.version) && !row.version.endsWith(".0")) {
+				branchRows.get(branch).hasHotfix = true;
+			}
+		});
+
+        const gameVersions = [...branchRows.values()].map((row) => {
+			const group = groupsByVersion.get(row.version) || branchGroups.get(row.version);
 
             return {
                 id: row.id,
                 version: row.version,
+				label: row.version.endsWith(".x") && !row.hasHotfix ? row.version.slice(0, -2) : row.version,
                 version_type: row.version_type || "release",
-                browse_group_key: group?.browse_group_key || "",
-                browse_group_label: group?.browse_group_label || "",
-                browse_group_sort: group?.browse_group_sort || 0,
-                is_browse_default: group?.is_browse_default || false,
-                is_browse_visible: group?.is_browse_visible !== false,
+				browse_group_key: group?.browse_group_key || "",
+				browse_group_label: group?.browse_group_label || "",
+				browse_group_sort: group?.browse_group_sort || 0,
+				is_browse_default: group?.is_browse_default || false,
+				is_browse_visible: group?.is_browse_visible !== false,
             };
         });
 

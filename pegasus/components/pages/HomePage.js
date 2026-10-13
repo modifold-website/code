@@ -79,7 +79,7 @@ export default function HomePage({ news = [], locale, discoverData = null, authT
 
 	return (
 		<>
-			<img src="/images/background-home.webp" className="fixed-background-teleport" alt="" />
+			<img src="/images/background-home.webp" className="fixed-background-teleport fixed-background-teleport--home" alt="" />
 
 			<main className="layout home-page">
 				<section className="hero-section">

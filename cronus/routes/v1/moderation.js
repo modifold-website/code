@@ -10,6 +10,7 @@ const { awardFirstApprovedProjectAchievement } = require("../../utils/achievemen
 const { bumpProjectCacheVersion } = require("../../utils/projectCache");
 const { deleteObject, getPrivateObjectDownloadUrl, normalizeObjectKey, promotePrivateObject } = require("../../utils/fileHosting");
 const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
+const { normalizeGameVersionBranches } = require("../../utils/gameVersionBranches");
 const router = express.Router();
 const PROJECT_TYPE_PATH_SEGMENTS = {
 	mod: "mod",
@@ -83,7 +84,7 @@ const getGlobalOnlineNow = async () => {
     };
 };
 
-const getGlobalOnlineSeriesForLast30Days = async () => {
+const getGlobalOnlineSeriesForPeriod = async (days) => {
     if(!clickhouse) {
         return [];
     }
@@ -97,7 +98,7 @@ const getGlobalOnlineSeriesForLast30Days = async () => {
                     server_uuid,
                     argMax(players_online, event_at) AS players_online
                 FROM mod_server_updates
-                WHERE event_at >= toUInt32(toUnixTimestamp(now()) - (30 * 86400))
+                WHERE event_at >= toUInt32(toUnixTimestamp(now()) - ({days:UInt32} * 86400))
                 AND event_at <= now()
                 GROUP BY hour_at, project_slug, server_uuid
             )
@@ -109,6 +110,7 @@ const getGlobalOnlineSeriesForLast30Days = async () => {
             GROUP BY day
             ORDER BY day ASC
         `,
+        query_params: { days },
         format: "JSONEachRow",
     });
 
@@ -249,7 +251,7 @@ const mapVersionReview = (version) => ({
 	file_size: Number(version.file_size || 0),
 	downloads: Number(version.downloads || 0),
 	created_at: version.created_at,
-	game_versions: parseMaybeJsonArray(version.game_versions),
+	game_versions: normalizeGameVersionBranches(parseMaybeJsonArray(version.game_versions)),
 	loaders: parseMaybeJsonArray(version.loaders),
 	moderation_status: version.moderation_status,
 	moderation_reason: version.moderation_reason,
@@ -763,36 +765,58 @@ router.get("/analytics", auth, async (req, res) => {
     }
 
     try {
-        const { time_range = "30d" } = req.query;
-        let dateFilter = "";
-        const params = [];
+		const timeRange = normalizeEnum(req.query.time_range, ["7d", "30d", "90d", "1y"], "30d", { name: "time_range", rejectInvalid: true });
+		const days = { "7d": 7, "30d": 30, "90d": 90, "1y": 365 }[timeRange];
+		const endDate = new Date();
+		endDate.setUTCHours(0, 0, 0, 0);
+		endDate.setUTCDate(endDate.getUTCDate() + 1);
+		const startDate = new Date(endDate);
+		startDate.setUTCDate(startDate.getUTCDate() - days);
+		const previousStartDate = new Date(startDate);
+		previousStartDate.setUTCDate(previousStartDate.getUTCDate() - days);
+		const from = startDate.toISOString().slice(0, 10);
+		const previousFrom = previousStartDate.toISOString().slice(0, 10);
+		const toExclusive = endDate.toISOString().slice(0, 10);
+		const dateFilter = "created_at >= ? AND created_at < ?";
+		const params = [from, toExclusive];
+		const activityParams = [previousFrom, toExclusive];
 
-        if(time_range === "7d") {
-            dateFilter = "created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
-        } else if(time_range === "30d") {
-            dateFilter = "created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)";
-        } else if(time_range === "1y") {
-            dateFilter = "created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
-        }
+		const buildActivity = (rows) => {
+			const counts = new Map(rows.map((row) => [String(row.date), toSafeNumber(row.count)]));
+			const series = [];
+			let current = 0;
+			let previous = 0;
+
+			for(const date = new Date(previousStartDate); date < endDate; date.setUTCDate(date.getUTCDate() + 1)) {
+				const key = date.toISOString().slice(0, 10);
+				const count = counts.get(key) || 0;
+				if(date < startDate) {
+					previous += count;
+				} else {
+					current += count;
+					series.push({ date: key, count });
+				}
+			}
+
+			return { current, previous, series };
+		};
 
         const approvedWhereSql = [dateFilter, "status = 'approved'"].filter(Boolean).join(" AND ");
         const pendingWhereSql = [dateFilter, "status IN ('queued', 'pending')"].filter(Boolean).join(" AND ");
-        const userDateFilter = dateFilter ? dateFilter.replaceAll("created_at", "FROM_UNIXTIME(created_at / 1000)") : "";
-
         const approvedProjectsQuery = `
-            SELECT DATE(created_at) AS date, COUNT(*) AS count
+            SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS date, COUNT(*) AS count
             FROM projects
             ${approvedWhereSql ? `WHERE ${approvedWhereSql}` : ""}
-            GROUP BY DATE(created_at)
-            ORDER BY DATE(created_at)
+            GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
+            ORDER BY date
         `;
 
         const pendingProjectsQuery = `
-            SELECT DATE(created_at) AS date, COUNT(*) AS count
+            SELECT DATE_FORMAT(created_at, '%Y-%m-%d') AS date, COUNT(*) AS count
             FROM projects
             ${pendingWhereSql ? `WHERE ${pendingWhereSql}` : ""}
-            GROUP BY DATE(created_at)
-            ORDER BY DATE(created_at)
+            GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
+            ORDER BY date
         `;
 
         const totalApprovedQuery = `
@@ -802,12 +826,22 @@ router.get("/analytics", auth, async (req, res) => {
         `;
         
         const userRegistrationsQuery = `
-            SELECT DATE(FROM_UNIXTIME(created_at / 1000)) AS date, COUNT(*) AS count
+            SELECT DATE_FORMAT(FROM_UNIXTIME(created_at / 1000), '%Y-%m-%d') AS date, COUNT(*) AS count
             FROM users
-            ${userDateFilter ? `WHERE ${userDateFilter}` : ""}
-            GROUP BY DATE(FROM_UNIXTIME(created_at / 1000))
-            ORDER BY DATE(FROM_UNIXTIME(created_at / 1000))
+            WHERE created_at >= ? AND created_at < ?
+            GROUP BY DATE_FORMAT(FROM_UNIXTIME(created_at / 1000), '%Y-%m-%d')
+            ORDER BY date
         `;
+
+		const publishedVersionsQuery = `
+			SELECT DATE_FORMAT(v.created_at, '%Y-%m-%d') AS date, COUNT(*) AS count
+			FROM project_versions v
+			JOIN projects p ON p.id = v.project_id
+			WHERE v.created_at >= ? AND v.created_at < ?
+			AND v.moderation_status = 'approved' AND p.status = 'approved'
+			GROUP BY DATE_FORMAT(v.created_at, '%Y-%m-%d')
+			ORDER BY date
+		`;
 
         const totalUsersQuery = `
             SELECT COUNT(*) AS total
@@ -836,13 +870,47 @@ router.get("/analytics", auth, async (req, res) => {
             WHERE status <> 'approved'
         `;
         
-        const [approvedProjects] = await db.query(approvedProjectsQuery, params);
-        const [pendingProjects] = await db.query(pendingProjectsQuery, params);
-        const [userRegistrations] = await db.query(userRegistrationsQuery, params);
+		const [[approvedProjects], [pendingProjects], [userRegistrations], [publishedVersions]] = await Promise.all([
+			db.query(approvedProjectsQuery, activityParams),
+			db.query(pendingProjectsQuery, params),
+			db.query(userRegistrationsQuery, [previousStartDate.getTime(), endDate.getTime()]),
+			db.query(publishedVersionsQuery, activityParams),
+		]);
+		const projectActivity = buildActivity(approvedProjects);
+		const userActivity = buildActivity(userRegistrations);
+		const versionActivity = buildActivity(publishedVersions);
+		let downloadActivity = null;
+		let onlineAvailable = Boolean(clickhouse);
+
+		if(clickhouse) {
+			try {
+				const result = await clickhouse.query({
+					query: `
+						SELECT toDate(created_at) AS date,
+						countIf(event_id IS NULL) + uniqExactIf(event_id, event_id IS NOT NULL) AS count
+						FROM project_events
+						WHERE event_type = 'download'
+						AND created_at >= toDateTime({from:String})
+						AND created_at < toDateTime({to:String})
+						GROUP BY date ORDER BY date
+					`,
+					query_params: { from: previousFrom, to: toExclusive },
+					format: "JSONEachRow",
+				});
+				downloadActivity = buildActivity(await result.json());
+			} catch(error) {
+				logger.error("Error fetching global download analytics:", error);
+			}
+		}
         const [[{ total: totalApproved }]] = await db.query(totalApprovedQuery);
         const [[{ total: totalPending }]] = await db.query(totalPendingQuery);
         const [[{ total: totalUsers }]] = await db.query(totalUsersQuery);
         const [[{ total: totalProjectVersions }]] = await db.query(totalProjectVersionsQuery);
+		const [[{ total: totalPublishedVersions }]] = await db.query(`
+			SELECT COUNT(*) AS total FROM project_versions v
+			JOIN projects p ON p.id = v.project_id
+			WHERE v.moderation_status = 'approved' AND p.status = 'approved'
+		`);
         const [[{ total: totalProjectDownloads }]] = await db.query(totalProjectDownloadsQuery);
         const [[{ total: totalUnpublishedProjects }]] = await db.query(totalUnpublishedProjectsQuery);
         let onlineSummary = { playersOnlineNow: 0, activeServersNow: 0 };
@@ -851,39 +919,43 @@ router.get("/analytics", auth, async (req, res) => {
         try {
             [onlineSummary, globalOnlineSeries] = await Promise.all([
                 getGlobalOnlineNow(),
-                getGlobalOnlineSeriesForLast30Days(),
+                getGlobalOnlineSeriesForPeriod(days),
             ]);
         } catch (analyticsError) {
+			onlineAvailable = false;
             logger.error("Error fetching global online analytics:", analyticsError);
         }
 
         res.json({
-            approvedProjects: approvedProjects.map(row => ({
-                date: row.date,
-                count: row.count
-            })),
+			timeRange,
+			activity: {
+				users: { current: userActivity.current, previous: userActivity.previous },
+				projects: { current: projectActivity.current, previous: projectActivity.previous },
+				versions: { current: versionActivity.current, previous: versionActivity.previous },
+				downloads: downloadActivity ? { current: downloadActivity.current, previous: downloadActivity.previous } : null,
+			},
+			approvedProjects: projectActivity.series,
             pendingProjects: pendingProjects.map(row => ({
                 date: row.date,
                 count: row.count
             })),
-            userRegistrations: userRegistrations.map(row => ({
-                date: row.date,
-                count: row.count
-            })),
+			userRegistrations: userActivity.series,
             totalApproved,
             totalPending,
             totalUsers,
             totalProjectVersions,
+			totalPublishedVersions,
             totalProjectDownloads,
             totalUnpublishedProjects,
             totalPlayersOnlineNow: onlineSummary.playersOnlineNow,
             totalActiveServersNow: onlineSummary.activeServersNow,
             onlineSummary,
             globalOnlineSeries,
+			onlineAvailable,
         });
     } catch (error) {
         logger.error("Error fetching moderation analytics:", error);
-        res.status(500).json({ message: "Error fetching analytics", error: error.message });
+		res.status(error.statusCode || 500).json({ message: error.statusCode ? error.message : "Error fetching analytics" });
     }
 });
 

@@ -1053,6 +1053,14 @@
     "clearFilters": "Limpiar filtros",
     "clearAllFilters": "Limpiar todos los filtros",
     "clearSearch": "Limpiar búsqueda",
+	"mobileFilters": {
+		"title": "Filtros",
+		"reset": "Restablecer",
+		"apply": "Aplicar",
+		"close": "Cerrar filtros",
+		"selected": "Filtros seleccionados",
+		"remove": "Quitar filtro: {label}"
+	},
 	"dependencies": {
 		"title": "Depende de",
 		"placeholder": "Buscar un proyecto...",
@@ -1212,6 +1220,10 @@
       "customTitle": "Logro único",
       "customDescription": "Un logro único del creador.",
       "items": {
+        "creator_badge": {
+          "title": "Creator",
+					"description": "Por publicar 3 proyectos y alcanzar 500 descargas totales en tus proyectos publicados."
+        },
         "staff": {
           "title": "Equipo de Modifold",
           "description": "Para moderadores y administradores de Modifold."
@@ -2028,6 +2040,7 @@
   },
   "NewsPage": {
     "title": "Blog",
+		"rssFeed": "Feed RSS",
     "featuredArticle": {
       "label": "Artículo destacado"
     },
@@ -2204,9 +2217,25 @@
       "reports": "Reports",
       "technicalReview": "Technical review"
     },
-    "charts": {
-      "approvedProjects": "Gráfico de proyectos aprobados",
-      "userRegistrations": "Gráfico de registros de usuarios",
+		"statistics": {
+			"activity": "Actividad del período",
+			"period": "Período",
+			"days": "{count} días",
+			"users": "Nuevos usuarios",
+			"projects": "Nuevos proyectos publicados",
+			"versions": "Versiones publicadas",
+			"downloads": "Descargas",
+			"change": "{count} respecto al período anterior",
+			"total": "Total histórico: {count}",
+			"loading": "Cargando estadísticas…",
+			"unavailable": "Datos no disponibles",
+			"empty": "No hay datos para este período",
+			"error": "No se pudieron cargar las estadísticas.",
+			"retry": "Reintentar"
+		},
+		"charts": {
+			"approvedProjects": "Nuevos proyectos publicados",
+			"userRegistrations": "Nuevos usuarios",
       "projects": "Proyectos",
       "registrations": "Registros",
       "date": "Fecha: {date}"
@@ -2345,64 +2374,106 @@
     },
     "empty": "No versions in this technical review queue."
   },
-  "UsersModerationPage": {
-    "metadata": {
-      "title": "Moderación de usuarios — Modifold"
-    },
-    "tabs": {
-      "projects": "Proyectos",
-      "users": "Usuarios",
-      "verification": "Verificación",
-      "statistics": "Estadisticas",
-      "reports": "Reports"
-    },
-    "errors": {
-      "fetch": "Error al obtener usuarios",
-      "updateRole": "Error al actualizar rol",
-      "fileTooLarge": "Archivo demasiado grande. El tamaño máximo es de 20 MB",
-      "updateUser": "Error al actualizar usuario"
-    },
-    "success": {
-      "roleUpdated": "Rol del usuario actualizado",
-      "userUpdated": "Usuario actualizado"
-    },
-    "roles": {
-      "admin": "Administrador",
-      "moderator": "Moderador",
-      "user": "Usuario"
-    },
-    "actions": {
-      "editAria": "Cambiar rol o editar usuario",
-      "edit": "Editar",
-      "save": "Guardar",
-      "cancel": "Cancelar",
-      "close": "Cerrar"
-    },
-    "pagination": {
-      "previous": "Anterior",
-      "next": "Siguiente",
-      "pageOf": "Página {page} de {totalPages}"
-    },
-    "empty": "No hay usuarios para mostrar.",
-    "modal": {
-      "title": "Editar usuario {username}"
-    },
-    "fields": {
-      "avatar": "Avatar",
-      "avatarAlt": "Vista previa del avatar",
-      "username": "Nombre de usuario",
-      "email": "Correo",
-      "slug": "URL",
-      "description": "Descripción",
-      "role": "Rol"
-    },
-    "placeholders": {
-      "username": "Introduce el nombre de usuario",
-      "email": "Introduce el correo",
-      "slug": "Introduce el slug",
-      "description": "Introduce la descripción"
-    }
-  },
+	"UsersModerationPage": {
+		"metadata": {
+			"title": "Moderación de usuarios — Modifold"
+		},
+		"tabs": {
+			"projects": "Proyectos",
+			"users": "Usuarios",
+			"verification": "Verificación",
+			"statistics": "Estadisticas",
+			"reports": "Reports"
+		},
+		"errors": {
+			"fetch": "Error al obtener usuarios",
+			"updateRole": "Error al actualizar rol",
+			"fileTooLarge": "Archivo demasiado grande. El tamaño máximo es de 20 MB",
+			"updateUser": "Error al actualizar usuario",
+			"invalidUsername": "Introduce un nombre de hasta 100 caracteres.",
+			"invalidEmail": "Introduce un correo válido.",
+			"invalidSlug": "Usa un slug válido con letras, números y guiones.",
+			"slugShort": "El slug debe tener al menos 4 caracteres.",
+			"slugTaken": "Este slug ya está en uso.",
+			"invalidDescription": "La descripción no debe superar los 5000 caracteres.",
+			"invalidRole": "Selecciona un rol válido.",
+			"ownRole": "No puedes cambiar tu propio rol de administrador.",
+			"forbidden": "No tienes permiso para esta acción.",
+			"userNotFound": "Este usuario ya no existe.",
+			"achievement": "No se pudo actualizar el logro. Inténtalo de nuevo.",
+			"achievementsFetch": "No se pudieron cargar los logros."
+		},
+		"success": {
+			"roleUpdated": "Rol del usuario actualizado",
+			"userUpdated": "Usuario actualizado",
+			"achievementGranted": "Logro otorgado",
+			"achievementRevoked": "Logro revocado"
+		},
+		"roles": {
+			"admin": "Administrador",
+			"moderator": "Moderador",
+			"user": "Usuario"
+		},
+		"actions": {
+			"editAria": "Cambiar rol o editar usuario",
+			"edit": "Editar",
+			"save": "Guardar",
+			"cancel": "Cancelar",
+			"close": "Cerrar",
+			"manageNamed": "Gestionar a {username}",
+			"achievements": "Logros",
+			"changeAvatar": "Cambiar avatar",
+			"saving": "Guardando…"
+		},
+		"pagination": {
+			"previous": "Anterior",
+			"next": "Siguiente",
+			"pageOf": "Página {page} de {totalPages}"
+		},
+		"empty": "No hay usuarios para mostrar.",
+		"modal": {
+			"title": "Editar usuario {username}"
+		},
+		"fields": {
+			"avatar": "Avatar",
+			"avatarAlt": "Vista previa del avatar",
+			"username": "Nombre de usuario",
+			"email": "Correo",
+			"slug": "URL",
+			"description": "Descripción",
+			"role": "Rol"
+		},
+		"placeholders": {
+			"username": "Introduce el nombre de usuario",
+			"email": "Introduce el correo",
+			"slug": "Introduce el slug",
+			"description": "Introduce la descripción"
+		},
+		"listLabel": "Gestión de usuarios",
+		"loading": "Cargando…",
+		"retry": "Reintentar",
+		"count": "Usuarios encontrados: {count}",
+		"emailHint": "Solo es el correo de contacto. Cambiarlo no modifica el correo de inicio de sesión.",
+		"search": {
+			"label": "Buscar usuarios por nombre o slug",
+			"placeholder": "Buscar por nombre o slug",
+			"empty": "No se encontraron usuarios.",
+			"clear": "Limpiar búsqueda"
+		},
+		"achievements": {
+			"title": "Logros de {username}",
+			"note": "Los logros otorgados manualmente no requieren cumplir las condiciones. No se cambian los roles ni las cuentas vinculadas.",
+			"empty": "No hay logros disponibles.",
+			"earned": "Obtenido",
+			"grant": "Otorgar",
+			"revoke": "Revocar",
+			"grantNamed": "Otorgar {name}",
+			"revokeNamed": "Revocar {name}",
+			"confirmTitle": "¿Revocar «{name}»?",
+			"confirmDescription": "Se eliminará este logro de {username}. Si está seleccionado como insignia junto a su nombre, también se quitará la insignia.",
+			"reearn": "Los logros automáticos pueden obtenerse de nuevo al cumplir sus condiciones."
+		}
+	},
   "NotificationsPage": {
     "title": "Notificaciones",
     "loading": "Cargando notificaciones...",
@@ -2552,10 +2623,10 @@
       "list2": "Más posibilidades de aparecer en selecciones y bloques de portada.",
       "list3": "Prioridad en campañas y programas de apoyo a creadores."
     },
-    "requirementsTitle": "Requisitos de la insignia",
+		"requirementsTitle": "Para obtener la insignia debes cumplir ambos requisitos",
     "requirementsList": {
-      "projects": "Publicar {required} proyectos",
-      "downloads": "Alcanzar {required} descargas"
+			"projects": "Publicar al menos {required} proyectos",
+			"downloads": "Alcanzar al menos {required} descargas en total entre todos tus proyectos publicados"
     },
     "claim": "Obtener Insignia de Creador",
     "claiming": "Aplicando...",

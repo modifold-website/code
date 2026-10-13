@@ -8,6 +8,11 @@ export async function generateMetadata() {
 
     return {
         title: `${t("title")} — Modifold`,
+		alternates: {
+			types: {
+				"application/rss+xml": "https://modifold.com/blog/rss.xml",
+			},
+		},
     };
 }
 
