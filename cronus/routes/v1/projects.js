@@ -756,7 +756,13 @@ const storeProjectFile = async ({ projectId, file, directory = "" }) => {
 };
 
 const storeProjectVersionFile = async ({ projectId, versionId, file }) => {
-	const objectKey = ["quarantine", "projects", String(projectId), "versions", String(versionId), file.filename].join("/");
+	const filename = path.basename(String(file.originalname || file.filename).replace(/\\/g, "/")).replace(/[\u0000-\u001f\u007f]/g, "");
+	if(!filename || filename === "." || filename === "..") {
+		throw new Error("Invalid upload filename");
+	}
+
+	const uploadId = crypto.randomBytes(6).toString("hex");
+	const objectKey = ["quarantine", "projects", String(projectId), "versions", String(versionId), uploadId, filename].join("/");
 	await uploadFile({
 		key: objectKey,
 		filePath: file.path,
