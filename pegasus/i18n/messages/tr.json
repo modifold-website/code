@@ -2209,9 +2209,25 @@
       "reports": "Reports",
       "technicalReview": "Technical review"
     },
-    "charts": {
-      "approvedProjects": "Onaylanan proje grafiği",
-      "userRegistrations": "Kullanıcı kayıt grafiği",
+		"statistics": {
+			"activity": "Dönem etkinliği",
+			"period": "Dönem",
+			"days": "{count} gün",
+			"users": "Yeni kullanıcılar",
+			"projects": "Yeni yayımlanan projeler",
+			"versions": "Yayımlanan sürümler",
+			"downloads": "İndirmeler",
+			"change": "Önceki döneme göre {count}",
+			"total": "Tüm zamanlar: {count}",
+			"loading": "İstatistikler yükleniyor…",
+			"unavailable": "Veriler kullanılamıyor",
+			"empty": "Bu dönem için veri yok",
+			"error": "İstatistikler yüklenemedi.",
+			"retry": "Yeniden dene"
+		},
+		"charts": {
+			"approvedProjects": "Yeni yayımlanan projeler",
+			"userRegistrations": "Yeni kullanıcılar",
       "projects": "Projeler",
       "registrations": "Kayıtlar",
       "date": "Tarih: {date}"

@@ -2209,9 +2209,25 @@
       "reports": "Reports",
       "technicalReview": "Technical review"
     },
-    "charts": {
-      "approvedProjects": "Gráfico de projetos aprovados",
-      "userRegistrations": "Gráfico de registros de usuários",
+		"statistics": {
+			"activity": "Atividade no período",
+			"period": "Período",
+			"days": "{count} dias",
+			"users": "Novos usuários",
+			"projects": "Novos projetos publicados",
+			"versions": "Versões publicadas",
+			"downloads": "Downloads",
+			"change": "{count} em relação ao período anterior",
+			"total": "Total geral: {count}",
+			"loading": "Carregando estatísticas…",
+			"unavailable": "Dados indisponíveis",
+			"empty": "Sem dados para este período",
+			"error": "Não foi possível carregar as estatísticas.",
+			"retry": "Tentar novamente"
+		},
+		"charts": {
+			"approvedProjects": "Novos projetos publicados",
+			"userRegistrations": "Novos usuários",
       "projects": "Projetos",
       "registrations": "Registros",
       "date": "Data: {date}"

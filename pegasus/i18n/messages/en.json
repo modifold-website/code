@@ -2391,9 +2391,25 @@
       "reports": "Reports",
       "technicalReview": "Technical review"
     },
-    "charts": {
-      "approvedProjects": "Approved Projects Chart",
-      "userRegistrations": "User Registrations Chart",
+		"statistics": {
+			"activity": "Activity for the period",
+			"period": "Period",
+			"days": "{count} days",
+			"users": "New users",
+			"projects": "New published projects",
+			"versions": "Published versions",
+			"downloads": "Downloads",
+			"change": "{count} vs. previous period",
+			"total": "All time: {count}",
+			"loading": "Loading statistics…",
+			"unavailable": "Data unavailable",
+			"empty": "No data for this period",
+			"error": "Could not load statistics.",
+			"retry": "Retry"
+		},
+		"charts": {
+			"approvedProjects": "New published projects",
+			"userRegistrations": "New users",
       "projects": "Projects",
       "registrations": "Registrations",
       "date": "Date: {date}"

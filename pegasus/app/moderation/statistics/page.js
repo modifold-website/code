@@ -30,24 +30,7 @@ async function fetchAnalytics(authToken) {
     } catch (err) {
         console.error("Error fetching analytics data:", err);
 
-        return {
-            approvedProjects: [],
-            pendingProjects: [],
-            userRegistrations: [],
-            totalApproved: 0,
-            totalPending: 0,
-            totalUsers: 0,
-            totalProjectVersions: 0,
-            totalProjectDownloads: 0,
-            totalUnpublishedProjects: 0,
-            totalPlayersOnlineNow: 0,
-            totalActiveServersNow: 0,
-            onlineSummary: {
-                playersOnlineNow: 0,
-                activeServersNow: 0,
-            },
-            globalOnlineSeries: [],
-        };
+		return null;
     }
 }
 
@@ -83,5 +66,5 @@ export default async function StatisticsModerationServer() {
 
     const analytics = await fetchAnalytics(authToken);
 
-    return <StatisticsModerationPage initialAnalytics={analytics} />;
+	return <StatisticsModerationPage initialAnalytics={analytics} authToken={authToken} />;
 }

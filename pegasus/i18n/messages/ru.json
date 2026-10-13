@@ -2391,9 +2391,25 @@
       "reports": "Жалобы",
       "technicalReview": "Проверка файлов"
     },
-    "charts": {
-      "approvedProjects": "График одобренных проектов",
-      "userRegistrations": "График регистраций пользователей",
+		"statistics": {
+			"activity": "Активность за период",
+			"period": "Период",
+			"days": "{count} дней",
+			"users": "Новые пользователи",
+			"projects": "Новые опубликованные проекты",
+			"versions": "Опубликованные версии",
+			"downloads": "Скачивания",
+			"change": "{count} к предыдущему периоду",
+			"total": "За всё время: {count}",
+			"loading": "Загрузка статистики…",
+			"unavailable": "Данные недоступны",
+			"empty": "Нет данных за этот период",
+			"error": "Не удалось загрузить статистику.",
+			"retry": "Повторить"
+		},
+		"charts": {
+			"approvedProjects": "Новые опубликованные проекты",
+			"userRegistrations": "Новые пользователи",
       "projects": "Проекты",
       "registrations": "Регистрации",
       "date": "Дата: {date}"

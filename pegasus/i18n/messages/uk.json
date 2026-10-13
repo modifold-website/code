@@ -2203,9 +2203,25 @@
       "reports": "Reports",
       "technicalReview": "Перевірка файлів"
     },
-    "charts": {
-      "approvedProjects": "Графік схвалених проєктів",
-      "userRegistrations": "Графік реєстрацій користувачів",
+		"statistics": {
+			"activity": "Активність за період",
+			"period": "Період",
+			"days": "{count} днів",
+			"users": "Нові користувачі",
+			"projects": "Нові опубліковані проєкти",
+			"versions": "Опубліковані версії",
+			"downloads": "Завантаження",
+			"change": "{count} порівняно з попереднім періодом",
+			"total": "За весь час: {count}",
+			"loading": "Завантаження статистики…",
+			"unavailable": "Дані недоступні",
+			"empty": "Немає даних за цей період",
+			"error": "Не вдалося завантажити статистику.",
+			"retry": "Повторити"
+		},
+		"charts": {
+			"approvedProjects": "Нові опубліковані проєкти",
+			"userRegistrations": "Нові користувачі",
       "projects": "Проєкти",
       "registrations": "Реєстрації",
       "date": "Дата: {date}"

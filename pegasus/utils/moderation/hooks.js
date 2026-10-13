@@ -3,7 +3,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { apiClient, getAuthHeaders } from "@/utils/api/client";
-import { userModerationQueryKeys } from "./queryKeys";
+import { moderationStatisticsQueryKeys, userModerationQueryKeys } from "./queryKeys";
+
+export function useModerationStatistics({ authToken, timeRange, initialAnalytics }) {
+	const { user } = useAuth();
+
+	return useQuery({
+		queryKey: moderationStatisticsQueryKeys.analytics(user?.id, timeRange),
+		queryFn: async ({ signal }) => {
+			const response = await apiClient.get("/moderation/analytics", {
+				headers: getAuthHeaders(authToken),
+				params: { time_range: timeRange },
+				signal,
+			});
+
+			return response.data;
+		},
+		initialData: timeRange === "30d" ? initialAnalytics || undefined : undefined,
+		enabled: Boolean(authToken),
+	});
+}
 
 export function useModerationUsers({ authToken, page, search, initialData }) {
 	const { user } = useAuth();
