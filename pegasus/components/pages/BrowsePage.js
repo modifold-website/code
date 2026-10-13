@@ -8,12 +8,14 @@ import ProjectCardSkeleton from "../ui/ProjectCardSkeleton";
 import ProjectCardMediaSkeleton from "../ui/ProjectCardMediaSkeleton";
 import BrowseFiltersSidebar from "./browse/BrowseFiltersSidebar";
 import BrowseToolbar from "./browse/BrowseToolbar";
+import BrowseFiltersModal from "@/modal/BrowseFiltersModal";
+import "@/styles/Browse.css";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { apiClient } from "@/utils/api/client";
 import { projectQueryKeys } from "@/utils/projects/queryKeys";
 import { getCategoryLabel } from "@/utils/categoryLabels";
-import { getEffectiveBrowseGameVersions, normalizeGameVersionBranches } from "@/utils/gameVersions";
+import { getBrowseGameVersionGroups, getEffectiveBrowseGameVersions, normalizeGameVersionBranches } from "@/utils/gameVersions";
 
 const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -114,8 +116,25 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 	const [dependencyType, setDependencyType] = useState(normalizedInitialState.dependencyType);
     const [currentPage, setCurrentPage] = useState(normalizedInitialState.page);
     const [cardView, setCardView] = useState(initialCardView === "media" ? "media" : "list");
+	const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+	const closeFilters = useCallback(() => setIsFiltersOpen(false), []);
+	const effectiveGameVersions = getEffectiveBrowseGameVersions(selectedGameVersions, gameVersions, { useDefault: useDefaultGameVersions });
+	const gameVersionGroups = getBrowseGameVersionGroups(gameVersions);
+	const selectedDependencyQuery = useQuery({
+		queryKey: ["projects", "dependency-options", { id: dependencyProjectId }],
+		queryFn: async ({ signal }) => {
+			const response = await apiClient.get("/projects/dependency-options", { params: { id: dependencyProjectId }, signal });
+			return Array.isArray(response.data?.projects) ? response.data.projects : [];
+		},
+		enabled: projectType === "mod" && Boolean(dependencyProjectId),
+		staleTime: 30 * 1000,
+	});
 
-    const scrollToResults = useCallback(() => {
+	const scrollToResults = useCallback((force = false) => {
+		if(!force && window.matchMedia("(max-width: 859px)").matches) {
+			return;
+		}
+
         requestAnimationFrame(() => {
             resultsRef.current?.scrollIntoView({
                 behavior: "smooth",
@@ -277,6 +296,65 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     };
 
     const formatCategoryLabel = (tag) => getCategoryLabel(tLabels, tag);
+	const clearMobileFilters = () => {
+		setSelectedTags([]);
+		setSelectedGameVersions([]);
+		setUseDefaultGameVersions(false);
+		setDependencyProjectId("");
+		setDependencyType("required");
+		setCurrentPage(1);
+	};
+	const applyMobileFilters = (filters) => {
+		setSelectedTags(filters.selectedTags);
+		setSelectedGameVersions(filters.selectedGameVersions);
+		setUseDefaultGameVersions(filters.useDefaultGameVersions);
+		setDependencyProjectId(filters.dependencyProjectId);
+		setDependencyType(filters.dependencyType);
+		setCurrentPage(1);
+		closeFilters();
+	};
+	const mobileFilterChips = selectedTags.map((tag) => ({
+		key: `category-${tag}`,
+		label: formatCategoryLabel(tag),
+		onRemove: () => {
+			setSelectedTags((previous) => previous.filter((item) => item !== tag));
+			setCurrentPage(1);
+		},
+	}));
+	const removeMobileGameVersions = (versions) => {
+		setSelectedGameVersions(effectiveGameVersions.filter((version) => !versions.includes(version)));
+		setUseDefaultGameVersions(false);
+		setCurrentPage(1);
+	};
+	const groupedVersions = new Set();
+
+	gameVersionGroups.forEach((group) => {
+		if(group.versions.every((version) => effectiveGameVersions.includes(version))) {
+			group.versions.forEach((version) => groupedVersions.add(version));
+			mobileFilterChips.push({
+				key: `group-${group.key}`,
+				label: `${group.label}${group.range_label ? ` (${group.range_label})` : ""}`,
+				onRemove: () => removeMobileGameVersions(group.versions),
+			});
+		}
+	});
+
+	effectiveGameVersions.filter((version) => !groupedVersions.has(version)).forEach((version) => {
+		mobileFilterChips.push({ key: `version-${version}`, label: version, onRemove: () => removeMobileGameVersions([version]) });
+	});
+
+	if(dependencyProjectId) {
+		const project = selectedDependencyQuery.data?.[0];
+		mobileFilterChips.push({
+			key: "dependency",
+			label: `${t("dependencies.title")}: ${project?.title || dependencyProjectId} (${t(`dependencies.types.${dependencyType}`)})`,
+			onRemove: () => {
+				setDependencyProjectId("");
+				setDependencyType("required");
+				setCurrentPage(1);
+			},
+		});
+	}
 
     const handleSortSelect = (sortOption) => {
         setSort(sortOption);
@@ -325,7 +403,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
         setCurrentPage(normalizedPage);
 
         if(shouldScrollToResults) {
-            scrollToResults();
+			scrollToResults(true);
         }
     };
 
@@ -379,10 +457,30 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
             <BrowseFiltersSidebar t={t} projectType={projectType} tags={tags} selectedTags={selectedTags} onToggleTag={toggleTag} gameVersions={gameVersions} selectedGameVersions={selectedGameVersions} useDefaultGameVersions={useDefaultGameVersions} onToggleGameVersion={toggleGameVersion} onSelectGameVersionGroup={selectGameVersionGroup} selectedDependencyProjectId={dependencyProjectId} dependencyType={dependencyType} onSelectDependencyProject={handleSelectDependencyProject} onSelectDependencyType={handleSelectDependencyType} onClearDependency={handleClearDependency} onClearFilters={clearFilters} getCategoryLabel={formatCategoryLabel} />
 
             <div className="browse-content">
-                <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ style: { marginTop: 0, marginLeft: "auto" } })} />
+                <BrowseToolbar t={t} searchInput={searchInput} onSearchChange={handleSearchChange} onClearSearch={handleClearSearch} cardView={cardView} onToggleCardView={toggleCardView} sort={sort} onSortSelect={handleSortSelect} paginationControls={renderPaginationControls({ style: { marginTop: 0, marginLeft: "auto" } })} onOpenFilters={() => setIsFiltersOpen(true)} filterCount={mobileFilterChips.length} isFiltersOpen={isFiltersOpen} />
+
+				{mobileFilterChips.length > 0 && (
+					<div className="browse-selected-filters browse-selected-filters--mobile" aria-label={t("mobileFilters.selected")}>
+						{mobileFilterChips.map((chip) => (
+							<button key={chip.key} className="browse-selected-filter-chip" type="button" onClick={chip.onRemove} aria-label={t("mobileFilters.remove", { label: chip.label })}>
+								<span>{chip.label}</span>
+
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+									<path d="m6 6 12 12M18 6 6 18" />
+								</svg>
+							</button>
+						))}
+
+						{mobileFilterChips.length > 1 && (
+							<button type="button" className="browse-selected-filter-chip" onClick={clearMobileFilters}>
+                                {t("clearAllFilters")}
+                            </button>
+						)}
+					</div>
+				)}
 
                 {(selectedTags.length > 0 || selectedGameVersions.length > 0) && (
-                    <div className="browse-selected-filters">
+                    <div className="browse-selected-filters browse-selected-filters--desktop">
                         {selectedTags.length + selectedGameVersions.length > 1 && (
                             <button className="browse-selected-filter-chip" type="button" onClick={clearFilters}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-circle-x-icon lucide-circle-x">
@@ -441,6 +539,15 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 
                 {renderPaginationControls({ shouldScrollToResults: true })}
             </div>
+
+			<BrowseFiltersModal
+				isOpen={isFiltersOpen}
+				onClose={closeFilters}
+				onApply={applyMobileFilters}
+				t={t}
+				filters={{ selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType }}
+				sidebarProps={{ projectType, tags, gameVersions, getCategoryLabel: formatCategoryLabel }}
+			/>
         </div>
     );
 }

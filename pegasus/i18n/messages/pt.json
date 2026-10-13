@@ -1053,6 +1053,13 @@
     "clearFilters": "Limpar filtros",
     "clearAllFilters": "Limpar todos os filtros",
     "clearSearch": "Limpar pesquisa",
+	"mobileFilters": {
+		"title": "Filtros",
+		"showResults": "Ver resultados",
+		"close": "Fechar filtros",
+		"selected": "Filtros selecionados",
+		"remove": "Remover filtro: {label}"
+	},
 	"dependencies": {
 		"title": "Depende de",
 		"placeholder": "Pesquisar um projeto...",

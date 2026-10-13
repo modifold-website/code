@@ -1050,6 +1050,13 @@
     "clearFilters": "Очистити фільтри",
     "clearAllFilters": "Очистити всі фільтри",
     "clearSearch": "Очистити пошук",
+	"mobileFilters": {
+		"title": "Фільтри",
+		"showResults": "Показати результати",
+		"close": "Закрити фільтри",
+		"selected": "Вибрані фільтри",
+		"remove": "Прибрати фільтр: {label}"
+	},
 	"dependencies": {
 		"title": "Залежить від",
 		"placeholder": "Пошук проєкту...",

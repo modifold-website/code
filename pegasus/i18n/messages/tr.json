@@ -1053,6 +1053,13 @@
     "clearFilters": "Filtreleri temizle",
     "clearAllFilters": "Tüm filtreleri temizle",
     "clearSearch": "Aramayı temizle",
+	"mobileFilters": {
+		"title": "Filtreler",
+		"showResults": "Sonuçları göster",
+		"close": "Filtreleri kapat",
+		"selected": "Seçili filtreler",
+		"remove": "Filtreyi kaldır: {label}"
+	},
 	"dependencies": {
 		"title": "Bağımlı olduğu proje",
 		"placeholder": "Proje ara...",

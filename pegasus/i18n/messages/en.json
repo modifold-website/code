@@ -1140,6 +1140,13 @@
     "clearFilters": "Clear Filters",
     "clearAllFilters": "Clear all filters",
     "clearSearch": "Clear search",
+	"mobileFilters": {
+		"title": "Filters",
+		"showResults": "Show results",
+		"close": "Close filters",
+		"selected": "Selected filters",
+		"remove": "Remove filter: {label}"
+	},
 	"dependencies": {
 		"title": "Depends on",
 		"placeholder": "Search for a project...",

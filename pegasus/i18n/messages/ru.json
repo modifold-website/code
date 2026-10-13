@@ -1140,6 +1140,13 @@
     "clearFilters": "Сбросить фильтры",
     "clearAllFilters": "Сбросить все фильтры",
     "clearSearch": "Очистить поиск",
+	"mobileFilters": {
+		"title": "Фильтры",
+		"showResults": "Показать результаты",
+		"close": "Закрыть фильтры",
+		"selected": "Выбранные фильтры",
+		"remove": "Убрать фильтр: {label}"
+	},
 	"dependencies": {
 		"title": "Зависит от",
 		"placeholder": "Поиск проекта...",
