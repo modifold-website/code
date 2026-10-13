@@ -2350,64 +2350,106 @@
     },
     "empty": "No versions in this technical review queue."
   },
-  "UsersModerationPage": {
-    "metadata": {
-      "title": "Moderação de usuários — Modifold"
-    },
-    "tabs": {
-      "projects": "Projetos",
-      "users": "Usuários",
-      "verification": "Verificação",
-      "statistics": "Estatisticas",
-      "reports": "Reports"
-    },
-    "errors": {
-      "fetch": "Erro ao carregar usuários",
-      "updateRole": "Erro ao atualizar função",
-      "fileTooLarge": "Arquivo muito grande. Tamanho máximo de 20 MB",
-      "updateUser": "Erro ao atualizar usuário"
-    },
-    "success": {
-      "roleUpdated": "Função atualizada",
-      "userUpdated": "Usuário atualizado"
-    },
-    "roles": {
-      "admin": "Administrador",
-      "moderator": "Moderador",
-      "user": "Usuário"
-    },
-    "actions": {
-      "editAria": "Editar usuário",
-      "edit": "Editar",
-      "save": "Salvar",
-      "cancel": "Cancelar",
-      "close": "Fechar"
-    },
-    "pagination": {
-      "previous": "Anterior",
-      "next": "Próximo",
-      "pageOf": "Página {page} de {totalPages}"
-    },
-    "empty": "Não há usuários",
-    "modal": {
-      "title": "Editar usuário {username}"
-    },
-    "fields": {
-      "avatar": "Avatar",
-      "avatarAlt": "Prévia do avatar",
-      "username": "Nome de usuário",
-      "email": "E-mail",
-      "slug": "URL",
-      "description": "Descrição",
-      "role": "Função"
-    },
-    "placeholders": {
-      "username": "Nome de usuário",
-      "email": "E-mail",
-      "slug": "Slug",
-      "description": "Descrição"
-    }
-  },
+	"UsersModerationPage": {
+		"metadata": {
+			"title": "Moderação de usuários — Modifold"
+		},
+		"tabs": {
+			"projects": "Projetos",
+			"users": "Usuários",
+			"verification": "Verificação",
+			"statistics": "Estatisticas",
+			"reports": "Reports"
+		},
+		"errors": {
+			"fetch": "Erro ao carregar usuários",
+			"updateRole": "Erro ao atualizar função",
+			"fileTooLarge": "Arquivo muito grande. Tamanho máximo de 20 MB",
+			"updateUser": "Erro ao atualizar usuário",
+			"invalidUsername": "Informe um nome de até 100 caracteres.",
+			"invalidEmail": "Informe um email válido.",
+			"invalidSlug": "Use um slug válido com letras, números e hífens.",
+			"slugShort": "O slug deve ter pelo menos 4 caracteres.",
+			"slugTaken": "Este slug já está em uso.",
+			"invalidDescription": "A descrição não deve ultrapassar 5000 caracteres.",
+			"invalidRole": "Escolha um cargo válido.",
+			"ownRole": "Você não pode alterar seu próprio cargo de administrador.",
+			"forbidden": "Você não tem permissão para esta ação.",
+			"userNotFound": "Este usuário não existe mais.",
+			"achievement": "Não foi possível atualizar a conquista. Tente novamente.",
+			"achievementsFetch": "Não foi possível carregar as conquistas."
+		},
+		"success": {
+			"roleUpdated": "Função atualizada",
+			"userUpdated": "Usuário atualizado",
+			"achievementGranted": "Conquista concedida",
+			"achievementRevoked": "Conquista revogada"
+		},
+		"roles": {
+			"admin": "Administrador",
+			"moderator": "Moderador",
+			"user": "Usuário"
+		},
+		"actions": {
+			"editAria": "Editar usuário",
+			"edit": "Editar",
+			"save": "Salvar",
+			"cancel": "Cancelar",
+			"close": "Fechar",
+			"manageNamed": "Gerenciar {username}",
+			"achievements": "Conquistas",
+			"changeAvatar": "Alterar avatar",
+			"saving": "Salvando…"
+		},
+		"pagination": {
+			"previous": "Anterior",
+			"next": "Próximo",
+			"pageOf": "Página {page} de {totalPages}"
+		},
+		"empty": "Não há usuários",
+		"modal": {
+			"title": "Editar usuário {username}"
+		},
+		"fields": {
+			"avatar": "Avatar",
+			"avatarAlt": "Prévia do avatar",
+			"username": "Nome de usuário",
+			"email": "E-mail",
+			"slug": "URL",
+			"description": "Descrição",
+			"role": "Função"
+		},
+		"placeholders": {
+			"username": "Nome de usuário",
+			"email": "E-mail",
+			"slug": "Slug",
+			"description": "Descrição"
+		},
+		"listLabel": "Gerenciamento de usuários",
+		"loading": "Carregando…",
+		"retry": "Tentar novamente",
+		"count": "Usuários encontrados: {count}",
+		"emailHint": "É apenas o email de contato. Alterá-lo não muda o email de acesso.",
+		"search": {
+			"label": "Buscar usuários por nome ou slug",
+			"placeholder": "Buscar por nome ou slug",
+			"empty": "Nenhum usuário encontrado.",
+			"clear": "Limpar busca"
+		},
+		"achievements": {
+			"title": "Conquistas de {username}",
+			"note": "A concessão manual não exige cumprir os requisitos. Cargos e contas vinculadas não são alterados.",
+			"empty": "Nenhuma conquista disponível.",
+			"earned": "Conquistado",
+			"grant": "Conceder",
+			"revoke": "Revogar",
+			"grantNamed": "Conceder {name}",
+			"revokeNamed": "Revogar {name}",
+			"confirmTitle": "Revogar «{name}»?",
+			"confirmDescription": "Esta conquista será removida de {username}. Se estiver selecionada como distintivo ao lado do nome, ele também será removido.",
+			"reearn": "Conquistas automáticas podem ser obtidas novamente ao cumprir seus requisitos."
+		}
+	},
   "NotificationsPage": {
     "title": "Notificações",
     "loading": "Carregando notificações...",

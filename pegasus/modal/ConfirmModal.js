@@ -6,11 +6,11 @@ if(typeof window !== "undefined") {
 	Modal.setAppElement("body");
 }
 
-export default function ConfirmModal({ isOpen, title, description, messageTitle, confirmLabel, cancelLabel, isLoading = false, onConfirm, onRequestClose, confirmButtonClassName = "button--type-danger" }) {
+export default function ConfirmModal({ isOpen, title, description, messageTitle, confirmLabel, cancelLabel, isLoading = false, onConfirm, onRequestClose, confirmButtonClassName = "button--type-danger", appElement }) {
 	const hasMessage = Boolean(messageTitle);
 
 	return (
-		<Modal appElement={typeof document !== "undefined" ? document.body : undefined} closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className={`modal active confirm-modal${hasMessage ? " confirm-modal--message" : ""}`} overlayClassName={`modal-overlay${hasMessage ? " modal-overlay--danger" : ""}`} contentLabel={title}>
+		<Modal appElement={appElement || (typeof document !== "undefined" ? document.body : undefined)} closeTimeoutMS={150} isOpen={isOpen} onRequestClose={onRequestClose} className={`modal active confirm-modal${hasMessage ? " confirm-modal--message" : ""}`} overlayClassName={`modal-overlay${hasMessage ? " modal-overlay--danger" : ""}`} contentLabel={title}>
 			<div className="modal-window">
 				<div className="modal-window__header">
 					<h2 className="modal-window__title">{title}</h2>

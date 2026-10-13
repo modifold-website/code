@@ -271,7 +271,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
             availableCodes.add("creator_badge");
         }
 
-        if(profileUser?.isRole === "admin" || profileUser?.isRole === "moderator" || profileUser?.isRole === "staff") {
+        if(profileUser?.isRole === "admin" || profileUser?.isRole === "moderator" || profileUser?.isRole === "staff" || achievementCodes.has("staff")) {
             availableCodes.add("staff");
         }
 
@@ -517,6 +517,7 @@ export default function ProfilePage({ user, isBanned, isSubscribed: initialSubsc
                                         {organizations.map((organization) => (
                                             <Link prefetch={false} key={organization.id} href={`/organization/${organization.slug}`} className="profile-organization-item button--active-transform">
                                                 <img src={organization.icon_url} alt={organization.name} />
+                                                
                                                 <span>{organization.name}</span>
                                             </Link>
                                         ))}

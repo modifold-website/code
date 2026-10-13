@@ -2532,64 +2532,106 @@
     },
     "empty": "No versions in this technical review queue."
   },
-  "UsersModerationPage": {
-    "metadata": {
-      "title": "User Moderation — Modifold"
-    },
-    "tabs": {
-      "projects": "Projects",
-      "users": "Users",
-      "verification": "Verification",
-      "statistics": "Statistics",
-      "reports": "Reports"
-    },
-    "errors": {
-      "fetch": "Error fetching users",
-      "updateRole": "Error updating role",
-      "fileTooLarge": "File too large. Maximum size is 20 MB",
-      "updateUser": "Error updating user"
-    },
-    "success": {
-      "roleUpdated": "User role updated",
-      "userUpdated": "User updated"
-    },
-    "roles": {
-      "admin": "Administrator",
-      "moderator": "Moderator",
-      "user": "User"
-    },
-    "actions": {
-      "editAria": "Change role or edit user",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
-      "close": "Close"
-    },
-    "pagination": {
-      "previous": "Previous",
-      "next": "Next",
-      "pageOf": "Page {page} of {totalPages}"
-    },
-    "empty": "No users to display.",
-    "modal": {
-      "title": "Edit user {username}"
-    },
-    "fields": {
-      "avatar": "Avatar",
-      "avatarAlt": "Avatar preview",
-      "username": "Username",
-      "email": "Email",
-      "slug": "URL",
-      "description": "Description",
-      "role": "Role"
-    },
-    "placeholders": {
-      "username": "Enter username",
-      "email": "Enter email",
-      "slug": "Enter slug",
-      "description": "Enter description"
-    }
-  },
+	"UsersModerationPage": {
+		"metadata": {
+			"title": "User Moderation — Modifold"
+		},
+		"tabs": {
+			"projects": "Projects",
+			"users": "Users",
+			"verification": "Verification",
+			"statistics": "Statistics",
+			"reports": "Reports"
+		},
+		"errors": {
+			"fetch": "Error fetching users",
+			"updateRole": "Error updating role",
+			"fileTooLarge": "File too large. Maximum size is 20 MB",
+			"updateUser": "Error updating user",
+			"invalidUsername": "Enter a name of up to 100 characters.",
+			"invalidEmail": "Enter a valid email address.",
+			"invalidSlug": "Use a valid slug with letters, numbers and hyphens.",
+			"slugShort": "The slug must have at least 4 characters.",
+			"slugTaken": "This slug is already taken.",
+			"invalidDescription": "The description must not exceed 5,000 characters.",
+			"invalidRole": "Choose a valid role.",
+			"ownRole": "You cannot change your own administrator role.",
+			"forbidden": "You do not have permission for this action.",
+			"userNotFound": "This user no longer exists.",
+			"achievement": "Failed to update the achievement. Try again.",
+			"achievementsFetch": "Failed to load achievements."
+		},
+		"success": {
+			"roleUpdated": "User role updated",
+			"userUpdated": "User updated",
+			"achievementGranted": "Achievement granted",
+			"achievementRevoked": "Achievement revoked"
+		},
+		"roles": {
+			"admin": "Administrator",
+			"moderator": "Moderator",
+			"user": "User"
+		},
+		"actions": {
+			"editAria": "Change role or edit user",
+			"edit": "Edit",
+			"save": "Save",
+			"cancel": "Cancel",
+			"close": "Close",
+			"manageNamed": "Manage {username}",
+			"achievements": "Achievements",
+			"changeAvatar": "Change avatar",
+			"saving": "Saving…"
+		},
+		"pagination": {
+			"previous": "Previous",
+			"next": "Next",
+			"pageOf": "Page {page} of {totalPages}"
+		},
+		"empty": "No users to display.",
+		"modal": {
+			"title": "Edit user {username}"
+		},
+		"fields": {
+			"avatar": "Avatar",
+			"avatarAlt": "Avatar preview",
+			"username": "Username",
+			"email": "Email",
+			"slug": "URL",
+			"description": "Description",
+			"role": "Role"
+		},
+		"placeholders": {
+			"username": "Enter username",
+			"email": "Enter email",
+			"slug": "Enter slug",
+			"description": "Enter description"
+		},
+		"listLabel": "User management",
+		"loading": "Loading…",
+		"retry": "Try again",
+		"count": "Users found: {count}",
+		"emailHint": "Contact email only. Changing it does not change the sign-in email.",
+		"search": {
+			"label": "Search users by name or slug",
+			"placeholder": "Search by name or slug",
+			"empty": "No users match your search.",
+			"clear": "Clear search"
+		},
+		"achievements": {
+			"title": "Achievements for {username}",
+			"note": "Manual awards do not require meeting the conditions. Roles and linked accounts are not changed.",
+			"empty": "No achievements are available.",
+			"earned": "Earned",
+			"grant": "Grant",
+			"revoke": "Revoke",
+			"grantNamed": "Grant {name}",
+			"revokeNamed": "Revoke {name}",
+			"confirmTitle": "Revoke “{name}”?",
+			"confirmDescription": "This achievement will be removed from {username}. If it is selected as their nickname badge, the badge will also be removed.",
+			"reearn": "Automatic achievements can be earned again when their conditions are met."
+		}
+	},
   "NotificationsPage": {
     "title": "Notifications",
     "loading": "Loading notifications...",
