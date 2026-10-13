@@ -83,11 +83,11 @@ function FilterSelection({ t, filters, sidebarProps, onApply, onClose }) {
 
 			<div className="browse-filters-modal__actions">
 				<button type="button" className="button button--size-l button--type-minimal" onClick={clearFilters} disabled={!hasFilters}>
-					{t("clearFilters")}
+					{t("mobileFilters.reset")}
 				</button>
 
 				<button type="button" className="button button--size-l button--type-primary" onClick={() => onApply(draft)}>
-					{t("mobileFilters.showResults")}
+					{t("mobileFilters.apply")}
 				</button>
 			</div>
 		</div>

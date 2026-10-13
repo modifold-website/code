@@ -1055,7 +1055,8 @@
     "clearSearch": "Limpar pesquisa",
 	"mobileFilters": {
 		"title": "Filtros",
-		"showResults": "Ver resultados",
+		"reset": "Redefinir",
+		"apply": "Aplicar",
 		"close": "Fechar filtros",
 		"selected": "Filtros selecionados",
 		"remove": "Remover filtro: {label}"

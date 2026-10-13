@@ -1055,7 +1055,8 @@
     "clearSearch": "Aramayı temizle",
 	"mobileFilters": {
 		"title": "Filtreler",
-		"showResults": "Sonuçları göster",
+		"reset": "Sıfırla",
+		"apply": "Uygula",
 		"close": "Filtreleri kapat",
 		"selected": "Seçili filtreler",
 		"remove": "Filtreyi kaldır: {label}"

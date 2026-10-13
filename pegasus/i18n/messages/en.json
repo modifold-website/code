@@ -1142,7 +1142,8 @@
     "clearSearch": "Clear search",
 	"mobileFilters": {
 		"title": "Filters",
-		"showResults": "Show results",
+		"reset": "Reset",
+		"apply": "Apply",
 		"close": "Close filters",
 		"selected": "Selected filters",
 		"remove": "Remove filter: {label}"
