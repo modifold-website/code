@@ -5862,6 +5862,9 @@ body.light div .image-container::before {
     inset: 0;
     z-index: -1;
 }
+.fixed-background-teleport--home {
+	object-position: center 70%;
+}
 .button.disabled {
     cursor: not-allowed;
     opacity: 0.5;
