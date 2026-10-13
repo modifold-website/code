@@ -2417,9 +2417,7 @@ input[type="file"]::-webkit-file-upload-button:hover {
     transform: scale(0.96);
     opacity: 0;
     pointer-events: none;
-    transition:
-        transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1), opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .list {
     overflow-y: auto;
@@ -2916,6 +2914,42 @@ input[type="file"]::-webkit-file-upload-button:hover {
 .modal-overlay.ReactModal__Overlay--before-close {
     opacity: 0;
     transition: opacity 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (max-width: 639px) {
+	.modal {
+		transform: translate3d(0, 100%, 0);
+		transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	.modal.active {
+		opacity: 0;
+	}
+	.modal.ReactModal__Content--after-open {
+		transform: translate3d(0, 0, 0);
+		opacity: 1;
+	}
+	.modal.ReactModal__Content--before-close {
+		transform: translate3d(0, 100%, 0);
+		opacity: 0;
+		transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	.modal-overlay {
+		transition: opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	.modal-overlay.ReactModal__Overlay--before-close {
+		transition: opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.modal,
+		.modal.ReactModal__Content--after-open,
+		.modal.ReactModal__Content--before-close {
+			transform: none;
+			transition: opacity 100ms cubic-bezier(0.23, 1, 0.32, 1);
+		}
+		.modal-overlay,
+		.modal-overlay.ReactModal__Overlay--before-close {
+			transition: opacity 100ms cubic-bezier(0.23, 1, 0.32, 1);
+		}
+	}
 }
 @media all and (min-width: 640px) {
     .modal-overlay {
