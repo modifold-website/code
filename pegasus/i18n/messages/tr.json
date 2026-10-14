@@ -2205,6 +2205,13 @@
     "projectIconAlt": "{title} proje simgesi"
   },
   "ModerationPage": {
+		"downloads": {
+			"countries": "Ülkeler",
+			"projects": "Projeler",
+			"unknownCountry": "Bilinmeyen ülke",
+			"unknownProject": "Bilinmeyen proje",
+			"tooltip": "{count} indirme"
+		},
     "metadata": {
       "title": "Moderasyon - Modifold"
     },
