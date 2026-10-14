@@ -2205,6 +2205,13 @@
     "projectIconAlt": "Ícone do projeto {title}"
   },
   "ModerationPage": {
+		"downloads": {
+			"countries": "Países",
+			"projects": "Projetos",
+			"unknownCountry": "País desconhecido",
+			"unknownProject": "Projeto desconhecido",
+			"tooltip": "{count, plural, one {# download} other {# downloads}}"
+		},
     "metadata": {
       "title": "Moderação — Modifold"
     },

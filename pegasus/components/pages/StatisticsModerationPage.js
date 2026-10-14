@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
 import { useModerationStatistics } from "@/utils/moderation/hooks";
+import ModerationDownloadsChart from "@/components/moderation/ModerationDownloadsChart";
 
 const formatDate = (isoDate, locale) => {
 	const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(isoDate) ? `${isoDate}T00:00:00` : isoDate);
@@ -214,6 +215,8 @@ export default function StatisticsModerationPage({ initialAnalytics, authToken }
 					))}
 				</div>
 			</div>
+
+			<ModerationDownloadsChart analytics={analytics} loading={isLoading} locale={locale} t={t} formatDate={formatDate} />
 
 			<div className="moderation-statistics__charts">
 				<div className="content content--padding moderation-chart-card">

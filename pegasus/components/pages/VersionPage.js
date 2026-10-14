@@ -221,7 +221,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if(editGameVersionsRef.current && !editGameVersionsRef.current.contains(event.target)) {
+			if(editGameVersionsRef.current && !editGameVersionsRef.current.contains(event.target) && !event.target.closest?.(".floating-game-version-popover")) {
                 setIsEditGameVersionsPopoverOpen(false);
             }
 

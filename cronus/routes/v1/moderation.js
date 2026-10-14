@@ -880,26 +880,79 @@ router.get("/analytics", auth, async (req, res) => {
 		const userActivity = buildActivity(userRegistrations);
 		const versionActivity = buildActivity(publishedVersions);
 		let downloadActivity = null;
+		let downloadCountries = null;
+		let downloadProjects = null;
 		let onlineAvailable = Boolean(clickhouse);
 
 		if(clickhouse) {
-			try {
+			const getDownloadRows = async (selection, grouping, start) => {
 				const result = await clickhouse.query({
 					query: `
-						SELECT toDate(created_at) AS date,
+						SELECT ${selection},
 						countIf(event_id IS NULL) + uniqExactIf(event_id, event_id IS NOT NULL) AS count
 						FROM project_events
 						WHERE event_type = 'download'
-						AND created_at >= toDateTime({from:String})
-						AND created_at < toDateTime({to:String})
-						GROUP BY date ORDER BY date
+						AND created_at >= toDateTime({from:String}, 'UTC')
+						AND created_at < toDateTime({to:String}, 'UTC')
+						GROUP BY ${grouping}
 					`,
-					query_params: { from: previousFrom, to: toExclusive },
+					query_params: { from: start, to: toExclusive },
 					format: "JSONEachRow",
 				});
-				downloadActivity = buildActivity(await result.json());
-			} catch(error) {
-				logger.error("Error fetching global download analytics:", error);
+
+				return result.json();
+			};
+			const [dailyResult, countriesResult, projectsResult] = await Promise.allSettled([
+				getDownloadRows("toDate(created_at, 'UTC') AS date", "date ORDER BY date", previousFrom),
+				getDownloadRows(`
+					if(match(lower(ifNull(country_code, '')), '^[a-z]{2}$') AND lower(ifNull(country_code, '')) NOT IN ('xx', 'zz'),
+						lower(ifNull(country_code, '')), '') AS country
+				`, "country ORDER BY count DESC, country ASC", from),
+				getDownloadRows("project_slug", "project_slug ORDER BY count DESC, project_slug ASC", from),
+			]);
+
+			if(dailyResult.status === "fulfilled") {
+				downloadActivity = buildActivity(dailyResult.value);
+			} else {
+				logger.error("Error fetching global download analytics:", dailyResult.reason);
+			}
+
+			if(countriesResult.status === "fulfilled") {
+				downloadCountries = countriesResult.value.map((row) => ({
+					country_code: String(row.country || ""),
+					count: toSafeNumber(row.count),
+				}));
+			} else {
+				logger.error("Error fetching global download countries:", countriesResult.reason);
+			}
+
+			if(projectsResult.status === "fulfilled") {
+				try {
+					const slugs = projectsResult.value.map((row) => String(row.project_slug || "")).filter(Boolean);
+					const [projects] = slugs.length ? await db.query(
+						"SELECT slug, title, icon_url, project_type FROM projects WHERE slug IN (?)",
+						[slugs]
+					) : [[]];
+					const projectsBySlug = new Map(projects.map((project) => [project.slug, project]));
+
+					downloadProjects = projectsResult.value.map((row) => {
+						const slug = String(row.project_slug || "");
+						const project = projectsBySlug.get(slug);
+
+						return {
+							slug,
+							title: project?.title || slug,
+							icon_url: project?.icon_url || null,
+							project_type: project?.project_type || null,
+							available: Boolean(project),
+							count: toSafeNumber(row.count),
+						};
+					});
+				} catch(error) {
+					logger.error("Error resolving download analytics projects:", error);
+				}
+			} else {
+				logger.error("Error fetching global download projects:", projectsResult.reason);
 			}
 		}
         const [[{ total: totalApproved }]] = await db.query(totalApprovedQuery);
@@ -940,6 +993,10 @@ router.get("/analytics", auth, async (req, res) => {
                 count: row.count
             })),
 			userRegistrations: userActivity.series,
+			projectDownloads: downloadActivity?.series || [],
+			downloadCountries,
+			downloadProjects,
+			downloadsAvailable: Boolean(downloadActivity),
             totalApproved,
             totalPending,
             totalUsers,
