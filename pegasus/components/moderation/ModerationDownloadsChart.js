@@ -143,25 +143,21 @@ export default function ModerationDownloadsChart({ analytics, loading, locale, t
 							<AreaChart data={series} accessibilityLayer>
 								<defs>
 									<linearGradient id="moderationDownloads" x1="0" y1="0" x2="0" y2="1">
-										<stop offset="5%" stopColor="var(--theme-color-brand-primary)" stopOpacity={0.24} />
-										<stop offset="95%" stopColor="var(--theme-color-brand-primary)" stopOpacity={0.02} />
+										<stop offset="5%" stopColor="var(--theme-color-brand-primary)" stopOpacity={0.8} />
+										<stop offset="95%" stopColor="var(--theme-color-brand-primary)" stopOpacity={0} />
 									</linearGradient>
 								</defs>
-								<CartesianGrid stroke="var(--theme-color-text-primary)" strokeDasharray="4 4" strokeOpacity={0.1} vertical={false} />
+								<CartesianGrid stroke="var(--theme-color-text-primary)" strokeDasharray="5 5" strokeOpacity={0.1} />
 								<XAxis
 									dataKey="date"
 									tickFormatter={(date) => formatDate(date, locale)}
-									interval="preserveStartEnd"
-									minTickGap={32}
-									tickLine={false}
-									axisLine={false}
-									tickMargin={8}
-									stroke="var(--theme-color-text-secondary)"
+									stroke="var(--theme-color-text-primary)"
+									strokeOpacity={0.1}
 									fontSize={12}
 								/>
-								<YAxis allowDecimals={false} domain={[0, "auto"]} tickLine={false} axisLine={false} width={48} tickFormatter={(value) => numberFormatter.format(value)} stroke="var(--theme-color-text-secondary)" fontSize={12} />
+								<YAxis dataKey="count" allowDecimals={false} width={36} tickFormatter={(value) => numberFormatter.format(value)} stroke="var(--theme-color-text-primary)" strokeOpacity={0.1} fontSize={12} />
 								<Tooltip content={<DownloadTooltip formatDate={formatDate} locale={locale} t={t} />} />
-								<Area name={t("statistics.downloads")} type="linear" dataKey="count" stroke="var(--theme-color-brand-primary)" strokeWidth={3} fill="url(#moderationDownloads)" isAnimationActive={false} />
+								<Area name={t("statistics.downloads")} type="monotone" dataKey="count" stroke="var(--theme-color-brand-primary)" strokeWidth={3} fillOpacity={1} fill="url(#moderationDownloads)" isAnimationActive={false} />
 							</AreaChart>
 						</ResponsiveContainer>
 					</div>
