@@ -1217,6 +1217,8 @@
     "achievements": {
       "title": "Başarımlar",
       "receivedAt": "Kazanıldı: {date}",
+			"visitWebsite": "{site} sitesini ziyaret et",
+			"opensInNewTab": "Yeni sekmede açılır",
       "customTitle": "Benzersiz başarım",
       "customDescription": "Yaratıcıya özel bir başarım.",
       "items": {
@@ -2204,6 +2206,39 @@
     "playersLast14dTooltip": "Son 14 gunde bu modu {count} oyuncu kullandi",
     "projectIconAlt": "{title} proje simgesi"
   },
+	"ModerationProjectAnalytics": {
+		"title": "Proje hakkında",
+		"backToProject": "Projeye dön",
+		"compare": "Önceki dönemle karşılaştır",
+		"newVersions": "Yeni sürümler",
+		"updated": "Son güncelleme",
+		"uploaded": "Yükleme tarihi",
+		"selectProject": "Bir projenin menüsünü açıp «Proje hakkında» seçeneğini seçin.",
+		"invalidDates": "En fazla 366 günlük geçerli bir dönem seçin.",
+		"downloads": "İndirmeler",
+		"views": "Görüntülemeler",
+		"countries": "İndirme ülkeleri",
+		"empty": "Sonuç bulunamadı.",
+		"unavailable": "İstatistikler geçici olarak kullanılamıyor.",
+		"version": "Sürüm",
+		"versions": "Sürümler",
+		"unknownCountry": "Bilinmeyen ülke",
+		"loading": "Yükleniyor…",
+		"forbidden": "Bu rapora yalnızca yöneticiler ve moderatörler erişebilir.",
+		"projectMissing": "Bu proje artık mevcut değil.",
+		"loadError": "Veriler yüklenemedi. Tekrar deneyin.",
+		"retry": "Tekrar dene",
+		"previous": "Önceki dönem",
+		"states": {
+			"draft": "Taslak",
+			"queued": "Moderasyonda",
+			"approved": "Yayımlandı",
+			"rejected": "Reddedildi",
+			"public": "Herkese açık",
+			"unlisted": "Listelenmemiş",
+			"private": "Özel"
+		}
+	},
   "ModerationPage": {
 		"downloads": {
 			"countries": "Ülkeler",

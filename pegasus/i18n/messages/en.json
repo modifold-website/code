@@ -1304,6 +1304,8 @@
     "achievements": {
       "title": "Achievements",
       "receivedAt": "Earned on: {date}",
+			"visitWebsite": "Visit {site}",
+			"opensInNewTab": "Opens in a new tab",
       "customTitle": "Unique achievement",
       "customDescription": "A unique creator achievement.",
       "items": {
@@ -2386,6 +2388,39 @@
     "playersLast14dTooltip": "{count} players used this mod in the last 14 days",
     "projectIconAlt": "Project icon {title}"
   },
+	"ModerationProjectAnalytics": {
+		"title": "About project",
+		"backToProject": "Back to project",
+		"compare": "Compare with previous period",
+		"newVersions": "New versions",
+		"updated": "Last updated",
+		"uploaded": "Upload date",
+		"selectProject": "Open a project's menu and choose “About project”.",
+		"invalidDates": "Choose a valid period of up to 366 days.",
+		"downloads": "Downloads",
+		"views": "Views",
+		"countries": "Download countries",
+		"empty": "Nothing found.",
+		"unavailable": "Statistics are temporarily unavailable.",
+		"version": "Version",
+		"versions": "Versions",
+		"unknownCountry": "Unknown country",
+		"loading": "Loading…",
+		"forbidden": "Only administrators and moderators can access this report.",
+		"projectMissing": "This project no longer exists.",
+		"loadError": "Could not load data. Try again.",
+		"retry": "Try again",
+		"previous": "Previous period",
+		"states": {
+			"draft": "Draft",
+			"queued": "In moderation",
+			"approved": "Published",
+			"rejected": "Rejected",
+			"public": "Public",
+			"unlisted": "Unlisted",
+			"private": "Private"
+		}
+	},
   "ModerationPage": {
 		"downloads": {
 			"countries": "Countries",

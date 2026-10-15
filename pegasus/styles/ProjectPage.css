@@ -2208,3 +2208,7 @@ body.dark .fixed-background-teleport-color {
     background: var(--theme-color-background-content);
     flex-shrink: 0;
 }
+.project-info-action svg {
+	fill: none;
+	color: #ffa347;
+}

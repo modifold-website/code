@@ -1304,6 +1304,8 @@
     "achievements": {
       "title": "Ачивки",
       "receivedAt": "Получена: {date}",
+			"visitWebsite": "На сайт {site}",
+			"opensInNewTab": "Откроется в новой вкладке",
       "customTitle": "Уникальная ачивка",
       "customDescription": "Уникальная ачивка автора.",
       "items": {
@@ -2386,6 +2388,39 @@
     "playersLast14dTooltip": "С этим модом за последние 14 дней сыграло {count} игроков",
     "projectIconAlt": "Иконка проекта {title}"
   },
+	"ModerationProjectAnalytics": {
+		"title": "О проекте",
+		"backToProject": "Вернуться к проекту",
+		"compare": "Сравнить с предыдущим периодом",
+		"newVersions": "Новые версии",
+		"updated": "Последнее обновление",
+		"uploaded": "Дата загрузки",
+		"selectProject": "Откройте меню проекта и выберите «О проекте».",
+		"invalidDates": "Выберите корректный период до 366 дней.",
+		"downloads": "Скачивания",
+		"views": "Просмотры",
+		"countries": "Страны скачиваний",
+		"empty": "Ничего не найдено.",
+		"unavailable": "Статистика временно недоступна.",
+		"version": "Версия",
+		"versions": "Версии",
+		"unknownCountry": "Страна не определена",
+		"loading": "Загрузка…",
+		"forbidden": "Отчёт доступен только администраторам и модераторам.",
+		"projectMissing": "Этот проект больше не существует.",
+		"loadError": "Не удалось загрузить данные. Попробуйте ещё раз.",
+		"retry": "Повторить",
+		"previous": "Предыдущий период",
+		"states": {
+			"draft": "Черновик",
+			"queued": "На модерации",
+			"approved": "Опубликован",
+			"rejected": "Отклонён",
+			"public": "Публичный",
+			"unlisted": "По ссылке",
+			"private": "Приватный"
+		}
+	},
   "ModerationPage": {
 		"downloads": {
 			"countries": "Страны",

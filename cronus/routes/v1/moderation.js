@@ -12,6 +12,7 @@ const { deleteObject, getPrivateObjectDownloadUrl, normalizeObjectKey, promotePr
 const { normalizeEnum, normalizeSearch, parsePagination } = require("../../utils/queryPagination");
 const { normalizeGameVersionBranches } = require("../../utils/gameVersionBranches");
 const router = express.Router();
+router.use("/project-analytics", require("./projectAnalyticsModeration"));
 const PROJECT_TYPE_PATH_SEGMENTS = {
 	mod: "mod",
 	modpack: "modpack",

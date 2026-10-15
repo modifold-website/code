@@ -1214,6 +1214,8 @@
     "achievements": {
       "title": "Досягнення",
       "receivedAt": "Отримано: {date}",
+			"visitWebsite": "На сайт {site}",
+			"opensInNewTab": "Відкриється в новій вкладці",
       "customTitle": "Унікальне досягнення",
       "customDescription": "Унікальне досягнення автора.",
       "items": {
@@ -2198,6 +2200,39 @@
     "playersLast14dTooltip": "За останнi 14 днiв з цим модом грало {count} гравцiв",
     "projectIconAlt": "Іконка проєкту {title}"
   },
+	"ModerationProjectAnalytics": {
+		"title": "Про проєкт",
+		"backToProject": "Повернутися до проєкту",
+		"compare": "Порівняти з попереднім періодом",
+		"newVersions": "Нові версії",
+		"updated": "Останнє оновлення",
+		"uploaded": "Дата завантаження",
+		"selectProject": "Відкрийте меню проєкту та виберіть «Про проєкт».",
+		"invalidDates": "Виберіть коректний період до 366 днів.",
+		"downloads": "Завантаження",
+		"views": "Перегляди",
+		"countries": "Країни завантажень",
+		"empty": "Нічого не знайдено.",
+		"unavailable": "Статистика тимчасово недоступна.",
+		"version": "Версія",
+		"versions": "Версії",
+		"unknownCountry": "Країну не визначено",
+		"loading": "Завантаження…",
+		"forbidden": "Звіт доступний лише адміністраторам і модераторам.",
+		"projectMissing": "Цей проєкт більше не існує.",
+		"loadError": "Не вдалося завантажити дані. Спробуйте ще раз.",
+		"retry": "Повторити",
+		"previous": "Попередній період",
+		"states": {
+			"draft": "Чернетка",
+			"queued": "На модерації",
+			"approved": "Опублікований",
+			"rejected": "Відхилений",
+			"public": "Публічний",
+			"unlisted": "За посиланням",
+			"private": "Приватний"
+		}
+	},
   "ModerationPage": {
 		"downloads": {
 			"countries": "Країни",

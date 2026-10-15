@@ -1217,6 +1217,8 @@
     "achievements": {
       "title": "Conquistas",
       "receivedAt": "Recebida em: {date}",
+			"visitWebsite": "Visitar {site}",
+			"opensInNewTab": "Abre numa nova aba",
       "customTitle": "Conquista única",
       "customDescription": "Uma conquista única do criador.",
       "items": {
@@ -2204,6 +2206,39 @@
     "playersLast14dTooltip": "{count} jogadores usaram este mod nos ultimos 14 dias",
     "projectIconAlt": "Ícone do projeto {title}"
   },
+	"ModerationProjectAnalytics": {
+		"title": "Sobre o projeto",
+		"backToProject": "Voltar ao projeto",
+		"compare": "Comparar com o período anterior",
+		"newVersions": "Novas versões",
+		"updated": "Última atualização",
+		"uploaded": "Data de envio",
+		"selectProject": "Abra o menu de um projeto e escolha «Sobre o projeto».",
+		"invalidDates": "Escolha um período válido de até 366 dias.",
+		"downloads": "Downloads",
+		"views": "Visualizações",
+		"countries": "Países dos downloads",
+		"empty": "Nenhum resultado.",
+		"unavailable": "Estatísticas temporariamente indisponíveis.",
+		"version": "Versão",
+		"versions": "Versões",
+		"unknownCountry": "País desconhecido",
+		"loading": "Carregando…",
+		"forbidden": "Apenas administradores e moderadores podem acessar este relatório.",
+		"projectMissing": "Este projeto não existe mais.",
+		"loadError": "Não foi possível carregar os dados. Tente novamente.",
+		"retry": "Tentar novamente",
+		"previous": "Período anterior",
+		"states": {
+			"draft": "Rascunho",
+			"queued": "Em moderação",
+			"approved": "Publicado",
+			"rejected": "Rejeitado",
+			"public": "Público",
+			"unlisted": "Não listado",
+			"private": "Privado"
+		}
+	},
   "ModerationPage": {
 		"downloads": {
 			"countries": "Países",

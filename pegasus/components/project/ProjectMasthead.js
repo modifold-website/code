@@ -16,6 +16,7 @@ import { getProjectPath, isBuildContentProjectType } from "@/utils/projectRoutes
 
 export default function ProjectMasthead({ project, authToken }) {
     const t = useTranslations("ProjectPage");
+	const projectInfoT = useTranslations("ModerationProjectAnalytics");
     const cardT = useTranslations("ProjectCard");
     const locale = useLocale();
     const { isLoggedIn, user } = useAuth();
@@ -32,6 +33,7 @@ export default function ProjectMasthead({ project, authToken }) {
 	const showPlayersLast14Days = !isBuildContentProject && (project?.show_players_last_14d === true || project?.show_players_last_14d === 1 || project?.show_players_last_14d === "1");
     const hasTags = project.tags?.length > 0;
     const isProjectAuthor = Boolean(user?.id && Number(project.user_id) === Number(user.id));
+	const canViewProjectInfo = user?.isRole === "admin" || user?.isRole === "moderator";
     const actionsRef = useRef(null);
 
     const formatFullNumber = (num) => new Intl.NumberFormat(locale).format(Math.max(0, Number(num) || 0));
@@ -344,6 +346,19 @@ export default function ProjectMasthead({ project, authToken }) {
                                 <div id="popover-overlay" className="popover-overlay">
                                     <div className="popover" tabIndex={0} style={{ "--width": "max-content", "--top": "46px", "--position": "absolute", "--left": "auto", "--right": "0", "--bottom": "auto", "--distance": "8px" }}>
                                         <div className="popover__scrollable" style={{ "--max-height": "auto" }}>
+											{canViewProjectInfo && (
+												<Link href={`/moderation/project-analytics?project=${encodeURIComponent(project.id || project.slug)}`} prefetch={false} className="context-list-option context-list-option--with-art project-info-action" onClick={() => setIsActionsOpen(false)}>
+													<div className="context-list-option__art context-list-option__art--icon">
+														<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+															<circle cx="12" cy="12" r="10" />
+															<path d="M12 16v-4M12 8h.01" />
+														</svg>
+													</div>
+
+													<div className="context-list-option__label">{projectInfoT("title")}</div>
+												</Link>
+											)}
+                                            
                                             <button style={{ width: "100%" }} type="button" className="context-list-option context-list-option--with-art" onClick={handleCopyProjectLink}>
                                                 <div className="context-list-option__art context-list-option__art--icon">
                                                     <svg style={{ fill: "none" }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link">
