@@ -4478,6 +4478,9 @@ button.context-list-option {
     background: #307df0;
     border-color: #307df0;
 }
+.moderation-project-analytics .dashboard-analytics-filter-controls .checkbox-control__box:not(.checkbox-control__box--checked) {
+	background: var(--theme-color-background-content);
+}
 .checkbox-control__box svg {
     width: 14px;
     height: 14px;

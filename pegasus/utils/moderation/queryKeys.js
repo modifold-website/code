@@ -7,3 +7,7 @@ export const userModerationQueryKeys = {
 export const moderationStatisticsQueryKeys = {
 	analytics: (actorId, timeRange) => ["moderation-statistics", actorId || "current", timeRange],
 };
+
+export const projectAnalyticsQueryKeys = {
+	report: (actorId, project, from, to) => ["moderation-project-analytics", actorId, project, { from, to }],
+};
