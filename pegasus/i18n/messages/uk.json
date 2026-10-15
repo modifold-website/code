@@ -1214,6 +1214,8 @@
     "achievements": {
       "title": "Досягнення",
       "receivedAt": "Отримано: {date}",
+			"visitWebsite": "На сайт {site}",
+			"opensInNewTab": "Відкриється в новій вкладці",
       "customTitle": "Унікальне досягнення",
       "customDescription": "Унікальне досягнення автора.",
       "items": {

@@ -1304,6 +1304,8 @@
     "achievements": {
       "title": "Ачивки",
       "receivedAt": "Получена: {date}",
+			"visitWebsite": "На сайт {site}",
+			"opensInNewTab": "Откроется в новой вкладке",
       "customTitle": "Уникальная ачивка",
       "customDescription": "Уникальная ачивка автора.",
       "items": {

@@ -1217,6 +1217,8 @@
     "achievements": {
       "title": "Logros",
       "receivedAt": "Obtenido el: {date}",
+			"visitWebsite": "Visitar {site}",
+			"opensInNewTab": "Se abre en una pestaña nueva",
       "customTitle": "Logro único",
       "customDescription": "Un logro único del creador.",
       "items": {

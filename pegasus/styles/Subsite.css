@@ -52,13 +52,19 @@
     height: 56px;
     border-radius: 14px;
     overflow: hidden;
-    outline: none;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
 }
-.subsite-achievements__item--link {
-    cursor: pointer;
+.subsite-achievements__item:focus-visible {
+	outline: 2px solid var(--theme-color-link);
+	outline-offset: 3px;
 }
-.subsite-achievements__item--link img:hover {
-    opacity: 0.9;
+@media (hover: hover) {
+	.subsite-achievements__item:hover {
+		opacity: .9;
+	}
 }
 .subsite-achievements__item img {
     display: block;
@@ -79,6 +85,41 @@
     color: inherit;
     font-weight: inherit;
     overflow-wrap: anywhere;
+}
+.achievement-details {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+.achievement-details__icon {
+	width: 96px;
+	height: 96px;
+	object-fit: contain;
+	margin-bottom: 12px;
+}
+.achievement-details__title {
+	font-size: 20px;
+	font-weight: 500;
+	line-height: 28px;
+	margin: 0 0 12px;
+	overflow-wrap: anywhere;
+}
+.achievement-details__description {
+	margin: 0 0 12px;
+	overflow-wrap: anywhere;
+}
+.achievement-details__date {
+	margin: 0 0 12px;
+	color: var(--theme-color-text-secondary);
+	font-size: 14px;
+	line-height: 20px;
+}
+.achievement-details .button {
+	max-width: 100%;
+	height: auto;
+	min-height: var(--button-height);
+	white-space: normal;
 }
 .profile-page {
     grid-template-columns: minmax(0, 770px) 300px;

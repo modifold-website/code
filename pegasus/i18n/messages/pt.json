@@ -1217,6 +1217,8 @@
     "achievements": {
       "title": "Conquistas",
       "receivedAt": "Recebida em: {date}",
+			"visitWebsite": "Visitar {site}",
+			"opensInNewTab": "Abre numa nova aba",
       "customTitle": "Conquista única",
       "customDescription": "Uma conquista única do criador.",
       "items": {

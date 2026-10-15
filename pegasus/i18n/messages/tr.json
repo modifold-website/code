@@ -1217,6 +1217,8 @@
     "achievements": {
       "title": "Başarımlar",
       "receivedAt": "Kazanıldı: {date}",
+			"visitWebsite": "{site} sitesini ziyaret et",
+			"opensInNewTab": "Yeni sekmede açılır",
       "customTitle": "Benzersiz başarım",
       "customDescription": "Yaratıcıya özel bir başarım.",
       "items": {

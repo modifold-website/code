@@ -1304,6 +1304,8 @@
     "achievements": {
       "title": "Achievements",
       "receivedAt": "Earned on: {date}",
+			"visitWebsite": "Visit {site}",
+			"opensInNewTab": "Opens in a new tab",
       "customTitle": "Unique achievement",
       "customDescription": "A unique creator achievement.",
       "items": {
