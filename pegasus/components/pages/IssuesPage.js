@@ -383,8 +383,6 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                                                     ))
                                                 )}
 
-                                                ·
-
                                                 {issue.author && (
                                                     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>                                                        
                                                         {issue.author.avatar && (
@@ -394,8 +392,6 @@ export default function IssuesPage({ project, initialIssues, templates = [] }) {
                                                         {issue.author.username}
                                                     </div>
                                                 )}
-
-                                                ·
 
                                                 <span>{formatDate(issue.created_at, locale)}</span>
                                             </div>

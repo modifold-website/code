@@ -1008,7 +1008,7 @@ body.light .ripple-effect {
     --bar-bottom-padding-right: calc(var(--bar-bottom-padding-x) + env(safe-area-inset-right));
     position: fixed;
     bottom: 0;
-    z-index: 10;
+    z-index: var(--layout-z-index-header);
     padding-top: var(--bar-bottom-padding-top);
     padding-right: var(--bar-bottom-padding-right);
     padding-bottom: var(--bar-bottom-padding-bottom);
@@ -2398,9 +2398,13 @@ input[type="file"]::-webkit-file-upload-button:hover {
         opacity 300ms cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform, opacity;
 }
-.ReactModal__Body--open {
-    overflow: hidden;
-    overscroll-behavior: none;
+html:has(body.ReactModal__Body--open) {
+	overflow: hidden;
+	overscroll-behavior: none;
+}
+body.ReactModal__Body--open {
+	overflow: visible;
+	overscroll-behavior: none;
 }
 .modal.active,
 .overlay.active {

@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
 import { insertMarkdownLink } from "@/utils/markdown/editor";
+import { MarkdownEditorToolbar } from "@/components/project/settings/DescriptionSettings";
 
 function prepareBasicMarkdown(value) {
 	return prepareProjectDescriptionMarkdown(value || "")
@@ -62,7 +63,7 @@ export default function ModJamMarkdownSettings({ authToken, jam, field, title, h
 			}
 
 			resizeTextarea();
-			textareaRef.current.focus();
+			textareaRef.current.focus({ preventScroll: true });
 			if(typeof selectionStart === "number" && typeof selectionEnd === "number") {
 				textareaRef.current.setSelectionRange(selectionStart, selectionEnd);
 			}
@@ -199,7 +200,7 @@ export default function ModJamMarkdownSettings({ authToken, jam, field, title, h
 								<div className="markdown-editor">
 									<p className="markdown-editor__hint">{hint}</p>
 
-									<div className="markdown-editor__toolbar" role="toolbar" aria-label={t("settings.markdown.toolbarLabel")}>
+									<MarkdownEditorToolbar label={t("settings.markdown.toolbarLabel")}>
 										<div className="markdown-editor__toolbar-buttons">
 											{!isBasicFormatting && (
 												<>
@@ -267,7 +268,7 @@ export default function ModJamMarkdownSettings({ authToken, jam, field, title, h
 												<span>{t("settings.markdown.preview")}</span>
 											</label>
 										</div>
-									</div>
+									</MarkdownEditorToolbar>
 
 									{!isPreviewVisible && (
 										<div className="field field--default textarea markdown-editor__panel">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -107,6 +107,10 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 	const [isFullscreen, setIsFullscreen] = useState(false);
 	const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
 	const [hasInteracted, setHasInteracted] = useState(false);
+	const [layerCount, setLayerCount] = useState(0);
+	const [cutawayHeight, setCutawayHeight] = useState(0);
+	const cutawayRef = useRef(null);
+	const cutawayId = useId();
 	const fallbackFullscreenRef = useRef(false);
 	const apiBase = String(process.env.NEXT_PUBLIC_API_BASE || "").replace(/\/$/, "");
 
@@ -485,6 +489,9 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			try {
 				setStatus("loading");
 				setHasInteracted(false);
+				setLayerCount(0);
+				setCutawayHeight(0);
+				setProgress(null);
 				const [prefab] = await Promise.all([
 					fetchPrefab(`${apiBase}${prefabUrl}`),
 					loadCatalogs("https://cdn.modifold.com/hytale-assets"),
@@ -531,6 +538,24 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 					framePreview(new THREE.Box3().setFromObject(prepared.root));
 				}
 
+				const fluidBounds = getBounds(Array.isArray(prefab?.fluids) ? prefab.fluids : []);
+				const sceneBounds = !bounds && !fluidBounds ? new THREE.Box3().setFromObject(prepared.root) : null;
+				const minY = Math.floor(Math.min(bounds?.minY ?? Infinity, fluidBounds?.minY ?? Infinity, sceneBounds?.min.y ?? Infinity));
+				const maxY = Math.ceil(Math.max(bounds ? bounds.maxY + 1 : -Infinity, fluidBounds ? fluidBounds.maxY + 1 : -Infinity, sceneBounds?.max.y ?? -Infinity));
+				const totalLayers = Number.isFinite(maxY - minY) ? Math.max(1, maxY - minY) : 1;
+				setLayerCount(totalLayers);
+				setCutawayHeight(totalLayers);
+				cutawayRef.current = {
+					interact: handleControlsStart,
+					setHeight: (value) => {
+						handleControlsStart();
+						const height = value >= totalLayers ? null : minY + value;
+						prepared.setCutawayHeight(height);
+						renderer.shadowMap.needsUpdate = true;
+						scheduleRender();
+					},
+				};
+				renderer.shadowMap.needsUpdate = true;
 				setStatus("ready");
 				moveCameraCloser();
 			} catch {
@@ -544,6 +569,7 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 
 		return () => {
 			disposed = true;
+			cutawayRef.current = null;
 			window.clearTimeout(autoRotateTimer);
 			window.cancelAnimationFrame(frameId);
 			window.removeEventListener("resize", resize);
@@ -554,6 +580,10 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			if(previewRoot) {
 				scene.remove(previewRoot);
 				previewRoot.traverse((child) => {
+					if(child.isInstancedMesh) {
+						child.dispose();
+					}
+
 					if(child.userData?.prefabOwned) {
 						child.geometry?.dispose();
 						const materials = Array.isArray(child.material) ? child.material : [child.material];
@@ -684,6 +714,13 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 
 		openFallbackFullscreen();
 	};
+
+	const changeCutawayHeight = (height) => {
+		const nextHeight = Math.min(layerCount, Math.max(1, height));
+		setCutawayHeight(nextHeight);
+		cutawayRef.current?.setHeight(nextHeight);
+	};
+
 	const progressLabel = progress ? t("prefabPreview.progress", { current: progress.current.toLocaleString(), total: progress.total.toLocaleString() }) : t("prefabPreview.loading");
 
 	return (
@@ -703,12 +740,38 @@ export default function PrefabPreviewCanvas({ prefabUrl, active = true }) {
 			</button>
 
 			{status === "ready" ? (
-				<div className={`prefab-preview__hints ${hasInteracted ? "is-hidden" : ""}`} aria-hidden={hasInteracted}>
-					<div className="prefab-preview__hint">{t("prefabPreview.dragHint")}</div>
-					
-					<div className="prefab-preview__hint">{t("prefabPreview.zoomHint")}</div>
-					
-					<div className="prefab-preview__hint">{t("prefabPreview.panHint")}</div>
+				<div className="prefab-preview__toolbar">
+					<div className={`prefab-preview__hints ${hasInteracted ? "is-hidden" : ""}`} aria-hidden={hasInteracted}>
+						<div className="prefab-preview__hint">{t("prefabPreview.dragHint")}</div>
+
+						<div className="prefab-preview__hint">{t("prefabPreview.zoomHint")}</div>
+
+						<div className="prefab-preview__hint">{t("prefabPreview.panHint")}</div>
+					</div>
+
+					{layerCount > 1 ? (
+						<div className="prefab-preview__cutaway" role="group" aria-labelledby={cutawayId} onPointerDown={() => cutawayRef.current?.interact()} onFocus={() => cutawayRef.current?.interact()}>
+							<span id={cutawayId} className="prefab-preview__cutaway-title">
+								{t("prefabPreview.cutaway")}
+							</span>
+							
+							<span className="prefab-preview__cutaway-value" role="status" aria-atomic="true">
+								{t("prefabPreview.layer", { current: cutawayHeight, total: layerCount })}
+							</span>
+							
+							<button type="button" className="prefab-preview__cutaway-button" disabled={cutawayHeight === layerCount} aria-label={t("prefabPreview.raiseCutaway")} onClick={() => changeCutawayHeight(cutawayHeight + 1)}>
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+									<path d="M5 12h14M12 5v14" />
+								</svg>
+							</button>
+
+							<button type="button" className="prefab-preview__cutaway-button" disabled={cutawayHeight <= 1} aria-label={t("prefabPreview.lowerCutaway")} onClick={() => changeCutawayHeight(cutawayHeight - 1)}>
+								<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+									<path d="M5 12h14" />
+								</svg>
+							</button>
+						</div>
+					) : null}
 				</div>
 			) : null}
 		</div>

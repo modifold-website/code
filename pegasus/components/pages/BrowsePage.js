@@ -19,7 +19,7 @@ import { getBrowseGameVersionGroups, getEffectiveBrowseGameVersions, normalizeGa
 
 const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-function parseQueryString(queryString) {
+function parseQueryString(queryString, projectType) {
     const params = new URLSearchParams(queryString || "");
     const rawSort = params.get("sort");
     const rawPage = Number.parseInt(params.get("page"), 10);
@@ -28,7 +28,7 @@ function parseQueryString(queryString) {
     return {
         tags: params.getAll("c"),
         gameVersions,
-        useDefaultGameVersions: gameVersions.length === 0 && params.get("versions") !== "all",
+		useDefaultGameVersions: projectType !== "world" && projectType !== "prefab" && gameVersions.length === 0 && params.get("versions") !== "all",
         sort: ["downloads", "recent", "updated"].includes(rawSort) ? rawSort : "downloads",
         search: params.get("q") || "",
 		dependencyProjectId: params.get("dependency") || "",
@@ -37,7 +37,7 @@ function parseQueryString(queryString) {
     };
 }
 
-function buildQueryString({ sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType, currentPage }) {
+function buildQueryString({ projectType, sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType, currentPage }) {
     const params = new URLSearchParams();
 
     if(search) {
@@ -54,7 +54,7 @@ function buildQueryString({ sort, search, selectedTags, selectedGameVersions, us
 
     [...selectedTags].sort().forEach((tag) => params.append("c", tag));
     [...selectedGameVersions].sort().forEach((version) => params.append("v", version));
-    if(!useDefaultGameVersions && selectedGameVersions.length === 0) {
+	if(projectType !== "world" && projectType !== "prefab" && !useDefaultGameVersions && selectedGameVersions.length === 0) {
         params.set("versions", "all");
     }
 
@@ -66,13 +66,13 @@ function buildQueryString({ sort, search, selectedTags, selectedGameVersions, us
     return params.toString();
 }
 
-function normalizeInitialState(initialState) {
+function normalizeInitialState(initialState, projectType) {
     const gameVersions = normalizeGameVersionBranches(Array.isArray(initialState?.gameVersions) ? initialState.gameVersions : []);
 
     return {
         tags: Array.isArray(initialState?.tags) ? initialState.tags : [],
         gameVersions,
-        useDefaultGameVersions: gameVersions.length === 0 && initialState?.useDefaultGameVersions !== false,
+		useDefaultGameVersions: projectType !== "world" && projectType !== "prefab" && gameVersions.length === 0 && initialState?.useDefaultGameVersions !== false,
         sort: ["downloads", "recent", "updated"].includes(initialState?.sort) ? initialState.sort : "downloads",
         search: typeof initialState?.search === "string" ? initialState.search : "",
 		dependencyProjectId: typeof initialState?.dependencyProjectId === "string" ? initialState.dependencyProjectId : "",
@@ -104,7 +104,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     const resultsRef = useRef(null);
 
     const urlQueryString = searchParams.toString();
-    const normalizedInitialState = useMemo(() => normalizeInitialState(initialState), [initialState]);
+	const normalizedInitialState = useMemo(() => normalizeInitialState(initialState, projectType), [initialState, projectType]);
 
     const [sort, setSort] = useState(normalizedInitialState.sort);
     const [search, setSearch] = useState(normalizedInitialState.search);
@@ -150,7 +150,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     }, [projectType, cardView]);
 
     useBrowserLayoutEffect(() => {
-        const parsed = parseQueryString(urlQueryString);
+		const parsed = parseQueryString(urlQueryString, projectType);
 
         setSelectedTags(parsed.tags);
         setSelectedGameVersions(parsed.gameVersions);
@@ -161,7 +161,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 		setDependencyProjectId(parsed.dependencyProjectId);
 		setDependencyType(parsed.dependencyType);
         setCurrentPage(parsed.page);
-    }, [urlQueryString]);
+	}, [urlQueryString, projectType]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -176,6 +176,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
     }, [searchInput, search, scrollToResults]);
 
     const nextQueryString = useMemo(() => buildQueryString({
+		projectType,
         sort,
         search,
         selectedTags,
@@ -184,7 +185,7 @@ export default function BrowsePage({ projectType, initialState = null, initialDa
 		dependencyProjectId,
 		dependencyType,
         currentPage,
-    }), [sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType, currentPage]);
+	}), [projectType, sort, search, selectedTags, selectedGameVersions, useDefaultGameVersions, dependencyProjectId, dependencyType, currentPage]);
 
     useEffect(() => {
         if(nextQueryString === urlQueryString) {

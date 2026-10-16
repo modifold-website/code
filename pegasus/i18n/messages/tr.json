@@ -577,7 +577,12 @@
       "zoomHint": "Yakınlaştırmak için kaydırın",
       "panHint": "Kaydırmak için sağ tıklayın",
       "fullscreen": "Tam ekran",
-      "exitFullscreen": "Tam ekrandan çık"
+      "exitFullscreen": "Tam ekrandan çık",
+      "cutaway": "Katman:",
+      "allLayers": "Tümü",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Kesiti bir katman indir",
+      "raiseCutaway": "Kesiti bir katman yükselt"
     },
     "status": {
       "draft": "Taslak",
@@ -675,6 +680,14 @@
       "dependenciesTitle": "Gerekli bağımlılıklar"
     },
     "changesTitle": "Değişiklikler",
+		"changelogEditor": {
+			"edit": "Değişiklik günlüğünü düzenle",
+			"placeholder": "Bu sürümdeki değişiklikleri açıklayın…",
+			"discardTitle": "Değişiklikler silinsin mi?",
+			"discardDescription": "Değişiklikleriniz kaydedilmedi. Düzenleyiciden çıkmadan önce kaydedin veya değişiklikleri silin.",
+			"discard": "Değişiklikleri sil",
+			"keepEditing": "Düzenlemeye devam et"
+		},
     "noChanges": "Değişiklik yok",
     "filesTitle": "Dosyalar",
     "noFiles": "Dosya yok",
@@ -3056,7 +3069,7 @@
       "prev": "Önceki",
       "next": "Sonraki"
     },
-    "empty": "Henüz issue yok. Tartışmayı başlatan ilk kişi olun.",
+		"empty": "Henüz sorun yok — muhtemelen böylesi daha iyi.",
     "newIssue": {
       "button": "Yeni sorun",
       "loginRequired": "Sorun oluşturmak için giriş yapın.",

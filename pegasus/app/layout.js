@@ -7,6 +7,7 @@ import Script from "next/script";
 import ClientProvider from "@/components/providers/ClientProvider";
 import CookieBanner from "@/components/ui/CookieBanner";
 import RippleEffects from "@/components/ui/RippleEffects";
+import { TooltipProvider } from "@/components/ui/Tooltip";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./globals.css";
@@ -155,6 +156,7 @@ export default async function RootLayout({ children }) {
                     <AuthProvider isLoggedIn={isLoggedIn} userData={userData}>
                         <ClientProvider>
                             <NextIntlClientProvider locale={resolvedLocale} messages={messages}>
+								<TooltipProvider>
                                 <Header authToken={token} />
                                 <HeaderMobile authToken={token} />
 
@@ -283,6 +285,7 @@ export default async function RootLayout({ children }) {
                                 <RippleEffects />
 
                                 <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+								</TooltipProvider>
                             </NextIntlClientProvider>
                         </ClientProvider>
                     </AuthProvider>

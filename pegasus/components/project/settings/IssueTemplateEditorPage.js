@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc, prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
 import { insertMarkdownLink } from "@/utils/markdown/editor";
 import { getProjectPath } from "@/utils/projectRoutes";
+import { MarkdownEditorToolbar } from "@/components/project/settings/DescriptionSettings";
 
 export default function IssueTemplateEditorPage({ project, authToken, labels = [], template = null }) {
     const t = useTranslations("IssueSettings");
@@ -46,7 +47,7 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
             }
 
             resizeTextarea();
-            textareaRef.current.focus();
+			textareaRef.current.focus({ preventScroll: true });
             if(typeof selectionStart === "number" && typeof selectionEnd === "number") {
                 textareaRef.current.setSelectionRange(selectionStart, selectionEnd);
             }
@@ -216,7 +217,7 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
                             <div className="markdown-editor">
                                 <p className="markdown-editor__hint">{t("template.markdownHint")}</p>
 
-                                <div className="markdown-editor__toolbar" role="toolbar" aria-label="Markdown editor toolbar">
+								<MarkdownEditorToolbar>
                                     <div className="markdown-editor__toolbar-buttons">
                                         <button type="button" className="markdown-editor__tool" onClick={() => prefixLines("# ")} aria-label="Heading 1" title="Heading 1" disabled={isPreviewVisible}>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading1-icon lucide-heading-1"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></svg>
@@ -270,7 +271,7 @@ export default function IssueTemplateEditorPage({ project, authToken, labels = [
                                             <span>{tSettings("description.preview")}</span>
                                         </label>
                                     </div>
-                                </div>
+								</MarkdownEditorToolbar>
 
                                 {!isPreviewVisible && (
                                     <div className="field field--default textarea markdown-editor__panel">

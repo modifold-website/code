@@ -1,3 +1,5 @@
+import { getAuthHeaders } from "@/utils/api/client";
+
 const MAX_PROJECT_DESCRIPTION_IMAGE_BYTES = 10 * 1024 * 1024;
 
 const IMAGE_EXTENSION_BY_MIME_TYPE = {
@@ -45,17 +47,17 @@ const getImageExtension = (file) => {
 	return IMAGE_EXTENSION_ALIASES[fileExtension] || "";
 };
 
-export const uploadProjectDescriptionImage = async ({ projectId, file, authToken, signal }) => {
+export const uploadProjectDescriptionImage = async ({ projectId, file, authToken, signal, context = "project" }) => {
 	const extension = getImageExtension(file);
 	const query = new URLSearchParams({
 		project_id: String(projectId),
-		context: "project",
+		context,
 		ext: extension,
 	});
 	const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/v2/image?${query}`, {
 		method: "POST",
 		headers: {
-			Authorization: `Bearer ${authToken}`,
+			...getAuthHeaders(authToken),
 			"Content-Type": "application/octet-stream",
 		},
 		body: file,

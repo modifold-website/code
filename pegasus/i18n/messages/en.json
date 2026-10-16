@@ -664,7 +664,12 @@
       "zoomHint": "Scroll to zoom",
       "panHint": "Right-click to pan",
       "fullscreen": "Full screen",
-      "exitFullscreen": "Exit full screen"
+      "exitFullscreen": "Exit full screen",
+      "cutaway": "Layer:",
+      "allLayers": "All",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Lower cutaway by one layer",
+      "raiseCutaway": "Raise cutaway by one layer"
     },
     "status": {
       "draft": "Draft",
@@ -762,6 +767,14 @@
       "dependenciesTitle": "Required dependencies"
     },
     "changesTitle": "Changes",
+		"changelogEditor": {
+			"edit": "Edit changelog",
+			"placeholder": "Describe the changes in this version…",
+			"discardTitle": "Discard changelog changes?",
+			"discardDescription": "Your changelog changes have not been saved. Save them before leaving the editor, or discard them.",
+			"discard": "Discard changes",
+			"keepEditing": "Keep editing"
+		},
     "noChanges": "No changes",
     "filesTitle": "Files",
     "noFiles": "No files",
@@ -3238,7 +3251,7 @@
       "prev": "Previous",
       "next": "Next"
     },
-    "empty": "No issues yet. Be the first to start the discussion.",
+		"empty": "No issues yet — probably a good thing.",
     "newIssue": {
       "button": "New issue",
       "loginRequired": "Please log in to create an issue.",

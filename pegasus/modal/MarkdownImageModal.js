@@ -21,7 +21,7 @@ const getValidImageUrl = (value) => {
 	}
 };
 
-export default function MarkdownImageModal({ isOpen, onRequestClose, onInsert, projectId, authToken, t }) {
+export default function MarkdownImageModal({ isOpen, onRequestClose, onInsert, projectId, authToken, t, context = "project" }) {
 	const appElement = typeof document !== "undefined" ? document.body : undefined;
 	const [source, setSource] = useState("upload");
 	const [altText, setAltText] = useState("");
@@ -130,6 +130,7 @@ export default function MarkdownImageModal({ isOpen, onRequestClose, onInsert, p
 		try {
 			const image = await uploadProjectDescriptionImage({
 				projectId,
+				context,
 				file,
 				authToken,
 				signal: uploadController.signal,
@@ -196,6 +197,7 @@ export default function MarkdownImageModal({ isOpen, onRequestClose, onInsert, p
 
 	const handleSubmit = (event) => {
 		event.preventDefault();
+		event.stopPropagation();
 		if(isInsertDisabled) {
 			return;
 		}

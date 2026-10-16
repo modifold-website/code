@@ -577,7 +577,12 @@
       "zoomHint": "Rueda para acercar",
       "panHint": "Clic derecho para desplazar",
       "fullscreen": "Pantalla completa",
-      "exitFullscreen": "Salir de pantalla completa"
+      "exitFullscreen": "Salir de pantalla completa",
+      "cutaway": "Capa:",
+      "allLayers": "Todas",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Bajar la sección una capa",
+      "raiseCutaway": "Subir la sección una capa"
     },
     "status": {
       "draft": "Borrador",
@@ -675,6 +680,14 @@
       "dependenciesTitle": "Dependencias obligatorias"
     },
     "changesTitle": "Cambios",
+		"changelogEditor": {
+			"edit": "Editar registro de cambios",
+			"placeholder": "Describe los cambios de esta versión…",
+			"discardTitle": "¿Descartar los cambios?",
+			"discardDescription": "Los cambios no se han guardado. Guárdalos antes de salir del editor o descártalos.",
+			"discard": "Descartar cambios",
+			"keepEditing": "Seguir editando"
+		},
     "noChanges": "Sin cambios",
     "filesTitle": "Archivos",
     "noFiles": "Sin archivos",
@@ -3056,7 +3069,7 @@
       "prev": "Anterior",
       "next": "Siguiente"
     },
-    "empty": "Aún no hay incidencias. Sé el primero en iniciar la discusión.",
+		"empty": "Aún no hay problemas — quizá sea buena señal.",
     "newIssue": {
       "button": "Nueva incidencia",
       "loginRequired": "Inicia sesión para crear una incidencia.",

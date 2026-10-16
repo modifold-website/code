@@ -15,128 +15,129 @@ import { projectDescriptionMarkdownComponents } from "@/utils/projectDescription
 import { insertMarkdownLink } from "@/utils/markdown/editor";
 
 function MarkdownToolbarButton({ label, onClick, disabled, children }) {
-    return (
-        <Tooltip content={label}>
-            <button type="button" className="markdown-editor__tool" onClick={onClick} aria-label={label} disabled={disabled}>
-                {children}
-            </button>
-        </Tooltip>
-    );
+	return (
+		<Tooltip content={label}>
+			<button type="button" className="markdown-editor__tool" onClick={onClick} aria-label={label} disabled={disabled}>
+				{children}
+			</button>
+		</Tooltip>
+	);
 }
 
-export default function DescriptionSettings({ project, authToken }) {
-    const t = useTranslations("SettingsProjectPage");
-    const tImage = useTranslations("SettingsProjectPage.description.imageModal");
-    const initialDescription = project.description || "";
-    const [description, setDescription] = useState(initialDescription);
-    const [savedDescription, setSavedDescription] = useState(initialDescription);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isPreviewVisible, setIsPreviewVisible] = useState(false);
-    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-    const textareaRef = useRef(null);
-    const imageInsertionSelectionRef = useRef({ start: 0, end: 0 });
-    const isDirty = description !== savedDescription;
+export function MarkdownEditorToolbar({ children, label = "Markdown editor toolbar" }) {
+	const toolbarRef = useRef(null);
 
-    useEffect(() => {
-        const nextDescription = project.description || "";
-        setDescription(nextDescription);
-        setSavedDescription(nextDescription);
-    }, [project.description]);
+	useEffect(() => {
+		const toolbar = toolbarRef.current;
+		const editor = toolbar.closest(".markdown-editor");
+		const scrollContainer = toolbar.closest(".modal-window__content");
+		let frame = 0;
 
-    const resizeTextarea = () => {
-        const textarea = textareaRef.current;
-        if(!textarea) {
-            return;
-        }
+		const updateToolbar = () => {
+			frame = 0;
+			const inset = parseFloat(window.getComputedStyle(toolbar).top) || 0;
+			const top = inset + (scrollContainer ? scrollContainer.getBoundingClientRect().top + scrollContainer.clientTop : 0);
+			const isStuck = editor.getBoundingClientRect().top < top && toolbar.getBoundingClientRect().top <= top + 1;
+			toolbar.classList.toggle("markdown-editor__toolbar--stuck", isStuck);
+		};
+		const scheduleUpdate = () => {
+			if(!frame) {
+				frame = window.requestAnimationFrame(updateToolbar);
+			}
+		};
+		const observer = new ResizeObserver(scheduleUpdate);
+		observer.observe(editor);
+		observer.observe(toolbar);
+		if(scrollContainer) {
+			observer.observe(scrollContainer);
+		}
+		
+		window.addEventListener("scroll", scheduleUpdate, { passive: true, capture: true });
+		window.addEventListener("resize", scheduleUpdate);
+		updateToolbar();
 
-        textarea.style.height = "auto";
-        textarea.style.height = `${Math.max(textarea.scrollHeight, 260)}px`;
-    };
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("scroll", scheduleUpdate, true);
+			window.removeEventListener("resize", scheduleUpdate);
+			window.cancelAnimationFrame(frame);
+		};
+	}, []);
 
-    const handleSubmit = async (e) => {
-        if(e) {
-            e.preventDefault();
-        }
+	return (
+		<div className="markdown-editor__toolbar" ref={toolbarRef} role="toolbar" aria-label={label}>
+			{children}
+		</div>
+	);
+}
 
-        if(isSaving || !isDirty) {
-            return;
-        }
+export function DescriptionMarkdownEditor({ project, authToken, value: description, onChange: setDescription, disabled = false, minLength = 0, hint, placeholder, label, autoFocus = false, imageContext = "project" }) {
+	const t = useTranslations("SettingsProjectPage");
+	const tImage = useTranslations("SettingsProjectPage.description.imageModal");
+	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+	const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+	const textareaRef = useRef(null);
+	const imageInsertionSelectionRef = useRef({ start: 0, end: 0 });
 
-        setIsSaving(true);
-        const sanitizedDescription = prepareProjectDescriptionMarkdown(description);
+	const resizeTextarea = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
 
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/description`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${authToken}`,
-                },
-                body: JSON.stringify({ description: sanitizedDescription }),
-            });
+		textarea.style.height = "auto";
+		textarea.style.height = `${Math.max(textarea.scrollHeight, 260)}px`;
+	};
 
-            if(response.ok) {
-                setSavedDescription(description);
-                toast.success(t("description.success"));
-            } else {
-                toast.error(t("description.errors.save"));
-            }
-        } catch (err) {
-            toast.error(t("description.errors.save"));
-        } finally {
-            setIsSaving(false);
-        }
-    };
+	const updateTextareaValue = (nextValue, selectionStart, selectionEnd) => {
+		setDescription(nextValue);
 
-    const updateTextareaValue = (nextValue, selectionStart, selectionEnd) => {
-        setDescription(nextValue);
+		requestAnimationFrame(() => {
+			if(!textareaRef.current) {
+				return;
+			}
 
-        requestAnimationFrame(() => {
-            if(!textareaRef.current) {
-                return;
-            }
+			resizeTextarea();
+			textareaRef.current.focus({ preventScroll: true });
+			if(typeof selectionStart === "number" && typeof selectionEnd === "number") {
+				textareaRef.current.setSelectionRange(selectionStart, selectionEnd);
+			}
+		});
+	};
 
-            resizeTextarea();
-            textareaRef.current.focus();
-            if(typeof selectionStart === "number" && typeof selectionEnd === "number") {
-                textareaRef.current.setSelectionRange(selectionStart, selectionEnd);
-            }
-        });
-    };
+	const wrapSelection = (prefix, suffix = prefix) => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
 
-    const wrapSelection = (prefix, suffix = prefix) => {
-        const textarea = textareaRef.current;
-        if(!textarea) {
-            return;
-        }
+		const start = textarea.selectionStart ?? 0;
+		const end = textarea.selectionEnd ?? 0;
+		const selected = description.slice(start, end);
+		const content = selected || "";
+		const nextValue = `${description.slice(0, start)}${prefix}${content}${suffix}${description.slice(end)}`;
+		const caretStart = start + prefix.length;
 
-        const start = textarea.selectionStart ?? 0;
-        const end = textarea.selectionEnd ?? 0;
-        const selected = description.slice(start, end);
-        const content = selected || "";
-        const nextValue = `${description.slice(0, start)}${prefix}${content}${suffix}${description.slice(end)}`;
-        const caretStart = start + prefix.length;
+		if(selected) {
+			updateTextareaValue(nextValue, caretStart, caretStart + content.length);
+			return;
+		}
 
-        if(selected) {
-            updateTextareaValue(nextValue, caretStart, caretStart + content.length);
-            return;
-        }
+		updateTextareaValue(nextValue, caretStart, caretStart);
+	};
 
-        updateTextareaValue(nextValue, caretStart, caretStart);
-    };
+	const insertAtSelection = (text, selectInserted = false) => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
 
-    const insertAtSelection = (text, selectInserted = false) => {
-        const textarea = textareaRef.current;
-        if(!textarea) {
-            return;
-        }
-
-        const start = textarea.selectionStart ?? 0;
-        const end = textarea.selectionEnd ?? 0;
-        const nextValue = `${description.slice(0, start)}${text}${description.slice(end)}`;
-        const caret = start + text.length;
-        updateTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
-    };
+		const start = textarea.selectionStart ?? 0;
+		const end = textarea.selectionEnd ?? 0;
+		const nextValue = `${description.slice(0, start)}${text}${description.slice(end)}`;
+		const caret = start + text.length;
+		updateTextareaValue(nextValue, selectInserted ? start : caret, selectInserted ? caret : caret);
+	};
 
 	const insertLinkAtSelection = () => {
 		const textarea = textareaRef.current;
@@ -152,42 +153,42 @@ export default function DescriptionSettings({ project, authToken }) {
 		updateTextareaValue(edit.value, edit.selectionStart, edit.selectionEnd);
 	};
 
-    const formatCodeSelection = () => {
-        const textarea = textareaRef.current;
-        if(!textarea) {
-            return;
-        }
+	const formatCodeSelection = () => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
 
-        const start = textarea.selectionStart ?? 0;
-        const end = textarea.selectionEnd ?? 0;
-        const selected = description.slice(start, end);
-        const before = description.slice(0, start);
-        const after = description.slice(end);
-        const leadingNewline = before && !before.endsWith("\n") ? "\n" : "";
-        const trailingNewline = after && !after.startsWith("\n") ? "\n" : "";
-        let language = "";
+		const start = textarea.selectionStart ?? 0;
+		const end = textarea.selectionEnd ?? 0;
+		const selected = description.slice(start, end);
+		const before = description.slice(0, start);
+		const after = description.slice(end);
+		const leadingNewline = before && !before.endsWith("\n") ? "\n" : "";
+		const trailingNewline = after && !after.startsWith("\n") ? "\n" : "";
+		let language = "";
 
-        try {
-            const value = selected.trim();
-            if(value && ["{", "["].includes(value[0])) {
-                JSON.parse(value);
-                language = "json";
-            }
-        } catch {
-            language = "";
-        }
+		try {
+			const value = selected.trim();
+			if(value && ["{", "["].includes(value[0])) {
+				JSON.parse(value);
+				language = "json";
+			}
+		} catch {
+			language = "";
+		}
 
-        if(!selected.includes("\n") && !language) {
-            wrapSelection("`", "`");
-            return;
-        }
+		if(!selected.includes("\n") && !language) {
+			wrapSelection("`", "`");
+			return;
+		}
 
-        const prefix = `${leadingNewline}\`\`\`${language}\n`;
-        const suffix = `\n\`\`\`${trailingNewline}`;
-        const nextValue = `${before}${prefix}${selected}${suffix}${after}`;
-        const selectionStart = start + prefix.length;
-        updateTextareaValue(nextValue, selectionStart, selectionStart + selected.length);
-    };
+		const prefix = `${leadingNewline}\`\`\`${language}\n`;
+		const suffix = `\n\`\`\`${trailingNewline}`;
+		const nextValue = `${before}${prefix}${selected}${suffix}${after}`;
+		const selectionStart = start + prefix.length;
+		updateTextareaValue(nextValue, selectionStart, selectionStart + selected.length);
+	};
 
 	const insertCollapsibleSection = () => {
 		const textarea = textareaRef.current;
@@ -210,177 +211,242 @@ export default function DescriptionSettings({ project, authToken }) {
 		updateTextareaValue(nextValue, titleStart, titleStart + title.length);
 	};
 
-    const prefixLines = (prefix) => {
-        const textarea = textareaRef.current;
-        if(!textarea) {
-            return;
-        }
+	const prefixLines = (prefix) => {
+		const textarea = textareaRef.current;
+		if(!textarea) {
+			return;
+		}
 
-        const start = textarea.selectionStart ?? 0;
-        const end = textarea.selectionEnd ?? 0;
+		const start = textarea.selectionStart ?? 0;
+		const end = textarea.selectionEnd ?? 0;
 
-        if(start === end) {
-            insertAtSelection(prefix);
-            return;
-        }
+		if(start === end) {
+			insertAtSelection(prefix);
+			return;
+		}
 
-        const lineStart = description.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
-        const selectedText = description.slice(lineStart, end);
-        const transformed = selectedText.split("\n").map((line) => (line.trim() ? `${prefix}${line}` : line)).join("\n");
-        const nextValue = `${description.slice(0, lineStart)}${transformed}${description.slice(end)}`;
-        updateTextareaValue(nextValue, lineStart, lineStart + transformed.length);
-    };
+		const lineStart = description.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+		const selectedText = description.slice(lineStart, end);
+		const transformed = selectedText.split("\n").map((line) => (line.trim() ? `${prefix}${line}` : line)).join("\n");
+		const nextValue = `${description.slice(0, lineStart)}${transformed}${description.slice(end)}`;
+		updateTextareaValue(nextValue, lineStart, lineStart + transformed.length);
+	};
 
-    const openImageModal = () => {
-        const textarea = textareaRef.current;
-        imageInsertionSelectionRef.current = {
-            start: textarea?.selectionStart ?? description.length,
-            end: textarea?.selectionEnd ?? description.length,
-        };
-        setIsImageModalOpen(true);
-    };
+	const openImageModal = () => {
+		const textarea = textareaRef.current;
+		imageInsertionSelectionRef.current = {
+			start: textarea?.selectionStart ?? description.length,
+			end: textarea?.selectionEnd ?? description.length,
+		};
+		setIsImageModalOpen(true);
+	};
 
-    const insertImage = ({ altText, url }) => {
-        const { start, end } = imageInsertionSelectionRef.current;
-        const escapedAltText = altText.replace(/\\/g, "\\\\").replace(/\[/g, "\\[").replace(/\]/g, "\\]").replace(/\s+/g, " ").trim();
-        const escapedUrl = url.replace(/\(/g, "%28").replace(/\)/g, "%29");
-        const markdown = `![${escapedAltText}](${escapedUrl})`;
-        const nextValue = `${description.slice(0, start)}${markdown}${description.slice(end)}`;
-        const caret = start + markdown.length;
-        updateTextareaValue(nextValue, caret, caret);
-    };
+	const insertImage = ({ altText, url }) => {
+		const { start, end } = imageInsertionSelectionRef.current;
+		const escapedAltText = altText.replace(/\\/g, "\\\\").replace(/\[/g, "\\[").replace(/\]/g, "\\]").replace(/\s+/g, " ").trim();
+		const escapedUrl = url.replace(/\(/g, "%28").replace(/\)/g, "%29");
+		const markdown = `![${escapedAltText}](${escapedUrl})`;
+		const nextValue = `${description.slice(0, start)}${markdown}${description.slice(end)}`;
+		const caret = start + markdown.length;
+		updateTextareaValue(nextValue, caret, caret);
+	};
 
-    useEffect(() => {
-        if(isPreviewVisible) {
-            return;
-        }
+	useEffect(() => {
+		if(isPreviewVisible) {
+			return;
+		}
 
-        requestAnimationFrame(() => {
-            resizeTextarea();
-        });
-    }, [description, isPreviewVisible]);
+		requestAnimationFrame(() => {
+			resizeTextarea();
+		});
+	}, [description, isPreviewVisible]);
 
-    return (
-        <>
-            <div className="settings-wrapper" style={{ width: "100%", height: "max-content" }}>
-                <div className="settings-content">
-                    <form onSubmit={handleSubmit}>
-                        <div className="blog-settings">
-                            <div className="blog-settings__body">
-                                <p className="blog-settings__field-title">{t("description.title")}</p>
+	return (
+		<>
+			<div className="markdown-editor">
+				{hint ? <p className="markdown-editor__hint">{hint}</p> : null}
 
-                                <div className="markdown-editor">
-                                    <p className="markdown-editor__hint">{t("description.hint")}</p>
+				<MarkdownEditorToolbar>
+					<div className="markdown-editor__toolbar-buttons">
+						<MarkdownToolbarButton label="Heading 1" onClick={() => prefixLines("# ")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading1-icon lucide-heading-1"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></svg>
+						</MarkdownToolbarButton>
 
-                                    <div className="markdown-editor__toolbar" role="toolbar" aria-label="Markdown editor toolbar">
-                                        <div className="markdown-editor__toolbar-buttons">
-                                            <MarkdownToolbarButton label="Heading 1" onClick={() => prefixLines("# ")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading1-icon lucide-heading-1"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Heading 2" onClick={() => prefixLines("## ")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading2-icon lucide-heading-2"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Heading 2" onClick={() => prefixLines("## ")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading2-icon lucide-heading-2"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/></svg>
-                                            </MarkdownToolbarButton>
-                                            
-                                            <MarkdownToolbarButton label="Heading 3" onClick={() => prefixLines("### ")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading3-icon lucide-heading-3"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2"/><path d="M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Heading 3" onClick={() => prefixLines("### ")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading3-icon lucide-heading-3"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2"/><path d="M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Bold" onClick={() => wrapSelection("**", "**")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bold-icon lucide-bold"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Bold" onClick={() => wrapSelection("**", "**")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bold-icon lucide-bold"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Italic" onClick={() => wrapSelection("*", "*")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-italic-icon lucide-italic"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Italic" onClick={() => wrapSelection("*", "*")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-italic-icon lucide-italic"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Strikethrough" onClick={() => wrapSelection("~~", "~~")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-strikethrough-icon lucide-strikethrough"><path d="M16 4H9a3 3 0 0 0-2.83 4"/><path d="M14 12a4 4 0 0 1 0 8H6"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Strikethrough" onClick={() => wrapSelection("~~", "~~")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-strikethrough-icon lucide-strikethrough"><path d="M16 4H9a3 3 0 0 0-2.83 4"/><path d="M14 12a4 4 0 0 1 0 8H6"/><line x1="4" x2="20" y1="12" y2="12"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Code" onClick={formatCodeSelection} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code-xml-icon lucide-code-xml"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Code" onClick={formatCodeSelection} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-code-xml-icon lucide-code-xml"><path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Bulleted list" onClick={() => prefixLines("- ")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-icon lucide-list"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Bulleted list" onClick={() => prefixLines("- ")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-icon lucide-list"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Ordered list" onClick={() => prefixLines("1. ")} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-ordered-icon lucide-list-ordered"><path d="M11 5h10"/><path d="M11 12h10"/><path d="M11 19h10"/><path d="M4 4h1v5"/><path d="M4 9h2"/><path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Ordered list" onClick={() => prefixLines("1. ")} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-list-ordered-icon lucide-list-ordered"><path d="M11 5h10"/><path d="M11 12h10"/><path d="M11 19h10"/><path d="M4 4h1v5"/><path d="M4 9h2"/><path d="M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Link" onClick={insertLinkAtSelection} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Link" onClick={insertLinkAtSelection} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <MarkdownToolbarButton label="Image" onClick={openImageModal} disabled={isPreviewVisible}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                                            </MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Image" onClick={openImageModal} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+						</MarkdownToolbarButton>
 
-											<MarkdownToolbarButton label="Collapsible section" onClick={insertCollapsibleSection} disabled={isPreviewVisible}>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 3 3 3-3"/><path d="m9 6 3-3 3 3"/><path d="M12 3v18"/><path d="M5 9h14"/><path d="M5 15h14"/></svg>
-											</MarkdownToolbarButton>
+						<MarkdownToolbarButton label="Collapsible section" onClick={insertCollapsibleSection} disabled={disabled || isPreviewVisible}>
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 3 3 3-3"/><path d="m9 6 3-3 3 3"/><path d="M12 3v18"/><path d="M5 9h14"/><path d="M5 15h14"/></svg>
+						</MarkdownToolbarButton>
 
-                                            <label className="markdown-editor__preview-toggle">
-                                                <input type="checkbox" checked={isPreviewVisible} onChange={(e) => setIsPreviewVisible(e.target.checked)} />
-                                                <span className="markdown-editor__preview-toggle-ui" aria-hidden="true">
-                                                    <span className="markdown-editor__preview-toggle-thumb"></span>
-                                                </span>
-                                                <span>{t("description.preview")}</span>
-                                            </label>
-                                        </div>
-                                    </div>
+						<label className="markdown-editor__preview-toggle">
+							<input type="checkbox" checked={isPreviewVisible} disabled={disabled} onChange={(e) => setIsPreviewVisible(e.target.checked)} />
+							<span className="markdown-editor__preview-toggle-ui" aria-hidden="true">
+								<span className="markdown-editor__preview-toggle-thumb"></span>
+							</span>
+							<span>{t("description.preview")}</span>
+						</label>
+					</div>
+				</MarkdownEditorToolbar>
 
-                                    {!isPreviewVisible && (
-                                        <>
-                                            <div className="field field--default textarea markdown-editor__panel">
-                                                <label style={{ marginBottom: "0" }} className="field__wrapper">
-                                                    <textarea ref={textareaRef} value={description} onChange={(e) => setDescription(e.target.value)} onInput={resizeTextarea} placeholder={t("description.placeholder")} className="autosize textarea__input markdown-editor__textarea" minLength={50} />
-                                                </label>
-                                            </div>
+				{!isPreviewVisible && (
+					<>
+						<div className="field field--default textarea markdown-editor__panel">
+							<label style={{ marginBottom: "0" }} className="field__wrapper">
+								<textarea ref={textareaRef} value={description} onChange={(e) => setDescription(e.target.value)} onInput={resizeTextarea} placeholder={placeholder || t("description.placeholder")} aria-label={label || t("description.title")} disabled={disabled} autoFocus={autoFocus} className="autosize textarea__input markdown-editor__textarea" minLength={minLength} />
+							</label>
+						</div>
 
-                                        </>
-                                    )}
+					</>
+				)}
 
-                                    {isPreviewVisible && (
-                                        <div className="markdown-editor__preview markdown-editor__panel markdown-body">
-                                            <div className="markdown-editor__preview-scroll" style={{ maxHeight: "fit-content" }}>
-                                                <ReactMarkdown
-                                                    remarkPlugins={[remarkGfm]}
-                                                    rehypePlugins={[rehypeRaw]}
-                                                    components={projectDescriptionMarkdownComponents}
-                                                >
-                                                    {prepareProjectDescriptionMarkdown(description)}
-                                                </ReactMarkdown>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+				{isPreviewVisible && (
+					<div className="markdown-editor__preview markdown-editor__panel markdown-body">
+						<div className="markdown-editor__preview-scroll" style={{ maxHeight: "fit-content" }}>
+							<ReactMarkdown
+								remarkPlugins={[remarkGfm]}
+								rehypePlugins={[rehypeRaw]}
+								components={projectDescriptionMarkdownComponents}
+							>
+								{prepareProjectDescriptionMarkdown(description)}
+							</ReactMarkdown>
+						</div>
+					</div>
+				)}
+			</div>
+			<MarkdownImageModal
+				isOpen={isImageModalOpen}
+				onRequestClose={() => setIsImageModalOpen(false)}
+				onInsert={insertImage}
+				projectId={project.id || project.slug}
+				context={imageContext}
+				authToken={authToken}
+				t={tImage}
+			/>
+		</>
+	);
+}
 
-            <UnsavedChangesBar
-                isDirty={isDirty}
-                isSaving={isSaving}
-                onSave={handleSubmit}
-                onReset={() => setDescription(savedDescription)}
-                saveLabel={t("description.actions.save")}
-                resetLabel={t("unsavedBar.reset")}
-                message={t("unsavedBar.message")}
-            />
+export default function DescriptionSettings({ project, authToken }) {
+	const t = useTranslations("SettingsProjectPage");
+	const initialDescription = project.description || "";
+	const [description, setDescription] = useState(initialDescription);
+	const [savedDescription, setSavedDescription] = useState(initialDescription);
+	const [isSaving, setIsSaving] = useState(false);
+	const isDirty = description !== savedDescription;
 
-            <MarkdownImageModal
-                isOpen={isImageModalOpen}
-                onRequestClose={() => setIsImageModalOpen(false)}
-                onInsert={insertImage}
-                projectId={project.id || project.slug}
-                authToken={authToken}
-                t={tImage}
-            />
-        </>
-    );
+	useEffect(() => {
+		const nextDescription = project.description || "";
+		setDescription(nextDescription);
+		setSavedDescription(nextDescription);
+	}, [project.description]);
+
+	const handleSubmit = async (e) => {
+		if(e) {
+			e.preventDefault();
+		}
+
+		if(isSaving || !isDirty) {
+			return;
+		}
+
+		setIsSaving(true);
+		const sanitizedDescription = prepareProjectDescriptionMarkdown(description);
+
+		try {
+			const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/description`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${authToken}`,
+				},
+				body: JSON.stringify({ description: sanitizedDescription }),
+			});
+
+			if(response.ok) {
+				setSavedDescription(description);
+				toast.success(t("description.success"));
+			} else {
+				toast.error(t("description.errors.save"));
+			}
+		} catch (err) {
+			toast.error(t("description.errors.save"));
+		} finally {
+			setIsSaving(false);
+		}
+	};
+
+
+	return (
+		<>
+			<div className="settings-wrapper" style={{ width: "100%", height: "max-content" }}>
+				<div className="settings-content">
+					<form onSubmit={handleSubmit}>
+						<div className="blog-settings">
+							<div className="blog-settings__body">
+								<p className="blog-settings__field-title">{t("description.title")}</p>
+								
+								<DescriptionMarkdownEditor
+									project={project}
+									authToken={authToken}
+									value={description}
+									onChange={setDescription}
+									disabled={isSaving}
+									minLength={50}
+									hint={t("description.hint")}
+								/>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+
+			<UnsavedChangesBar
+				isDirty={isDirty}
+				isSaving={isSaving}
+				onSave={handleSubmit}
+				onReset={() => setDescription(savedDescription)}
+				saveLabel={t("description.actions.save")}
+				resetLabel={t("unsavedBar.reset")}
+				message={t("unsavedBar.message")}
+			/>
+		</>
+	);
 }

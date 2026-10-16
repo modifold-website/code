@@ -185,6 +185,33 @@ strong {
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+	position: sticky;
+	top: max(12px, env(safe-area-inset-top));
+	z-index: 3;
+}
+.markdown-editor__toolbar::before {
+	content: "";
+	position: absolute;
+	inset: -8px;
+	z-index: -1;
+	border-radius: 16px;
+	background: var(--theme-color-background-content);
+	box-shadow: var(--theme-shadow-popover);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 100ms cubic-bezier(.23, 1, .32, 1);
+}
+.markdown-editor__toolbar--stuck::before {
+	opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+	.markdown-editor__toolbar::before {
+		transform: translateY(2px);
+		transition: opacity 150ms cubic-bezier(.23, 1, .32, 1), transform 150ms cubic-bezier(.23, 1, .32, 1);
+	}
+	.markdown-editor__toolbar--stuck::before {
+		transform: translateY(0);
+	}
 }
 .markdown-editor__toolbar-buttons {
     display: flex;
@@ -283,7 +310,6 @@ strong {
     margin: 0;
     border: 0;
     resize: vertical;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     line-height: 1.5;
 }
 .markdown-editor__preview {
