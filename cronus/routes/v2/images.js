@@ -8,6 +8,7 @@ const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
 const { getPublicUrl, uploadBuffer } = require("../../utils/fileHosting");
 const { ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, hasProjectPermission, resolveProjectAccess } = require("../../utils/organizations");
+const { canAccessRestrictedProject } = require("../../utils/projectVisibility");
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ const rawImageBody = express.raw({
 
 const getProject = async (identifier) => {
 	const [projects] = await db.query(
-		"SELECT id, slug, user_id FROM projects WHERE BINARY id = BINARY ? OR slug = ? LIMIT 1",
+		"SELECT id, slug, user_id, status, visibility, issues_enabled FROM projects WHERE BINARY id = BINARY ? OR slug = ? LIMIT 1",
 		[identifier, identifier]
 	);
 
@@ -64,8 +65,8 @@ router.post("/", auth, rawImageBody, async (req, res) => {
 		const requestedExtension = String(req.query?.ext || "").trim().replace(/^\./, "").toLowerCase();
 		const requestedFormat = IMAGE_FORMATS[requestedExtension];
 
-		if(context !== "project") {
-			return res.status(400).json({ message: "Context must be project" });
+		if(!["project", "issue"].includes(context)) {
+			return res.status(400).json({ message: "Context must be project or issue" });
 		}
 
 		if(!projectIdentifier) {
@@ -85,8 +86,13 @@ router.post("/", auth, rawImageBody, async (req, res) => {
 			return res.status(404).json({ message: "Project not found" });
 		}
 
-		const access = await resolveProjectAccess(db, project.id, req.user.id);
-		if(!hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY) && !hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION)) {
+		const access = await resolveProjectAccess(db, project, req.user.id);
+		if(context === "issue") {
+			const [users] = await db.query("SELECT isRole FROM users WHERE id = ? LIMIT 1", [req.user.id]);
+			if(project.issues_enabled === 0 || !canAccessRestrictedProject({ project, userId: req.user.id, userRole: users[0]?.isRole, access })) {
+				return res.status(404).json({ message: "Project issues not found" });
+			}
+		} else if(!hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY) && !hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION)) {
 			return res.status(403).json({ message: "You do not have permission to upload project images" });
 		}
 
@@ -106,7 +112,9 @@ router.post("/", auth, rawImageBody, async (req, res) => {
 		const optimizedImage = await optimizeImage(req.body, detectedFormat);
 		const hash = crypto.createHash("sha1").update(optimizedImage).digest("hex");
 		const fileName = `${hash}.${requestedFormat.extension}`;
-		const objectKey = `projects/${project.id}/cached_images/${fileName}`;
+		const objectKey = context === "issue"
+			? `projects/${project.id}/issues/${req.user.id}/${fileName}`
+			: `projects/${project.id}/cached_images/${fileName}`;
 		await uploadBuffer({
 			key: objectKey,
 			body: optimizedImage,

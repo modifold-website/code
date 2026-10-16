@@ -24,7 +24,7 @@ function MarkdownToolbarButton({ label, onClick, disabled, children }) {
 	);
 }
 
-export function DescriptionMarkdownEditor({ project, authToken, value: description, onChange: setDescription, disabled = false, minLength = 0, hint, placeholder, label, autoFocus = false }) {
+export function DescriptionMarkdownEditor({ project, authToken, value: description, onChange: setDescription, disabled = false, minLength = 0, hint, placeholder, label, autoFocus = false, imageContext = "project" }) {
 	const t = useTranslations("SettingsProjectPage");
 	const tImage = useTranslations("SettingsProjectPage.description.imageModal");
 	const [isPreviewVisible, setIsPreviewVisible] = useState(false);
@@ -309,6 +309,7 @@ export function DescriptionMarkdownEditor({ project, authToken, value: descripti
 				onRequestClose={() => setIsImageModalOpen(false)}
 				onInsert={insertImage}
 				projectId={project.id || project.slug}
+				context={imageContext}
 				authToken={authToken}
 				t={tImage}
 			/>
