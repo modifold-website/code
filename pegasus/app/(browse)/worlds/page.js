@@ -39,7 +39,6 @@ function parseBrowseSearchParams(searchParams) {
 
     const tags = getValues("c");
     const gameVersions = getValues("v");
-    const useDefaultGameVersions = gameVersions.length === 0 && getValues("versions")[0] !== "all";
     const search = getValues("q")[0] || "";
     const sortCandidate = getValues("sort")[0] || "";
     const sort = ["downloads", "recent", "updated"].includes(sortCandidate) ? sortCandidate : "downloads";
@@ -51,7 +50,7 @@ function parseBrowseSearchParams(searchParams) {
         search,
         tags,
         gameVersions,
-        useDefaultGameVersions,
+		useDefaultGameVersions: false,
         page,
     };
 }
