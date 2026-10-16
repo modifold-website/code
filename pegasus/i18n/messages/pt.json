@@ -3069,7 +3069,7 @@
       "prev": "Anterior",
       "next": "Próxima"
     },
-    "empty": "Ainda não há issues. Seja o primeiro a iniciar a discussão.",
+		"empty": "Nenhum problema por enquanto — provavelmente é um bom sinal.",
     "newIssue": {
       "button": "Novo problema",
       "loginRequired": "Faça login para criar um problema.",

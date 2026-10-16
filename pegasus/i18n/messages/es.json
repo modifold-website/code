@@ -3069,7 +3069,7 @@
       "prev": "Anterior",
       "next": "Siguiente"
     },
-    "empty": "Aún no hay incidencias. Sé el primero en iniciar la discusión.",
+		"empty": "Aún no hay problemas — quizá sea buena señal.",
     "newIssue": {
       "button": "Nueva incidencia",
       "loginRequired": "Inicia sesión para crear una incidencia.",

@@ -3069,7 +3069,7 @@
       "prev": "Önceki",
       "next": "Sonraki"
     },
-    "empty": "Henüz issue yok. Tartışmayı başlatan ilk kişi olun.",
+		"empty": "Henüz sorun yok — muhtemelen böylesi daha iyi.",
     "newIssue": {
       "button": "Yeni sorun",
       "loginRequired": "Sorun oluşturmak için giriş yapın.",

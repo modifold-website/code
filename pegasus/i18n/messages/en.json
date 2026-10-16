@@ -3251,7 +3251,7 @@
       "prev": "Previous",
       "next": "Next"
     },
-    "empty": "No issues yet. Be the first to start the discussion.",
+		"empty": "No issues yet — probably a good thing.",
     "newIssue": {
       "button": "New issue",
       "loginRequired": "Please log in to create an issue.",
