@@ -680,6 +680,14 @@
       "dependenciesTitle": "Gerekli bağımlılıklar"
     },
     "changesTitle": "Değişiklikler",
+		"changelogEditor": {
+			"edit": "Değişiklik günlüğünü düzenle",
+			"placeholder": "Bu sürümdeki değişiklikleri açıklayın…",
+			"discardTitle": "Değişiklikler silinsin mi?",
+			"discardDescription": "Değişiklikleriniz kaydedilmedi. Düzenleyiciden çıkmadan önce kaydedin veya değişiklikleri silin.",
+			"discard": "Değişiklikleri sil",
+			"keepEditing": "Düzenlemeye devam et"
+		},
     "noChanges": "Değişiklik yok",
     "filesTitle": "Dosyalar",
     "noFiles": "Dosya yok",

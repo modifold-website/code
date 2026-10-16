@@ -680,6 +680,14 @@
       "dependenciesTitle": "Dependencias obligatorias"
     },
     "changesTitle": "Cambios",
+		"changelogEditor": {
+			"edit": "Editar registro de cambios",
+			"placeholder": "Describe los cambios de esta versión…",
+			"discardTitle": "¿Descartar los cambios?",
+			"discardDescription": "Los cambios no se han guardado. Guárdalos antes de salir del editor o descártalos.",
+			"discard": "Descartar cambios",
+			"keepEditing": "Seguir editando"
+		},
     "noChanges": "Sin cambios",
     "filesTitle": "Archivos",
     "noFiles": "Sin archivos",

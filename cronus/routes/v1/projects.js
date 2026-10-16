@@ -3437,6 +3437,42 @@ router.post('/:slug/submit', auth, async (req, res) => {
     }
 });
 
+router.patch("/:slug/versions/:versionId/changelog", auth, async (req, res) => {
+	const { slug, versionId } = req.params;
+	if(typeof req.body?.changelog !== "string") {
+		return res.status(400).json({ message: "Changelog must be a string" });
+	}
+
+	try {
+		const project = await getProjectBySlug(slug);
+		if(!project) {
+			return res.status(404).json({ message: "Project not found" });
+		}
+
+		const access = await requireProjectPermission(res, {
+			project,
+			userId: req.user.id,
+			permission: PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION,
+		});
+        
+		if(!access) {
+			return;
+		}
+
+		const [versions] = await db.query("SELECT id FROM project_versions WHERE id = ? AND project_id = ?", [versionId, project.id]);
+		if(!versions.length) {
+			return res.status(404).json({ message: "Version not found" });
+		}
+
+		const changelog = sanitizeMarkdownText(req.body.changelog);
+		await db.query("UPDATE project_versions SET changelog = ? WHERE id = ? AND project_id = ?", [changelog || null, versionId, project.id]);
+		return res.json({ changelog });
+	} catch(error) {
+		logger.error("Error updating version changelog:", error);
+		return res.status(500).json({ message: "Error updating version changelog" });
+	}
+});
+
 router.put('/:slug/versions/:versionId', logVersionRequest, auth, uploadVersionFile, async (req, res) => {
     const { slug, versionId } = req.params;
     const { version_number, changelog, release_channel, game_versions, loaders, dependencies } = req.body;

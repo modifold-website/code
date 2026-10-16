@@ -1929,12 +1929,33 @@ body.prefab-preview-fullscreen-open .header-mobile {
 }
 .version-page__required-content h2,
 .version-page__compatibility h2,
-.version-page__changelog h2 {
+.version-page__changelog-heading h2 {
 	font-size: 18px;
 	font-weight: 500;
 	letter-spacing: 0;
 	line-height: 1.2;
 	margin: 0;
+}
+.version-page__changelog-heading {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	min-height: 34px;
+}
+.version-page__changelog-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-inline-start: auto;
+}
+.version-page__changelog-edit {
+	width: 34px;
+	height: 34px;
+	padding: 0;
+}
+.version-page__changelog-edit svg {
+	fill: none;
 }
 .version-page__required-grid {
 	display: grid;
@@ -2092,7 +2113,7 @@ body.prefab-preview-fullscreen-open .header-mobile {
 	}
 	.version-page__required-content h2,
 	.version-page__compatibility h2,
-	.version-page__changelog h2 {
+	.version-page__changelog-heading h2 {
 		font-size: 22px;
 	}
 }

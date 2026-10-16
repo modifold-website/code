@@ -11,6 +11,7 @@ import axios from "axios";
 import VersionDisplay from "../VersionDisplay";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 import ProjectSidebar from "../project/ProjectSidebar";
 import VersionDownloadButton from "../project/VersionDownloadButton";
 import Tooltip from "../ui/Tooltip";
@@ -19,6 +20,10 @@ import VersionEditMetadataModal from "../../modal/VersionEditMetadataModal";
 import VersionEditDetailsModal from "../../modal/VersionEditDetailsModal";
 import VersionEditFilesModal from "../../modal/VersionEditFilesModal";
 import ConfirmModal from "@/modal/ConfirmModal";
+import { DescriptionMarkdownEditor } from "@/components/project/settings/DescriptionSettings";
+import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
+import { prepareProjectDescriptionMarkdown } from "@/utils/projectDescriptionContent";
+import { projectDescriptionMarkdownComponents } from "@/utils/projectDescriptionMarkdownComponents";
 import { DEFAULT_GAME_VERSIONS, normalizeGameVersionBranches, normalizeGameVersionItemsPayload } from "@/utils/gameVersions";
 import { getAuthHeaders } from "@/utils/api/client";
 import { getVersionDownloadUrl, getVersionPrimaryFile } from "@/utils/projects/downloads";
@@ -47,27 +52,6 @@ const createEmptyDependencyDraft = () => ({
     version_number: "",
     dependency_type: "required",
 });
-
-const getSafeMarkdownHref = (href) => {
-    if(typeof href !== "string") {
-        return null;
-    }
-
-    if(href.startsWith("/") || href.startsWith("#")) {
-        return href;
-    }
-
-    try {
-        const parsed = new URL(href);
-        if(!["http:", "https:", "mailto:"].includes(parsed.protocol)) {
-            return null;
-        }
-
-        return parsed.toString();
-    } catch {
-        return null;
-    }
-};
 
 const parseList = (value) => {
     if(Array.isArray(value)) {
@@ -193,6 +177,11 @@ export default function VersionPage({ project, version, authToken, gameVersions 
     const locale = useLocale();
     const router = useRouter();
     const [currentVersion, setCurrentVersion] = useState(version);
+	const [isEditingChangelog, setIsEditingChangelog] = useState(false);
+	const [changelogDraft, setChangelogDraft] = useState(version.changelog || "");
+	const [isSavingChangelog, setIsSavingChangelog] = useState(false);
+	const [isDiscardChangelogOpen, setIsDiscardChangelogOpen] = useState(false);
+	const editChangelogButtonRef = useRef(null);
     const [openEditActionsVersionId, setOpenEditActionsVersionId] = useState(null);
     const [editModalType, setEditModalType] = useState(null);
     const [editingVersionId, setEditingVersionId] = useState(null);
@@ -217,6 +206,9 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
     useEffect(() => {
         setCurrentVersion(version);
+		setIsEditingChangelog(false);
+		setChangelogDraft(version.changelog || "");
+		setIsDiscardChangelogOpen(false);
     }, [version]);
 
     useEffect(() => {
@@ -361,7 +353,54 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 	const legacyCanManageVersion = Boolean(project.permissions?.can_manage_versions || project.permissions?.can_edit || project.permissions?.can_edit_details);
 	const canEditProjectVersion = Boolean(canEditVersion || (authToken && (project.permissions?.can_edit_versions ?? legacyCanManageVersion)));
 	const canDeleteProjectVersion = Boolean(canEditVersion || (authToken && (project.permissions?.can_delete_versions ?? legacyCanManageVersion)));
+	const canEditChangelog = Boolean(authToken && (project.permissions?.can_edit_versions ?? canEditProjectVersion));
+	const isChangelogDirty = changelogDraft !== (currentVersion.changelog || "");
 	const shouldShowEditActions = canEditProjectVersion || canDeleteProjectVersion;
+
+	const closeChangelogEditor = () => {
+		setIsEditingChangelog(false);
+		setIsDiscardChangelogOpen(false);
+		setChangelogDraft(currentVersion.changelog || "");
+		requestAnimationFrame(() => editChangelogButtonRef.current?.focus());
+	};
+
+	const cancelChangelogEdit = () => {
+		if(isSavingChangelog) {
+			return;
+		}
+
+		if(isChangelogDirty) {
+			setIsDiscardChangelogOpen(true);
+		} else {
+			closeChangelogEditor();
+		}
+	};
+
+	const saveChangelog = async () => {
+		if(!canEditChangelog || isSavingChangelog || !isChangelogDirty) {
+			return;
+		}
+
+		setIsSavingChangelog(true);
+		const versionId = currentVersion.id;
+		const changelog = prepareProjectDescriptionMarkdown(changelogDraft);
+		try {
+			const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/versions/${versionId}/changelog`, { changelog }, {
+				headers: getAuthHeaders(authToken),
+			});
+			const savedChangelog = data.changelog ?? changelog;
+			setCurrentVersion((previous) => previous.id === versionId ? { ...previous, changelog: savedChangelog } : previous);
+			setChangelogDraft(savedChangelog);
+			setIsEditingChangelog(false);
+			setIsDiscardChangelogOpen(false);
+			toast.success(t("versionUpdated"));
+			requestAnimationFrame(() => editChangelogButtonRef.current?.focus());
+		} catch(error) {
+			toast.error(error.response?.data?.message || t("errorOccurred"));
+		} finally {
+			setIsSavingChangelog(false);
+		}
+	};
 
     const refreshVersion = async () => {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/projects/${project.slug}/version/${currentVersion.id}`, {
@@ -686,7 +725,7 @@ export default function VersionPage({ project, version, authToken, gameVersions 
 
                                     {shouldShowEditActions && (
                                         <div className="version-actions version-page__edit-actions">
-                                            <button className="button button--size-m button--type-secondary button--with-icon version-page__edit-trigger" type="button" onClick={() => setOpenEditActionsVersionId((prev) => (prev === currentVersion.id ? null : currentVersion.id))} aria-label={t("editVersion")} title={t("editVersion")} aria-expanded={openEditActionsVersionId === currentVersion.id}>
+											<button className="button button--size-m button--type-secondary button--with-icon version-page__edit-trigger" type="button" disabled={isEditingChangelog} onClick={() => setOpenEditActionsVersionId((prev) => (prev === currentVersion.id ? null : currentVersion.id))} aria-label={t("editVersion")} title={t("editVersion")} aria-expanded={openEditActionsVersionId === currentVersion.id}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings-icon lucide-settings">
                                                     <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/>
                                                     <circle cx="12" cy="12" r="3"/>
@@ -797,29 +836,58 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                         </section>
 
                         <section className="version-page__changelog">
-                            <h2>{t("changesTitle")}</h2>
+                            <div className="version-page__changelog-heading">
+								<h2>{t("changesTitle")}</h2>
 
-                            <div className="version-page__changelog-card markdown-body">
-                                {hasChangelog ? (
+								{canEditChangelog ? (
+									<div className="version-page__changelog-actions">
+										{isEditingChangelog ? (
+											<>
+												<button type="button" className="button button--size-m button--type-secondary" disabled={isSavingChangelog} onClick={cancelChangelogEdit}>
+                                                    {t("cancel")}
+                                                </button>
+												
+                                                <button type="button" className="button button--size-m button--type-primary" disabled={isSavingChangelog || !isChangelogDirty} aria-busy={isSavingChangelog} onClick={saveChangelog}>
+                                                    {tSettings("save")}
+                                                </button>
+											</>
+										) : (
+											<Tooltip content={t("changelogEditor.edit")}>
+												<button ref={editChangelogButtonRef} type="button" className="button button--size-m button--type-transparent version-page__changelog-edit" aria-label={t("changelogEditor.edit")} onClick={() => {
+													setChangelogDraft(currentVersion.changelog || "");
+													setOpenEditActionsVersionId(null);
+													setIsEditingChangelog(true);
+												}}>
+													<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+                                                        <path d="m15 5 4 4"/>
+                                                    </svg>
+												</button>
+											</Tooltip>
+										)}
+									</div>
+								) : null}
+							</div>
+
+                            <div className={`version-page__changelog-card${isEditingChangelog ? "" : " markdown-body"}`}>
+								{isEditingChangelog ? (
+									<DescriptionMarkdownEditor
+										project={project}
+										authToken={authToken}
+										value={changelogDraft}
+										onChange={setChangelogDraft}
+										disabled={isSavingChangelog}
+										label={t("changesTitle")}
+										placeholder={t("changelogEditor.placeholder")}
+										autoFocus
+									/>
+								) : hasChangelog ? (
                                     <ReactMarkdown
                                         remarkPlugins={[remarkGfm]}
-                                        components={{
-                                            a: ({ href, children }) => {
-                                                const safeHref = getSafeMarkdownHref(href);
-                                                if(!safeHref) {
-                                                    return <>{children}</>;
-                                                }
-
-                                                const isExternal = /^https?:\/\//i.test(safeHref);
-                                                return (
-                                                    <a href={safeHref} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined}>
-                                                        {children}
-                                                    </a>
-                                                );
-                                            },
-                                        }}
+										rehypePlugins={[rehypeRaw]}
+										components={projectDescriptionMarkdownComponents}
                                     >
-                                        {currentVersion.changelog}
+                                        {prepareProjectDescriptionMarkdown(currentVersion.changelog)}
                                     </ReactMarkdown>
                                 ) : (
                                     <p>{t("noChanges")}</p>
@@ -892,7 +960,24 @@ export default function VersionPage({ project, version, authToken, gameVersions 
                 currentFileName={getFileNameFromUrl(editVersionFile.url)}
                 formatFileSize={formatFileSize}
             />
-            <ConfirmModal
+            <UnsavedChangesBar
+				isDirty={isEditingChangelog && isChangelogDirty}
+				isSaving={isSavingChangelog}
+				onSave={saveChangelog}
+				onReset={closeChangelogEditor}
+				showBar={false}
+			/>
+			<ConfirmModal
+				isOpen={isDiscardChangelogOpen}
+				title={t("changelogEditor.discardTitle")}
+				messageTitle={tSettings("unsavedBar.leaveConfirm.messageTitle")}
+				description={t("changelogEditor.discardDescription")}
+				confirmLabel={t("changelogEditor.discard")}
+				cancelLabel={t("changelogEditor.keepEditing")}
+				onConfirm={closeChangelogEditor}
+				onRequestClose={() => setIsDiscardChangelogOpen(false)}
+			/>
+			<ConfirmModal
                 isOpen={Boolean(pendingDeleteVersionId)}
                 title={t("confirmDeleteVersion")}
                 confirmLabel={t("delete")}

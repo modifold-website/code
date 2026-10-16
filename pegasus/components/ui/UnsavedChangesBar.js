@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import ConfirmModal from "@/modal/ConfirmModal";
 
-export default function UnsavedChangesBar({ isDirty, onSave, onReset, isSaving = false, message = "You have unsaved changes.", resetLabel = "Reset", saveLabel = "Save" }) {
+export default function UnsavedChangesBar({ isDirty, onSave, onReset, isSaving = false, showBar = true, message = "You have unsaved changes.", resetLabel = "Reset", saveLabel = "Save" }) {
 	const router = useRouter();
 	const t = useTranslations("SettingsProjectPage.unsavedBar.leaveConfirm");
 	const [transitionState, setTransitionState] = useState(isDirty ? "enter-from" : "hidden");
@@ -154,7 +154,7 @@ export default function UnsavedChangesBar({ isDirty, onSave, onReset, isSaving =
 
 	return (
 		<>
-			{transitionState !== "hidden" ? (
+			{showBar && transitionState !== "hidden" ? (
 				<>
 					<div aria-hidden="true" className="unsaved-changes-bar__spacer"></div>
 

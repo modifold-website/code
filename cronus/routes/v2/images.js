@@ -7,7 +7,7 @@ const sharp = require("sharp");
 const { db } = require("../../config/db");
 const auth = require("../../middleware/auth");
 const { getPublicUrl, uploadBuffer } = require("../../utils/fileHosting");
-const { ORG_PROJECT_PERMISSIONS, hasProjectPermission, resolveProjectAccess } = require("../../utils/organizations");
+const { ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, hasProjectPermission, resolveProjectAccess } = require("../../utils/organizations");
 
 const router = express.Router();
 
@@ -86,8 +86,8 @@ router.post("/", auth, rawImageBody, async (req, res) => {
 		}
 
 		const access = await resolveProjectAccess(db, project.id, req.user.id);
-		if(!hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY)) {
-			return res.status(403).json({ message: "You do not have permission to edit this project description" });
+		if(!hasProjectPermission(access, ORG_PROJECT_PERMISSIONS.EDIT_BODY) && !hasProjectPermission(access, PROJECT_COLLABORATOR_PERMISSION_KEYS.EDIT_VERSION)) {
+			return res.status(403).json({ message: "You do not have permission to upload project images" });
 		}
 
 		let metadata;
