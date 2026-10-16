@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -25,33 +25,35 @@ function Countries({ report, locale, t }) {
 			) : !report.countries.length ? (
 				<p>{t("empty")}</p>
 			) : (
-				<div className="moderation-project-analytics__list" role="region" aria-label={t("countries")} tabIndex={0}>
-					<ul>
-						{report.countries.map((country) => (
-							<li key={country.country_code || "unknown"} className="moderation-downloads__row">
-								<span className="moderation-downloads__country">
-									{country.country_code && (
-										<img
-											className="moderation-downloads__flag"
-											src={`https://flagcdn.com/${country.country_code}.svg`}
-											alt=""
-											width="38"
-											height="25"
-											loading="lazy"
-										/>
-									)}
+				<div className="moderation-project-analytics__scroll">
+					<div className="moderation-project-analytics__list" role="region" aria-label={t("countries")} tabIndex={0}>
+						<ul>
+							{report.countries.map((country) => (
+								<li key={country.country_code || "unknown"} className="moderation-downloads__row">
+									<span className="moderation-downloads__country">
+										{country.country_code && (
+											<img
+												className="moderation-downloads__flag"
+												src={`https://flagcdn.com/${country.country_code}.svg`}
+												alt=""
+												width="38"
+												height="25"
+												loading="lazy"
+											/>
+										)}
 
-									<span>
-										{country.country_code ? regionNames.of(country.country_code.toUpperCase()) : t("unknownCountry")}
+										<span>
+											{country.country_code ? regionNames.of(country.country_code.toUpperCase()) : t("unknownCountry")}
+										</span>
 									</span>
-								</span>
 
-								<span className="moderation-downloads__count">
-									{displayNumber(country.count, locale)}
-								</span>
-							</li>
-						))}
-					</ul>
+									<span className="moderation-downloads__count">
+										{displayNumber(country.count, locale)}
+									</span>
+								</li>
+							))}
+						</ul>
+					</div>
 				</div>
 			)}
 		</section>
@@ -154,8 +156,43 @@ export default function ProjectAnalyticsModerationPage({ authToken, initialRange
 	const [dates, setDates] = useState({ from: appliedFrom, to: appliedTo });
 	const [compare, setCompare] = useState(false);
 	const [dateError, setDateError] = useState(false);
+	const pageRef = useRef(null);
 	const query = useProjectAnalytics({ authToken, project, from: appliedFrom, to: appliedTo });
 	const report = query.data;
+
+	useEffect(() => {
+		const lists = pageRef.current.querySelectorAll(".moderation-project-analytics__list");
+		const updateFade = () => {
+			for(const list of lists) {
+				const top = String(list.scrollTop > 1);
+				const bottom = String(list.scrollTop + list.clientHeight < list.scrollHeight - 1);
+
+				if(list.dataset.fadeTop !== top) {
+					list.dataset.fadeTop = top;
+				}
+
+				if(list.dataset.fadeBottom !== bottom) {
+					list.dataset.fadeBottom = bottom;
+				}
+			}
+		};
+
+		updateFade();
+		const observer = new ResizeObserver(updateFade);
+		for(const list of lists) {
+			observer.observe(list);
+			observer.observe(list.firstElementChild);
+			list.addEventListener("scroll", updateFade, { passive: true });
+		}
+
+		return () => {
+			observer.disconnect();
+			for(const list of lists) {
+				list.removeEventListener("scroll", updateFade);
+			}
+		};
+	}, [report, query.isError]);
+
 	const projectPath = getProjectPath(report?.project);
 	const dateLabels = {
 		placeholder: filtersT("filters.selectDate"),
@@ -205,7 +242,7 @@ export default function ProjectAnalyticsModerationPage({ authToken, initialRange
 	] : [];
 
 	return (
-		<section className="moderation-project-analytics">
+		<section ref={pageRef} className="moderation-project-analytics">
 			{projectPath ? (
 				<Link className="moderation-project-analytics__back" href={projectPath}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

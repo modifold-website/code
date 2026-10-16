@@ -8,26 +8,28 @@ export default function ProjectAnalyticsVersions({ report, locale, t }) {
 			{!report.versions.length ? (
 				<p>{t("empty")}</p>
 			) : (
-				<div className="moderation-project-analytics__list" role="region" aria-label={t("versions")} tabIndex={0}>
-					<table className="moderation-project-analytics__versions">
-						<thead>
-							<tr>
-								<th scope="col">{t("version")}</th>
-								<th scope="col">{t("uploaded")}</th>
-								<th scope="col">{t("downloads")}</th>
-							</tr>
-						</thead>
-
-						<tbody>
-							{report.versions.map((version) => (
-								<tr key={version.id}>
-									<td>{version.version_number}</td>
-									<td>{displayDate(version.uploaded_at, locale)}</td>
-									<td>{displayNumber(version.downloads, locale)}</td>
+				<div className="moderation-project-analytics__scroll">
+					<div className="moderation-project-analytics__list" role="region" aria-label={t("versions")} tabIndex={0}>
+						<table className="moderation-project-analytics__versions">
+							<thead>
+								<tr>
+									<th scope="col">{t("version")}</th>
+									<th scope="col">{t("uploaded")}</th>
+									<th scope="col">{t("downloads")}</th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+
+							<tbody>
+								{report.versions.map((version) => (
+									<tr key={version.id}>
+										<td>{version.version_number}</td>
+										<td>{displayDate(version.uploaded_at, locale)}</td>
+										<td>{displayNumber(version.downloads, locale)}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				</div>
 			)}
 		</section>
