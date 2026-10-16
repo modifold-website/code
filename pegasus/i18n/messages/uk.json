@@ -578,7 +578,12 @@
       "zoomHint": "Колесо — масштаб",
       "panHint": "Права кнопка — панорама",
       "fullscreen": "На весь екран",
-      "exitFullscreen": "Вийти з повноекранного режиму"
+      "exitFullscreen": "Вийти з повноекранного режиму",
+      "cutaway": "Шар:",
+      "allLayers": "Усі",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Опустити розріз на один шар",
+      "raiseCutaway": "Підняти розріз на один шар"
     },
     "status": {
       "draft": "Чернетка",

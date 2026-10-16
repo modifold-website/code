@@ -577,7 +577,12 @@
       "zoomHint": "Role para ampliar",
       "panHint": "Botão direito para mover",
       "fullscreen": "Tela cheia",
-      "exitFullscreen": "Sair da tela cheia"
+      "exitFullscreen": "Sair da tela cheia",
+      "cutaway": "Camada:",
+      "allLayers": "Todas",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Baixar o corte uma camada",
+      "raiseCutaway": "Subir o corte uma camada"
     },
     "status": {
       "draft": "Rascunho",

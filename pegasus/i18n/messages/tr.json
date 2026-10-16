@@ -577,7 +577,12 @@
       "zoomHint": "Yakınlaştırmak için kaydırın",
       "panHint": "Kaydırmak için sağ tıklayın",
       "fullscreen": "Tam ekran",
-      "exitFullscreen": "Tam ekrandan çık"
+      "exitFullscreen": "Tam ekrandan çık",
+      "cutaway": "Katman:",
+      "allLayers": "Tümü",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Kesiti bir katman indir",
+      "raiseCutaway": "Kesiti bir katman yükselt"
     },
     "status": {
       "draft": "Taslak",

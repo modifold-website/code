@@ -313,7 +313,28 @@ const getBlockMatrix = (block, target) => {
 	return target.compose(position, rotation, IDENTITY_SCALE);
 };
 
-const addCubeInstances = (root, blocks, materials, resources) => {
+const registerCutawayInstances = (mesh, blocks, cutawayUpdates) => {
+	cutawayUpdates.push((height) => {
+		if(height == null) {
+			mesh.count = blocks.length;
+			return;
+		}
+
+		let start = 0;
+		let end = blocks.length;
+		while(start < end) {
+			const middle = Math.floor((start + end) / 2);
+			if((Number(blocks[middle].y) || 0) < height) {
+				start = middle + 1;
+			} else {
+				end = middle;
+			}
+		}
+		mesh.count = start;
+	});
+};
+
+const addCubeInstances = (root, blocks, materials, resources, cutawayUpdates) => {
 	if(!blocks.length) {
 		return;
 	}
@@ -328,31 +349,39 @@ const addCubeInstances = (root, blocks, materials, resources) => {
 	mesh.instanceMatrix.needsUpdate = true;
 	mesh.castShadow = true;
 	mesh.receiveShadow = true;
+	registerCutawayInstances(mesh, blocks, cutawayUpdates);
 	root.add(mesh);
 	resources.push(mesh);
 };
 
 // batch visible sides without drawing the hidden ones
-const addCulledCubeInstances = (root, blocks, definition, materials, opaqueCubeCells, resources) => {
+const addCulledCubeInstances = (root, blocks, definition, materials, opaqueCubeCells, resources, cutawayUpdates) => {
 	if(!isOpaqueFullCube(definition)) {
-		addCubeInstances(root, blocks, materials, resources);
+		addCubeInstances(root, blocks, materials, resources, cutawayUpdates);
 		return;
 	}
 
 	const faceBlocks = CUBE_FACES.map(() => []);
+	const cutFaces = CUBE_FACES.map(() => new Map());
 	let hasHiddenFaces = false;
 	for(const block of blocks) {
 		const faceMask = getVisibleFaceMask(block, definition, opaqueCubeCells);
+		const offsets = getCubeFaceOffsets(block.rotation);
 		hasHiddenFaces ||= faceMask !== FULL_CUBE_FACE_MASK;
 		for(let faceIndex = 0; faceIndex < CUBE_FACES.length; faceIndex += 1) {
 			if(faceMask & CUBE_FACES[faceIndex].bit) {
 				faceBlocks[faceIndex].push(block);
+			} else if(offsets[faceIndex].y === 1) {
+				const y = Number(block.y) || 0;
+				const layer = cutFaces[faceIndex].get(y) || [];
+				layer.push(block);
+				cutFaces[faceIndex].set(y, layer);
 			}
 		}
 	}
 
 	if(!hasHiddenFaces) {
-		addCubeInstances(root, blocks, materials, resources);
+		addCubeInstances(root, blocks, materials, resources, cutawayUpdates);
 		return;
 	}
 
@@ -372,12 +401,44 @@ const addCulledCubeInstances = (root, blocks, definition, materials, opaqueCubeC
 		mesh.instanceMatrix.needsUpdate = true;
 		mesh.castShadow = true;
 		mesh.receiveShadow = true;
+		registerCutawayInstances(mesh, visibleBlocks, cutawayUpdates);
 		root.add(mesh);
 		resources.push(mesh);
 	}
+
+	for(let faceIndex = 0; faceIndex < cutFaces.length; faceIndex += 1) {
+		const layers = cutFaces[faceIndex];
+		if(!layers.size) {
+			continue;
+		}
+
+		let capacity = 0;
+		for(const layer of layers.values()) {
+			capacity = Math.max(capacity, layer.length);
+		}
+
+		const mesh = new THREE.InstancedMesh(CUBE_FACE_GEOMETRIES[faceIndex], materials[faceIndex], capacity);
+		mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+		mesh.count = 0;
+		mesh.visible = false;
+		mesh.frustumCulled = false;
+		mesh.castShadow = true;
+		mesh.receiveShadow = true;
+		root.add(mesh);
+		resources.push(mesh);
+		cutawayUpdates.push((height) => {
+			const layer = height == null ? [] : layers.get(height - 1) || [];
+			mesh.count = layer.length;
+			mesh.visible = layer.length > 0;
+			for(let index = 0; index < layer.length; index += 1) {
+				mesh.setMatrixAt(index, getBlockMatrix(layer[index], matrix));
+			}
+			mesh.instanceMatrix.needsUpdate = true;
+		});
+	}
 };
 
-const addModelInstances = (root, blocks, model, resources) => {
+const addModelInstances = (root, blocks, model, resources, cutawayUpdates) => {
 	model.updateMatrixWorld(true);
 	const placement = new THREE.Matrix4();
 	const blockBase = new THREE.Matrix4();
@@ -401,6 +462,7 @@ const addModelInstances = (root, blocks, model, resources) => {
 		mesh.castShadow = blocks.length <= 2_048;
 		mesh.receiveShadow = true;
 		mesh.renderOrder = child.renderOrder;
+		registerCutawayInstances(mesh, blocks, cutawayUpdates);
 		root.add(mesh);
 		resources.push(mesh);
 	});
@@ -449,7 +511,7 @@ const createFluidCells = (fluids) => {
 };
 
 // place transition strips on matching block or fluid tops
-const addTransitionInstances = (root, blockCells, fluidCells, getTransitionMaterial, resources) => {
+const addTransitionInstances = (root, blockCells, fluidCells, getTransitionMaterial, resources, cutawayUpdates) => {
 	if(typeof getTransitionMaterial !== "function") {
 		return;
 	}
@@ -493,18 +555,19 @@ const addTransitionInstances = (root, blockCells, fluidCells, getTransitionMater
 
 			const key = `${block.name}:${directionIndex}`;
 			const group = groups.get(key) || { definition, direction, targets: [] };
-			group.targets.push({ x: targetX, y: surfaceY, z: targetZ, directionIndex });
+			group.targets.push({ x: targetX, y, surfaceY, z: targetZ, directionIndex });
 			groups.set(key, group);
 		}
 	}
 
 	for(const { definition, direction, targets } of groups.values()) {
+		targets.sort((a, b) => a.y - b.y);
 		const mesh = new THREE.InstancedMesh(TRANSITION_GEOMETRY, getTransitionMaterial(definition), targets.length);
 		const matrix = new THREE.Matrix4();
 		for(let index = 0; index < targets.length; index += 1) {
 			const target = targets[index];
 			matrix.makeRotationY(direction.rotation);
-			matrix.setPosition(target.x + 0.5, target.y + target.directionIndex * 0.0002, target.z + 0.5);
+			matrix.setPosition(target.x + 0.5, target.surfaceY + target.directionIndex * 0.0002, target.z + 0.5);
 			mesh.setMatrixAt(index, matrix);
 		}
 
@@ -512,34 +575,38 @@ const addTransitionInstances = (root, blockCells, fluidCells, getTransitionMater
 		mesh.instanceMatrix.needsUpdate = true;
 		mesh.receiveShadow = true;
 		mesh.renderOrder = 3;
+		registerCutawayInstances(mesh, targets, cutawayUpdates);
 		root.add(mesh);
 		resources.push(mesh);
 	}
 };
 
-const addFluidInstances = (root, fluidCells, getMaterials, resources) => {
+const addFluidInstances = (root, fluidCells, getMaterials, resources, cutawayUpdates) => {
 	const groups = new Map();
 	for(const { fluid, definition } of fluidCells.values()) {
 		const name = String(fluid?.name || "");
 		const x = Number(fluid.x) || 0;
 		const y = Number(fluid.y) || 0;
 		const z = Number(fluid.z) || 0;
-		if(fluidCells.has(`${x}:${y + 1}:${z}`)) {
-			continue;
-		}
-
 		if(!definition) {
 			continue;
 		}
 
 		const level = Math.max(1, Number(fluid.level) || 1);
 		const key = `${name}:${level}`;
-		const group = groups.get(key) || { definition, level, fluids: [] };
-		group.fluids.push(fluid);
+		const group = groups.get(key) || { definition, level, fluids: [], cutLayers: new Map() };
+		if(fluidCells.has(`${x}:${y + 1}:${z}`)) {
+			const layer = group.cutLayers.get(y) || [];
+			layer.push(fluid);
+			group.cutLayers.set(y, layer);
+		} else {
+			group.fluids.push(fluid);
+		}
 		groups.set(key, group);
 	}
 
-	for(const { definition, level, fluids: cells } of groups.values()) {
+	for(const { definition, level, fluids: cells, cutLayers } of groups.values()) {
+		cells.sort((a, b) => (Number(a.y) || 0) - (Number(b.y) || 0));
 		const height = getFluidHeight(definition, { level });
 		const geometry = new THREE.PlaneGeometry(1, 1);
 		geometry.rotateX(-Math.PI / 2);
@@ -571,8 +638,36 @@ const addFluidInstances = (root, fluidCells, getMaterials, resources) => {
 		mesh.instanceMatrix.needsUpdate = true;
 		mesh.renderOrder = 10;
 		mesh.userData.prefabOwned = true;
+		registerCutawayInstances(mesh, cells, cutawayUpdates);
 		root.add(mesh);
 		resources.push(mesh);
+
+		if(cutLayers.size) {
+			let capacity = 0;
+			for(const layer of cutLayers.values()) {
+				capacity = Math.max(capacity, layer.length);
+			}
+
+			const cutMesh = new THREE.InstancedMesh(geometry, material, capacity);
+			cutMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+			cutMesh.count = 0;
+			cutMesh.visible = false;
+			cutMesh.frustumCulled = false;
+			cutMesh.renderOrder = 10;
+			root.add(cutMesh);
+			resources.push(cutMesh);
+			cutawayUpdates.push((cutHeight) => {
+				const layer = cutHeight == null ? [] : cutLayers.get(cutHeight - 1) || [];
+				cutMesh.count = layer.length;
+				cutMesh.visible = layer.length > 0;
+				for(let index = 0; index < layer.length; index += 1) {
+					const cell = layer[index];
+					matrix.makeTranslation((Number(cell.x) || 0) + 0.5, (Number(cell.y) || 0) + height + 0.002, (Number(cell.z) || 0) + 0.5);
+					cutMesh.setMatrixAt(index, matrix);
+				}
+				cutMesh.instanceMatrix.needsUpdate = true;
+			});
+		}
 	}
 };
 
@@ -581,6 +676,7 @@ export async function buildOptimizedPrefabMesh(prefab, options) {
 	const root = new THREE.Group();
 	onRoot(root);
 	const resources = [];
+	const cutawayUpdates = [];
 	const groups = new Map();
 	const definitions = new Map();
 	const blocks = Array.isArray(prefab?.blocks) ? prefab.blocks : [];
@@ -630,6 +726,7 @@ export async function buildOptimizedPrefabMesh(prefab, options) {
 	const cubeGroups = [];
 	const modelGroups = [];
 	for(const [name, group] of groups) {
+		group.sort((a, b) => (Number(a.y) || 0) - (Number(b.y) || 0));
 		const definition = getBlockDef(name);
 		definitions.set(name, definition);
 		const modelPath = definition?.customModel || definition?.itemModel || null;
@@ -678,13 +775,13 @@ export async function buildOptimizedPrefabMesh(prefab, options) {
 		}
 
 		const materials = getMaterials(definition);
-		addCulledCubeInstances(root, group, definition, materials, opaqueCubeCells, resources);
+		addCulledCubeInstances(root, group, definition, materials, opaqueCubeCells, resources, cutawayUpdates);
 		rendered += group.length;
 	}
 
 	onProgress(rendered, totalRenderableBlocks);
-	addTransitionInstances(root, blockCells, fluidCells, getTransitionMaterial, resources);
-	addFluidInstances(root, fluidCells, getMaterials, resources);
+	addTransitionInstances(root, blockCells, fluidCells, getTransitionMaterial, resources, cutawayUpdates);
+	addFluidInstances(root, fluidCells, getMaterials, resources, cutawayUpdates);
 
 	let nextModelIndex = 0;
 	const loadModelWorker = async () => {
@@ -700,9 +797,9 @@ export async function buildOptimizedPrefabMesh(prefab, options) {
 			if(model) {
 				const preparedModel = model.clone(true);
 				applyTrapdoorPose(preparedModel, current.name);
-				addModelInstances(root, current.group, preparedModel, resources);
+				addModelInstances(root, current.group, preparedModel, resources, cutawayUpdates);
 			} else {
-				addCubeInstances(root, current.group, getMaterials(current.definition), resources);
+				addCubeInstances(root, current.group, getMaterials(current.definition), resources, cutawayUpdates);
 			}
 
 			rendered += current.group.length;
@@ -716,7 +813,20 @@ export async function buildOptimizedPrefabMesh(prefab, options) {
 	if(entities.length && !isCancelled()) {
 		const entityMesh = await buildPrefabMesh({ blocks: [], fluids: [], entities });
 		root.add(entityMesh.root);
+		cutawayUpdates.push((height) => {
+			for(const holder of entityMesh.root.children) {
+				holder.visible = height == null || holder.position.y < height;
+			}
+		});
 	}
 
-	return { root, resources };
+	return {
+		root,
+		resources,
+		setCutawayHeight: (height) => {
+			for(const update of cutawayUpdates) {
+				update(height);
+			}
+		},
+	};
 }

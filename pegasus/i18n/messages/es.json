@@ -577,7 +577,12 @@
       "zoomHint": "Rueda para acercar",
       "panHint": "Clic derecho para desplazar",
       "fullscreen": "Pantalla completa",
-      "exitFullscreen": "Salir de pantalla completa"
+      "exitFullscreen": "Salir de pantalla completa",
+      "cutaway": "Capa:",
+      "allLayers": "Todas",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Bajar la sección una capa",
+      "raiseCutaway": "Subir la sección una capa"
     },
     "status": {
       "draft": "Borrador",

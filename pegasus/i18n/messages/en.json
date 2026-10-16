@@ -664,7 +664,12 @@
       "zoomHint": "Scroll to zoom",
       "panHint": "Right-click to pan",
       "fullscreen": "Full screen",
-      "exitFullscreen": "Exit full screen"
+      "exitFullscreen": "Exit full screen",
+      "cutaway": "Layer:",
+      "allLayers": "All",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Lower cutaway by one layer",
+      "raiseCutaway": "Raise cutaway by one layer"
     },
     "status": {
       "draft": "Draft",

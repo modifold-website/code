@@ -664,7 +664,12 @@
       "zoomHint": "Колесо — масштаб",
       "panHint": "Правая кнопка — панорама",
       "fullscreen": "На весь экран",
-      "exitFullscreen": "Выйти из полноэкранного режима"
+      "exitFullscreen": "Выйти из полноэкранного режима",
+      "cutaway": "Слой:",
+      "allLayers": "Все",
+      "layer": "{current}/{total}",
+      "lowerCutaway": "Опустить разрез на один слой",
+      "raiseCutaway": "Поднять разрез на один слой"
     },
     "status": {
       "draft": "Черновик",
