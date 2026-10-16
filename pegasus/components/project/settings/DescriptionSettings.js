@@ -24,6 +24,53 @@ function MarkdownToolbarButton({ label, onClick, disabled, children }) {
 	);
 }
 
+export function MarkdownEditorToolbar({ children, label = "Markdown editor toolbar" }) {
+	const toolbarRef = useRef(null);
+
+	useEffect(() => {
+		const toolbar = toolbarRef.current;
+		const editor = toolbar.closest(".markdown-editor");
+		const scrollContainer = toolbar.closest(".modal-window__content");
+		let frame = 0;
+
+		const updateToolbar = () => {
+			frame = 0;
+			const inset = parseFloat(window.getComputedStyle(toolbar).top) || 0;
+			const top = inset + (scrollContainer ? scrollContainer.getBoundingClientRect().top + scrollContainer.clientTop : 0);
+			const isStuck = editor.getBoundingClientRect().top < top && toolbar.getBoundingClientRect().top <= top + 1;
+			toolbar.classList.toggle("markdown-editor__toolbar--stuck", isStuck);
+		};
+		const scheduleUpdate = () => {
+			if(!frame) {
+				frame = window.requestAnimationFrame(updateToolbar);
+			}
+		};
+		const observer = new ResizeObserver(scheduleUpdate);
+		observer.observe(editor);
+		observer.observe(toolbar);
+		if(scrollContainer) {
+			observer.observe(scrollContainer);
+		}
+		
+		window.addEventListener("scroll", scheduleUpdate, { passive: true, capture: true });
+		window.addEventListener("resize", scheduleUpdate);
+		updateToolbar();
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("scroll", scheduleUpdate, true);
+			window.removeEventListener("resize", scheduleUpdate);
+			window.cancelAnimationFrame(frame);
+		};
+	}, []);
+
+	return (
+		<div className="markdown-editor__toolbar" ref={toolbarRef} role="toolbar" aria-label={label}>
+			{children}
+		</div>
+	);
+}
+
 export function DescriptionMarkdownEditor({ project, authToken, value: description, onChange: setDescription, disabled = false, minLength = 0, hint, placeholder, label, autoFocus = false, imageContext = "project" }) {
 	const t = useTranslations("SettingsProjectPage");
 	const tImage = useTranslations("SettingsProjectPage.description.imageModal");
@@ -51,7 +98,7 @@ export function DescriptionMarkdownEditor({ project, authToken, value: descripti
 			}
 
 			resizeTextarea();
-			textareaRef.current.focus();
+			textareaRef.current.focus({ preventScroll: true });
 			if(typeof selectionStart === "number" && typeof selectionEnd === "number") {
 				textareaRef.current.setSelectionRange(selectionStart, selectionEnd);
 			}
@@ -219,7 +266,7 @@ export function DescriptionMarkdownEditor({ project, authToken, value: descripti
 			<div className="markdown-editor">
 				{hint ? <p className="markdown-editor__hint">{hint}</p> : null}
 
-				<div className="markdown-editor__toolbar" role="toolbar" aria-label="Markdown editor toolbar">
+				<MarkdownEditorToolbar>
 					<div className="markdown-editor__toolbar-buttons">
 						<MarkdownToolbarButton label="Heading 1" onClick={() => prefixLines("# ")} disabled={disabled || isPreviewVisible}>
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading1-icon lucide-heading-1"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></svg>
@@ -277,7 +324,7 @@ export function DescriptionMarkdownEditor({ project, authToken, value: descripti
 							<span>{t("description.preview")}</span>
 						</label>
 					</div>
-				</div>
+				</MarkdownEditorToolbar>
 
 				{!isPreviewVisible && (
 					<>

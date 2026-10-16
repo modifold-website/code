@@ -2084,6 +2084,9 @@ body.prefab-preview-fullscreen-open .header-mobile {
 	overflow-x: hidden;
 	padding: 20px;
 }
+.version-page__changelog-card:has(.markdown-editor) {
+	overflow: visible;
+}
 .version-page__changelog-card > :first-child {
 	margin-top: 0;
 }

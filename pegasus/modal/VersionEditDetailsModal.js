@@ -8,6 +8,7 @@ import rehypeRaw from "rehype-raw";
 import { getSafeMarkdownHref, getSafeMarkdownImageSrc } from "@/utils/projectDescriptionContent";
 import { insertMarkdownLink } from "@/utils/markdown/editor";
 import VersionDependenciesEditor from "./VersionDependenciesEditor";
+import { MarkdownEditorToolbar } from "@/components/project/settings/DescriptionSettings";
 
 if(typeof window !== "undefined") {
     Modal.setAppElement("body");
@@ -49,7 +50,7 @@ export default function VersionEditDetailsModal({ isOpen, onRequestClose, editLo
                 return;
             }
 
-            textareaRef.current.focus();
+			textareaRef.current.focus({ preventScroll: true });
             if(typeof next.selectionStart === "number" && typeof next.selectionEnd === "number") {
                 textareaRef.current.setSelectionRange(next.selectionStart, next.selectionEnd);
             }
@@ -143,7 +144,7 @@ export default function VersionEditDetailsModal({ isOpen, onRequestClose, editLo
 
                         <p className="blog-settings__field-title">{t("versions.fields.changelog")}</p>
                         <div className="markdown-editor">
-                            <div className="markdown-editor__toolbar" role="toolbar" aria-label="Markdown editor toolbar">
+							<MarkdownEditorToolbar>
                                 <div className="markdown-editor__toolbar-buttons">
                                     <button type="button" className="markdown-editor__tool" onClick={() => prefixLines("# ")} aria-label="Heading 1" title="Heading 1" disabled={isPreviewVisible}>
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-heading1-icon lucide-heading-1"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></svg>
@@ -197,7 +198,7 @@ export default function VersionEditDetailsModal({ isOpen, onRequestClose, editLo
                                         <span>{t("description.preview")}</span>
                                     </label>
                                 </div>
-                            </div>
+							</MarkdownEditorToolbar>
 
                             {!isPreviewVisible && (
                                 <div className="field field--default textarea markdown-editor__panel">
