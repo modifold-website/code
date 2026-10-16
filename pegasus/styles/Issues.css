@@ -139,7 +139,7 @@
     text-decoration: underline;
 }
 .issue-card:has(.issue-card__overlay:active) {
-    transform: scale(0.95);
+    transform: scale(0.98);
 }
 .issue-card__main {
     display: flex;
@@ -236,7 +236,7 @@
     }
 }
 .issue-card__pin:active {
-    transform: scale(.95);
+    transform: scale(.98);
 }
 .issue-card__pin.is-pinned {
     color: #307df0;
@@ -259,7 +259,7 @@
     }
 }
 .issue-card__delete:active {
-    transform: scale(.95);
+    transform: scale(.97);
 }
 .issue-card__delete:disabled {
     opacity: 0.6;
@@ -482,7 +482,7 @@
     border-color: #307df0;
 }
 .issue-label-chip--selectable:active {
-    transform: scale(.95);
+    transform: scale(.97);
 }
 .issue-label-chip--selectable.is-selected {
     border-color: #307df0;
