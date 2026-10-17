@@ -9,7 +9,7 @@ const sharp = require("sharp");
 const auth = require("../../middleware/auth");
 const { db } = require("../../config/db");
 const { deletePrefix, deletePublicUrlWithinPrefix, getPublicUrl, uploadBuffer } = require("../../utils/fileHosting");
-const { sanitizePlainText, sanitizeExternalUrl } = require("../../utils/sanitize");
+const { sanitizePlainText, sanitizeExternalUrl, containsEmoji } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require("../../utils/organizations");
 const { getTwoFactorRow, isTwoFactorEnabled, verifyTwoFactorCode } = require("../../utils/twoFactor");
@@ -198,6 +198,9 @@ router.post("/", auth, async (req, res) => {
         const rawSlug = sanitizePlainText(req.body?.slug || "");
         const rawSummary = sanitizePlainText(req.body?.summary || "", { preserveNewlines: true });
         const iconUrl = sanitizePlainText(req.body?.icon_url || "");
+		if(containsEmoji(rawName)) {
+			return res.status(400).json({ code: "name_emoji", message: "Names cannot contain emoji" });
+		}
 
         if(!rawName || !rawSummary) {
             return res.status(400).json({ message: "Name and summary are required" });
@@ -595,6 +598,9 @@ router.put("/:slug/settings", auth, async (req, res) => {
 
         if(req.body?.name !== undefined) {
             const nextName = sanitizePlainText(req.body.name || "");
+			if(containsEmoji(nextName)) {
+				return res.status(400).json({ code: "name_emoji", message: "Names cannot contain emoji" });
+			}
             if(!nextName) {
                 return res.status(400).json({ message: "Name cannot be empty" });
             }

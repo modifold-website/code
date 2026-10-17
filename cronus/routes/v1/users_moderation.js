@@ -8,7 +8,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs").promises;
 const path = require("path");
-const { sanitizePlainText } = require("../../utils/sanitize");
+const { sanitizePlainText, containsEmoji } = require("../../utils/sanitize");
 const { validateSlug } = require("../../utils/slug");
 const { buildSafeObjectFilename, deleteObject, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
 const { parsePagination, normalizeSearch } = require("../../utils/queryPagination");
@@ -240,7 +240,7 @@ router.put("/:id", auth, requireAdmin, upload.single("avatar"), async (req, res)
 			}
 
 			updates.username = sanitizePlainText(username.trim());
-			if(!updates.username) {
+			if(!updates.username || containsEmoji(updates.username)) {
 				throw validationError("invalidUsername", "Invalid username", "username");
 			}
 		}

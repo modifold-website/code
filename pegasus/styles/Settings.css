@@ -1274,6 +1274,12 @@
 		transition: opacity 150ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 150ms;
 	}
 }
+.field-error {
+	margin: 6px 0 12px;
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--theme-color-text-primary);
+}
 .mf-tooltip {
     position: relative;
     display: inline-flex;
@@ -1315,7 +1321,7 @@
 	border-radius: inherit;
 	box-shadow: var(--theme-shadow-popover);
 	background: var(--theme-color-background-content);
-	transform-origin: center bottom;
+	transform-origin: left top;
 }
 .mf-tooltip__surface::after {
     content: "";
@@ -1336,9 +1342,6 @@
 .mf-tooltip__bubble[data-position="bottom"] {
 	transform: translateY(-4px) scale(.96);
 	transform-origin: var(--tooltip-arrow-x, 50%) top;
-}
-.mf-tooltip__bubble[data-position="bottom"] .mf-tooltip__surface {
-	transform-origin: center top;
 }
 .mf-tooltip__bubble[data-position="bottom"] .mf-tooltip__surface::after {
     top: auto;

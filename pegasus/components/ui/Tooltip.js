@@ -82,8 +82,10 @@ function TooltipBubble({ tooltip, onHide }) {
 	const [layout, setLayout] = useState(null);
 	const bubbleRef = useRef(null);
 	const surfaceRef = useRef(null);
+	const contentRef = useRef(null);
 	const previousSizeRef = useRef(null);
 	const morphRef = useRef(null);
+	const contentMorphRef = useRef(null);
 
 	const updatePosition = useCallback(() => {
 		const bubble = bubbleRef.current;
@@ -114,15 +116,31 @@ function TooltipBubble({ tooltip, onHide }) {
 
 		if(instant) {
 			morphRef.current?.cancel();
+			contentMorphRef.current?.cancel();
 		}
 
-		if(isSwitch && !instant && surfaceRef.current) {
+		if(isSwitch && !instant && surfaceRef.current && contentRef.current) {
 			const transform = getComputedStyle(surfaceRef.current).transform;
 			const scale = transform === "none" ? { a: 1, d: 1 } : new DOMMatrixReadOnly(transform);
+			const contentTransform = getComputedStyle(contentRef.current).transform;
+			const offset = contentTransform === "none" ? { e: 0, f: 0 } : new DOMMatrixReadOnly(contentTransform);
+			const offsetX = (previous.width - width) / 2 + offset.e;
+			const offsetY = (previous.height - height) / 2 + offset.f;
+			const inset = [
+				Math.max(0, -offsetY),
+				Math.max(0, width + offsetX - previous.width * scale.a),
+				Math.max(0, height + offsetY - previous.height * scale.d),
+				Math.max(0, -offsetX),
+			].map((value) => value + "px").join(" ");
 			morphRef.current?.cancel();
+			contentMorphRef.current?.cancel();
 			morphRef.current = surfaceRef.current.animate([
 				{ transform: "scale(" + previous.width * scale.a / width + ", " + previous.height * scale.d / height + ")" },
 				{ transform: "scale(1)" },
+			], { duration: 150, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
+			contentMorphRef.current = contentRef.current.animate([
+				{ transform: "translate(" + offsetX + "px, " + offsetY + "px)", clipPath: "inset(" + inset + ")" },
+				{ transform: "translate(0, 0)", clipPath: "inset(0px)" },
 			], { duration: 150, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
 		}
 
@@ -134,6 +152,7 @@ function TooltipBubble({ tooltip, onHide }) {
 		if(!tooltip?.open) {
 			previousSizeRef.current = null;
 			morphRef.current?.cancel();
+			contentMorphRef.current?.cancel();
 			if(!tooltip) {
 				setLayout(null);
 			}
@@ -195,7 +214,10 @@ function TooltipBubble({ tooltip, onHide }) {
 		};
 	}, [tooltip?.id, tooltip?.open, onHide]);
 
-	useEffect(() => () => morphRef.current?.cancel(), []);
+	useEffect(() => () => {
+		morphRef.current?.cancel();
+		contentMorphRef.current?.cancel();
+	}, []);
 
 	if(!tooltip) {
 		return null;
@@ -206,7 +228,7 @@ function TooltipBubble({ tooltip, onHide }) {
 			<span ref={bubbleRef} id={tooltip.id} role="tooltip" aria-hidden={!tooltip.open} data-position={layout?.position || tooltip.position} className={"mf-tooltip__bubble" + (tooltip.open && layout ? " mf-tooltip__bubble--visible" : "")}>
 				<span ref={surfaceRef} className="mf-tooltip__surface" aria-hidden="true" />
 				
-				<span className="mf-tooltip__content">{tooltip.content}</span>
+				<span ref={contentRef} className="mf-tooltip__content">{tooltip.content}</span>
 			</span>
 		</span>,
 		document.body

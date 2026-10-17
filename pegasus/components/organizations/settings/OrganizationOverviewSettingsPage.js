@@ -8,10 +8,11 @@ import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import OrganizationSettingsSidebar from "@/components/organizations/settings/OrganizationSettingsSidebar";
 import ConfirmModal from "@/modal/ConfirmModal";
-import { SLUG_MAX_LENGTH, normalizeSlugInput, validateSlug } from "@/utils/slug";
+import { SLUG_MAX_LENGTH, normalizeSlugInput, validateSlug, containsEmoji } from "@/utils/slug";
 
 export default function OrganizationOverviewSettingsPage({ authToken, organization, my_permissions }) {
     const t = useTranslations("Organizations");
+	const tCommon = useTranslations("Common");
     const tUnsaved = useTranslations("SettingsProjectPage.unsavedBar");
     const router = useRouter();
 
@@ -39,6 +40,10 @@ export default function OrganizationOverviewSettingsPage({ authToken, organizati
         if(isSaving) {
             return;
         }
+		if(containsEmoji(name)) {
+			toast.error(tCommon("nameEmoji"));
+			return;
+		}
 
         const validation = validateSlug(slug, { currentSlug: savedSlug });
         if(!validation.valid) {
@@ -175,9 +180,11 @@ export default function OrganizationOverviewSettingsPage({ authToken, organizati
                             <p className="blog-settings__field-title">{t("settings.fields.name")}</p>
                             <div className="field field--default blog-settings__input">
                                 <label className="field__wrapper">
-                                    <input className="text-input" value={name} onChange={(event) => setName(event.target.value)} disabled={!canEditDetails} />
+									<input className="text-input" value={name} onChange={(event) => setName(event.target.value)} disabled={!canEditDetails} aria-invalid={containsEmoji(name)} aria-describedby={containsEmoji(name) ? "organization-name-error" : undefined} />
                                 </label>
                             </div>
+
+							{containsEmoji(name) && <p id="organization-name-error" className="field-error" role="alert">{tCommon("nameEmoji")}</p>}
 
                             <p className="blog-settings__field-title">{t("settings.fields.url")}</p>
                             <div className="field field--default blog-settings__input">

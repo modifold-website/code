@@ -3,6 +3,15 @@ const sanitizeHtml = require("sanitize-html");
 const CONTROL_CHARS_RE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 const TAG_RE = /<[^>]*>/g;
 const LEGACY_HTML_ENTITY_RE = /&(lt|gt|amp|quot|#39);/i;
+const EMOJI_RE = /[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}]|[#*0-9]\uFE0F?\u20E3/u;
+const nameSegmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
+const containsEmoji = (value) => EMOJI_RE.test(String(value ?? ""));
+
+const sanitizeDisplayName = (value, fallback = "User") => {
+	const text = sanitizePlainText(value) || "";
+	return Array.from(nameSegmenter.segment(text), ({ segment }) => containsEmoji(segment) ? "" : segment).join("").replace(/\s+/g, " ").trim() || fallback;
+};
 
 const normalizeString = (value) => String(value ?? "").replace(/\r\n?/g, "\n").replace(CONTROL_CHARS_RE, "");
 
@@ -144,6 +153,8 @@ const sanitizeSocialLinks = (links) => {
 };
 
 module.exports = {
+	containsEmoji,
+	sanitizeDisplayName,
     escapeHtml,
     sanitizePlainText,
     sanitizeMarkdownText,

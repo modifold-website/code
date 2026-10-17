@@ -7,6 +7,7 @@
     "prefabs": "Префаби — Modifold"
   },
   "Common": {
+	"nameEmoji": "Емодзі не можна використовувати в імені або назві.",
     "downloadsTooltip": "{count, plural, one {# завантаження} few {# завантаження} many {# завантажень} other {# завантаження}}"
   },
   "Header": {

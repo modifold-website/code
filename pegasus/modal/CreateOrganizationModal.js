@@ -5,11 +5,13 @@ import Modal from "react-modal";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useTranslations } from "next-intl";
+import { containsEmoji } from "@/utils/slug";
 
 Modal.setAppElement("body");
 
 export default function CreateOrganizationModal({ isOpen, authToken, onRequestClose, onCreated }) {
     const t = useTranslations("Organizations");
+	const tCommon = useTranslations("Common");
     const [formData, setFormData] = useState({
         name: "",
         slug: "",
@@ -23,6 +25,10 @@ export default function CreateOrganizationModal({ isOpen, authToken, onRequestCl
         if(loading || !isFormValid) {
             return;
         }
+		if(containsEmoji(formData.name)) {
+			toast.error(tCommon("nameEmoji"));
+			return;
+		}
 
         setLoading(true);
         try {
@@ -61,9 +67,11 @@ export default function CreateOrganizationModal({ isOpen, authToken, onRequestCl
                         <p className="blog-settings__field-title">{t("create.fields.name")}</p>
                         <div className="field field--default">
                             <label className="field__wrapper">
-                                <input className="text-input" name="name" value={formData.name} onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))} placeholder={t("create.placeholders.name")} maxLength={128} required />
+								<input className="text-input" name="name" value={formData.name} onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))} placeholder={t("create.placeholders.name")} maxLength={128} required aria-invalid={containsEmoji(formData.name)} aria-describedby={containsEmoji(formData.name) ? "organization-create-name-error" : undefined} />
                             </label>
                         </div>
+
+						{containsEmoji(formData.name) && <p id="organization-create-name-error" className="field-error" role="alert">{tCommon("nameEmoji")}</p>}
 
                         <p className="blog-settings__field-title">{t("create.fields.url")}</p>
                         <div className="field field--default">
