@@ -29,11 +29,11 @@ const getSafeMarkdownHref = (href) => {
 const privacyPolicy = `
 # Privacy Policy
 
-**Last modified: February 26, 2026**
+**Last modified: October 17, 2026**
 
 ## 1. Overview
 
-Modifold ("Modifold", "we", "us", "our") is a platform for discovering, publishing, and managing gaming-related content.
+Modifold is a platform for discovering, publishing, and managing gaming-related content. The Service is operated by **Modifold LLC** (ООО «Modifold»), located in the **Republic of Belarus**. In this Privacy Policy, "we", "us", and "our" refer to Modifold LLC.
 
 This Privacy Policy explains what information we collect, how we use it, when we share it, and what rights you may have.
 
@@ -46,7 +46,7 @@ It does not apply to third-party websites or services that may be linked from Mo
 
 ## 2. Compliance and Jurisdiction Context (Including Belarus)
 
-Modifold serves users internationally. Our owner and part of our team are located in the **Republic of Belarus**, and Belarus is an important jurisdiction for our operations.
+Modifold serves users internationally and is operated from the **Republic of Belarus**.
 
 We aim to process personal data in accordance with applicable law, which may include:
 - laws of the Republic of Belarus;
@@ -54,7 +54,7 @@ We aim to process personal data in accordance with applicable law, which may inc
 - the California Consumer Privacy Act (CCPA/CPRA), where applicable; and
 - other applicable privacy and data protection laws.
 
-For data processed through the Service, Modifold generally acts as the **data controller** (or equivalent concept under applicable law).
+For data processed through the Service, **Modifold LLC** (ООО «Modifold») generally acts as the **data controller** (or equivalent concept under applicable law).
 
 ## 3. Information We Collect
 
@@ -132,7 +132,7 @@ Depending on your location and applicable law, we may process personal data base
 - **Contract**: to provide the Service you request (for example account, uploads, project management);
 - **Legitimate interests**: to secure, maintain, and improve the Service, prevent abuse, and operate collaboration features;
 - **Consent**: for analytics cookies/tools or other optional processing where consent is required;
-- **Legal obligation**: to comply with applicable law, legal process, or regulatory requests.
+- **Legal obligation**: to comply with applicable law, legal process, or legally binding requests from competent public authorities.
 
 ## 6. How We Share Information
 
@@ -145,6 +145,14 @@ We may share information:
 - in connection with a merger, acquisition, financing, or asset transfer (subject to applicable confidentiality and notice obligations).
 
 Where analytics providers are used, related sharing may depend on your consent where required by law.
+
+### Requests from Public Authorities
+
+We review official requests from courts, law enforcement, and other competent public authorities in the Republic of Belarus and other countries. Requests and related questions should be sent to [support@modifold.com](mailto:support@modifold.com), identifying the authority, its official contact details, the legal basis and purpose, and the specific information requested.
+
+Before disclosing personal data, we assess the request's authenticity, the authority's competence, and whether disclosure has a lawful basis under applicable law. We may request clarification or require the appropriate judicial or international legal assistance procedure. Receiving an email from an authority does not by itself authorize disclosure.
+
+We disclose only information that is necessary and lawful for the request, subject to applicable confidentiality, data protection, and cross-border transfer requirements. This process does not override the laws of the Republic of Belarus or other applicable legal safeguards.
 
 ## 7. Data Retention
 

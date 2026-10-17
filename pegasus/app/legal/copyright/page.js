@@ -29,37 +29,37 @@ const getSafeMarkdownHref = (href) => {
 const copyrightPolicy = `
 # Copyright Policy
 
-**Last modified: October 10, 2025**
+**Last modified: October 17, 2026**
+
+Modifold is operated by **Modifold LLC** (ООО «Modifold»), located in the **Republic of Belarus**. In this Copyright Policy, "we", "us", and "our" refer to Modifold LLC.
 
 ## Reporting Claims of Copyright Infringement
 
-We take claims of copyright infringement seriously and respond to notices of alleged infringement that comply with applicable law, including the Online Copyright Infringement Liability Limitation Act of the Digital Millennium Copyright Act (17 U.S.C. § 512) ("DMCA"). If you believe any materials on Modifold (\`modifold.com\` or \`api.modifold.com\`; the "Service") infringe your copyright, you may request removal of those materials (or access to them) by submitting a written notification to our copyright agent at [support@modifold.com](mailto:support@modifold.com).
+We take claims of copyright infringement seriously and review them in accordance with applicable law. If you believe materials on Modifold (\`modifold.com\` or \`api.modifold.com\`; the "Service") infringe your copyright, send a complaint to [support@modifold.com](mailto:support@modifold.com).
 
-Your DMCA notice must include:
-- Your physical or electronic signature.
-- Identification of the copyrighted work you believe has been infringed, or a representative list if multiple works are involved.
-- Identification of the infringing material in a precise manner to allow us to locate it.
-- Contact information (name, postal address, telephone number, and email address).
-- A statement that you have a good faith belief the use of the material is not authorized by the copyright owner, its agent, or the law.
-- A statement that the information in the notice is accurate.
-- A statement, under penalty of perjury, that you are authorized to act on behalf of the copyright owner.
+Please include:
+- Your name and contact email address.
+- The name of the copyright owner and, if you represent them, information confirming your authority to act on their behalf.
+- Identification of the copyrighted work, with links or other supporting evidence where available.
+- Direct links to the project, version, file, or other material you are reporting.
+- An explanation of the alleged infringement, including relevant ownership or licensing information.
+- Confirmation that the information you provide is accurate to the best of your knowledge and that you are submitting the complaint in good faith.
 
-If your DMCA notice does not comply with Section 512(c)(3) of the DMCA, it may not be effective.
+We may request additional information needed to assess a complaint. Please do not send unrelated personal data or identity documents unless we specifically request them for a lawful purpose.
 
-**Warning**: Knowingly misrepresenting that material is infringing may result in liability for damages, including costs and attorneys’ fees, under Section 512(f) of the DMCA.
+## Review and Action
 
-## Counter Notification Procedures
+We review the information provided and may contact the uploader for an explanation or evidence of permission. We may temporarily restrict access to the reported material while reviewing a complaint and may remove it if we determine that it violates applicable law or our policies.
 
-If you believe material you posted was removed or disabled by mistake or misidentification, you may file a counter notification by submitting a written notice to our copyright agent at [support@modifold.com](mailto:support@modifold.com). Your counter notice must include:
-- Your physical or electronic signature.
-- Identification of the material removed or disabled and its location before removal.
-- Contact information (name, postal address, telephone number, and email address).
-- A statement, under penalty of perjury, that you have a good faith belief the material was removed or disabled due to a mistake or misidentification.
-- A statement that you consent to the jurisdiction of the Federal District Court for the judicial district where your address is located (or Delaware if you reside outside the United States) and that you accept service of process from the person who filed the original DMCA notice.
+We handle personal information in accordance with our [Privacy Policy](/legal/privacy) and limit any sharing during a review to what is necessary and lawful.
 
-We may restore removed content if the original complainant does not file a court action against you within 10 business days of receiving your counter notice.
+## Appealing a Removal
 
-**Warning**: Knowingly misrepresenting that material was removed or disabled by mistake may result in liability for damages, including costs and attorneys’ fees, under Section 512(f) of the DMCA.
+If you believe your material was removed or restricted by mistake, contact [support@modifold.com](mailto:support@modifold.com). Include the material's link or former location, the reason you disagree with the decision, and any relevant license, permission, or other supporting evidence.
+
+We review appeals and may request clarification from either party. Restoration depends on the information available, applicable law, and any binding legal requirements; submitting an appeal does not automatically restore the material. Any legally required procedures or deadlines continue to apply.
+
+Complaints and appeals must be truthful. Please do not use this process to submit knowingly false or abusive claims.
 
 ## Repeat Infringers
 
@@ -67,7 +67,7 @@ We may disable or terminate accounts of users who are repeat infringers, in acco
 
 ## Contact
 
-For DMCA notices, counter notices, or questions about this policy, contact us at [support@modifold.com](mailto:support@modifold.com). See our [Privacy Policy](/legal/privacy) for details on how we handle your data.
+For copyright complaints, appeals, or questions about this policy, contact us at [support@modifold.com](mailto:support@modifold.com). Requests from public authorities should also be directed to this address and are handled as described in our [Terms of Use](/legal/terms) and [Privacy Policy](/legal/privacy).
 `;
 
 export default function CopyrightPolicy() {
