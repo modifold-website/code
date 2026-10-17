@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
-import { SLUG_MAX_LENGTH, normalizeSlugInput, validateSlug } from "@/utils/slug";
+import { SLUG_MAX_LENGTH, normalizeSlugInput, validateSlug, containsEmoji } from "@/utils/slug";
 
 const getEmptySocialLinks = () => ({
     youtube: "",
@@ -39,6 +39,7 @@ const areSnapshotsEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 export default function SettingsBlogPage({ initialUser = null }) {
     const t = useTranslations("SettingsBlogPage");
+	const tCommon = useTranslations("Common");
     const { isLoggedIn, user, setUser } = useAuth();
     const effectiveUser = user || initialUser;
 
@@ -78,6 +79,10 @@ export default function SettingsBlogPage({ initialUser = null }) {
         if(isSaving) {
             return;
         }
+		if(containsEmoji(formData.username)) {
+			toast.error(tCommon("nameEmoji"));
+			return;
+		}
 
         const validation = validateSlug(formData.slug, { currentSlug: savedSettings.slug || effectiveUser?.slug || "" });
         if(!validation.valid) {
@@ -102,7 +107,7 @@ export default function SettingsBlogPage({ initialUser = null }) {
             setSavedSettings(getSettingsSnapshot(formData));
             toast.success(t("success"));
         } catch (err) {
-            toast.error(err.response?.data?.code ? t(`slug.errors.${err.response.data.code}`) : t("errors.generic"));
+			toast.error(err.response?.data?.code === "name_emoji" ? tCommon("nameEmoji") : err.response?.data?.code ? t(`slug.errors.${err.response.data.code}`) : t("errors.generic"));
         } finally {
             setIsSaving(false);
         }
@@ -130,9 +135,10 @@ export default function SettingsBlogPage({ initialUser = null }) {
                     <p className="blog-settings__field-title">{t("username")}</p>
                     <div className="field field--default blog-settings__input">
                         <label style={{ marginBottom: "10px" }} className="field__wrapper">
-                            <input type="text" name="username" value={formData.username} onChange={handleInputChange} placeholder={t("placeholders.username")} className="text-input" maxLength="30" />
+							<input type="text" name="username" value={formData.username} onChange={handleInputChange} placeholder={t("placeholders.username")} className="text-input" maxLength="30" aria-invalid={containsEmoji(formData.username)} aria-describedby={containsEmoji(formData.username) ? "profile-name-error" : undefined} />
                             <div className="counter">{formData.username.length}</div>
                         </label>
+						{containsEmoji(formData.username) && <p id="profile-name-error" className="field-error" role="alert">{tCommon("nameEmoji")}</p>}
                     </div>
 
                     <p className="blog-settings__field-title">{t("slug.label")}</p>

@@ -3,6 +3,8 @@
 export const SLUG_MAX_LENGTH = 30;
 export const SLUG_MIN_LENGTH = 4;
 
+export const containsEmoji = (value) => /[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Modifier}]|[#*0-9]\uFE0F?\u20E3/u.test(String(value ?? ""));
+
 export const normalizeSlugInput = (value, maxLength = SLUG_MAX_LENGTH) => String(value ?? "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, maxLength);
 
 export const validateSlug = (value, { currentSlug = "" } = {}) => {

@@ -7,6 +7,7 @@
     "prefabs": "Prefabs — Modifold"
   },
   "Common": {
+	"nameEmoji": "Os nomes não podem conter emojis.",
     "downloadsTooltip": "{count, plural, one {# download} other {# downloads}}"
   },
   "Header": {

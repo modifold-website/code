@@ -15,6 +15,7 @@ const { getVisibleProfileBadge } = require("../../utils/profileBadges");
 const { ACHIEVEMENT_CODES, awardAchievementToUser } = require("../../utils/achievements");
 const { consumeHytaleOAuthState, createHytaleAuthorizationUrl, exchangeHytaleCode } = require("../../utils/hytaleOAuth");
 const { importSocialAvatar } = require("../../utils/socialAvatar");
+const { containsEmoji, sanitizeDisplayName } = require("../../utils/sanitize");
 const EMAIL_CODE_TTL_MS = 5 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
 const BCRYPT_COST = 12;
@@ -571,7 +572,7 @@ router.get("/hytale-callback", async (req, res) => {
 
 			await awardHytaleLinkedAchievement(user.id, hytaleAccount.hytaleProfileUuid);
 		} else {
-			const displayName = hytaleAccount.hytaleProfileUsername || "Hytale Player";
+			const displayName = sanitizeDisplayName(hytaleAccount.hytaleProfileUsername, "Hytale Player");
 			const slug = await createUniqueSlug(displayName, hytaleAccount.hytaleProfileUuid || null);
 			const createdAt = Date.now();
 
@@ -653,6 +654,10 @@ router.post("/email-register/start", async (req, res) => {
     const email = normalizeEmail(req.body?.email);
     const password = req.body?.password;
     const hcaptchaToken = req.body?.hcaptchaToken;
+
+	if(containsEmoji(username)) {
+		return res.status(400).json({ success: false, code: "name_emoji", message: "Names cannot contain emoji" });
+	}
 
     if(username.length < 2 || username.length > 100) {
         return res.status(400).json({ success: false, message: "Username must be between 2 and 100 characters" });
@@ -748,6 +753,10 @@ router.post("/email-register/confirm", async (req, res) => {
             return res.status(409).json({ success: false, message: "Email is already registered" });
         }
 
+		if(containsEmoji(verification.username)) {
+			return res.status(400).json({ success: false, code: "name_emoji", message: "Names cannot contain emoji" });
+		}
+
         const slug = await createUniqueSlug(verification.username);
         const [result] = await db.query(
             "INSERT INTO users (username, slug, email, email_login_key, password_hash, email_verified_at, created_at, avatar) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -815,7 +824,7 @@ router.post("/discord-login", async (req, res) => {
             return res.json({ token, user: { id: user.id, username: user.username, slug: user.slug }, success: true });
         }
 
-        const displayName = discriminator === "0" ? username : `${username}#${discriminator}`;
+		const displayName = sanitizeDisplayName(discriminator === "0" ? username : `${username}#${discriminator}`);
         const { baseSlug, useRandomFallback } = buildSlugBase(displayName);
         let slug = baseSlug;
         let slugIsUnique = false;
@@ -933,7 +942,7 @@ router.get("/discord-callback", async (req, res) => {
         let user = existingUser[0];
 
         if(!user) {
-            const displayName = discriminator === "0" ? username : `${username}#${discriminator}`;
+			const displayName = sanitizeDisplayName(discriminator === "0" ? username : `${username}#${discriminator}`);
             const { baseSlug, useRandomFallback } = buildSlugBase(displayName);
             let slug = baseSlug;
 
@@ -1030,7 +1039,7 @@ router.get("/telegram-callback", async (req, res) => {
         let user = existingUser[0];
 
         if(!user) {
-            const username = `${first_name}${last_name ? ` ${last_name}` : ""}`;
+			const username = sanitizeDisplayName(`${first_name}${last_name ? ` ${last_name}` : ""}`);
             const { baseSlug, useRandomFallback } = buildSlugBase(username);
             let slug = baseSlug;
             let slugIsUnique = false;
@@ -1118,7 +1127,7 @@ router.post("/telegram-login", async (req, res) => {
             return res.json({ token, user: { id: user.id, username: user.username, slug: user.slug }, success: true });
         }
 
-        const username = `${first_name}${last_name ? ` ${last_name}` : ""}`;
+		const username = sanitizeDisplayName(`${first_name}${last_name ? ` ${last_name}` : ""}`);
         const { baseSlug, useRandomFallback } = buildSlugBase(username);
         let slug = baseSlug;
         let slugIsUnique = false;
@@ -1215,7 +1224,7 @@ router.post("/github-login", async (req, res) => {
             return res.json({ token, user: { id: user.id, username: user.username, slug: user.slug }, success: true });
         }
 
-        const displayName = name || username;
+		const displayName = sanitizeDisplayName(name || username);
         const { baseSlug, useRandomFallback } = buildSlugBase(displayName);
         let slug = baseSlug;
         let slugIsUnique = false;
@@ -1330,7 +1339,7 @@ router.get("/github-callback", async (req, res) => {
         let user = existingUser[0];
 
         if(!user) {
-            const displayName = name || username;
+			const displayName = sanitizeDisplayName(name || username);
             const { baseSlug, useRandomFallback } = buildSlugBase(displayName);
             let slug = baseSlug;
 

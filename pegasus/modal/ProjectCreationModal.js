@@ -9,11 +9,13 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getProjectPathByType } from "@/utils/projectRoutes";
 import CurseForgeImportModal from "./CurseForgeImportModal";
+import { containsEmoji } from "@/utils/slug";
 
 Modal.setAppElement("body");
 
 export default function ProjectCreationModal({ isOpen, authToken, onRequestClose }) {
     const t = useTranslations("ProjectCreationModal");
+	const tCommon = useTranslations("Common");
     const { isLoggedIn } = useAuth();
     const router = useRouter();
     const [formData, setFormData] = useState({
@@ -33,6 +35,10 @@ export default function ProjectCreationModal({ isOpen, authToken, onRequestClose
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+		if(containsEmoji(formData.title)) {
+			toast.error(tCommon("nameEmoji"));
+			return;
+		}
         setLoading(true);
 
         const data = new FormData();
@@ -78,9 +84,11 @@ export default function ProjectCreationModal({ isOpen, authToken, onRequestClose
                             <p className="blog-settings__field-title">{t("name")}</p>
                             <div className="field field--default">
                                 <label className="field__wrapper">
-                                    <input type="text" name="title" placeholder={t("placeholders.name")} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="text-input" maxLength="70" disabled={loading} />
+									<input type="text" name="title" placeholder={t("placeholders.name")} value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required className="text-input" maxLength="70" disabled={loading} aria-invalid={containsEmoji(formData.title)} aria-describedby={containsEmoji(formData.title) ? "project-create-name-error" : undefined} />
                                 </label>
                             </div>
+
+							{containsEmoji(formData.title) && <p id="project-create-name-error" className="field-error" role="alert">{tCommon("nameEmoji")}</p>}
 
                             <p className="blog-settings__field-title" style={{ marginBottom: "4px" }}>{t("summary")}</p>
 

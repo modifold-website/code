@@ -12,7 +12,7 @@ const path = require('path');
 const slugify = require('slugify');
 const crypto = require('crypto');
 const sharp = require('sharp');
-const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText } = require('../../utils/sanitize');
+const { sanitizeExternalUrl, sanitizeMarkdownText, sanitizePlainText, containsEmoji } = require('../../utils/sanitize');
 const { validateSlug } = require("../../utils/slug");
 const { ORG_PERMISSIONS, ORG_PROJECT_PERMISSIONS, PROJECT_COLLABORATOR_PERMISSION_KEYS, PROJECT_COLLABORATOR_PERMISSIONS, DEFAULT_ORGANIZATION_PROJECT_PERMISSIONS, expandProjectPermissions, parsePermissions, resolveProjectAccess, getOrganizationMemberAccess, hasProjectPermission, hasOrganizationPermission, logOrganizationAudit } = require('../../utils/organizations');
 const optionalAuth = require('../../middleware/optionalAuth');
@@ -1921,6 +1921,9 @@ router.post("/", auth, upload.single("icon"), async (req, res) => {
     try {
         const safeTitle = sanitizePlainText(title);
         const safeSummary = sanitizePlainText(summary);
+		if(containsEmoji(safeTitle)) {
+			return res.status(400).json({ code: "name_emoji", message: "Names cannot contain emoji" });
+		}
         if(!safeTitle || !safeSummary) {
             return res.status(400).json({ message: "Title and summary cannot be empty" });
         }
@@ -2020,6 +2023,9 @@ router.put('/:slug/settings', auth, async (req, res) => {
         const updates = {};
         if(title) {
             updates.title = sanitizePlainText(title);
+			if(containsEmoji(updates.title)) {
+				return res.status(400).json({ code: "name_emoji", message: "Names cannot contain emoji" });
+			}
         }
 
         if(summary !== undefined) {
@@ -3118,6 +3124,10 @@ router.put('/:id', auth, upload.single('icon'), async (req, res) => {
 
         const safeTitle = sanitizePlainText(title);
         const safeSummary = sanitizePlainText(summary);
+
+		if(containsEmoji(safeTitle)) {
+			return res.status(400).json({ code: "name_emoji", message: "Names cannot contain emoji" });
+		}
 
         if(!safeTitle) {
             return res.status(400).json({ message: "Title cannot be empty" });

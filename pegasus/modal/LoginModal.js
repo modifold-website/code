@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { useAuth } from "../components/providers/AuthProvider";
 import { getLastSignInProvider, setLastSignInProvider, setPendingSignInProvider } from "../utils/authSignInProvider";
+import { containsEmoji } from "@/utils/slug";
 
 function getReturnPath() {
     if(typeof window === "undefined") {
@@ -102,6 +103,7 @@ export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
 	const recoveryT = useTranslations("PasswordRecovery");
 	const [recoveryOpen, setRecoveryOpen] = useState(false);
     const t = useTranslations("LoginModal.emailAuth");
+	const tCommon = useTranslations("Common");
     const { completeLogin } = useAuth();
     const [mode, setMode] = useState("login");
     const [form, setForm] = useState({ email: initialEmail, password: "", username: "" });
@@ -316,6 +318,10 @@ export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
 
     const submitRegister = async (event) => {
         event.preventDefault();
+		if(containsEmoji(form.username)) {
+			toast.error(tCommon("nameEmoji"));
+			return;
+		}
         setIsSubmitting(true);
         setStatusMessage("");
 
@@ -333,7 +339,7 @@ export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
             const data = await response.json();
 
             if(!response.ok || !data.success) {
-                throw new Error(data.message || t("errors.register"));
+				throw new Error(data.code === "name_emoji" ? tCommon("nameEmoji") : data.message || t("errors.register"));
             }
 
             switchMode("verify", () => {
@@ -368,7 +374,7 @@ export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
             const data = await response.json();
 
             if(!response.ok || !data.success) {
-                throw new Error(data.message || t("errors.verify"));
+				throw new Error(data.code === "name_emoji" ? tCommon("nameEmoji") : data.message || t("errors.verify"));
             }
 
             await completeLogin(data.token);
@@ -482,8 +488,9 @@ export function EmailLoginAuth({ isOpen, onBack, onClose, initialEmail = "" }) {
                             {mode === "register" && (
                                 <form className="email-auth__form" onSubmit={submitRegister}>
                                     <EmailAuthField>
-                                        <input className="text-input" name="username" type="text" autoComplete="username" placeholder={t("usernamePlaceholder")} minLength={2} maxLength={100} value={form.username} onChange={updateField} required />
+										<input className="text-input" name="username" type="text" autoComplete="username" placeholder={t("usernamePlaceholder")} minLength={2} maxLength={100} value={form.username} onChange={updateField} required aria-invalid={containsEmoji(form.username)} aria-describedby={containsEmoji(form.username) ? "register-name-error" : undefined} />
                                     </EmailAuthField>
+									{containsEmoji(form.username) && <p id="register-name-error" className="field-error" role="alert">{tCommon("nameEmoji")}</p>}
 
                                     <EmailAuthField>
                                         <input className="text-input" name="email" type="email" autoComplete="email" placeholder={t("emailPlaceholder")} value={form.email} onChange={updateField} required />

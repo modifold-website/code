@@ -12,7 +12,7 @@ const { db } = require("../config/db");
 const { enqueueJob } = require("./asyncJobs");
 const { getFileDownloadUrl, getMod, getModDescription, getModFiles } = require("./curseForge");
 const { deleteObject, getPublicUrl, getUploadTempRoot, uploadFile } = require("./fileHosting");
-const { sanitizeMarkdownText, sanitizePlainText } = require("./sanitize");
+const { sanitizeMarkdownText, sanitizePlainText, sanitizeDisplayName } = require("./sanitize");
 const { normalizeGameVersionBranches } = require("./gameVersionBranches");
 
 const IMPORT_JOB_TYPE = "project.import.curseforge";
@@ -531,7 +531,7 @@ const createOrUpdateProject = async ({ item, mod, description, candidate, userId
 	}
 
 	const projectId = generateProjectId();
-	const title = sanitizePlainText(mod.name || candidate.name || "CurseForge project").slice(0, 70) || "CurseForge project";
+	const title = sanitizeDisplayName(mod.name || candidate.name, "CurseForge project").slice(0, 70);
 	const slug = await makeUniqueSlug(title, mod.id);
 	const projectType = resolveProjectType(candidate);
 	const tags = await mapTags(projectType, mod.categories || candidate.categories);

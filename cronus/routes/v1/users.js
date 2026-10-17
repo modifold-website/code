@@ -11,7 +11,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs").promises;
 const path = require("path");
-const { sanitizePlainText, sanitizeSocialLinks } = require("../../utils/sanitize");
+const { sanitizePlainText, sanitizeSocialLinks, containsEmoji } = require("../../utils/sanitize");
 const { normalizeSlugInput, validateSlug, getSlugValidationMessage } = require("../../utils/slug");
 const { getUnlockedProfileBadges, getVisibleProfileBadge, normalizeProfileBadgeCode } = require("../../utils/profileBadges");
 const { buildSafeObjectFilename, deleteObject, deletePrefix, getPublicObjectKeyFromUrl, getPublicUrl, getUploadTempRoot, uploadFile } = require("../../utils/fileHosting");
@@ -177,6 +177,9 @@ router.put("/me", auth, upload.fields([{ name: "avatar" }, { name: "cover" }]), 
 
         if(username) {
             updates.username = sanitizePlainText(username);
+			if(containsEmoji(updates.username)) {
+				return res.status(400).json({ code: "name_emoji", message: "Names cannot contain emoji" });
+			}
         }
 
         if(avatarFile) {

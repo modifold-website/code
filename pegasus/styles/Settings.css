@@ -1274,6 +1274,12 @@
 		transition: opacity 150ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 150ms;
 	}
 }
+.field-error {
+	margin: 6px 0 12px;
+	font-size: 14px;
+	line-height: 20px;
+	color: var(--theme-color-text-primary);
+}
 .mf-tooltip {
     position: relative;
     display: inline-flex;

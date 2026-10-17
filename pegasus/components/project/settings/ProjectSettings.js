@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useTranslations } from "next-intl";
 import UnsavedChangesBar from "@/components/ui/UnsavedChangesBar";
 import ConfirmModal from "@/modal/ConfirmModal";
-import { validateSlug } from "@/utils/slug";
+import { validateSlug, containsEmoji } from "@/utils/slug";
 import { getProjectPathByType, isBuildContentProjectType } from "@/utils/projectRoutes";
 
 const ProjectIconEditorModal = dynamic(() => import("@/modal/ProjectIconEditorModal"), { ssr: false });
@@ -27,6 +27,7 @@ const getInitialFormData = (project) => ({
 
 export default function ProjectSettings({ project, analyticsConnected = false }) {
     const t = useTranslations("SettingsProjectPage");
+	const tCommon = useTranslations("Common");
     const tProject = useTranslations("ProjectPage");
     const { isLoggedIn } = useAuth();
     const router = useRouter();
@@ -186,6 +187,10 @@ export default function ProjectSettings({ project, analyticsConnected = false })
 		if(!canEditDetails || isSaving || !isDirty) {
             return;
         }
+		if(containsEmoji(formData.title)) {
+			toast.error(tCommon("nameEmoji"));
+			return;
+		}
 
         const data = new FormData();
         data.append("title", formData.title);
@@ -334,10 +339,12 @@ export default function ProjectSettings({ project, analyticsConnected = false })
 
                                     <div className="field field--default blog-settings__input">
                                         <label style={{ marginBottom: "10px" }} className="field__wrapper">
-                                            <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder={t("general.placeholders.name")} className="text-input" maxLength="70" />
+											<input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder={t("general.placeholders.name")} className="text-input" maxLength="70" aria-invalid={containsEmoji(formData.title)} aria-describedby={containsEmoji(formData.title) ? "project-name-error" : undefined} />
                                             <div className="counter">{formData.title.length}/70</div>
                                         </label>
                                     </div>
+
+									{containsEmoji(formData.title) && <p id="project-name-error" className="field-error" role="alert">{tCommon("nameEmoji")}</p>}
 
                                     <p className="blog-settings__field-title">{t("general.fields.summary")}</p>
                                     <div className="field field--default textarea blog-settings__input">
