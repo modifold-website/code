@@ -48,7 +48,7 @@ const scrollToCurrentHash = () => {
 const contentRulesEN = `
 # Content Rules
 
-**Last modified: August 11, 2026**
+**Last modified: October 17, 2026**
 
 These Content Rules are part of our [Terms of Use](/legal/terms) and apply to all User Contributions, Gaming Content (e.g., mods, modpacks), and use of interactive features (profiles, posts, comments; collectively, "Content") on Modifold (\`modifold.com\` and \`api.modifold.com\`).
 
@@ -116,25 +116,36 @@ Such features are allowed **only** when they are server-side plugins/mods with e
 - Specify correct dependencies
 - Use "Additional files" only for truly supplementary materials
 
-## 6. Usage of Generative "AI"
+## 6. Use of AI
 
-Projects must be forthright and honest about the usage of generative AI when producing projects or any other posted content and cannot be entirely or primarily comprised of content created or derived from generative AI output.
+### Code and Text
 
-Projects must abide by all of the following requirements:
+Using AI to write code, debug, translate, or prepare project descriptions is allowed. We assess the result, not the tools used to create it. The proportion of AI-generated code or text is not, by itself, a reason to reject a project.
 
-1. Clearly include the **“Created with AI”** notice on the project's dedicated **Details** page when:
-   1. a substantial portion of the project's code is a product of AI output.
-   2. the project includes any assets that are primarily or entirely a product of AI output.
-   3. the project's design or functionality relies on the use of generative AI.
-   4. any element of the project's page, such as its description or publishing, relies on generative AI.
-2. No images uploaded to a gallery, icon, description, or any other part of a project page may be created or derived from generative AI output. Any such images will be removed.
-3. Projects may not be published publicly if their contents are primarily or entirely a product of AI output.
+Authors must check the result before publishing and remain responsible for the project's functionality, safety, accurate description, and rights to the materials they use. Using AI does not excuse malicious behavior, misleading claims, or publishing unchecked output.
+
+### Images and Project Presentation
+
+AI-generated or generatively edited images are prohibited in project presentation. This includes:
+- project icons and covers;
+- gallery images;
+- illustrations and banners in project descriptions.
+
+Use actual in-game screenshots or your own graphics, such as logos, diagrams, and compositions. Professional artwork is not required: a simple design you make yourself is welcome. Screenshots must show the project's actual content.
+
+Ordinary cropping, resizing, color correction, text overlays, and compositing are allowed. Generating or generatively adding image content for project presentation is not allowed. Images that violate this rule may be removed.
+
+### External Player Previews
+
+Automatically displayed thumbnails or artwork within embedded YouTube or other third-party media players are exempt from this AI-image restriction. Such a preview is not, by itself, a reason to reject a project.
+
+The exception applies only to the preview displayed within the external player. If the same image is uploaded or embedded separately as a project icon, cover, gallery image, or illustration in the description, the restriction applies. All other content rules still apply to embedded content.
 `;
 
 const contentRulesRU = `
 # Правила контента
 
-**Последнее изменение: 11 августа 2026**
+**Последнее изменение: 17 октября 2026**
 
 Данные Правила контента являются частью наших [Условий использования](/legal/terms) и распространяются на все пользовательские материалы, игровой контент (моды, модпаки) и интерактивные функции (профили, посты, комментарии) на платформе Modifold.
 
@@ -198,19 +209,30 @@ const contentRulesRU = `
 - Указывайте корректные зависимости
 - Используйте «Дополнительные файлы» только по назначению
 
-## 6. Использование генеративного «ИИ»
+## 6. Использование ИИ
 
-Авторы проектов обязаны открыто и честно сообщать об использовании генеративного ИИ при создании проектов или любого другого опубликованного контента. Проекты не могут полностью или преимущественно состоять из контента, созданного на основе результатов генеративного ИИ.
+### Код и тексты
 
-Проекты должны соответствовать всем следующим требованиям:
+Использование ИИ для написания кода, поиска ошибок, перевода и подготовки описаний проектов разрешено. Мы оцениваем результат, а не инструменты его создания. Доля кода или текста, созданного с помощью ИИ, сама по себе не является причиной для отказа в публикации проекта.
 
-1. Обязательно и явно укажите **«Создано с помощью ИИ»** на отдельной странице проекта **«Сведения»**, если:
-   1. существенная часть кода проекта является результатом работы ИИ;
-   2. проект содержит любые материалы, преимущественно или полностью являющиеся результатом работы ИИ;
-   3. дизайн или функциональность проекта опираются на использование генеративного ИИ;
-   4. любой элемент страницы проекта, например описание или публикация, создавался с помощью генеративного ИИ.
-2. Изображения, загруженные в галерею, используемые как иконка, добавленные в описание или любую другую часть страницы проекта, не могут быть созданы на основе результатов генеративного ИИ. Такие изображения будут удалены.
-3. Проекты нельзя публиковать в открытом доступе, если их содержимое преимущественно или полностью является результатом работы ИИ.
+Автор обязан проверить результат перед публикацией и отвечает за работоспособность, безопасность, достоверность описания проекта и права на используемые материалы. Использование ИИ не оправдывает вредоносное поведение, вводящие в заблуждение заявления или публикацию непроверенного результата генерации.
+
+### Изображения и оформление проекта
+
+Изображения, созданные или дорисованные генеративным ИИ, запрещены в оформлении проекта. Это касается:
+- иконки и обложки проекта;
+- изображений в галерее;
+- иллюстраций и баннеров в описании проекта.
+
+Используйте реальные игровые скриншоты или собственную графику: логотипы, схемы и композиции. Профессиональное оформление не требуется: простой дизайн, сделанный самостоятельно, приветствуется. Скриншоты должны показывать реальное содержимое проекта.
+
+Обычная обрезка, масштабирование, цветокоррекция, добавление текста и монтаж разрешены. Генерация и генеративная дорисовка изображений для оформления проекта не допускаются. Изображения, нарушающие это правило, могут быть удалены.
+
+### Превью внешних плееров
+
+Автоматически отображаемые превью и обложки внутри встроенных плееров YouTube и других сторонних медиасервисов не подпадают под этот запрет на ИИ-изображения. Такое превью само по себе не является причиной для отказа в публикации проекта.
+
+Исключение относится только к превью, отображаемому внутри внешнего плеера. Если ту же картинку загрузить или отдельно вставить как иконку, обложку, изображение в галерее или иллюстрацию в описании проекта, запрет действует. Остальные правила контента распространяются и на встроенные материалы.
 `;
 
 export default function ContentRules() {

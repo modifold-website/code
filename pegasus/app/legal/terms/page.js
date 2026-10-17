@@ -30,7 +30,7 @@ const getSafeMarkdownHref = (href) => {
 const contentRulesEN = `
 # Terms of Use
 
-**Last modified: February 26, 2026**
+**Last modified: October 17, 2026**
 
 ## 1. Scope of These Terms
 
@@ -38,6 +38,8 @@ These Terms of Use ("Terms") govern your access to and use of **Modifold**, incl
 - modifold.com
 - api.modifold.com
 - related web pages, APIs, and platform features (collectively, the "Service")
+
+The Service is operated by **Modifold LLC** (ООО «Modifold»), located in the **Republic of Belarus**. In these Terms, "we", "us", and "our" refer to Modifold LLC.
 
 By accessing or using the Service, you agree to these Terms and our [Privacy Policy](/legal/privacy). If you do not agree, do not use the Service.
 
@@ -60,7 +62,7 @@ We may also change, suspend, or discontinue parts of the Service at any time.
 
 ## 4. Compliance With Applicable Laws (Including Belarus)
 
-Modifold is operated for an international audience. Our owner and part of our team are located in the **Republic of Belarus**, and we aim to operate the Service in compliance with applicable laws, including where relevant the laws of Belarus, as well as other laws applicable to our users and operations.
+Modifold serves an international audience and is operated from the **Republic of Belarus**. We aim to operate the Service in compliance with applicable laws, including the laws of the Republic of Belarus and other laws applicable to our users and operations.
 
 You are responsible for complying with laws that apply to you based on your location and how you use the Service.
 
@@ -156,6 +158,14 @@ We may review, moderate, restrict, remove, or refuse content or accounts when we
 
 We are not obligated to publish or keep any content on the Service.
 
+### Requests from Public Authorities
+
+We review official requests from courts, law enforcement, and other competent public authorities in the Republic of Belarus and other countries, and cooperate in accordance with applicable law. All such requests and related questions should be sent to [support@modifold.com](mailto:support@modifold.com).
+
+Requests should identify the requesting authority, its official contact details, the legal basis and purpose of the request, and the specific information or action requested. We assess the request's authenticity, the authority's competence, and the applicable legal requirements before responding. Where required, requests must follow the applicable judicial or international legal assistance procedures; sending an email does not replace those procedures.
+
+Receiving a request does not by itself authorize disclosure of user data. Any disclosure must have a lawful basis and be limited to what is necessary and permitted by applicable law, including requirements for cross-border transfers. See our [Privacy Policy](/legal/privacy).
+
 ## 13. Copyright and Rights Complaints
 
 If you believe content on Modifold infringes your copyright or other rights, contact us at [support@modifold.com](mailto:support@modifold.com) with sufficient information for us to review the complaint.
@@ -205,9 +215,9 @@ Termination does not affect provisions that by their nature should survive (for 
 
 ## 19. Governing Law and Dispute Resolution
 
-These Terms are governed by the laws of the **State of Delaware, USA**, without regard to conflict of law rules, unless mandatory law in your jurisdiction provides otherwise.
+These Terms are governed by the laws of the **Republic of Belarus**, unless mandatory law in your jurisdiction provides otherwise.
 
-You agree that disputes may be brought in courts located in Delaware, USA, subject to applicable law. We may also seek injunctive or protective relief in any competent jurisdiction where necessary.
+You agree that disputes may be brought in the competent courts of the **Republic of Belarus**, subject to applicable jurisdiction rules and any mandatory rights in your jurisdiction. We may also seek injunctive or protective relief in any competent jurisdiction where necessary.
 
 ## 20. Miscellaneous
 
@@ -235,7 +245,7 @@ For support or legal questions, contact: [support@modifold.com](mailto:support@m
 const contentRulesRU = `
 # Условия использования
 
-**Последнее изменение: 26 февраля 2026**
+**Последнее изменение: 17 октября 2026**
 
 ## 1. Сфера действия Условий
 
@@ -243,6 +253,8 @@ const contentRulesRU = `
 - modifold.com
 - api.modifold.com
 - связанные веб-страницы, API и функции платформы (совместно — «Сервис»)
+
+Оператор Сервиса — **ООО «Modifold»** (в английской версии — **Modifold LLC**), расположенное в **Республике Беларусь**. В настоящих Условиях слова «мы», «нас» и «наш» относятся к ООО «Modifold».
 
 Используя Сервис, вы соглашаетесь с настоящими Условиями и нашей [Политикой конфиденциальности](/legal/privacy). Если вы не согласны, не используйте Сервис.
 
@@ -265,7 +277,7 @@ const contentRulesRU = `
 
 ## 4. Соблюдение применимого законодательства (включая Беларусь)
 
-Modifold работает для международной аудитории. Владелец проекта и часть команды находятся в **Республике Беларусь**, и мы стремимся осуществлять деятельность Сервиса в соответствии с применимым законодательством, включая, где это применимо, законодательство Республики Беларусь, а также иные нормы, применимые к нашим пользователям и операциям.
+Modifold работает для международной аудитории и управляется из **Республики Беларусь**. Мы стремимся осуществлять деятельность Сервиса в соответствии с применимым законодательством, включая законодательство Республики Беларусь и иные нормы, применимые к нашим пользователям и операциям.
 
 Вы несёте ответственность за соблюдение законов, которые применяются к вам с учётом вашего местонахождения и способа использования Сервиса.
 
@@ -361,6 +373,14 @@ Modifold может позволять владельцам проектов и�
 
 Мы не обязаны публиковать или хранить какой-либо контент на Сервисе.
 
+### Запросы государственных органов
+
+Мы рассматриваем официальные запросы судов, правоохранительных и иных компетентных государственных органов Республики Беларусь и других стран и сотрудничаем с ними в соответствии с применимым законодательством. Все такие запросы и связанные с ними вопросы следует направлять на [support@modifold.com](mailto:support@modifold.com).
+
+В запросе следует указать наименование органа, его официальные контактные данные, правовое основание и цель обращения, а также конкретные запрашиваемые сведения или действия. Перед ответом мы оцениваем подлинность запроса, полномочия органа и применимые правовые требования. Когда это необходимо, запрос должен пройти предусмотренные законом судебные процедуры или процедуры международной правовой помощи; отправка письма не заменяет эти процедуры.
+
+Само получение запроса не является основанием для раскрытия данных пользователей. Передача данных должна иметь законное основание и ограничиваться необходимым и допустимым по применимому законодательству объёмом, в том числе с учётом требований к трансграничной передаче. Подробнее — в [Политике конфиденциальности](/legal/privacy).
+
 ## 13. Жалобы на нарушение прав
 
 Если вы считаете, что контент на Modifold нарушает ваши авторские или иные права, напишите на [support@modifold.com](mailto:support@modifold.com) и предоставьте достаточно информации для проверки.
@@ -410,9 +430,9 @@ Modifold может позволять владельцам проектов и�
 
 ## 19. Применимое право и споры
 
-Настоящие Условия регулируются законодательством **штата Делавэр, США**, без учёта коллизионных норм, если иное не требуется императивным правом вашей юрисдикции.
+Настоящие Условия регулируются законодательством **Республики Беларусь**, если иное не требуется императивными нормами законодательства вашей юрисдикции.
 
-Вы соглашаетесь, что споры могут рассматриваться судами в штате Делавэр, США, с учётом применимого законодательства. Мы также вправе обращаться за обеспечительными мерами в любой компетентный суд при необходимости.
+Вы соглашаетесь, что споры могут рассматриваться компетентными судами **Республики Беларусь** с учётом применимых правил подсудности и прав, предоставленных вам императивными нормами законодательства вашей юрисдикции. Мы также вправе обращаться за обеспечительными мерами в любой компетентный суд при необходимости.
 
 ## 20. Прочие положения
 
