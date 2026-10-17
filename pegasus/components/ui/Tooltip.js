@@ -124,6 +124,14 @@ function TooltipBubble({ tooltip, onHide }) {
 			const scale = transform === "none" ? { a: 1, d: 1 } : new DOMMatrixReadOnly(transform);
 			const contentTransform = getComputedStyle(contentRef.current).transform;
 			const offset = contentTransform === "none" ? { e: 0, f: 0 } : new DOMMatrixReadOnly(contentTransform);
+			const offsetX = (previous.width - width) / 2 + offset.e;
+			const offsetY = (previous.height - height) / 2 + offset.f;
+			const inset = [
+				Math.max(0, -offsetY),
+				Math.max(0, width + offsetX - previous.width * scale.a),
+				Math.max(0, height + offsetY - previous.height * scale.d),
+				Math.max(0, -offsetX),
+			].map((value) => value + "px").join(" ");
 			morphRef.current?.cancel();
 			contentMorphRef.current?.cancel();
 			morphRef.current = surfaceRef.current.animate([
@@ -131,8 +139,8 @@ function TooltipBubble({ tooltip, onHide }) {
 				{ transform: "scale(1)" },
 			], { duration: 150, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
 			contentMorphRef.current = contentRef.current.animate([
-				{ transform: "translate(" + ((previous.width - width) / 2 + offset.e) + "px, " + ((previous.height - height) / 2 + offset.f) + "px)" },
-				{ transform: "translate(0, 0)" },
+				{ transform: "translate(" + offsetX + "px, " + offsetY + "px)", clipPath: "inset(" + inset + ")" },
+				{ transform: "translate(0, 0)", clipPath: "inset(0px)" },
 			], { duration: 150, easing: "cubic-bezier(0.23, 1, 0.32, 1)" });
 		}
 
