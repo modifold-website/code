@@ -1,5 +1,5 @@
 ---
-title: "Less AI slop, more real projects"
+title: "Less AI slop, more modding"
 description: "We updated Modifold's rules for AI-generated content and added a new project details page."
 author: ["bogdan"]
 date: 2026-08-13
@@ -9,26 +9,32 @@ featured: false
 locale: en
 ---
 
-The short version: Modifold does not have that many projects yet, and these new rules might leave us with even fewer. Great growth strategy, we know.
+> **October 17, 2026 update: our AI rules have changed.**
+>
+> We assess the result, not the tools. Using AI for code, debugging, translations, and descriptions is allowed. The proportion of AI-generated code or text is no longer, by itself, a reason to reject a project. Authors remain responsible for the functionality, safety, and accuracy of what they publish.
+>
+> The restriction on AI-generated or generatively edited images in project presentation remains: icons, covers, galleries, and description illustrations should use actual in-game content or your own graphics. Ordinary editing, such as cropping, color correction, text overlays, and compositing, is allowed.
+>
+> Automatically displayed previews inside embedded YouTube and other third-party players are exempt. Uploading the same image separately to a gallery or using it as a cover is not exempt.
+>
+> We have also updated the article below to reflect the new rules. See the [Content Rules](/legal/rules#generative-ai) for the current wording.
 
-Still, we would rather have fewer real projects than a feed full of stuff someone generated in five minutes, never even checked, and immediately sent for review.
+The short version: we are not against AI. We are against AI slop in project icons, covers, and galleries. Images should help you understand what you are downloading, not leave you wondering whether any of it exists in the game.
 
-AI can be a useful tool. It can help you understand an error, sketch out an idea, translate some text, or speed up the boring parts. That is fine. But clicking "generate everything" does not make someone the author of a project.
+AI can be a useful tool. It can help you understand an error, sketch out an idea, translate some text, or speed up the boring parts. That is fine. What matters is that the project works, is safe, and matches its description, not which tools were used to write its code.
 
 That is why we updated our [Content Rules](/legal/rules#generative-ai) and added a separate **Details** page to project settings.
 
 ## What is no longer allowed
 
-Projects made entirely or mostly from generative AI output cannot be published on Modifold.
-
-AI-generated or AI-edited images are also not allowed anywhere on a project page. This includes:
+AI-generated or generatively edited images are not allowed in project presentation. This includes:
 
 - project icons;
 - gallery images;
 - images in descriptions;
 - any other images used on the project page.
 
-And no, this does not mean we only accept perfectly made projects now. Your first mod can be messy, weird, and break when someone looks at it the wrong way. That is normal. Everyone starts somewhere. What matters is that you made it yourself instead of asking AI to put the whole thing together for you.
+And no, you do not need a professional designer to publish a project. An in-game screenshot or a simple icon made in Figma or Photoshop is fine. Show the project itself, not AI slop in its place.
 
 ## What if you used AI?
 
@@ -38,7 +44,7 @@ Project settings now have a separate **Details** page. You can mark that AI was 
 
 You can also add the project license, paid features, telemetry, and other important details. This information will appear on the public project page, so players know what they are downloading.
 
-Using AI as a supporting tool is fine as long as a person still did the main, meaningful work. Just be honest about it in your project details.
+Check the result before publishing: authors remain responsible for their projects regardless of the tools they use.
 
 ## Archiving projects
 
@@ -56,8 +62,8 @@ This is better than deleting old work or leaving players to guess whether a proj
 
 So you know what you are getting before you download something.
 
-It is better to know about data collection, paid features, and AI use upfront instead of finding out after installation or stumbling across it at the bottom of a description.
+It is better to know about data collection and paid features upfront instead of finding out after installation or stumbling across it at the bottom of a description. Screenshots should show what the project looks like in the game.
 
-We want to see your ideas, your experiments, and your weird projects that somehow work perfectly at 3 AM and break again in the morning. AI can help. Just do not give it the author's seat.
+We want to see your ideas, your experiments, and your weird projects that somehow work perfectly at 3 AM and break again in the morning. Using AI in development? That is fine. Just show players what they will actually get.
 
 Less slop. More modding.
