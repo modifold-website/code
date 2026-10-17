@@ -1321,7 +1321,7 @@
 	border-radius: inherit;
 	box-shadow: var(--theme-shadow-popover);
 	background: var(--theme-color-background-content);
-	transform-origin: center bottom;
+	transform-origin: left top;
 }
 .mf-tooltip__surface::after {
     content: "";
@@ -1342,9 +1342,6 @@
 .mf-tooltip__bubble[data-position="bottom"] {
 	transform: translateY(-4px) scale(.96);
 	transform-origin: var(--tooltip-arrow-x, 50%) top;
-}
-.mf-tooltip__bubble[data-position="bottom"] .mf-tooltip__surface {
-	transform-origin: center top;
 }
 .mf-tooltip__bubble[data-position="bottom"] .mf-tooltip__surface::after {
     top: auto;
