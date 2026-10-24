@@ -67,7 +67,7 @@ jobs:
             git pull --ff-only origin main
 
             SERVICES=""
-            if [ "$CRONUS_CHANGED" = "true" ]; then SERVICES="$SERVICES cronus"; fi
+            if [ "$CRONUS_CHANGED" = "true" ]; then SERVICES="$SERVICES cronus async-worker"; fi
             if [ "$PEGASUS_CHANGED" = "true" ]; then SERVICES="$SERVICES pegasus"; fi
             if [ "$DOCS_CHANGED" = "true" ]; then SERVICES="$SERVICES docs"; fi
 
@@ -79,7 +79,7 @@ jobs:
             docker compose --env-file .env.docker build $SERVICES
 
             if [ "$CRONUS_CHANGED" = "true" ]; then
-              docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 cronus
+              docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 cronus async-worker
             fi
             if [ "$PEGASUS_CHANGED" = "true" ]; then
               docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 pegasus

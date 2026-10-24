@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "bun@1.4.0",
+  "packageManager": "bun@1.4.4",
   "type": "module",
   "scripts": {
 		"dev": "next dev -p ${PORT:-3122}",
