@@ -2,7 +2,7 @@
   "name": "client",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "bun@1.4.4",
+  "packageManager": "bun@1.4.5",
   "type": "module",
   "scripts": {
 		"dev": "next dev -p ${PORT:-3122}",
@@ -14,13 +14,13 @@
   "dependencies": {
     "@number-flow/react": "^0.6.1",
     "@tanstack/react-query": "^5.101.2",
-    "axios": "^1.8.4",
-    "eslint-config-next": "16.4.3",
+    "axios": "^1.21.1",
+    "eslint-config-next": "16.4.6",
     "gray-matter": "^4.0.3",
-    "js-cookie": "^3.0.5",
-    "mermaid": "^11.12.0",
-    "next": "16.4.3",
-    "next-intl": "^4.3.12",
+    "js-cookie": "^3.0.8",
+    "mermaid": "^12.3.0",
+    "next": "16.4.6",
+    "next-intl": "^4.15.3",
     "prism-react-renderer": "^2.4.1",
     "qrcode": "^1.5.4",
     "react": "19.2.8",
@@ -34,7 +34,7 @@
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
-    "sanitize-html": "^2.17.0",
+    "sanitize-html": "^2.18.2",
     "three": "^0.185.1",
     "unified": "^11.0.5"
   }

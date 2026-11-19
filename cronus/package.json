@@ -1,5 +1,5 @@
 {
-	"packageManager": "bun@1.4.4",
+	"packageManager": "bun@1.4.5",
 	"scripts": {
 		"index.js": "node index.js",
 		"start": "node index.js",
@@ -11,17 +11,17 @@
 		"@aws-sdk/lib-storage": "^3.1124.0",
 		"@aws-sdk/s3-request-presigner": "^3.1124.0",
 		"@clickhouse/client": "^1.18.2",
-		"axios": "^1.12.2",
+		"axios": "^1.21.1",
 		"cors": "^2.8.5",
 		"dotenv": "^16.4.7",
-		"express": "^4.21.2",
+		"express": "^4.22.3",
 		"ioredis": "^5.8.2",
 		"jsonwebtoken": "^9.0.2",
-		"multer": "2.4.0",
-		"mysql2": "^3.14.0",
+		"multer": "2.5.0",
+		"mysql2": "^3.24.6",
 		"otplib": "^12.0.1",
 		"pino": "^9.9.0",
-		"sanitize-html": "^2.17.1",
+		"sanitize-html": "^2.18.2",
 		"sharp": "0.35.5",
 		"slugify": "^1.6.6"
 	}

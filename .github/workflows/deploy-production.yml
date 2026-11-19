@@ -76,7 +76,7 @@ jobs:
               exit 0
             fi
 
-            docker compose --env-file .env.docker build $SERVICES
+            docker compose --env-file .env.docker build --pull $SERVICES
 
             if [ "$CRONUS_CHANGED" = "true" ]; then
               docker compose --env-file .env.docker up -d --no-deps --wait --wait-timeout 180 cronus async-worker
